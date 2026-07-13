@@ -1,11 +1,12 @@
 import { useState } from 'preact/hooks';
-import type { CombatLogEntry } from '@phalanxduel/shared';
+import type { CalculationProvenance, CombatLogEntry } from '@phalanxduel/shared';
 import { cardLabel } from '../cards';
+import { CombatMath } from './CombatMath';
 
 export interface EngagementLogProps {
   isSpectator: boolean;
   hasAttack: boolean;
-  playByPlayEntries: { key: number; label: string }[];
+  playByPlayEntries: { key: number; label: string; provenance?: CalculationProvenance }[];
   entries: CombatLogEntry[];
 }
 
@@ -53,6 +54,7 @@ export function EngagementLog({
                 data-testid="log-entry"
               >
                 {entry.label}
+                <CombatMath provenance={entry.provenance} context="log" label="WHY" />
               </div>
             ))}
           {!isSpectator &&
@@ -63,6 +65,7 @@ export function EngagementLog({
                 <div key={i} class="phx-log-entry" data-testid="log-entry">
                   <span style="color: var(--gold)">T{entry.turnNumber}</span>:{' '}
                   {cardLabel(entry.attackerCard)} ATK COL {entry.targetColumn + 1}
+                  <CombatMath provenance={entry.calculationProvenance} context="log" label="WHY" />
                 </div>
               ))}
         </div>

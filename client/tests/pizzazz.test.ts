@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { PhalanxTurnResult } from '@phalanxduel/shared';
 import { PizzazzEngine } from '../src/pizzazz';
+import { NarrationBus } from '../src/narration-bus';
 
 vi.mock('../src/state', () => ({
-  getState: vi.fn(() => ({ playerIndex: 0, gameState: null })),
+  getState: vi.fn(() => ({ screen: 'gameOver', playerIndex: 0, gameState: null })),
 }));
 
 function makeMinimalGameState(overrides: Record<string, unknown> = {}) {
@@ -48,11 +49,15 @@ function makeTurnResult(
 
 describe('PizzazzEngine animation hook', () => {
   let engine: PizzazzEngine;
+  let bus: NarrationBus;
 
   beforeEach(() => {
+    document.querySelectorAll('.pz-splash-overlay').forEach((element) => element.remove());
     document.body.dataset.pzLastTrigger = '';
     document.body.dataset.pzTriggerSeq = '0';
+    bus = new NarrationBus();
     engine = new PizzazzEngine();
+    engine.start(bus);
     // Seed the engine so it doesn't skip on first call
     const init = makeMinimalGameState({ transactionLog: [] });
     engine.onTurnResult(makeTurnResult(init, init));
@@ -93,7 +98,7 @@ describe('PizzazzEngine animation hook', () => {
     expect(triggers.some((t) => t.type === 'screenShake')).toBe(true);
   });
 
-  it('records gameOver trigger on phase transition to gameOver', () => {
+  it('waits for the ordered terminal cue before showing game over', () => {
     const pre = makeMinimalGameState({ phase: 'AttackPhase' });
     const post = makeMinimalGameState({
       phase: 'gameOver',
@@ -102,10 +107,19 @@ describe('PizzazzEngine animation hook', () => {
     });
 
     engine.onTurnResult(makeTurnResult(pre, post));
+    expect(engine.getTriggers().some((t) => t.type === 'gameOver')).toBe(false);
+
+    bus.emit({
+      type: 'terminal',
+      winnerIndex: 0,
+      turnNumber: 3,
+      victoryType: 'lpDepletion',
+    });
 
     const triggers = engine.getTriggers();
     expect(triggers.some((t) => t.type === 'gameOver')).toBe(true);
     expect(document.body.dataset.pzLastTrigger).toBe('gameOver');
+    expect(document.querySelector('.pz-splash-text')?.textContent).toBe('VICTORY');
   });
 
   it('exposes itself on window.__pizzazz', () => {

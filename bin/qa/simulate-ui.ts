@@ -531,7 +531,6 @@ function randomToken(length: number): string {
 }
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
-/**
 import { GameAutomator } from './game-automator.js';
 
 const PLAYTHROUGH_ID =
@@ -555,9 +554,31 @@ function logGame(gameRunId: string, ...args: unknown[]): void {
 async function clickGameElement(locator: Locator): Promise<void> {
   try {
     await locator.click({ timeout: 5_000 });
-  } catch {
-    await locator.click({ force: true, timeout: 5_000 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message.split('\n')[0] : String(error);
+    console.log(`[qa-click] Pointer click failed (${message}); using semantic DOM activation.`);
+    await locator.evaluate((element) => (element as HTMLElement).click());
   }
+}
+
+async function assertTerminalPresentation(page: Page, name: string): Promise<void> {
+  const evidence = await page.evaluate(() => ({
+    gameOverViews: document.querySelectorAll('[data-component="GameOverView"]').length,
+    phaseOverlays: document.querySelectorAll('.nr-phase-announce').length,
+    activeCinematics: document.querySelectorAll('.cinematic-modal.is-active').length,
+    mathViews: document.querySelectorAll('[data-component="CombatExplanationView"]').length,
+  }));
+
+  if (
+    evidence.gameOverViews !== 1 ||
+    evidence.phaseOverlays !== 0 ||
+    evidence.activeCinematics !== 0
+  ) {
+    throw new Error(
+      `Terminal presentation invariant failed for ${name}: ${JSON.stringify(evidence)}`,
+    );
+  }
+  console.log(`[${name}] Terminal presentation proof ${JSON.stringify(evidence)}`);
 }
 
 /**
@@ -978,7 +999,17 @@ async function ensureTournamentAccounts(count: number): Promise<BotAccountRecord
 
 async function waitForLobbyReady(page: Page, qaRunId: string): Promise<void> {
   await page.goto(withRunParams(OPTIONS.baseUrl, qaRunId));
-  await page.waitForSelector('[data-health-color="green"]', { timeout: 30_000 });
+  await page.waitForSelector('[data-component="LobbyView"]', { timeout: 30_000 });
+  // The actionable lobby contract is stronger than a decorative health badge
+  // and remains valid when responsive layouts collapse footer diagnostics.
+  await page.waitForFunction(
+    () => {
+      const createMatch = document.querySelector('[data-action="create-match"]');
+      return createMatch?.getAttribute('aria-disabled') !== 'true';
+    },
+    undefined,
+    { timeout: 30_000 },
+  );
 }
 
 async function ensureGuestOperativeId(page: Page, id: string): Promise<void> {
@@ -1560,6 +1591,10 @@ async function runSingleGame(
     const p2Over = setup.matchKind === 'pvp' && p2 ? await isGameOver(p2.page) : false;
     if (p1Over || p2Over) {
       logGame(setup.gameRunId, '🏁 Game Over detected!');
+      await Promise.all([
+        ...(p1Over ? [assertTerminalPresentation(p1.page, p1.name)] : []),
+        ...(p2Over && p2 ? [assertTerminalPresentation(p2.page, p2.name)] : []),
+      ]);
       return determineOutcome(p1, p2, setup.matchKind);
     }
 

@@ -7,6 +7,7 @@ import {
   getState,
   getSavedSession,
   onTurnResult,
+  completeTerminalPresentation,
   setIsMobile,
   syncStateFromUrl,
 } from './state';
@@ -71,6 +72,10 @@ async function init() {
   overlay.start();
   cinematic.start();
   commentary.start();
+  pizzazz.start(bus);
+  bus.subscribe((event) => {
+    if (event.type === 'terminal') completeTerminalPresentation();
+  });
 
   // Connect narration producer and pizzazz to state updates
   onTurnResult((result) => {

@@ -36,6 +36,19 @@ export type NarrationEvent =
   | { type: 'phase-change'; phase: GamePhase }
   | { type: 'combo'; count: number; suit?: Suit }
   | {
+      type: 'calculation';
+      sequence: number;
+      ruleId: string;
+      equation: string;
+      spoken: string;
+    }
+  | {
+      type: 'terminal';
+      winnerIndex: number | null;
+      turnNumber: number;
+      victoryType: string;
+    }
+  | {
       type: 'cinematic';
       style: 'clash' | 'lethal';
       message: string;
@@ -96,6 +109,10 @@ export class NarrationBus {
     }
     this.queue = [];
     this.subscribers = [];
+  }
+
+  get pendingCount(): number {
+    return this.queue.length + (this.drainTimer ? 1 : 0);
   }
 }
 

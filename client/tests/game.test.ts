@@ -383,6 +383,7 @@ describe('renderGame', () => {
     const target = container.querySelector('[data-testid="player-cell-r0-c0"]');
     expect(target?.classList.contains('bf-cell')).toBe(true);
     expect(target?.classList.contains('valid-target')).toBe(true);
+    expect(target?.getAttribute('data-state')).toBe('targetable');
   });
 
   it('hand cards get reinforce-playable class during reinforcement', async () => {
@@ -502,6 +503,7 @@ describe('renderGame', () => {
     state.gameState!.players[1]!.drawpile = [
       { id: 'spare', face: '2', suit: 'spades', value: 2, type: 'number' },
     ];
+    state.gameState!.specVersion = '3.0';
 
     renderGame(container, state);
 
@@ -510,6 +512,10 @@ describe('renderGame', () => {
     expect(container.querySelector('.phx-action-preview-chip')?.textContent).toBe(
       'WINNING_EXCHANGE',
     );
+    const previewMath = container.querySelector('[data-testid="combat-math-preview"]');
+    expect(previewMath).toBeTruthy();
+    expect(Number(previewMath?.getAttribute('data-source-step-count'))).toBeGreaterThan(0);
+    expect(previewMath?.textContent).toContain('PROJECTED MATH');
 
     state.gameState!.transactionLog = [
       {

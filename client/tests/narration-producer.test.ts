@@ -9,6 +9,7 @@ import type {
   CombatLogEntry,
   CombatLogStep,
   Action,
+  CalculationProvenance,
 } from '@phalanxduel/shared';
 
 // ── Helpers ──────────────────────────────────────
@@ -497,5 +498,80 @@ describe('NarrationProducer', () => {
     expect(phaseEntry).toBeDefined();
     expect(phaseEntry!.event).toEqual({ type: 'phase-change', phase: 'AttackPhase' });
     expect(phaseEntry!.delayMs).toBe(400);
+  });
+
+  it('orders lethal calculations before the terminal verdict and suppresses terminal phase bleed', () => {
+    const preState = makeGameState({ phase: 'AttackPhase' }, []);
+    producer.onTurnResult(makeTurnResult(preState, preState, makeAction('pass', 0)));
+
+    const provenance: CalculationProvenance = {
+      schemaVersion: '1.0',
+      steps: [
+        {
+          sequence: 0,
+          ruleId: 'PD-RULE-017',
+          operator: 'assign',
+          inputs: [{ name: 'attackerValue', value: 5, source: { kind: 'state' } }],
+          result: { name: 'baseDamage', value: 5 },
+          target: 'attack',
+          quantity: 'baseDamage',
+          visibility: 'public',
+        },
+        {
+          sequence: 1,
+          ruleId: 'PD-RULE-064',
+          operator: 'subtract',
+          inputs: [
+            { name: 'lpBefore', value: 5, source: { kind: 'state' } },
+            { name: 'appliedDamage', value: 5, source: { kind: 'step', step: 0 } },
+          ],
+          result: { name: 'playerLp.remainingLp', value: 0 },
+          target: 'playerLp',
+          quantity: 'remainingLp',
+          visibility: 'public',
+        },
+      ],
+    };
+    const attackAction = makeAction('attack', 0, { attackingColumn: 0, defendingColumn: 0 });
+    const attacker = makeCard('5', 'spades');
+    const txEntry = makeTxEntry(0, attackAction, {
+      type: 'attack',
+      combat: {
+        turnNumber: 1,
+        attackerPlayerIndex: 0,
+        attackerCard: attacker,
+        targetColumn: 0,
+        baseDamage: 5,
+        totalLpDamage: 5,
+        steps: [{ target: 'playerLp', damage: 5, lpBefore: 5, lpAfter: 0 }],
+        calculationProvenance: provenance,
+      },
+      reinforcementTriggered: false,
+      victoryTriggered: true,
+    });
+    const postState = makeGameState(
+      {
+        phase: 'gameOver',
+        outcome: { winnerIndex: 0, victoryType: 'lpDepletion', turnNumber: 1 },
+      },
+      [txEntry],
+    );
+
+    producer.onTurnResult(makeTurnResult(preState, postState, attackAction));
+
+    const entries: NarrationEntry[] = enqueueSpy.mock.calls[0][0];
+    const terminalIndex = entries.findIndex((entry) => entry.event.type === 'terminal');
+    const calculationIndexes = entries
+      .map((entry, index) => (entry.event.type === 'calculation' ? index : -1))
+      .filter((index) => index >= 0);
+    expect(calculationIndexes.length).toBeGreaterThan(0);
+    expect(Math.max(...calculationIndexes)).toBeLessThan(terminalIndex);
+    expect(entries.some((entry) => entry.event.type === 'phase-change')).toBe(false);
+    expect(entries[terminalIndex]!.event).toEqual({
+      type: 'terminal',
+      winnerIndex: 0,
+      turnNumber: 1,
+      victoryType: 'lpDepletion',
+    });
   });
 });

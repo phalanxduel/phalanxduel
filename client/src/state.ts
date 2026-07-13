@@ -427,26 +427,7 @@ export function dispatch(message: AppMessage): void {
       break;
 
     case 'gameState': {
-      clearActionTimeout();
-      const gs = message.result.postState;
-      const myIdx = state.playerIndex;
-      const isMyTurn = myIdx !== null && gs.activePlayerIndex === myIdx;
-
-      // Haptic for turn start
-      if (isMyTurn && state.gameState?.activePlayerIndex !== myIdx) {
-        vibrate([100, 50, 100]);
-      }
-
-      for (const cb of turnResultCallbacks) cb(message.result);
-      setState({
-        screen: isGameOver(gs) ? 'gameOver' : 'game',
-        gameState: gs,
-        validActions: message.viewModel?.validActions ?? [],
-        selectedAttacker: null,
-        selectedDeployCard: null,
-        error: null,
-        spectatorCount: message.spectatorCount ?? 0,
-      });
+      handleGameStateMessage(message);
       break;
     }
 
@@ -488,6 +469,46 @@ export function dispatch(message: AppMessage): void {
     case 'forceReload':
       window.location.reload();
       break;
+  }
+}
+
+function handleGameStateMessage(message: Extract<ServerMessage, { type: 'gameState' }>): void {
+  clearActionTimeout();
+  if (state.matchId !== message.matchId) {
+    console.warn(
+      `[state] Ignoring stale gameState for ${message.matchId}; active match is ${state.matchId ?? 'none'}`,
+    );
+    return;
+  }
+
+  const gs = message.result.postState;
+  const enteredTerminalState =
+    isGameOver(gs) && !isGameOver(message.result.preState) && state.screen !== 'gameOver';
+  const myIdx = state.playerIndex;
+  const isMyTurn = myIdx !== null && gs.activePlayerIndex === myIdx;
+
+  if (isMyTurn && state.gameState?.activePlayerIndex !== myIdx) {
+    vibrate([100, 50, 100]);
+  }
+
+  for (const cb of turnResultCallbacks) cb(message.result);
+  setState({
+    // Keep the resolved board mounted while the narration queue explains
+    // the lethal transaction. The terminal narration boundary promotes
+    // this to the post-match screen via completeTerminalPresentation().
+    screen: enteredTerminalState ? 'game' : isGameOver(gs) ? 'gameOver' : 'game',
+    gameState: gs,
+    validActions: message.viewModel?.validActions ?? [],
+    selectedAttacker: null,
+    selectedDeployCard: null,
+    error: null,
+    spectatorCount: message.spectatorCount ?? 0,
+  });
+}
+
+export function completeTerminalPresentation(): void {
+  if (state.gameState && isGameOver(state.gameState)) {
+    setState({ screen: 'gameOver' });
   }
 }
 

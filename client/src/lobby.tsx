@@ -2521,7 +2521,7 @@ const LobbyLayout = ({
         >
           PHALANX DUEL
         </h1>
-        <p class="subtitle">TACTICAL_INIT_SYSTEM_v1.1</p>
+        <p class="subtitle">DETERMINISTIC TACTICAL CARD COMBAT</p>
       </div>
       <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px">
         <div style="display: flex; gap: 8px; align-items: center">
@@ -2534,7 +2534,7 @@ const LobbyLayout = ({
           >
             ?
           </button>
-          <div class="meta-tag">WIRE_0.5 | SPEC_1.0</div>
+          <div class="meta-tag">SERVER AUTHORITATIVE | REPLAY VERIFIED</div>
         </div>
         <UserBar
           state={state}

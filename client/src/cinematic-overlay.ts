@@ -14,6 +14,8 @@ export class CinematicOverlay {
     this.unsub = this.bus.subscribe((event) => {
       if (event.type === 'cinematic') {
         this.renderCinematic(event);
+      } else if (event.type === 'terminal') {
+        this.clearContainer();
       }
     });
   }

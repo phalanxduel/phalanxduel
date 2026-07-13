@@ -8,6 +8,7 @@ import type {
   BattlefieldCard,
   Action,
   GamePhase,
+  CalculationProvenance,
 } from '@phalanxduel/shared';
 import type { AppState, BaseState, ScreenState } from './state';
 import {
@@ -25,6 +26,7 @@ import { CopyButton } from './components/CopyButton';
 import { cardLabel, suitColor, suitSymbol, isFace } from './cards';
 import { EngagementLog } from './components/EngagementLog';
 import { NarrationTicker } from './components/NarrationTicker';
+import { CombatMath } from './components/CombatMath';
 import { HUD_PHASE_LABELS } from './constants';
 import {
   COMBAT_CAUSE_LABELS,
@@ -33,7 +35,7 @@ import {
   isDeploymentPhase,
   readCombatResolution,
 } from '@phalanxduel/shared';
-import { simulateAttack } from '@phalanxduel/engine';
+import { projectCalculationProvenance, simulateAttack } from '@phalanxduel/engine';
 import type { AttackPreviewVerdict } from '@phalanxduel/engine';
 
 type GameScreenState = BaseState & Extract<ScreenState, { screen: 'game' }>;
@@ -158,6 +160,7 @@ function PhxCard(props: {
   isReinforceCol?: boolean;
   isAttackPlayable?: boolean;
   attackPreview?: AttackPreviewVerdict | null;
+  attackPreviewProvenance?: CalculationProvenance;
   columnHighlight?: 'attacker' | 'target' | 'reinforce' | 'resolution';
   variant: 'battlefield' | 'hand';
   owner?: 'p1' | 'p2';
@@ -177,6 +180,7 @@ function PhxCard(props: {
         : 'idle';
 
   if (!actualCard) {
+    const emptyDataState = isValidTarget ? 'targetable' : 'empty';
     return (
       <div
         class={`phx-card ${variant === 'battlefield' ? 'bf-cell' : 'hand-card'} empty ${
@@ -186,7 +190,7 @@ function PhxCard(props: {
         }`}
         data-component="CardView"
         data-location={variant}
-        data-state="empty"
+        data-state={emptyDataState}
         data-owner={props.owner}
         data-row={props.row}
         data-col={props.col}
@@ -257,9 +261,17 @@ function PhxCard(props: {
           </div>
         )}
         {props.attackPreview && variant === 'battlefield' && isValidTarget && (
-          <div class={`phx-action-preview-chip preview-${props.attackPreview.toLowerCase()}`}>
-            {props.attackPreview}
-          </div>
+          <>
+            <div class={`phx-action-preview-chip preview-${props.attackPreview.toLowerCase()}`}>
+              {props.attackPreview}
+            </div>
+            <CombatMath
+              provenance={props.attackPreviewProvenance}
+              context="preview"
+              interactive={false}
+              label="PROJECTED MATH"
+            />
+          </>
         )}
       </div>
       <div class="phx-card-layer phx-card-layer-interaction" />
@@ -313,6 +325,24 @@ function getBattlefieldColumnHighlight({
   return undefined;
 }
 
+function getObserverSafeAttackPreview(
+  gs: GameState,
+  state: GameScreenState,
+  action: Extract<Action, { type: 'attack' }> | null,
+): { verdict?: AttackPreviewVerdict; provenance?: CalculationProvenance } {
+  if (!action) return {};
+  const preview = simulateAttack(gs, action);
+  if (state.playerIndex !== 0 && state.playerIndex !== 1) return { verdict: preview.verdict };
+  return {
+    verdict: preview.verdict,
+    provenance: projectCalculationProvenance(
+      preview.resolution.calculationProvenance,
+      { role: 'player', playerIndex: state.playerIndex },
+      preview.resolution.attackerPlayerIndex,
+    ),
+  };
+}
+
 function BattlefieldCell({
   row,
   col,
@@ -353,14 +383,14 @@ function BattlefieldCell({
   const selectedAttackerCol = selectedAttacker?.col;
   const attackAction =
     isTargetable && selectedAttackerCol !== undefined
-      ? state.validActions.find(
+      ? (state.validActions.find(
           (a): a is Extract<Action, { type: 'attack' }> =>
             a.type === 'attack' &&
             a.attackingColumn === selectedAttackerCol &&
             a.defendingColumn === col,
-        )
+        ) ?? null)
       : null;
-  const attackPreview = attackAction ? simulateAttack(gs, attackAction).verdict : null;
+  const attackPreview = getObserverSafeAttackPreview(gs, state, attackAction);
 
   const isReinforcementCol =
     !isOpponent && isReinforcementPhase(gs) && col === gs.reinforcement?.column;
@@ -433,7 +463,8 @@ function BattlefieldCell({
       isValidTarget={isTargetable || isDeployable || isReinforceable}
       isReinforceCol={isReinforcementCol}
       isAttackPlayable={isAttackPlayable}
-      attackPreview={attackPreview ?? undefined}
+      attackPreview={attackPreview.verdict}
+      attackPreviewProvenance={attackPreview.provenance}
       columnHighlight={columnHighlight}
       variant="battlefield"
       owner={isOpponent ? 'p2' : 'p1'}
@@ -653,6 +684,8 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: GameScreenState }) {
     .map((entry) => ({
       key: entry.sequenceNumber,
       label: describePlayByPlay(entry, gs),
+      provenance:
+        entry.details.type === 'attack' ? entry.details.combat.calculationProvenance : undefined,
     }));
 
   return (
@@ -729,6 +762,7 @@ function CombatFeedbackBanner({ gs }: { gs: GameState }) {
   const [combatFeedback, setCombatFeedback] = useState<{
     headline: string;
     causeLabels: string[];
+    provenance?: CalculationProvenance;
   } | null>(null);
   const lastHandledSequenceRef = useRef<number | null>(null);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -754,7 +788,11 @@ function CombatFeedbackBanner({ gs }: { gs: GameState }) {
     if (headline === 'Attack resolved') return;
 
     const causeLabels = latestAttack.details.combat.causeLabels ?? [];
-    setCombatFeedback({ headline, causeLabels });
+    setCombatFeedback({
+      headline,
+      causeLabels,
+      provenance: resolution.calculationProvenance,
+    });
     if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
     feedbackTimerRef.current = setTimeout(() => {
       setCombatFeedback(null);
@@ -775,6 +813,7 @@ function CombatFeedbackBanner({ gs }: { gs: GameState }) {
     <div
       class={`phx-combat-feedback feedback-${combatFeedback.headline.toLowerCase().replace(/\s+/g, '-')}`}
       data-testid="combat-feedback-banner"
+      data-component="NarrationView"
     >
       <div class="phx-combat-feedback-headline">{combatFeedback.headline}</div>
       {combatFeedback.causeLabels.length > 0 && (
@@ -786,6 +825,7 @@ function CombatFeedbackBanner({ gs }: { gs: GameState }) {
           ))}
         </div>
       )}
+      <CombatMath provenance={combatFeedback.provenance} context="live" />
     </div>
   );
 }
@@ -890,6 +930,7 @@ function GameApp({ state }: { state: AppState }) {
   return (
     <div
       class="phx-game-layout"
+      data-component="ArenaView"
       data-testid="game-layout"
       data-phase={gs.phase}
       data-phase-tone={phaseTone}
@@ -900,16 +941,6 @@ function GameApp({ state }: { state: AppState }) {
       <header class="phx-hud-top">
         <div class="phx-match-meta">
           <div style="display: flex; gap: 8px; align-items: center">
-            <button
-              class="btn btn-secondary btn-tiny"
-              style="padding: 2px 8px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 900; background: rgba(255,0,255,0.3); border: 1px solid magenta; font-size: 8px;"
-              onClick={() => {
-                document.body.classList.toggle('debug-ui');
-              }}
-              title="Toggle Dev UI Wireframes"
-            >
-              DEV
-            </button>
             <button
               id="phx-game-help-btn"
               class="btn btn-secondary btn-tiny"
@@ -953,8 +984,8 @@ function GameApp({ state }: { state: AppState }) {
           <PhxStatsHorizontal gs={gs} playerIdx={oppIdx} label="HOSTILE" isOpponent={true} />
           <div
             id="phx-phase-indicator"
-            key={gs.phase}
-            class="phx-phase-announcement"
+            class="phx-phase-indicator"
+            data-component="ActionPromptView"
             data-testid="phase-indicator"
             data-phase={gs.phase}
             data-phase-tone={phaseTone}

@@ -2753,7 +2753,7 @@ select:focus {
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
 }
 
-.phx-phase-announcement {
+.phx-phase-indicator {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 52%), rgba(5, 8, 16, 0.82);
   padding: 0.25rem 0.75rem;
@@ -2774,7 +2774,6 @@ select:focus {
   z-index: 100;
   border-radius: 4px; /* Sharper brutalist edges */
   backdrop-filter: blur(12px) saturate(1.8);
-  animation: phase-pulse 0.7s cubic-bezier(0.15, 0.85, 0.35, 1.1) both;
   text-shadow: 0 0 20px currentColor;
 }
 
@@ -2821,26 +2820,26 @@ select:focus {
   }
 }
 
-.phx-phase-announcement[data-phase-tone='deploy'] {
+.phx-phase-indicator[data-phase-tone='deploy'] {
   color: #8dd2ff;
 }
 
-.phx-phase-announcement[data-phase-tone='attack'] {
+.phx-phase-indicator[data-phase-tone='attack'] {
   color: #ff7d98;
 }
 
-.phx-phase-announcement[data-phase-tone='recover'] {
+.phx-phase-indicator[data-phase-tone='recover'] {
   color: #89e3c7;
 }
 
 @media (min-width: 900px) {
-  .phx-phase-announcement {
+  .phx-phase-indicator {
     max-width: 40vw;
   }
 }
 
 @media (min-width: 1200px) {
-  .phx-phase-announcement {
+  .phx-phase-indicator {
     padding: 0.5rem 2.5rem;
     font-size: 0.9rem;
     letter-spacing: 0.35em;
@@ -3560,6 +3559,139 @@ select:focus {
 .phx-combat-feedback.feedback-victory {
   color: var(--gold-bright);
   border-color: rgba(240, 192, 64, 0.28);
+}
+
+/* ── Authoritative combat mathematics ───────────────── */
+
+.combat-math {
+  width: min(100%, 34rem);
+  padding: 0.45rem 0.55rem;
+  color: var(--text);
+  background: rgba(3, 7, 14, 0.88);
+  border: 1px solid rgba(240, 192, 64, 0.24);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+.combat-math-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.combat-math-kicker {
+  color: var(--gold-bright);
+  font-size: 0.55rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.combat-math-modes {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.combat-math-modes button {
+  padding: 0.15rem 0.3rem;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font: 700 0.48rem/1 var(--font-mono);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.combat-math-modes button.is-active {
+  color: #05080e;
+  background: var(--gold-bright);
+  border-color: var(--gold-bright);
+}
+
+.combat-math-equations {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.combat-math-equation {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: clamp(0.6rem, 1.5vw, 0.78rem);
+  line-height: 1.35;
+}
+
+.combat-math-equation small {
+  flex: 0 0 auto;
+  color: var(--text-dim);
+  font-size: 0.48rem;
+}
+
+.combat-math-cinematic .combat-math-equation {
+  color: var(--gold-bright);
+  font-size: clamp(0.72rem, 2vw, 1rem);
+  text-shadow: 0 0 14px rgba(240, 192, 64, 0.4);
+}
+
+.combat-math-preview {
+  position: absolute;
+  left: 50%;
+  bottom: -0.4rem;
+  z-index: 8;
+  width: max-content;
+  max-width: min(18rem, 70vw);
+  transform: translate(-50%, 100%);
+  pointer-events: none;
+}
+
+.combat-math-preview .combat-math-header {
+  margin-bottom: 0.2rem;
+}
+
+.combat-math-preview .combat-math-equation {
+  white-space: nowrap;
+}
+
+.combat-math-log {
+  margin-top: 0.45rem;
+}
+
+.combat-math-live {
+  margin-top: 0.25rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 720px) {
+  .combat-math-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .combat-math-modes {
+    width: 100%;
+  }
+
+  .combat-math-modes button {
+    flex: 1;
+    min-height: 1.75rem;
+  }
+
+  .combat-math-equation {
+    overflow-wrap: anywhere;
+  }
 }
 
 .phx-card.playable,

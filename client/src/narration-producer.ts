@@ -8,9 +8,11 @@ import type {
   Suit,
 } from '@phalanxduel/shared';
 import { readCombatResolution } from '@phalanxduel/shared';
+import { isGameOver } from '@phalanxduel/shared';
 import { cardLabel } from './cards';
 import type { NarrationBus, NarrationEntry } from './narration-bus';
 import type { CardType } from './narration-bus';
+import { buildCombatExplanation, explanationLinesForMode } from './combat-explanation';
 
 // ── Timing Constants ─────────────────────────────
 
@@ -20,6 +22,8 @@ const DELAY_OVERFLOW = 600;
 const DELAY_DEPLOY = 600;
 const DELAY_BONUS = 500;
 const DELAY_PHASE = 400;
+const DELAY_CALCULATION = 900;
+const DELAY_TERMINAL = 1600;
 
 // ── Card Classification ──────────────────────────
 
@@ -74,14 +78,7 @@ export class NarrationProducer {
 
     const entries: NarrationEntry[] = [];
 
-    // Phase change detection
-    if (postState.phase !== this.lastPhase) {
-      entries.push({
-        event: { type: 'phase-change', phase: postState.phase },
-        delayMs: DELAY_PHASE,
-      });
-      this.lastPhase = postState.phase;
-    }
+    const phaseChanged = postState.phase !== this.lastPhase;
 
     // Diff transaction log
     const currentLogCount = postState.transactionLog?.length ?? 0;
@@ -94,6 +91,28 @@ export class NarrationProducer {
         entries.push(...produced);
       }
       this.lastLogCount = currentLogCount;
+    }
+
+    // Presentation order is causal: resolve the transaction first, then
+    // announce its resulting phase or terminal verdict.
+    if (phaseChanged) {
+      if (isGameOver(postState) && postState.outcome) {
+        entries.push({
+          event: {
+            type: 'terminal',
+            winnerIndex: postState.outcome.winnerIndex,
+            turnNumber: postState.outcome.turnNumber,
+            victoryType: postState.outcome.victoryType,
+          },
+          delayMs: DELAY_TERMINAL,
+        });
+      } else {
+        entries.push({
+          event: { type: 'phase-change', phase: postState.phase },
+          delayMs: DELAY_PHASE,
+        });
+      }
+      this.lastPhase = postState.phase;
     }
 
     if (entries.length > 0) {
@@ -310,6 +329,22 @@ export class NarrationProducer {
         },
         delayMs: DELAY_BONUS,
       });
+    }
+
+    const explanation = buildCombatExplanation(resolution.calculationProvenance);
+    if (explanation) {
+      for (const line of explanationLinesForMode(explanation, 'tactical')) {
+        entries.push({
+          event: {
+            type: 'calculation',
+            sequence: line.sequence,
+            ruleId: line.ruleId,
+            equation: line.expression,
+            spoken: line.spoken,
+          },
+          delayMs: DELAY_CALCULATION,
+        });
+      }
     }
 
     return entries;

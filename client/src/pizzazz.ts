@@ -1,6 +1,6 @@
 import type { PhalanxTurnResult, CombatLogEntry } from '@phalanxduel/shared';
-import { isGameOver } from '@phalanxduel/shared';
 import { getState } from './state';
+import type { NarrationBus, NarrationEvent } from './narration-bus';
 
 export interface PizzazzTrigger {
   type:
@@ -37,6 +37,7 @@ export class PizzazzEngine {
   private activeAnimations = 0;
   private readonly triggerLog: PizzazzTrigger[] = [];
   private triggerSeq = 0;
+  private narrationUnsub: (() => void) | null = null;
   private static readonly TRIGGER_LOG_CAP = 100;
 
   private static readonly BONUS_SUIT: Readonly<
@@ -55,6 +56,18 @@ export class PizzazzEngine {
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.syncIdleAttribute();
     window.__pizzazz = this;
+  }
+
+  start(bus: NarrationBus): void {
+    this.narrationUnsub?.();
+    this.narrationUnsub = bus.subscribe((event) => {
+      if (event.type === 'terminal') this.onTerminal(event);
+    });
+  }
+
+  destroy(): void {
+    this.narrationUnsub?.();
+    this.narrationUnsub = null;
   }
 
   /** Returns a snapshot of recently-triggered animation events (newest last). */
@@ -88,7 +101,7 @@ export class PizzazzEngine {
 
   /** Main entry: receives the full PhalanxTurnResult from dispatch. */
   onTurnResult(result: PhalanxTurnResult): void {
-    const { preState, postState } = result;
+    const { postState } = result;
 
     // Seed tracking counters on first arrival to avoid replaying history
     if (!this.initialized) {
@@ -119,12 +132,6 @@ export class PizzazzEngine {
         }
       }
       this.lastLogCount = currentLogCount;
-    }
-
-    // Game over detection
-    if (isGameOver(postState) && !isGameOver(preState)) {
-      this.recordTrigger('gameOver');
-      this.onGameOver();
     }
   }
 
@@ -403,24 +410,16 @@ export class PizzazzEngine {
 
   // ── Game Over ────────────────────────────────────
 
-  private onGameOver(): void {
+  private onTerminal(event: Extract<NarrationEvent, { type: 'terminal' }>): void {
     const state = getState();
     if (state.screen !== 'game' && state.screen !== 'gameOver') return;
-
-    const gs = state.gameState;
-    const outcome = gs?.outcome;
-    if (!outcome) return;
-
+    this.recordTrigger('gameOver');
     const playerIndex = state.playerIndex;
-    const isDraw = outcome.winnerIndex === null;
-    const isWin = playerIndex !== null && outcome.winnerIndex === playerIndex;
+    const isDraw = event.winnerIndex === null;
+    const isWin = playerIndex !== null && event.winnerIndex === playerIndex;
     const text = isDraw ? 'DRAW' : isWin ? 'VICTORY' : 'DEFEAT';
     const variant = isDraw ? 'draw' : isWin ? 'victory' : 'defeat';
-
-    this.trackAnimation(1800 + 1600); // delay + splash duration
-    setTimeout(() => {
-      this.showSplash(text, variant);
-    }, 1800);
+    this.showSplash(text, variant);
   }
 
   // ── Helpers ──────────────────────────────────────

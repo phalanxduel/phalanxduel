@@ -1,5 +1,4 @@
 import type { Suit } from '@phalanxduel/shared';
-import { isGameOver } from '@phalanxduel/shared';
 import type { NarrationBus, NarrationEvent } from './narration-bus';
 import type { CardType } from './narration-bus';
 import { suitColor } from './cards';
@@ -16,7 +15,6 @@ const COLUMN_LABELS = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
 export class NarrationOverlay {
   private container: HTMLElement | null = null;
   private fadeTimer: ReturnType<typeof setTimeout> | null = null;
-  private gameOverTimer: ReturnType<typeof setTimeout> | null = null;
   private unsub: (() => void) | null = null;
   private reducedMotion: boolean;
 
@@ -36,9 +34,9 @@ export class NarrationOverlay {
   }
 
   private onEvent(event: NarrationEvent): void {
-    // On game over, set a hard deadline to clear before the Pizzazz splash (1800ms)
-    if (event.type === 'phase-change' && isGameOver(event)) {
-      this.scheduleGameOverClear();
+    if (event.type === 'terminal') {
+      this.clearContainer();
+      return;
     }
 
     // Phase changes clear existing narration and show as a standalone header
@@ -131,6 +129,10 @@ export class NarrationOverlay {
         return `${event.player} passes`;
       case 'bonus':
         return event.message;
+      case 'calculation':
+        return event.equation;
+      case 'terminal':
+        return null;
       case 'phase-change':
         return null; // Handled by showPhaseAnnouncement
       case 'combo':
@@ -146,6 +148,7 @@ export class NarrationOverlay {
     if (event.type === 'lp-damage') return `${base} nr-lp-hit`;
     if (event.type === 'bonus') return `${base} nr-bonus`;
     if (event.type === 'combo') return `${base} nr-overlay-combo`;
+    if (event.type === 'calculation') return `${base} nr-overlay-calculation`;
     if (event.type === 'phase-change') return `${base} nr-overlay-phase`;
     return base;
   }
@@ -170,27 +173,10 @@ export class NarrationOverlay {
     return this.container;
   }
 
-  private scheduleGameOverClear(): void {
-    if (this.gameOverTimer) return;
-    // Fade out at 1200ms, fully cleared by 1500ms — before Pizzazz splash at 1800ms
-    this.gameOverTimer = setTimeout(() => {
-      if (this.container) {
-        this.container.classList.add('nr-fade-out');
-        setTimeout(() => {
-          this.clearContainer();
-        }, 300);
-      }
-    }, 1200);
-  }
-
   private clearContainer(): void {
     if (this.fadeTimer) {
       clearTimeout(this.fadeTimer);
       this.fadeTimer = null;
-    }
-    if (this.gameOverTimer) {
-      clearTimeout(this.gameOverTimer);
-      this.gameOverTimer = null;
     }
     this.container?.remove();
     this.container = null;

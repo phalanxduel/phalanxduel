@@ -77,7 +77,7 @@ export function NarrationTicker() {
     }
   }, [lines]);
 
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(() => window.innerWidth >= 1200);
   const [isMuted, setIsMuted] = useState(!window.__commentary?.isEnabled());
   const [isMusicMuted, setIsMusicMuted] = useState(!window.__musicEngine?.getIsEnabled());
 
@@ -171,6 +171,10 @@ function formatEvent(event: NarrationEvent): string | null {
       return `${event.player} passes`;
     case 'bonus':
       return event.message;
+    case 'calculation':
+      return `∴ ${event.equation} [${event.ruleId}]`;
+    case 'terminal':
+      return `── MATCH COMPLETE · TURN ${event.turnNumber} ──`;
     case 'phase-change': {
       const label = PHASE_LABELS[event.phase] ?? event.phase;
       return `── ${label} ──`;
@@ -188,6 +192,8 @@ function getLineClass(event: NarrationEvent): string {
   if (event.type === 'lp-damage') return `${base} nr-ticker-lp`;
   if (event.type === 'bonus') return `${base} nr-ticker-bonus`;
   if (event.type === 'combo') return `${base} nr-ticker-combo`;
+  if (event.type === 'calculation') return `${base} nr-ticker-calculation`;
+  if (event.type === 'terminal') return `${base} nr-ticker-terminal`;
   if (event.type === 'phase-change') return `${base} nr-ticker-phase`;
   return base;
 }

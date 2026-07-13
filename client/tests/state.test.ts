@@ -139,6 +139,15 @@ describe('state', () => {
   });
 
   describe('dispatch gameState', () => {
+    beforeEach(() => {
+      dispatch({
+        type: 'matchJoined',
+        matchId: 'm1',
+        playerId: 'p1',
+        playerIndex: 0,
+      } as ServerMessage);
+    });
+
     it('updates game screen for non-gameOver phase', () => {
       const gs = makeGameState('AttackPhase');
       dispatch({
@@ -163,7 +172,7 @@ describe('state', () => {
       expect(s.selectedDeployCard).toBeNull();
     });
 
-    it('transitions to gameOver screen for gameOver phase', () => {
+    it('opens a rejoined completed match directly on the game-over screen', () => {
       const gs = makeGameState('gameOver');
       dispatch({
         type: 'gameState',
@@ -178,6 +187,28 @@ describe('state', () => {
         },
       } as unknown as ServerMessage);
 
+      expect(getState().screen).toBe('gameOver');
+    });
+
+    it('holds the resolved board until the terminal presentation boundary', async () => {
+      const { completeTerminalPresentation } = await import('../src/state');
+      const preState = makeGameState('AttackPhase');
+      const postState = makeGameState('gameOver');
+      dispatch({
+        type: 'gameState',
+        matchId: 'm1',
+        result: {
+          postState,
+          preState,
+          matchId: 'm1',
+          playerId: 'p1',
+          action: null,
+          events: [],
+        },
+      } as unknown as ServerMessage);
+
+      expect(getState().screen).toBe('game');
+      completeTerminalPresentation();
       expect(getState().screen).toBe('gameOver');
     });
 
@@ -200,6 +231,27 @@ describe('state', () => {
       } as unknown as ServerMessage);
 
       expect(cb).toHaveBeenCalledWith(result);
+    });
+
+    it('ignores a late game-state snapshot after leaving its match', () => {
+      resetToLobby();
+      const gs = makeGameState('gameOver');
+
+      dispatch({
+        type: 'gameState',
+        matchId: 'finished-match',
+        result: {
+          postState: gs,
+          preState: makeGameState('AttackPhase'),
+          matchId: 'finished-match',
+          playerId: 'p1',
+          action: null,
+          events: [],
+        },
+      } as unknown as ServerMessage);
+
+      expect(getState().screen).toBe('lobby');
+      expect(getState().gameState).toBeNull();
     });
   });
 

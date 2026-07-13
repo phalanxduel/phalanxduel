@@ -120,6 +120,15 @@ export class CommentaryEngine {
       case 'destroyed':
         this.speak('Unit destroyed.');
         break;
+
+      case 'calculation':
+        this.speak(event.spoken, 0.95, 0.85);
+        break;
+
+      case 'terminal':
+        this.synth.cancel();
+        this.speak(`Match complete on turn ${event.turnNumber}.`);
+        break;
     }
   }
 

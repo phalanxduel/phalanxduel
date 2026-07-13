@@ -5,6 +5,7 @@ import { resetToLobby } from './state';
 import { CopyButton } from './components/CopyButton';
 import { selectTurningPoint } from '@phalanxduel/shared';
 import { formatShareText } from './ux-derivations';
+import { CombatMath } from './components/CombatMath';
 
 type GameOverScreenState = BaseState & Extract<ScreenState, { screen: 'gameOver' }>;
 
@@ -45,6 +46,17 @@ function LpSummary({ state, gs }: { state: GameOverScreenState; gs: GameState })
 
 function TurningPointCard({ gs }: { gs: GameState }) {
   const turningPoint = selectTurningPoint(gs);
+  const turningPointAttack = turningPoint
+    ? gs.transactionLog?.find(
+        (entry) =>
+          entry.details.type === 'attack' &&
+          entry.details.combat.turnNumber === turningPoint.turnNumber,
+      )
+    : undefined;
+  const provenance =
+    turningPointAttack?.details.type === 'attack'
+      ? turningPointAttack.details.combat.calculationProvenance
+      : undefined;
 
   if (!turningPoint) {
     return (
@@ -65,6 +77,7 @@ function TurningPointCard({ gs }: { gs: GameState }) {
         <div class="turning-point-label">WHY</div>
         <div>{turningPoint.why}</div>
       </div>
+      <CombatMath provenance={provenance} context="postmatch" label="PROOF OF DAMAGE" />
       <div class="turning-point-block">
         <div class="turning-point-label">RESULT</div>
         <div>{turningPoint.result}</div>
@@ -150,7 +163,7 @@ function GameOverApp({ state }: { state: AppState }) {
   }
 
   return (
-    <div class="game-over" data-testid="game-over">
+    <div class="game-over" data-testid="game-over" data-component="GameOverView">
       <div class="game-over-panel">
         <h1 class="title">Engagement Terminated</h1>
         <h2 class={`result ${resultClass}`} data-testid="game-over-result">

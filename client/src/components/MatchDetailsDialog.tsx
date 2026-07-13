@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'preact/hooks';
 import type { GameState, TransactionLogEntry } from '@phalanxduel/shared';
+import { CombatMath } from './CombatMath';
 
 interface Props {
   matchId: string;
@@ -239,6 +240,13 @@ export function MatchDetailsDialog({ matchId, onClose, token }: Props) {
                       }}
                     >
                       <span style={{ color }}>{text}</span>
+                      {tx.details.type === 'attack' && (
+                        <CombatMath
+                          provenance={tx.details.combat.calculationProvenance}
+                          context="replay"
+                          label="RESOLUTION PROOF"
+                        />
+                      )}
                     </div>
                   );
                 })}
