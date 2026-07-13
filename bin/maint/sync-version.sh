@@ -3,6 +3,14 @@ set -euo pipefail
 
 VERSION_FILE="shared/package.json"
 CHANGELOG_FILE="CHANGELOG.md"
+PACKAGE_VERSION_FILES=(
+  "package.json"
+  "shared/package.json"
+  "engine/package.json"
+  "server/package.json"
+  "client/package.json"
+  "admin/package.json"
+)
 
 usage() {
   cat <<'EOF'
@@ -60,6 +68,10 @@ insert_changelog_header() {
 " "$CHANGELOG_FILE"
 }
 
+if [[ "${1:-}" == "--" ]]; then
+  shift
+fi
+
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   usage
   exit 0
@@ -109,8 +121,9 @@ if [[ "$FILE_VERSION" == "$NEW_VERSION" ]]; then
   exit 0
 fi
 
-find . -name "package.json" -not -path "*/node_modules/*" \
-  -exec sed -i '' "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/g" {} +
+for package_file in "${PACKAGE_VERSION_FILES[@]}"; do
+  sed -i '' "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/g" "$package_file"
+done
 
 sed -i '' "s/SCHEMA_VERSION = '.*'/SCHEMA_VERSION = '$NEW_VERSION'/g" shared/src/schema.ts
 

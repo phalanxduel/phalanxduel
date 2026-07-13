@@ -1,15 +1,22 @@
 # Changelog
 
-## [1.3.0] - 2026-05-08
+## [1.4.0] - 2026-07-13
 
 ### Added
 - **Advanced MCTS Bot Strategy**: Implemented Monte Carlo Tree Search (MCTS) for superior tactical play. The new bot uses heuristic state evaluation and deterministic search to achieve significantly higher win rates (>70% vs existing heuristic bots).
 - **Bot Battle Benchmark**: New QA utility `bin/qa/bot-battle.ts` for automated performance verification of different bot strategies.
+- **Scientific Gameplay Assurance**: Added an independent combat reference model, exhaustive boundary verification, match-liveness proofs, replay-integrity checks, and observer-safe knowledge assertions.
+- **Authoritative Combat Mathematics**: Exposed engine-blessed calculations and provenance to narration, event displays, previews, and post-battle explanations.
+
+### Changed
+- **Corrected Combat Semantics**: Versioned the rules and public schema at `1.4.0`, with cumulative damage and direct-path behavior aligned across the engine, documentation, replay, and client projections.
+- **Presentation Choreography**: Tightened narration, phase, combat-effect, and terminal transitions while preserving deterministic semantic cue order and reduced-motion support.
 
 ### Fixed
 - **Visual Regression Stability**: Resolved overlay race conditions in Playwright tests by programmatically suppressing `WelcomeDialog` during visual QA runs.
 - **Migration Robustness**: Implemented baseline re-synchronization in `server/src/db/migrate.ts` to prevent duplicate table creation errors in shared test environments.
 - **ESM Interop**: Standardized named imports for `@phalanxduel/shared/hash` to resolve runtime module resolution failures.
+- **Combat Feedback Layout Stability**: Moved the high-impact damage-combo banner into a non-interactive presentation layer so it no longer compresses or shifts the battlefield on desktop or mobile.
 All notable changes to Phalanx Duel will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
