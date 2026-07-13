@@ -1008,6 +1008,88 @@ export const CombatBonusTypeSchema = z
     'Combat bonus applied during attack resolution. Maps to suit boundary effects (§9) and destruction eligibility rules (§10-11).',
   );
 
+/**
+ * Machine-verifiable arithmetic provenance for competitive v3.0 combat.
+ *
+ * Every input names its origin. State and constant inputs terminate a chain;
+ * step inputs must reference an earlier result with exactly the same value.
+ * This makes both arithmetic closure and cross-step continuity independently
+ * checkable without re-running gameplay logic.
+ */
+export const CalculationInputSourceSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('state') }),
+  z.object({ kind: z.literal('constant') }),
+  z.object({ kind: z.literal('step'), step: z.number().int().min(0) }),
+]);
+
+export const CalculationInputSchema = z.object({
+  name: z.string().min(1),
+  value: z.number().int(),
+  source: CalculationInputSourceSchema,
+});
+
+export const CalculationOperatorSchema = z.enum(['assign', 'min', 'subtract', 'multiply', 'clamp']);
+
+export const CalculationTargetSchema = z.enum([
+  'attack',
+  'frontCard',
+  'frontToBackBoundary',
+  'backCard',
+  'cardToPlayerBoundary',
+  'playerLp',
+]);
+
+export const CalculationQuantitySchema = z.enum([
+  'baseDamage',
+  'absorbedDamage',
+  'candidateHp',
+  'remainingHp',
+  'carryover',
+  'shieldAbsorbed',
+  'appliedDamage',
+  'candidateLp',
+  'remainingLp',
+]);
+
+export const CalculationVisibilitySchema = z.enum(['public', 'attacker', 'defender', 'internal']);
+
+export const CalculationStepSchema = z.object({
+  sequence: z.number().int().min(0),
+  ruleId: z.string().regex(/^PD-RULE-\d{3}$/),
+  operator: CalculationOperatorSchema,
+  inputs: z.array(CalculationInputSchema).min(1),
+  result: z.object({ name: z.string().min(1), value: z.number().int() }),
+  target: CalculationTargetSchema,
+  quantity: CalculationQuantitySchema,
+  visibility: CalculationVisibilitySchema,
+});
+
+export const CalculationProvenanceSchema = z
+  .object({
+    schemaVersion: z.literal('1.0'),
+    steps: z.array(CalculationStepSchema).min(1),
+  })
+  .superRefine((provenance, ctx) => {
+    provenance.steps.forEach((step, index) => {
+      if (step.sequence !== index) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['steps', index, 'sequence'],
+          message: `calculation sequence must equal its zero-based position ${index}`,
+        });
+      }
+      step.inputs.forEach((input, inputIndex) => {
+        if (input.source.kind === 'step' && input.source.step >= index) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['steps', index, 'inputs', inputIndex, 'source', 'step'],
+            message: 'calculation inputs may reference only earlier steps',
+          });
+        }
+      });
+    });
+  });
+
 export const CombatLogStepSchema = z.object({
   target: z.enum(['frontCard', 'backCard', 'playerLp']),
   card: CardSchema.optional(),
@@ -1033,8 +1115,54 @@ export const CombatLogEntrySchema = z.object({
   baseDamage: z.number().int().min(0),
   totalLpDamage: z.number().int().min(0),
   steps: z.array(CombatLogStepSchema),
+  calculationProvenance: CalculationProvenanceSchema.optional().describe(
+    'Authoritative ordered arithmetic witness for v3.0 combat. Absent only on historical v1.0/v2.0 entries.',
+  ),
   causeLabels: z.array(z.string()).optional(),
   comboCount: z.number().int().min(0).optional(),
+});
+
+export const ResolutionModifierSchema = z.object({
+  kind: CombatBonusTypeSchema,
+  appliedTo: z.enum(['frontCard', 'backCard', 'playerLp']),
+  amount: z.number().int().optional(),
+});
+
+export const ResolutionOutcomeSchema = z.object({
+  defenderFrontDestroyed: z.boolean(),
+  defenderBackDestroyed: z.boolean(),
+  breakthroughDamage: z.number().int().min(0),
+  playerDamaged: z.boolean(),
+  cardAdvanced: z.boolean(),
+  reinforcementRequired: z.boolean(),
+  victoryTriggered: z.boolean(),
+});
+
+export const ResolutionCueSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('flashAttacker') }),
+  z.object({ kind: z.literal('flashColumn'), column: z.number().int().min(0) }),
+  z.object({ kind: z.literal('breakthroughBanner') }),
+  z.object({ kind: z.literal('shieldAbsorbed'), suit: z.enum(['diamonds', 'hearts']) }),
+  z.object({ kind: z.literal('columnCollapsed'), column: z.number().int().min(0) }),
+  z.object({ kind: z.literal('reinforcePrompt'), column: z.number().int().min(0) }),
+]);
+
+export const CombatResolutionContextSchema = z.object({
+  type: z.literal('attack_resolved'),
+  turnNumber: z.number().int().min(0),
+  attackerPlayerIndex: z.number().int().min(0).max(1),
+  defenderColumn: z.number().int().min(0).max(11),
+  mode: z.enum(['classic', 'cumulative']).optional(),
+  baseAttack: z.number().int().min(0),
+  modifiers: z.array(ResolutionModifierSchema),
+  outcome: ResolutionOutcomeSchema,
+  explanation: z.object({
+    headline: z.string(),
+    details: z.array(z.string()),
+    causeTags: z.array(z.string()),
+  }),
+  resolutionCues: z.array(ResolutionCueSchema),
+  calculationProvenance: CalculationProvenanceSchema.optional(),
 });
 
 export const TransactionDetailSchema = z.discriminatedUnion('type', [
@@ -1048,6 +1176,9 @@ export const TransactionDetailSchema = z.discriminatedUnion('type', [
     combat: CombatLogEntrySchema,
     reinforcementTriggered: z.boolean(),
     victoryTriggered: z.boolean(),
+    resolution: CombatResolutionContextSchema.optional().describe(
+      'Stored authoritative v3.0 explanation. Historical entries are derived through the compatibility accessor.',
+    ),
   }),
   z.object({ type: z.literal('pass') }),
   z.object({

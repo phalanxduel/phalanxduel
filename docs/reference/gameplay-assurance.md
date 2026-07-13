@@ -85,7 +85,7 @@ example support; it is not exhaustively proved.
 
 ## Stable Rule Identifiers
 
-Normative claims use identifiers `PD-RULE-001` through `PD-RULE-063`. The
+Normative claims use identifiers `PD-RULE-001` through `PD-RULE-066`. The
 machine-readable registry is `docs/gameplay/rule-evidence.json`. Identifiers are
 never recycled. A changed claim retains its identifier only when its meaning is
 compatible; otherwise a new identifier and rules-version decision are required.
@@ -93,6 +93,21 @@ compatible; otherwise a new identifier and rules-version decision are required.
 The generated view at `docs/quality/gameplay-rule-evidence.md` is disposable.
 Edit the JSON registry or normative rules, then regenerate it. Archived audit
 reports are historical evidence and never determine current status.
+
+## Calculation Provenance
+
+Competitive v3.0 combat records a schema-versioned arithmetic witness in each
+attack transaction. The witness is not prose and is not reconstructed by the
+client: it is an ordered sequence of integer operators, named operands with
+explicit origins, results, target quantities, visibility labels, and stable
+rule identifiers. `verifyCalculationProvenance` independently re-evaluates
+every operator and verifies exact prior-step continuity. The authoritative
+engine performs that verification before committing the transaction.
+
+The stored combat resolution carries the same witness through live events,
+preview, and replay. Historical v1.0/v2.0 transactions keep their original
+shape and use an explicit compatibility derivation. Event-log fingerprints
+commit to the complete event payload, including calculation provenance.
 
 ## Gap Lifecycle
 

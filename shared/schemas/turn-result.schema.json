@@ -1890,6 +1890,186 @@
                               "additionalProperties": false
                             }
                           },
+                          "calculationProvenance": {
+                            "description": "Authoritative ordered arithmetic witness for v3.0 combat. Absent only on historical v1.0/v2.0 entries.",
+                            "type": "object",
+                            "properties": {
+                              "schemaVersion": {
+                                "type": "string",
+                                "const": "1.0"
+                              },
+                              "steps": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sequence": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "ruleId": {
+                                      "type": "string",
+                                      "pattern": "^PD-RULE-\\d{3}$"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "assign",
+                                        "min",
+                                        "subtract",
+                                        "multiply",
+                                        "clamp"
+                                      ]
+                                    },
+                                    "inputs": {
+                                      "minItems": 1,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "name": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "value": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "source": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "state"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "constant"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "step"
+                                                  },
+                                                  "step": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 9007199254740991
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "step"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "name",
+                                          "value",
+                                          "source"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "result": {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "value": {
+                                          "type": "integer",
+                                          "minimum": -9007199254740991,
+                                          "maximum": 9007199254740991
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "value"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "target": {
+                                      "type": "string",
+                                      "enum": [
+                                        "attack",
+                                        "frontCard",
+                                        "frontToBackBoundary",
+                                        "backCard",
+                                        "cardToPlayerBoundary",
+                                        "playerLp"
+                                      ]
+                                    },
+                                    "quantity": {
+                                      "type": "string",
+                                      "enum": [
+                                        "baseDamage",
+                                        "absorbedDamage",
+                                        "candidateHp",
+                                        "remainingHp",
+                                        "carryover",
+                                        "shieldAbsorbed",
+                                        "appliedDamage",
+                                        "candidateLp",
+                                        "remainingLp"
+                                      ]
+                                    },
+                                    "visibility": {
+                                      "type": "string",
+                                      "enum": [
+                                        "public",
+                                        "attacker",
+                                        "defender",
+                                        "internal"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "sequence",
+                                    "ruleId",
+                                    "operator",
+                                    "inputs",
+                                    "result",
+                                    "target",
+                                    "quantity",
+                                    "visibility"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "schemaVersion",
+                              "steps"
+                            ],
+                            "additionalProperties": false
+                          },
                           "causeLabels": {
                             "type": "array",
                             "items": {
@@ -1918,6 +2098,449 @@
                       },
                       "victoryTriggered": {
                         "type": "boolean"
+                      },
+                      "resolution": {
+                        "description": "Stored authoritative v3.0 explanation. Historical entries are derived through the compatibility accessor.",
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "attack_resolved"
+                          },
+                          "turnNumber": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "attackerPlayerIndex": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "defenderColumn": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          },
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "classic",
+                              "cumulative"
+                            ]
+                          },
+                          "baseAttack": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "modifiers": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "aceInvulnerable",
+                                    "aceVsAce",
+                                    "diamondDoubleDefense",
+                                    "diamondDeathShield",
+                                    "clubDoubleOverflow",
+                                    "spadeDoubleLp",
+                                    "heartDeathShield",
+                                    "faceCardIneligible"
+                                  ],
+                                  "description": "Combat bonus applied during attack resolution. Maps to suit boundary effects (§9) and destruction eligibility rules (§10-11)."
+                                },
+                                "appliedTo": {
+                                  "type": "string",
+                                  "enum": [
+                                    "frontCard",
+                                    "backCard",
+                                    "playerLp"
+                                  ]
+                                },
+                                "amount": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "appliedTo"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "outcome": {
+                            "type": "object",
+                            "properties": {
+                              "defenderFrontDestroyed": {
+                                "type": "boolean"
+                              },
+                              "defenderBackDestroyed": {
+                                "type": "boolean"
+                              },
+                              "breakthroughDamage": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "playerDamaged": {
+                                "type": "boolean"
+                              },
+                              "cardAdvanced": {
+                                "type": "boolean"
+                              },
+                              "reinforcementRequired": {
+                                "type": "boolean"
+                              },
+                              "victoryTriggered": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "defenderFrontDestroyed",
+                              "defenderBackDestroyed",
+                              "breakthroughDamage",
+                              "playerDamaged",
+                              "cardAdvanced",
+                              "reinforcementRequired",
+                              "victoryTriggered"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "explanation": {
+                            "type": "object",
+                            "properties": {
+                              "headline": {
+                                "type": "string"
+                              },
+                              "details": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "causeTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "required": [
+                              "headline",
+                              "details",
+                              "causeTags"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "resolutionCues": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "flashAttacker"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "flashColumn"
+                                    },
+                                    "column": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "column"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "breakthroughBanner"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "shieldAbsorbed"
+                                    },
+                                    "suit": {
+                                      "type": "string",
+                                      "enum": [
+                                        "diamonds",
+                                        "hearts"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "suit"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "columnCollapsed"
+                                    },
+                                    "column": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "column"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "reinforcePrompt"
+                                    },
+                                    "column": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "column"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            }
+                          },
+                          "calculationProvenance": {
+                            "type": "object",
+                            "properties": {
+                              "schemaVersion": {
+                                "type": "string",
+                                "const": "1.0"
+                              },
+                              "steps": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sequence": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "ruleId": {
+                                      "type": "string",
+                                      "pattern": "^PD-RULE-\\d{3}$"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "assign",
+                                        "min",
+                                        "subtract",
+                                        "multiply",
+                                        "clamp"
+                                      ]
+                                    },
+                                    "inputs": {
+                                      "minItems": 1,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "name": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "value": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "source": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "state"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "constant"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "step"
+                                                  },
+                                                  "step": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 9007199254740991
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "step"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "name",
+                                          "value",
+                                          "source"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "result": {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "value": {
+                                          "type": "integer",
+                                          "minimum": -9007199254740991,
+                                          "maximum": 9007199254740991
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "value"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "target": {
+                                      "type": "string",
+                                      "enum": [
+                                        "attack",
+                                        "frontCard",
+                                        "frontToBackBoundary",
+                                        "backCard",
+                                        "cardToPlayerBoundary",
+                                        "playerLp"
+                                      ]
+                                    },
+                                    "quantity": {
+                                      "type": "string",
+                                      "enum": [
+                                        "baseDamage",
+                                        "absorbedDamage",
+                                        "candidateHp",
+                                        "remainingHp",
+                                        "carryover",
+                                        "shieldAbsorbed",
+                                        "appliedDamage",
+                                        "candidateLp",
+                                        "remainingLp"
+                                      ]
+                                    },
+                                    "visibility": {
+                                      "type": "string",
+                                      "enum": [
+                                        "public",
+                                        "attacker",
+                                        "defender",
+                                        "internal"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "sequence",
+                                    "ruleId",
+                                    "operator",
+                                    "inputs",
+                                    "result",
+                                    "target",
+                                    "quantity",
+                                    "visibility"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "schemaVersion",
+                              "steps"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "turnNumber",
+                          "attackerPlayerIndex",
+                          "defenderColumn",
+                          "baseAttack",
+                          "modifiers",
+                          "outcome",
+                          "explanation",
+                          "resolutionCues"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
@@ -4033,6 +4656,186 @@
                               "additionalProperties": false
                             }
                           },
+                          "calculationProvenance": {
+                            "description": "Authoritative ordered arithmetic witness for v3.0 combat. Absent only on historical v1.0/v2.0 entries.",
+                            "type": "object",
+                            "properties": {
+                              "schemaVersion": {
+                                "type": "string",
+                                "const": "1.0"
+                              },
+                              "steps": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sequence": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "ruleId": {
+                                      "type": "string",
+                                      "pattern": "^PD-RULE-\\d{3}$"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "assign",
+                                        "min",
+                                        "subtract",
+                                        "multiply",
+                                        "clamp"
+                                      ]
+                                    },
+                                    "inputs": {
+                                      "minItems": 1,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "name": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "value": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "source": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "state"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "constant"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "step"
+                                                  },
+                                                  "step": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 9007199254740991
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "step"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "name",
+                                          "value",
+                                          "source"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "result": {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "value": {
+                                          "type": "integer",
+                                          "minimum": -9007199254740991,
+                                          "maximum": 9007199254740991
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "value"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "target": {
+                                      "type": "string",
+                                      "enum": [
+                                        "attack",
+                                        "frontCard",
+                                        "frontToBackBoundary",
+                                        "backCard",
+                                        "cardToPlayerBoundary",
+                                        "playerLp"
+                                      ]
+                                    },
+                                    "quantity": {
+                                      "type": "string",
+                                      "enum": [
+                                        "baseDamage",
+                                        "absorbedDamage",
+                                        "candidateHp",
+                                        "remainingHp",
+                                        "carryover",
+                                        "shieldAbsorbed",
+                                        "appliedDamage",
+                                        "candidateLp",
+                                        "remainingLp"
+                                      ]
+                                    },
+                                    "visibility": {
+                                      "type": "string",
+                                      "enum": [
+                                        "public",
+                                        "attacker",
+                                        "defender",
+                                        "internal"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "sequence",
+                                    "ruleId",
+                                    "operator",
+                                    "inputs",
+                                    "result",
+                                    "target",
+                                    "quantity",
+                                    "visibility"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "schemaVersion",
+                              "steps"
+                            ],
+                            "additionalProperties": false
+                          },
                           "causeLabels": {
                             "type": "array",
                             "items": {
@@ -4061,6 +4864,449 @@
                       },
                       "victoryTriggered": {
                         "type": "boolean"
+                      },
+                      "resolution": {
+                        "description": "Stored authoritative v3.0 explanation. Historical entries are derived through the compatibility accessor.",
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "attack_resolved"
+                          },
+                          "turnNumber": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "attackerPlayerIndex": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "defenderColumn": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          },
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "classic",
+                              "cumulative"
+                            ]
+                          },
+                          "baseAttack": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "modifiers": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "aceInvulnerable",
+                                    "aceVsAce",
+                                    "diamondDoubleDefense",
+                                    "diamondDeathShield",
+                                    "clubDoubleOverflow",
+                                    "spadeDoubleLp",
+                                    "heartDeathShield",
+                                    "faceCardIneligible"
+                                  ],
+                                  "description": "Combat bonus applied during attack resolution. Maps to suit boundary effects (§9) and destruction eligibility rules (§10-11)."
+                                },
+                                "appliedTo": {
+                                  "type": "string",
+                                  "enum": [
+                                    "frontCard",
+                                    "backCard",
+                                    "playerLp"
+                                  ]
+                                },
+                                "amount": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "appliedTo"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "outcome": {
+                            "type": "object",
+                            "properties": {
+                              "defenderFrontDestroyed": {
+                                "type": "boolean"
+                              },
+                              "defenderBackDestroyed": {
+                                "type": "boolean"
+                              },
+                              "breakthroughDamage": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "playerDamaged": {
+                                "type": "boolean"
+                              },
+                              "cardAdvanced": {
+                                "type": "boolean"
+                              },
+                              "reinforcementRequired": {
+                                "type": "boolean"
+                              },
+                              "victoryTriggered": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "defenderFrontDestroyed",
+                              "defenderBackDestroyed",
+                              "breakthroughDamage",
+                              "playerDamaged",
+                              "cardAdvanced",
+                              "reinforcementRequired",
+                              "victoryTriggered"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "explanation": {
+                            "type": "object",
+                            "properties": {
+                              "headline": {
+                                "type": "string"
+                              },
+                              "details": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "causeTags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "required": [
+                              "headline",
+                              "details",
+                              "causeTags"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "resolutionCues": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "flashAttacker"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "flashColumn"
+                                    },
+                                    "column": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "column"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "breakthroughBanner"
+                                    }
+                                  },
+                                  "required": [
+                                    "kind"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "shieldAbsorbed"
+                                    },
+                                    "suit": {
+                                      "type": "string",
+                                      "enum": [
+                                        "diamonds",
+                                        "hearts"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "suit"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "columnCollapsed"
+                                    },
+                                    "column": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "column"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "reinforcePrompt"
+                                    },
+                                    "column": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "column"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            }
+                          },
+                          "calculationProvenance": {
+                            "type": "object",
+                            "properties": {
+                              "schemaVersion": {
+                                "type": "string",
+                                "const": "1.0"
+                              },
+                              "steps": {
+                                "minItems": 1,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sequence": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "ruleId": {
+                                      "type": "string",
+                                      "pattern": "^PD-RULE-\\d{3}$"
+                                    },
+                                    "operator": {
+                                      "type": "string",
+                                      "enum": [
+                                        "assign",
+                                        "min",
+                                        "subtract",
+                                        "multiply",
+                                        "clamp"
+                                      ]
+                                    },
+                                    "inputs": {
+                                      "minItems": 1,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "name": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          },
+                                          "value": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "source": {
+                                            "oneOf": [
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "state"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "constant"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "kind": {
+                                                    "type": "string",
+                                                    "const": "step"
+                                                  },
+                                                  "step": {
+                                                    "type": "integer",
+                                                    "minimum": 0,
+                                                    "maximum": 9007199254740991
+                                                  }
+                                                },
+                                                "required": [
+                                                  "kind",
+                                                  "step"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "name",
+                                          "value",
+                                          "source"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "result": {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "value": {
+                                          "type": "integer",
+                                          "minimum": -9007199254740991,
+                                          "maximum": 9007199254740991
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "value"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "target": {
+                                      "type": "string",
+                                      "enum": [
+                                        "attack",
+                                        "frontCard",
+                                        "frontToBackBoundary",
+                                        "backCard",
+                                        "cardToPlayerBoundary",
+                                        "playerLp"
+                                      ]
+                                    },
+                                    "quantity": {
+                                      "type": "string",
+                                      "enum": [
+                                        "baseDamage",
+                                        "absorbedDamage",
+                                        "candidateHp",
+                                        "remainingHp",
+                                        "carryover",
+                                        "shieldAbsorbed",
+                                        "appliedDamage",
+                                        "candidateLp",
+                                        "remainingLp"
+                                      ]
+                                    },
+                                    "visibility": {
+                                      "type": "string",
+                                      "enum": [
+                                        "public",
+                                        "attacker",
+                                        "defender",
+                                        "internal"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "sequence",
+                                    "ruleId",
+                                    "operator",
+                                    "inputs",
+                                    "result",
+                                    "target",
+                                    "quantity",
+                                    "visibility"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "schemaVersion",
+                              "steps"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "turnNumber",
+                          "attackerPlayerIndex",
+                          "defenderColumn",
+                          "baseAttack",
+                          "modifiers",
+                          "outcome",
+                          "explanation",
+                          "resolutionCues"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [

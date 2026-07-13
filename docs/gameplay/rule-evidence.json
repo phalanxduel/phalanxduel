@@ -792,6 +792,59 @@
       "status": "aligned",
       "implementation": ["engine/src/state.ts", "engine/src/combat.ts"],
       "verification": ["engine/tests/metamorphic-symmetry.test.ts"]
+    },
+    {
+      "id": "PD-RULE-064",
+      "section": "8",
+      "sourceMarker": "candidateLife = lifeBefore - remaining",
+      "claim": "Player-bound damage subtracts from prior LP and clamps the resulting LP at zero.",
+      "formalization": "equation",
+      "evidence": "E4",
+      "status": "aligned",
+      "implementation": ["engine/src/combat.ts", "engine/src/calculation-provenance.ts"],
+      "verification": [
+        "engine/tests/calculation-provenance.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
+    },
+    {
+      "id": "PD-RULE-065",
+      "section": "8.1",
+      "sourceMarker": "## 8.1 Authoritative Calculation Provenance",
+      "claim": "Every v3.0 attack stores one ordered rule-linked arithmetic witness and one authoritative resolution shared by live events preview and replay.",
+      "formalization": "protocol",
+      "evidence": "E2",
+      "status": "aligned",
+      "implementation": [
+        "shared/src/schema.ts",
+        "engine/src/calculation-provenance.ts",
+        "engine/src/turns.ts",
+        "engine/src/events.ts"
+      ],
+      "verification": [
+        "shared/tests/calculation-provenance.test.ts",
+        "engine/tests/calculation-provenance.test.ts",
+        "engine/tests/combat-preview.test.ts",
+        "engine/tests/replay.test.ts"
+      ]
+    },
+    {
+      "id": "PD-RULE-066",
+      "section": "8.1",
+      "sourceMarker": "Every input declares exactly one source",
+      "claim": "Calculation witnesses are arithmetically closed and every non-initial step is continuous with an exact earlier result.",
+      "formalization": "invariant",
+      "evidence": "E4",
+      "status": "aligned",
+      "implementation": [
+        "shared/src/calculation-provenance.ts",
+        "engine/src/calculation-provenance.ts"
+      ],
+      "verification": [
+        "shared/tests/calculation-provenance.test.ts",
+        "engine/tests/calculation-provenance.test.ts"
+      ]
     }
   ]
 }

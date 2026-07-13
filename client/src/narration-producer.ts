@@ -7,7 +7,7 @@ import type {
   Card,
   Suit,
 } from '@phalanxduel/shared';
-import { deriveCombatResolution } from '@phalanxduel/shared';
+import { readCombatResolution } from '@phalanxduel/shared';
 import { cardLabel } from './cards';
 import type { NarrationBus, NarrationEntry } from './narration-bus';
 import type { CardType } from './narration-bus';
@@ -181,8 +181,8 @@ export class NarrationProducer {
     details: Extract<TransactionLogEntry['details'], { type: 'attack' }>,
     players: PhalanxTurnResult['postState']['players'],
   ): NarrationEntry[] {
-    const { combat, reinforcementTriggered, victoryTriggered } = details;
-    const resolution = deriveCombatResolution(combat, { reinforcementTriggered, victoryTriggered });
+    const { combat, victoryTriggered } = details;
+    const resolution = readCombatResolution(details);
     const entries: NarrationEntry[] = [];
     const defenderIdx = resolution.attackerPlayerIndex === 0 ? 1 : 0;
     const defenderName = players[defenderIdx]?.player.name ?? 'Opponent';

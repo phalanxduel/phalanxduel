@@ -107,11 +107,9 @@ export function createInitialState(config: GameConfig): GameState {
         modeDamagePersistence:
           gameOptions?.damageMode ?? DEFAULT_MATCH_PARAMS.modeDamagePersistence,
       } satisfies MatchParameters);
-  const resolvedGameOptions = gameOptions ?? {
-    damageMode: resolvedMatchParams.modeDamagePersistence,
-    startingLifepoints: 20,
-  };
-  const startingLifepoints = resolvedGameOptions.startingLifepoints;
+  // Compatibility gameOptions is partial. Apply the GameOptionsSchema default
+  // when a caller overrides an unrelated option but omits starting LP.
+  const startingLifepoints = gameOptions?.startingLifepoints ?? 20;
   const modeClassicDeployment = resolvedMatchParams.modeClassicDeployment;
   const modeQuickStart = resolvedMatchParams.modeQuickStart;
 

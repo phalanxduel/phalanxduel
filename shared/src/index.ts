@@ -9,6 +9,7 @@ export * from './telemetry.js';
 export * from './achievements-metadata.js';
 export * from './gamertag.js';
 export * from './combat-resolution.js';
+export * from './calculation-provenance.js';
 export * from './phase.js';
 export * from './reliable-channel.js';
 export * from './protocol.js';

@@ -132,17 +132,30 @@ function productionResult(input: ReferenceCombatInput): ProductionResult {
     },
   };
   const result = resolveAttack(state, 0, 0, 0);
+  // The independent combat oracle proves semantic state and combat-log values.
+  // Calculation provenance is separately re-evaluated for arithmetic closure
+  // and continuity; it is metadata about this same transition, not an oracle
+  // output that should be copied into the independent model.
+  const { calculationProvenance: _calculationProvenance, ...semanticCombatEntry } =
+    result.combatEntry;
   return {
     front: result.state.players[1]!.battlefield[0] ?? null,
     back: result.state.players[1]!.battlefield[4] ?? null,
     newLp: result.state.players[1]!.lifepoints,
     discarded: result.state.players[1]!.discardPile,
-    combatEntry: result.combatEntry,
+    combatEntry: semanticCombatEntry,
   };
 }
 
 function applicableRuleIds(input: ReferenceCombatInput): string[] {
-  const ids = ['PD-RULE-017', 'PD-RULE-018', 'PD-RULE-019', 'PD-RULE-020', 'PD-RULE-022'];
+  const ids = [
+    'PD-RULE-017',
+    'PD-RULE-018',
+    'PD-RULE-019',
+    'PD-RULE-020',
+    'PD-RULE-022',
+    'PD-RULE-064',
+  ];
   const targets = [input.front, input.back].filter(
     (card): card is BattlefieldCard => card !== null,
   );

@@ -27,11 +27,11 @@ import { EngagementLog } from './components/EngagementLog';
 import { NarrationTicker } from './components/NarrationTicker';
 import { HUD_PHASE_LABELS } from './constants';
 import {
-  deriveCombatResolution,
   COMBAT_CAUSE_LABELS,
   isReinforcementPhase,
   isAttackResolution,
   isDeploymentPhase,
+  readCombatResolution,
 } from '@phalanxduel/shared';
 import { simulateAttack } from '@phalanxduel/engine';
 import type { AttackPreviewVerdict } from '@phalanxduel/engine';
@@ -749,10 +749,7 @@ function CombatFeedbackBanner({ gs }: { gs: GameState }) {
 
     lastHandledSequenceRef.current = latestAttack.sequenceNumber;
 
-    const resolution = deriveCombatResolution(latestAttack.details.combat, {
-      reinforcementTriggered: latestAttack.details.reinforcementTriggered,
-      victoryTriggered: latestAttack.details.victoryTriggered,
-    });
+    const resolution = readCombatResolution(latestAttack.details);
     const headline = resolution.explanation.headline;
     if (headline === 'Attack resolved') return;
 

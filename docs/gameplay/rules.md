@@ -357,8 +357,48 @@ If Card:
 If Player:
 
 * Apply Card→Player boundary
-* life -= remaining
+* `candidateLife = lifeBefore - remaining`
+* `lifeAfter = max(candidateLife, 0)`
 * remaining = 0
+
+## 8.1 Authoritative Calculation Provenance
+
+For `specVersion = "3.0"`, every resolved attack records one ordered arithmetic
+witness in its combat transaction and stores the resulting combat resolution.
+Versions 1.0 and 2.0 retain their historical transaction and event shapes.
+
+Each calculation step records:
+
+```text
+(sequence, ruleId, operator, named inputs, result, target, quantity, visibility)
+```
+
+Every input declares exactly one source: authoritative state, a literal
+constant, or an earlier calculation step. A step reference MUST point backward
+and its input value MUST equal the referenced result. Except for the initial
+base-damage assignment, every step MUST consume at least one earlier result.
+The supported integer operators are:
+
+```text
+assign(x) = x
+min(x₁, ..., xₙ) = minimum input
+subtract(x, y) = x - y
+multiply(x, y) = x × y
+clamp(x, lo) = max(x, lo)
+clamp(x, lo, hi) = max(lo, min(x, hi))
+```
+
+The authoritative engine rejects a witness if any recorded result differs from
+operator evaluation or if source continuity fails. The witness covers base
+damage, card absorption, tentative and clamped HP, overflow, Shield-before-
+Weapon boundary modifiers, applied LP damage, tentative LP, and clamped LP.
+Every step cites the stable rule identifier that authorizes that operation.
+
+The stored resolution, live `attack.resolved` event, preview, and replay expose
+the same witness for identical v3.0 inputs. Presentation consumers read that
+artifact and MUST NOT independently recalculate authoritative damage. Event-log
+fingerprinting includes the complete event payload, so changing a formula input,
+operator, result, or ordering changes the fingerprint.
 
 ---
 

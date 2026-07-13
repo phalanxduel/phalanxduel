@@ -11,6 +11,14 @@ import type {
   ActionSchema,
   BattlefieldCardSchema,
   BattlefieldSchema,
+  CalculationInputSchema,
+  CalculationInputSourceSchema,
+  CalculationOperatorSchema,
+  CalculationProvenanceSchema,
+  CalculationQuantitySchema,
+  CalculationStepSchema,
+  CalculationTargetSchema,
+  CalculationVisibilitySchema,
   CardManifestSchema,
   CardSchema,
   CardTypeSchema,
@@ -20,6 +28,7 @@ import type {
   CombatLogEntrySchema,
   CombatLogStepSchema,
   CombatPreviewSchema,
+  CombatResolutionContextSchema,
   CreateMatchParamsPartialSchema,
   DamageModeSchema,
   DrawTerminationTypeSchema,
@@ -48,6 +57,9 @@ import type {
   PhaseRulesSchema,
   PlayerSchema,
   PlayerStateSchema,
+  ResolutionCueSchema,
+  ResolutionModifierSchema,
+  ResolutionOutcomeSchema,
   RulesSpecVersionSchema,
   ServerMessageSchema,
   SpectatorMatchSummarySchema,
@@ -68,6 +80,14 @@ export type ActionDSL = z.infer<typeof ActionDSLSchema>;
 export type Action = z.infer<typeof ActionSchema>;
 export type BattlefieldCard = z.infer<typeof BattlefieldCardSchema>;
 export type Battlefield = z.infer<typeof BattlefieldSchema>;
+export type CalculationInput = z.infer<typeof CalculationInputSchema>;
+export type CalculationInputSource = z.infer<typeof CalculationInputSourceSchema>;
+export type CalculationOperator = z.infer<typeof CalculationOperatorSchema>;
+export type CalculationProvenance = z.infer<typeof CalculationProvenanceSchema>;
+export type CalculationQuantity = z.infer<typeof CalculationQuantitySchema>;
+export type CalculationStep = z.infer<typeof CalculationStepSchema>;
+export type CalculationTarget = z.infer<typeof CalculationTargetSchema>;
+export type CalculationVisibility = z.infer<typeof CalculationVisibilitySchema>;
 export type CardManifest = z.infer<typeof CardManifestSchema>;
 export type Card = z.infer<typeof CardSchema>;
 export type CardType = z.infer<typeof CardTypeSchema>;
@@ -77,6 +97,7 @@ export type CombatBonusType = z.infer<typeof CombatBonusTypeSchema>;
 export type CombatLogEntry = z.infer<typeof CombatLogEntrySchema>;
 export type CombatLogStep = z.infer<typeof CombatLogStepSchema>;
 export type CombatPreview = z.infer<typeof CombatPreviewSchema>;
+export type CombatResolutionContext = z.infer<typeof CombatResolutionContextSchema>;
 export type CreateMatchParamsPartial = z.infer<typeof CreateMatchParamsPartialSchema>;
 export type DamageMode = z.infer<typeof DamageModeSchema>;
 export type DrawTerminationType = z.infer<typeof DrawTerminationTypeSchema>;
@@ -105,6 +126,9 @@ export type PhaseHopTrace = z.infer<typeof PhaseHopTraceSchema>;
 export type PhaseRules = z.infer<typeof PhaseRulesSchema>;
 export type Player = z.infer<typeof PlayerSchema>;
 export type PlayerState = z.infer<typeof PlayerStateSchema>;
+export type ResolutionCue = z.infer<typeof ResolutionCueSchema>;
+export type ResolutionModifier = z.infer<typeof ResolutionModifierSchema>;
+export type ResolutionOutcome = z.infer<typeof ResolutionOutcomeSchema>;
 export type RulesSpecVersion = z.infer<typeof RulesSpecVersionSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
 export type SpectatorMatchSummary = z.infer<typeof SpectatorMatchSummarySchema>;

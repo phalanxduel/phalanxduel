@@ -16,6 +16,7 @@ import {
   resolveCardTransition,
   resolvePlayerBoundary,
 } from './combat-math.js';
+import { CombatCalculationTrace } from './calculation-provenance.js';
 
 /**
  * Check if a target column is valid for attack.
@@ -45,6 +46,7 @@ interface AttackContext {
   modeClassicFaceCards: boolean;
   modeDamagePersistence: GameState['params']['modeDamagePersistence'];
   columns: number;
+  calculationTrace?: CombatCalculationTrace;
 }
 
 /**
@@ -79,7 +81,9 @@ function resolveColumnOverflow(
   let lastDestroyedHeartShield = 0;
 
   if (frontCard && overflow > 0) {
-    const step = resolveCardTransition(frontCard, overflow, true, ctx);
+    const incomingDamage = overflow;
+    const step = resolveCardTransition(frontCard, incomingDamage, true, ctx);
+    ctx.calculationTrace?.recordCardTransition('frontCard', incomingDamage, step, ctx);
     overflow = step.carryover;
     steps.push(step.step);
 
@@ -108,12 +112,14 @@ function resolveColumnOverflow(
       ctx.specVersion === '1.0'
         ? newBf[frontIdx] === null
         : frontCard !== null && newBf[frontIdx] === null;
-    const boundary = resolveCardBoundary({
+    const boundaryInput = {
       carryover: overflow,
       diamondShield: ctx.specVersion === '1.0' || backCard !== null ? frontDiamondShield : 0,
       clubEligible: backCard !== null && attacker.card.suit === 'clubs' && clubBoundaryEligible,
       specVersion: ctx.specVersion,
-    });
+    };
+    const boundary = resolveCardBoundary(boundaryInput);
+    ctx.calculationTrace?.recordCardBoundary(boundaryInput, boundary);
     overflow = boundary.carryover;
 
     if (boundary.diamondApplied) {
@@ -129,7 +135,9 @@ function resolveColumnOverflow(
     }
 
     if (backCard && overflow > 0) {
-      const step = resolveCardTransition(backCard, overflow, false, ctx);
+      const incomingDamage = overflow;
+      const step = resolveCardTransition(backCard, incomingDamage, false, ctx);
+      ctx.calculationTrace?.recordCardTransition('backCard', incomingDamage, step, ctx);
       overflow = step.carryover;
 
       if (boundary.clubBonusTarget === 'nextCard') {
@@ -164,16 +172,19 @@ function resolveColumnOverflow(
         : backHeartShield > 0
           ? backHeartShield
           : frontHeartShield;
-    const boundary = resolvePlayerBoundary({
+    const boundaryInput = {
       carryover: overflow,
       heartShield,
       spadeWeapon: attacker.card.suit === 'spades',
       specVersion: ctx.specVersion,
-    });
+    };
+    const boundary = resolvePlayerBoundary(boundaryInput);
+    ctx.calculationTrace?.recordPlayerBoundary(boundaryInput, boundary);
     const lpDamage = boundary.damage;
 
     totalLpDamage = lpDamage;
     newLp = Math.max(0, defenderLp - lpDamage);
+    ctx.calculationTrace?.recordLpChange(defenderLp, lpDamage, newLp);
 
     const lpStep: CombatLogStep = {
       target: 'playerLp',
@@ -240,6 +251,8 @@ export function resolveAttack(
   const targetColumn = attackerGridIndex % columns;
   const defender = state.players[defenderIndex];
   if (!defender) throw new Error(`No player at index ${defenderIndex}`);
+  const calculationTrace =
+    state.specVersion === '3.0' ? new CombatCalculationTrace(baseDamage) : undefined;
   const ctx: AttackContext = {
     specVersion: state.specVersion,
     attackerType: attacker.card.type,
@@ -247,6 +260,7 @@ export function resolveAttack(
     modeClassicFaceCards: state.params.modeClassicFaceCards,
     modeDamagePersistence: state.params.modeDamagePersistence,
     columns,
+    calculationTrace,
   };
 
   const result = resolveColumnOverflow(
@@ -299,6 +313,7 @@ export function resolveAttack(
     baseDamage,
     steps: result.steps,
     totalLpDamage: result.totalLpDamage,
+    ...(calculationTrace ? { calculationProvenance: calculationTrace.finish() } : {}),
     causeLabels: causeLabels.length > 0 ? causeLabels : undefined,
     comboCount: comboCount > 1 ? comboCount : undefined,
   };

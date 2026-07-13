@@ -24,7 +24,12 @@ import {
 import { assertTransition, canHandleAction } from './state-machine.js';
 import type { TransitionTrigger } from './state-machine.js';
 import type { PlayerState, Battlefield, Card, BattlefieldCard } from '@phalanxduel/shared';
-import { isGameOver, isReinforcementPhase, isActionPhase } from '@phalanxduel/shared';
+import {
+  deriveCombatResolution,
+  isActionPhase,
+  isGameOver,
+  isReinforcementPhase,
+} from '@phalanxduel/shared';
 import { evaluateLiveness } from './liveness.js';
 
 /** Safely retrieve a player from state, throwing if missing. */
@@ -434,6 +439,14 @@ function applyAttack(
       ...(reinforcementTriggered ? (['reinforce'] as const) : []),
     ].filter((l, i, a) => a.indexOf(l) === i),
   };
+  const resolution =
+    state.specVersion === '3.0'
+      ? deriveCombatResolution(enrichedCombat, {
+          reinforcementTriggered,
+          victoryTriggered,
+          mode: state.params.modeDamagePersistence,
+        })
+      : undefined;
 
   return {
     resultState: newState,
@@ -442,6 +455,7 @@ function applyAttack(
       combat: enrichedCombat,
       reinforcementTriggered,
       victoryTriggered,
+      ...(resolution ? { resolution } : {}),
     },
   };
 }

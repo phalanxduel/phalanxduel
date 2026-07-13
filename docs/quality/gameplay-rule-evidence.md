@@ -13,7 +13,7 @@ This is a generated traceability view of
 
 | Status | Count |
 |---|---:|
-| aligned | 55 |
+| aligned | 58 |
 | partial | 7 |
 | divergent | 0 |
 | unverified | 1 |
@@ -85,6 +85,9 @@ This is a generated traceability view of
 | PD-RULE-061 | §19 | Generated legal action sequences conserve exact card identities and preserve phase HP LP and rejection-purity invariants. | invariant | E2 | aligned | `engine/src/state.ts`<br>`engine/src/turns.ts`<br>`engine/src/combat.ts` | `engine/tests/property-invariants.test.ts`<br>`engine/tests/property-fastcheck.test.ts` |
 | PD-RULE-062 | §18 | Generated live combat previews committed events and replay prefixes agree semantically. | equivalence | E2 | aligned | `engine/src/combat-preview.ts`<br>`engine/src/replay.ts`<br>`engine/src/turns.ts` | `engine/tests/property-invariants.test.ts`<br>`engine/tests/combat-preview.test.ts`<br>`engine/tests/replay.test.ts` |
 | PD-RULE-063 | §19 | Player-seat and initiative exchange commute with the seat-neutral gameplay relations where symmetry is expected. | metamorphic | E2 | aligned | `engine/src/state.ts`<br>`engine/src/combat.ts` | `engine/tests/metamorphic-symmetry.test.ts` |
+| PD-RULE-064 | §8 | Player-bound damage subtracts from prior LP and clamps the resulting LP at zero. | equation | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/calculation-provenance.ts` | `engine/tests/calculation-provenance.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-065 | §8.1 | Every v3.0 attack stores one ordered rule-linked arithmetic witness and one authoritative resolution shared by live events preview and replay. | protocol | E2 | aligned | `shared/src/schema.ts`<br>`engine/src/calculation-provenance.ts`<br>`engine/src/turns.ts`<br>`engine/src/events.ts` | `shared/tests/calculation-provenance.test.ts`<br>`engine/tests/calculation-provenance.test.ts`<br>`engine/tests/combat-preview.test.ts`<br>`engine/tests/replay.test.ts` |
+| PD-RULE-066 | §8.1 | Calculation witnesses are arithmetically closed and every non-initial step is continuous with an exact earlier result. | invariant | E4 | aligned | `shared/src/calculation-provenance.ts`<br>`engine/src/calculation-provenance.ts` | `shared/tests/calculation-provenance.test.ts`<br>`engine/tests/calculation-provenance.test.ts` |
 
 ## Interpretation
 

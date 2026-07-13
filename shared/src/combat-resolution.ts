@@ -7,52 +7,21 @@
  * Same inputs → identical output (deterministic, replay-safe).
  */
 
-import type { CombatBonusType, CombatLogEntry, CombatLogStep, GameState } from './types.js';
+import type {
+  CombatBonusType,
+  CombatLogEntry,
+  CombatLogStep,
+  CombatResolutionContext,
+  GameState,
+  ResolutionCue,
+  ResolutionModifier,
+  ResolutionOutcome,
+  TransactionDetail,
+} from './types.js';
 
 // --- Types ---
 
 export type ResolutionModifierKind = CombatBonusType;
-
-export interface ResolutionModifier {
-  kind: ResolutionModifierKind;
-  appliedTo: 'frontCard' | 'backCard' | 'playerLp';
-  /** Damage delta if computable from the step (e.g. overflow × 2 for clubs). */
-  amount?: number;
-}
-
-export interface ResolutionOutcome {
-  defenderFrontDestroyed: boolean;
-  defenderBackDestroyed: boolean;
-  /** Equals combat.totalLpDamage. */
-  breakthroughDamage: number;
-  playerDamaged: boolean;
-  /** Front was destroyed and a back card existed to advance. */
-  cardAdvanced: boolean;
-  reinforcementRequired: boolean;
-  victoryTriggered: boolean;
-}
-
-export type ResolutionCue =
-  | { kind: 'flashAttacker' }
-  | { kind: 'flashColumn'; column: number }
-  | { kind: 'breakthroughBanner' }
-  | { kind: 'shieldAbsorbed'; suit: 'diamonds' | 'hearts' }
-  | { kind: 'columnCollapsed'; column: number }
-  | { kind: 'reinforcePrompt'; column: number };
-
-export interface CombatResolutionContext {
-  type: 'attack_resolved';
-  turnNumber: number;
-  attackerPlayerIndex: number;
-  defenderColumn: number;
-  /** Undefined when mode was not available at derivation time (e.g. events path). */
-  mode: 'classic' | 'cumulative' | undefined;
-  baseAttack: number;
-  modifiers: ResolutionModifier[];
-  outcome: ResolutionOutcome;
-  explanation: { headline: string; details: string[]; causeTags: string[] };
-  resolutionCues: ResolutionCue[];
-}
 
 export type ColumnPressureState =
   | 'stable'
@@ -250,7 +219,27 @@ export function deriveCombatResolution(
     outcome,
     explanation: { headline, details, causeTags },
     resolutionCues,
+    ...(combat.calculationProvenance
+      ? { calculationProvenance: combat.calculationProvenance }
+      : {}),
   };
+}
+
+/**
+ * Read the authoritative stored v3.0 resolution. Historical v1.0/v2.0
+ * transactions retain their original shape and use deterministic derivation as
+ * an explicit compatibility path.
+ */
+export function readCombatResolution(
+  details: Extract<TransactionDetail, { type: 'attack' }>,
+): CombatResolutionContext {
+  return (
+    details.resolution ??
+    deriveCombatResolution(details.combat, {
+      reinforcementTriggered: details.reinforcementTriggered,
+      victoryTriggered: details.victoryTriggered,
+    })
+  );
 }
 
 /**
@@ -325,10 +314,7 @@ export function selectTurningPoint(state: GameState): TurningPointSummary | null
   const resolutions: ResolvedEntry[] = attackEntries.reduce<ResolvedEntry[]>((acc, entry) => {
     if (entry.details.type !== 'attack') return acc;
     acc.push({
-      ctx: deriveCombatResolution(entry.details.combat, {
-        reinforcementTriggered: entry.details.reinforcementTriggered,
-        victoryTriggered: entry.details.victoryTriggered,
-      }),
+      ctx: readCombatResolution(entry.details),
     });
     return acc;
   }, []);
