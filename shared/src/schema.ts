@@ -946,7 +946,7 @@ export const PlayerStateSchema = z.object({
   hand: z
     .array(CardSchema)
     .describe(
-      'Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).',
+      'Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4.',
     ),
   battlefield: z
     .array(z.union([BattlefieldCardSchema, z.null()]))
@@ -955,7 +955,9 @@ export const PlayerStateSchema = z.object({
     ),
   drawpile: z
     .array(PartialCardSchema)
-    .describe('Remaining draw pile. Always hidden from all players and spectators (§21.1).'),
+    .describe(
+      'Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4.',
+    ),
   discardPile: z
     .array(CardSchema)
     .describe('Destroyed cards. Owner sees full pile; others see only top card and count (§21.3).'),
@@ -970,7 +972,9 @@ export const PlayerStateSchema = z.object({
   deckSeed: z
     .number()
     .int()
-    .describe('Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.'),
+    .describe(
+      'Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock.',
+    ),
 
   // Filtering fields — counts visible to all players for fog-of-war
   handCount: z

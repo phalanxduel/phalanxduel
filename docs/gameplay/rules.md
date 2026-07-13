@@ -756,8 +756,9 @@ For stateless (REST/WAP) clients, the server response to a Turn Command includes
 To maintain strategic depth, the Phalanx System enforces strict hidden-information boundaries.
 
 ### 21.1 Hands and Draw Piles
-*   **Draw Pile:** Always hidden from all players and spectators. Only the count (`drawpileCount`) is public.
-*   **Player Hand:** Fully visible to the owner. Redacted to an empty array for all other players and spectators. Only the count (`handCount`) is public.
+*   **Draw Pile During Live Play:** Hidden from every player, spectator, and competitive bot, including its owner. Only the count (`drawpileCount`) is public. The deterministic `deckSeed` is likewise internal; live projections use `0` as the explicit redaction sentinel.
+*   **Player Hand During Live Play:** Fully visible to the owner. Redacted to an empty array for all other players, spectators, and competitive bots. Only the count (`handCount`) is public.
+*   **Terminal Exception:** Completed-match replay visibility is governed by §21.5 and does not weaken the live information boundary.
 
 ### 21.2 Battlefield
 *   **Competitive v3.0 Deployment:** All battlefield cards are deployed face-up. Players, spectators, bots, and replay viewers receive the same public battlefield card identities.
@@ -767,6 +768,62 @@ To maintain strategic depth, the Phalanx System enforces strict hidden-informati
 ### 21.3 Graveyard (Discard Pile)
 *   **Historical Transparency:** The owner can see their full discard pile.
 *   **Public Visibility:** Opponents and spectators can see **only the top-most card** (the last discarded card) and the total count (`discardPileCount`).
+
+### 21.4 Observer Noninterference
+
+**Observer noninterference law.** Let `Πₒ(s)` be the projection of authoritative
+state `s` for observer `o`. Let `s ≡ₒ t` mean that `s` and `t` agree on every
+fact authorized for `o`, while arbitrary hidden zones or internal witnesses may
+differ. Then:
+
+```text
+s ≡ₒ t  ⇒  Πₒ(s) = Πₒ(t)
+```
+
+The authorized live roles are Player 1, Player 2, competitive bot for either
+seat, and spectator. Live projections remove internal liveness witnesses,
+private card zones, deck seeds, and state-derived integrity hashes that would
+otherwise distinguish hidden states. Action and event projections use the same
+observer context as state projection; a legacy payload must not bypass it.
+
+### 21.5 Spectator and Replay Lifecycle
+
+**Live spectator delay.** A live spectator frame must be reconstructed from the
+authoritative action history with delay `d`, where the minimum is `2` turns and
+the default is `3` turns:
+
+```text
+d ≥ 2
+visibleTurn ≤ authoritativeTurn - d
+```
+
+If delayed replay reconstruction fails, spectator delivery fails closed; the
+server must not substitute the current live state.
+
+**Terminal replay unlock.** Once the authoritative match is terminal, completed
+replays may reveal both hands, draw piles, deck seeds, and integrity witnesses
+for audit, learning, and deterministic reproduction. Internal liveness state and
+`internal` calculation steps remain unavailable to public replay consumers.
+
+### 21.6 Competitive and Research Bots
+
+Competitive bots consume the same information set as the player occupying their
+seat: their own current hand, public board and counts, and no live draw-pile
+contents or opponent hand. Their decision function therefore satisfies the same
+noninterference law as a human player's projection.
+
+An omniscient research adapter is a separate explicit API. Every result is
+labelled `knowledgePolicy = omniscient-research` and `ratingEligible = false`.
+It is not a valid competitive adapter and must not settle ladder ratings.
+
+### 21.7 Observer-Safe Calculation Evidence
+
+Calculation provenance is projected as the longest observer-visible prefix.
+`public` steps are visible to all; `attacker` and `defender` steps are visible
+only to the named seat; `internal` steps are restricted to internal research.
+After the first hidden step, the remaining suffix is also hidden. This preserves
+zero-based sequence numbers, exact prior-step references, and arithmetic closure
+without revealing a hidden intermediate through a later result.
 
 ---
 

@@ -189,11 +189,6 @@ function assertHandRedacted(view: GameState, playerIdx: number, expectedCount: n
   expect(ps.handCount).toBe(expectedCount);
 }
 
-function assertDrawpileVisible(view: GameState, playerIdx: number, expectedLength: number): void {
-  const ps = view.players[playerIdx]!;
-  expect(ps.drawpile.length).toBe(expectedLength);
-}
-
 function assertDrawpileRedacted(view: GameState, playerIdx: number, expectedCount: number): void {
   const ps = view.players[playerIdx]!;
   expect(ps.drawpile).toEqual([]);
@@ -268,14 +263,14 @@ describe('Card Visibility — DeploymentPhase', () => {
     assertHandRedacted(spectatorView, 1, p1HandLen);
   });
 
-  it('Drawpile hidden from opponent and spectator', () => {
+  it('Drawpile order is hidden from every live observer', () => {
     const state = initState();
     const p0DrawLen = state.players[0]!.drawpile.length;
     const p1DrawLen = state.players[1]!.drawpile.length;
 
-    // Owner sees own drawpile
+    // Even the owner sees only the public count.
     const aliceView = filterStateForPlayer(state, 0);
-    assertDrawpileVisible(aliceView, 0, p0DrawLen);
+    assertDrawpileRedacted(aliceView, 0, p0DrawLen);
     assertDrawpileRedacted(aliceView, 1, p1DrawLen);
 
     // Spectator sees neither drawpile
@@ -613,10 +608,10 @@ describe('Card Visibility — Full Game Lifecycle', () => {
       assertHandRedacted(spectatorView, 0, p0HandLen);
       assertHandRedacted(spectatorView, 1, p1HandLen);
 
-      // Drawpile visible to owner, hidden from opponent and spectator
-      assertDrawpileVisible(aliceView, 0, p0DrawLen);
+      // Draw-pile order is hidden from every live observer, including its owner.
+      assertDrawpileRedacted(aliceView, 0, p0DrawLen);
       assertDrawpileRedacted(aliceView, 1, p1DrawLen);
-      assertDrawpileVisible(bobView, 1, p1DrawLen);
+      assertDrawpileRedacted(bobView, 1, p1DrawLen);
       assertDrawpileRedacted(bobView, 0, p0DrawLen);
       assertDrawpileRedacted(spectatorView, 0, p0DrawLen);
       assertDrawpileRedacted(spectatorView, 1, p1DrawLen);
@@ -673,12 +668,13 @@ describe('Card Visibility — Spectator Symmetry', () => {
     assertBattlefieldVisible(view, 1);
   });
 
-  it('Spectator never sees drawpile contents even when owner could', () => {
+  it('Spectator and owner both receive only drawpile counts', () => {
     const state = deployToAttackPhase();
 
-    // Owner can see own drawpile
+    // Owner cannot inspect future draw order.
     const aliceView = filterStateForPlayer(state, 0);
-    expect(aliceView.players[0]!.drawpile.length).toBeGreaterThan(0);
+    expect(aliceView.players[0]!.drawpile).toEqual([]);
+    expect(aliceView.players[0]!.drawpileCount).toBe(state.players[0]!.drawpile.length);
 
     // Spectator cannot
     const spectatorView = filterStateForSpectator(state);

@@ -7,11 +7,28 @@ import type { GameState, Action, Card, PlayerState } from '@phalanxduel/shared';
 import { getDeployTarget } from './state.js';
 import { runMCTS } from './mcts.js';
 import { TIER_CONFIG, type BotTier } from './bot-tiers.js';
+import { projectGameStateForObserver } from './observer-knowledge.js';
 
 export interface BotConfig {
   strategy: 'random' | 'heuristic' | 'mcts';
   seed: number;
   mctsIterations?: number;
+}
+
+export interface OmniscientResearchBotRequest {
+  state: GameState;
+  playerIndex: 0 | 1;
+  config: BotConfig;
+  timestamp?: string;
+  tier?: BotTier;
+  purpose: string;
+}
+
+export interface OmniscientResearchBotDecision {
+  action: Action;
+  knowledgePolicy: 'omniscient-research';
+  ratingEligible: false;
+  purpose: string;
 }
 
 /** Mulberry32: fast seeded PRNG for deterministic bot decisions. */
@@ -36,6 +53,42 @@ export function computeBotAction(
   playerIndex: 0 | 1,
   config: BotConfig,
   timestamp = '1970-01-01T00:00:00.000Z',
+  tier?: BotTier,
+): Action {
+  const informationSet = projectGameStateForObserver(gs, {
+    role: 'competitive-bot',
+    playerIndex,
+  });
+  return computeBotActionFromKnownState(informationSet, playerIndex, config, timestamp, tier);
+}
+
+/**
+ * Explicit internal-only research surface. Its wrapped result cannot be used as
+ * a competitive Action without consciously unwrapping it, and is permanently
+ * marked ineligible for ratings.
+ */
+export function computeOmniscientResearchBotDecision(
+  request: OmniscientResearchBotRequest,
+): OmniscientResearchBotDecision {
+  return {
+    action: computeBotActionFromKnownState(
+      request.state,
+      request.playerIndex,
+      request.config,
+      request.timestamp ?? '1970-01-01T00:00:00.000Z',
+      request.tier,
+    ),
+    knowledgePolicy: 'omniscient-research',
+    ratingEligible: false,
+    purpose: request.purpose,
+  };
+}
+
+function computeBotActionFromKnownState(
+  gs: GameState,
+  playerIndex: 0 | 1,
+  config: BotConfig,
+  timestamp: string,
   tier?: BotTier,
 ): Action {
   const rng = mulberry32(config.seed);

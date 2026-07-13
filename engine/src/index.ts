@@ -33,8 +33,8 @@ export {
 export { resolveAttack, isValidTarget, getBaseAttackDamage, resetColumnHp } from './combat.js';
 export { validateAction, applyAction, getValidActions } from './turns.js';
 export type { ApplyActionOptions } from './turns.js';
-export { replayGame } from './replay.js';
-export type { ReplayResult } from './replay.js';
+export { replayGame, replayGameAtOrBeforeTurn } from './replay.js';
+export type { ReplayResult, TurnBoundedReplayResult } from './replay.js';
 export {
   LIVENESS_POLICY,
   evaluateLiveness,
@@ -57,8 +57,12 @@ export {
 export type { StateTransition, TransitionTrigger } from './state-machine.js';
 
 // Bot AI
-export { computeBotAction } from './bot.js';
-export type { BotConfig } from './bot.js';
+export { computeBotAction, computeOmniscientResearchBotDecision } from './bot.js';
+export type {
+  BotConfig,
+  OmniscientResearchBotDecision,
+  OmniscientResearchBotRequest,
+} from './bot.js';
 export { TIER_CONFIG } from './bot-tiers.js';
 export type { BotTier, TierConfig, HeuristicWeights } from './bot-tiers.js';
 
@@ -71,3 +75,17 @@ export type { AttackPreview, AttackPreviewVerdict } from './combat-preview.js';
 
 // State projection adapter
 export { GameProjection, createProjection } from './projection.js';
+
+// Observer-relative information-set projection
+export {
+  PUBLIC_REPLAY,
+  PUBLIC_SPECTATOR,
+  observerForViewer,
+  observerPlayerIndex,
+  projectActionForObserver,
+  projectCalculationProvenance,
+  projectEventsForObserver,
+  projectGameStateForObserver,
+  projectTransactionLogForObserver,
+} from './observer-knowledge.js';
+export type { ObserverContext } from './observer-knowledge.js';

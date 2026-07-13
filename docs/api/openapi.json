@@ -828,7 +828,7 @@
                     "required": ["id", "suit", "face", "value", "type"],
                     "additionalProperties": false
                   },
-                  "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
+                  "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4."
                 },
                 "battlefield": {
                   "type": "array",
@@ -940,7 +940,7 @@
                     "required": ["suit", "face", "value", "type"],
                     "additionalProperties": false
                   },
-                  "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
+                  "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4."
                 },
                 "discardPile": {
                   "type": "array",
@@ -989,7 +989,7 @@
                   "type": "integer",
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991,
-                  "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
+                  "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock."
                 },
                 "handCount": {
                   "description": "Public: number of cards in hand. Visible to all players and spectators.",
@@ -3226,7 +3226,7 @@
                         "required": ["id", "suit", "face", "value", "type"],
                         "additionalProperties": false
                       },
-                      "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
+                      "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4."
                     },
                     "battlefield": {
                       "type": "array",
@@ -3338,7 +3338,7 @@
                         "required": ["suit", "face", "value", "type"],
                         "additionalProperties": false
                       },
-                      "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
+                      "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4."
                     },
                     "discardPile": {
                       "type": "array",
@@ -3387,7 +3387,7 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
+                      "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock."
                     },
                     "handCount": {
                       "description": "Public: number of cards in hand. Visible to all players and spectators.",
@@ -5642,7 +5642,7 @@
                         "required": ["id", "suit", "face", "value", "type"],
                         "additionalProperties": false
                       },
-                      "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
+                      "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4."
                     },
                     "battlefield": {
                       "type": "array",
@@ -5754,7 +5754,7 @@
                         "required": ["suit", "face", "value", "type"],
                         "additionalProperties": false
                       },
-                      "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
+                      "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4."
                     },
                     "discardPile": {
                       "type": "array",
@@ -5803,7 +5803,7 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
+                      "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock."
                     },
                     "handCount": {
                       "description": "Public: number of cards in hand. Visible to all players and spectators.",
@@ -8809,7 +8809,7 @@
                         "required": ["id", "suit", "face", "value", "type"],
                         "additionalProperties": false
                       },
-                      "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
+                      "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4."
                     },
                     "battlefield": {
                       "type": "array",
@@ -8921,7 +8921,7 @@
                         "required": ["suit", "face", "value", "type"],
                         "additionalProperties": false
                       },
-                      "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
+                      "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4."
                     },
                     "discardPile": {
                       "type": "array",
@@ -8970,7 +8970,7 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
+                      "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock."
                     },
                     "handCount": {
                       "description": "Public: number of cards in hand. Visible to all players and spectators.",
@@ -11869,7 +11869,7 @@
                         "required": ["id", "suit", "face", "value", "type"],
                         "additionalProperties": false
                       },
-                      "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
+                      "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4."
                     },
                     "battlefield": {
                       "type": "array",
@@ -11981,7 +11981,7 @@
                         "required": ["suit", "face", "value", "type"],
                         "additionalProperties": false
                       },
-                      "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
+                      "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4."
                     },
                     "discardPile": {
                       "type": "array",
@@ -12030,7 +12030,7 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
+                      "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock."
                     },
                     "handCount": {
                       "description": "Public: number of cards in hand. Visible to all players and spectators.",
@@ -14285,7 +14285,7 @@
                         "required": ["id", "suit", "face", "value", "type"],
                         "additionalProperties": false
                       },
-                      "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
+                      "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4."
                     },
                     "battlefield": {
                       "type": "array",
@@ -14397,7 +14397,7 @@
                         "required": ["suit", "face", "value", "type"],
                         "additionalProperties": false
                       },
-                      "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
+                      "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4."
                     },
                     "discardPile": {
                       "type": "array",
@@ -14446,7 +14446,7 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
+                      "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock."
                     },
                     "handCount": {
                       "description": "Public: number of cards in hand. Visible to all players and spectators.",
@@ -21801,7 +21801,7 @@
                               "required": ["id", "suit", "face", "value", "type"],
                               "additionalProperties": false
                             },
-                            "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
+                            "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4."
                           },
                           "battlefield": {
                             "type": "array",
@@ -21920,7 +21920,7 @@
                               "required": ["suit", "face", "value", "type"],
                               "additionalProperties": false
                             },
-                            "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
+                            "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4."
                           },
                           "discardPile": {
                             "type": "array",
@@ -21969,7 +21969,7 @@
                             "type": "integer",
                             "minimum": -9007199254740991,
                             "maximum": 9007199254740991,
-                            "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
+                            "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock."
                           },
                           "handCount": {
                             "description": "Public: number of cards in hand. Visible to all players and spectators.",
@@ -24342,7 +24342,7 @@
                                   "required": ["id", "suit", "face", "value", "type"],
                                   "additionalProperties": false
                                 },
-                                "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
+                                "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4."
                               },
                               "battlefield": {
                                 "type": "array",
@@ -24461,7 +24461,7 @@
                                   "required": ["suit", "face", "value", "type"],
                                   "additionalProperties": false
                                 },
-                                "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
+                                "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4."
                               },
                               "discardPile": {
                                 "type": "array",
@@ -24510,7 +24510,7 @@
                                 "type": "integer",
                                 "minimum": -9007199254740991,
                                 "maximum": 9007199254740991,
-                                "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
+                                "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock."
                               },
                               "handCount": {
                                 "description": "Public: number of cards in hand. Visible to all players and spectators.",
@@ -26799,7 +26799,7 @@
                                   "required": ["id", "suit", "face", "value", "type"],
                                   "additionalProperties": false
                                 },
-                                "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
+                                "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4."
                               },
                               "battlefield": {
                                 "type": "array",
@@ -26918,7 +26918,7 @@
                                   "required": ["suit", "face", "value", "type"],
                                   "additionalProperties": false
                                 },
-                                "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
+                                "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4."
                               },
                               "discardPile": {
                                 "type": "array",
@@ -26967,7 +26967,7 @@
                                 "type": "integer",
                                 "minimum": -9007199254740991,
                                 "maximum": 9007199254740991,
-                                "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
+                                "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock."
                               },
                               "handCount": {
                                 "description": "Public: number of cards in hand. Visible to all players and spectators.",
@@ -30679,7 +30679,7 @@
                                   "required": ["id", "suit", "face", "value", "type"],
                                   "additionalProperties": false
                                 },
-                                "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
+                                "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4."
                               },
                               "battlefield": {
                                 "type": "array",
@@ -30798,7 +30798,7 @@
                                   "required": ["suit", "face", "value", "type"],
                                   "additionalProperties": false
                                 },
-                                "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
+                                "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4."
                               },
                               "discardPile": {
                                 "type": "array",
@@ -30847,7 +30847,7 @@
                                 "type": "integer",
                                 "minimum": -9007199254740991,
                                 "maximum": 9007199254740991,
-                                "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
+                                "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock."
                               },
                               "handCount": {
                                 "description": "Public: number of cards in hand. Visible to all players and spectators.",
@@ -33136,7 +33136,7 @@
                                   "required": ["id", "suit", "face", "value", "type"],
                                   "additionalProperties": false
                                 },
-                                "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1)."
+                                "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4."
                               },
                               "battlefield": {
                                 "type": "array",
@@ -33255,7 +33255,7 @@
                                   "required": ["suit", "face", "value", "type"],
                                   "additionalProperties": false
                                 },
-                                "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1)."
+                                "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4."
                               },
                               "discardPile": {
                                 "type": "array",
@@ -33304,7 +33304,7 @@
                                 "type": "integer",
                                 "minimum": -9007199254740991,
                                 "maximum": 9007199254740991,
-                                "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility."
+                                "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock."
                               },
                               "handCount": {
                                 "description": "Public: number of cards in hand. Visible to all players and spectators.",

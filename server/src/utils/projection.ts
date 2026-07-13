@@ -5,85 +5,27 @@
 
 import type {
   GameState,
-  PlayerState,
-  Battlefield,
   Action,
   PhalanxEvent,
   GameViewModel,
   TurnViewModel,
 } from '@phalanxduel/shared';
-import { isCompleted } from '@phalanxduel/shared';
-import { getValidActions } from '@phalanxduel/engine';
-import { redactTransactionLog } from './redaction.js';
-
-/**
- * Redacts battlefield card details when face-down.
- */
-function redactBattlefield(battlefield: Battlefield): Battlefield {
-  return battlefield.map((cell) => {
-    if (!cell?.faceDown) return cell;
-    return {
-      ...cell,
-      card: {
-        id: cell.card.id, // ID is preserved for referencing
-        suit: 'spades',
-        face: '?',
-        value: 0,
-        type: 'number',
-      },
-    };
-  });
-}
-
-/**
- * Redacts a player's private information (hand, drawpile).
- */
-function redactHiddenCards(playerState: PlayerState): PlayerState {
-  const { hand, drawpile, battlefield, discardPile, ...rest } = playerState;
-  return {
-    ...rest,
-    battlefield: redactBattlefield(battlefield),
-    hand: [],
-    drawpile: [],
-    // Show only the top card of the discard pile
-    discardPile: discardPile.slice(-1),
-    handCount: hand.length,
-    drawpileCount: drawpile.length,
-    discardPileCount: discardPile.length,
-  };
-}
+import {
+  getValidActions,
+  observerForViewer,
+  projectActionForObserver,
+  projectEventsForObserver,
+  projectGameStateForObserver,
+} from '@phalanxduel/engine';
 
 /**
  * Projects a GameState into a tailored GameViewModel for a specific viewer.
  */
 export function projectGameState(state: GameState, viewerIndex: number | null): GameViewModel {
-  const p0 = state.players[0]!;
-  const p1 = state.players[1]!;
-  const { liveness: internalLiveness, ...viewerSafeState } = state;
-  void internalLiveness;
-
-  // TASK-257: For completed matches, disable redaction for all viewers (including spectators).
-  // This allows full visibility of final hands and battlefield units during rewatch.
-  const completed = isCompleted(state);
-
-  const projectedP0 =
-    viewerIndex === 0 || completed
-      ? { ...p0, discardPileCount: p0.discardPile.length }
-      : redactHiddenCards(p0);
-
-  const projectedP1 =
-    viewerIndex === 1 || completed
-      ? { ...p1, discardPileCount: p1.discardPile.length }
-      : redactHiddenCards(p1);
-
-  const redactedState: GameState = {
-    ...viewerSafeState,
-    players: [projectedP0, projectedP1],
-    transactionLog: redactTransactionLog(state.transactionLog, viewerIndex),
-  };
+  const observer = observerForViewer(viewerIndex);
 
   return {
-    state: redactedState,
+    state: projectGameStateForObserver(state, observer),
     viewerIndex,
     validActions: viewerIndex !== null ? getValidActions(state, viewerIndex) : [],
   };
@@ -103,6 +45,7 @@ export interface TurnProjectionOptions {
  */
 export function projectTurnResult(options: TurnProjectionOptions): TurnViewModel {
   const { matchId, preState, postState, action, events, viewerIndex } = options;
+  const observer = observerForViewer(viewerIndex);
   const projectedPre = projectGameState(preState, viewerIndex);
   const projectedPost = projectGameState(postState, viewerIndex);
 
@@ -111,8 +54,8 @@ export function projectTurnResult(options: TurnProjectionOptions): TurnViewModel
     viewerIndex,
     preState: projectedPre.state,
     postState: projectedPost.state,
-    action,
-    events,
+    action: projectActionForObserver(action, observer),
+    events: projectEventsForObserver(events, observer),
     validActions: projectedPost.validActions,
   };
 }

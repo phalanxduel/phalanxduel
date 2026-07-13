@@ -27,6 +27,7 @@ import { type ILedgerStore, PostgresLedgerStore } from './db/ledger-store.js';
 import { LadderService } from './ladder.js';
 import { matchLifecycleTotal } from './metrics.js';
 import { projectStateForViewer, projectTurnForViewer } from './utils/viewer-projection.js';
+import { buildDelayedSpectatorFrame, type SpectatorFrame } from './utils/spectator-delay.js';
 import { processMatchAchievements } from './achievements/index.js';
 import { MatchAnalysisService } from './analysis.js';
 import { shadowVerifyOnComplete } from './match-integrity.js';
@@ -1445,6 +1446,15 @@ export class LocalMatchManager implements IMatchManager {
         : undefined;
 
     const preStateSource = match.lastPreState ?? match.state;
+    const spectatorFrame: SpectatorFrame | null = isGameOver(match.state)
+      ? {
+          preState: preStateSource,
+          postState: match.state,
+          action: lastAction,
+          events,
+          turnHash,
+        }
+      : buildDelayedSpectatorFrame(match);
 
     for (const player of match.players) {
       if (player) {
@@ -1468,9 +1478,9 @@ export class LocalMatchManager implements IMatchManager {
             preState: viewModel.preState,
 
             postState: viewModel.postState,
-            action: lastAction,
-            events,
-            turnHash,
+            action: viewModel.action,
+            events: viewModel.events ?? [],
+            turnHash: isGameOver(match.state) ? turnHash : undefined,
           },
 
           viewModel, // Phase 1: Add new ViewModel to existing message
@@ -1480,13 +1490,15 @@ export class LocalMatchManager implements IMatchManager {
     }
 
     for (const spectator of match.spectators) {
+      // Delay reconstruction is fail-closed; never substitute the current live state.
+      if (!spectatorFrame) continue;
       const viewModel = projectTurnForViewer(
         {
           matchId: match.matchId,
-          preState: preStateSource,
-          postState: match.state,
-          action: lastAction,
-          events,
+          preState: spectatorFrame.preState,
+          postState: spectatorFrame.postState,
+          action: spectatorFrame.action,
+          events: spectatorFrame.events,
         },
         null,
       );
@@ -1500,9 +1512,9 @@ export class LocalMatchManager implements IMatchManager {
           preState: viewModel.preState,
 
           postState: viewModel.postState,
-          action: lastAction,
-          events,
-          turnHash,
+          action: viewModel.action,
+          events: viewModel.events ?? [],
+          turnHash: isGameOver(match.state) ? spectatorFrame.turnHash : undefined,
         },
 
         viewModel, // Phase 1: Add new ViewModel to existing message

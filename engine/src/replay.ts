@@ -16,6 +16,11 @@ export interface ReplayResult {
   error?: string;
 }
 
+export interface TurnBoundedReplayResult extends ReplayResult {
+  preState: GameState;
+  appliedActionCount: number;
+}
+
 const DEFAULT_REPLAY_TIMESTAMP = '1970-01-01T00:00:00.000Z';
 
 function getReplayTimestamp(config: GameConfig): string {
@@ -65,4 +70,52 @@ export function replayGame(
   }
 
   return { finalState: state, valid: true };
+}
+
+/**
+ * Reconstruct the latest state whose turn number does not exceed the supplied
+ * bound. A negative bound intentionally yields the initialized pre-action
+ * state, which is the safe frame before a spectator delay has elapsed.
+ */
+export function replayGameAtOrBeforeTurn(
+  config: GameConfig,
+  actions: Action[],
+  maxTurnNumber: number,
+  options?: { hashFn?: (state: unknown) => string },
+): TurnBoundedReplayResult {
+  const replayTimestamp = getReplayTimestamp(config);
+  let state = createInitialState({ ...config, drawTimestamp: replayTimestamp });
+  state = applyAction(
+    state,
+    { type: 'system:init', timestamp: replayTimestamp },
+    { allowSystemInit: true, hashFn: options?.hashFn },
+  );
+  let preState = state;
+  let appliedActionCount = 0;
+  const applyOptions: ApplyActionOptions | undefined = options?.hashFn
+    ? { hashFn: options.hashFn }
+    : undefined;
+
+  for (let i = 0; i < actions.length; i++) {
+    try {
+      const action = actions[i];
+      if (!action) throw new Error(`Missing action at index ${i}`);
+      const candidate = applyAction(state, action, applyOptions);
+      if (candidate.turnNumber > maxTurnNumber) break;
+      preState = state;
+      state = candidate;
+      appliedActionCount += 1;
+    } catch (err) {
+      return {
+        preState,
+        finalState: state,
+        appliedActionCount,
+        valid: false,
+        failedAtIndex: i,
+        error: err instanceof Error ? err.message : 'Unknown error',
+      };
+    }
+  }
+
+  return { preState, finalState: state, appliedActionCount, valid: true };
 }

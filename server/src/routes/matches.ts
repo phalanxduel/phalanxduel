@@ -16,7 +16,13 @@ import {
   isGameOver,
 } from '@phalanxduel/shared';
 import { toJsonSchema } from '../utils/openapi.js';
-import { applyAction, deriveEventsFromEntry, replayGame } from '@phalanxduel/engine';
+import {
+  applyAction,
+  deriveEventsFromEntry,
+  PUBLIC_REPLAY,
+  projectGameStateForObserver,
+  replayGame,
+} from '@phalanxduel/engine';
 import * as Hash from '@phalanxduel/shared/hash';
 const { computeStateHash } = Hash;
 import { projectTurnForViewer, projectForViewer } from '../utils/viewer-projection.js';
@@ -989,9 +995,10 @@ export function registerMatchLogRoutes(
             source.match.config.drawTimestamp ?? new Date(source.match.createdAt).toISOString(),
         };
 
-        return replayGame(replayConfig, replayActions, {
+        const replay = replayGame(replayConfig, replayActions, {
           hashFn: computeStateHash,
-        }).finalState;
+        });
+        return projectGameStateForObserver(replay.finalState, PUBLIC_REPLAY);
       }),
   );
 

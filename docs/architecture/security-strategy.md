@@ -45,7 +45,8 @@ This document defines the formal security strategy, threat model, and defensive 
 
 * Threat: A player or spectator gains access to hidden information (opponent's hand, deck contents, or face-down cards).
 * Mitigation:
-  * **Live Redaction**: `filterStateForPlayer` and `filterStateForSpectator` in `server/src/match.ts` redact sensitive fields before broadcasting.
+  * **Unified Live Projection**: `engine/src/observer-knowledge.ts` projects state, actions, events, calculation evidence, seeds, and integrity witnesses for every observer role before server broadcast or competitive-bot use.
+  * **Delayed Spectators**: live spectator frames are reconstructed three turns behind authority (minimum two) and fail closed on replay error.
   * **Vulnerability (FIXED)**: The public Match Log API (`/matches/:id/log`) served unredacted events derived from the raw transaction log.
 * Status: **IMPLEMENTED**.
 
@@ -83,7 +84,7 @@ This document defines the formal security strategy, threat model, and defensive 
 ### 3.1 Log API Redaction (COMPLETE)
 
 The Match Log API has been updated to ensure that events served to non-owners or publicly are redacted consistently with the live game state.
-* **Action**: Implemented `redactPhalanxEvents(events)` and `filterEventLogForPublic(log)`.
+* **Action**: `redactPhalanxEvents(events)` and `filterEventLogForPublic(log)` delegate to the engine observer projection.
 * **Action**: Applied these filters in the `GET /matches/:id/log` route based on participant identity verification.
 
 ### 3.2 Authorization for Match Logs (COMPLETE)

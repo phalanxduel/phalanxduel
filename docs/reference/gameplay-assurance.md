@@ -85,7 +85,7 @@ example support; it is not exhaustively proved.
 
 ## Stable Rule Identifiers
 
-Normative claims use identifiers `PD-RULE-001` through `PD-RULE-066`. The
+Normative claims use identifiers `PD-RULE-001` through `PD-RULE-071`. The
 machine-readable registry is `docs/gameplay/rule-evidence.json`. Identifiers are
 never recycled. A changed claim retains its identifier only when its meaning is
 compatible; otherwise a new identifier and rules-version decision are required.
@@ -108,6 +108,21 @@ The stored combat resolution carries the same witness through live events,
 preview, and replay. Historical v1.0/v2.0 transactions keep their original
 shape and use an explicit compatibility derivation. Event-log fingerprints
 commit to the complete event payload, including calculation provenance.
+
+## Observer Knowledge and Noninterference
+
+Raw `GameState` is internal authority, not a client or bot input. The engine's
+observer projection defines the authorized information set for each player,
+competitive bot, live spectator, completed replay, and explicitly internal
+research adapter. Negative noninterference tests perturb hidden hands, draw-pile
+order, deck seeds, state hashes, and liveness witnesses, then require byte-for-
+byte-equivalent projections and competitive bot decisions.
+
+Live spectators consume deterministic replay frames at least two turns behind
+the authority (three by default). Reconstruction failure is fail-closed.
+Completed replay unlock is explicit and terminal-only. Calculation evidence uses
+closure-preserving prefix projection, so a hidden intermediate cannot be inferred
+from a later visible step.
 
 ## Gap Lifecycle
 

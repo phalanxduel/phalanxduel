@@ -12,9 +12,16 @@ status: accepted
 Decoupling the client from the core engine state and enforcing "Fog of War" rules requires that clients only see a subset of the game state relevant to their role.
 
 ## Decision
-The server must project a "View Model" tailored to the requester's identity (Player 0, Player 1, or Spectator). The raw `GameState` is considered internal and MUST NOT be broadcast to clients. The View Model is the sole authoritative source for visual state and allowed interactions (`validActions`).
+The engine defines one observer-relative projection tailored to the requester's
+role (Player 0, Player 1, competitive bot, live spectator, terminal replay, or
+explicit omniscient research). The server applies it to both modern view models
+and legacy payloads. Raw `GameState` is internal and MUST NOT be broadcast to
+live clients or passed to competitive bots. The View Model is the sole
+authoritative source for visual state and allowed interactions (`validActions`).
 
 ## Consequences
 - Prevents clients from seeing opponent-hidden information.
 - Simplifies client implementation by providing role-specific state.
 - Enables engine-independent UI development.
+- Makes hidden-state noninterference testable across state, action, event,
+  narration, bot, and replay consumers.

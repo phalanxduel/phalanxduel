@@ -616,8 +616,12 @@
       "formalization": "noninterference",
       "evidence": "E1",
       "status": "aligned",
-      "implementation": ["engine/src/projection.ts"],
-      "verification": ["engine/tests/visibility.test.ts", "engine/tests/fog-of-war.test.ts"]
+      "implementation": ["engine/src/observer-knowledge.ts"],
+      "verification": [
+        "engine/tests/visibility.test.ts",
+        "engine/tests/fog-of-war.test.ts",
+        "engine/tests/observer-knowledge.test.ts"
+      ]
     },
     {
       "id": "PD-RULE-051",
@@ -627,7 +631,7 @@
       "formalization": "policy",
       "evidence": "E1",
       "status": "aligned",
-      "implementation": ["engine/src/state.ts", "engine/src/projection.ts"],
+      "implementation": ["engine/src/state.ts", "engine/src/observer-knowledge.ts"],
       "verification": ["engine/tests/visibility.test.ts"]
     },
     {
@@ -638,7 +642,7 @@
       "formalization": "noninterference",
       "evidence": "E1",
       "status": "aligned",
-      "implementation": ["engine/src/projection.ts"],
+      "implementation": ["engine/src/observer-knowledge.ts"],
       "verification": ["engine/tests/visibility.test.ts"]
     },
     {
@@ -844,6 +848,76 @@
       "verification": [
         "shared/tests/calculation-provenance.test.ts",
         "engine/tests/calculation-provenance.test.ts"
+      ]
+    },
+    {
+      "id": "PD-RULE-067",
+      "section": "21.4",
+      "sourceMarker": "Observer noninterference law",
+      "claim": "States equivalent for an observer produce identical state action and event projections despite arbitrary hidden-zone or internal-witness changes.",
+      "formalization": "noninterference",
+      "evidence": "E1",
+      "status": "aligned",
+      "implementation": ["engine/src/observer-knowledge.ts", "server/src/utils/projection.ts"],
+      "verification": ["engine/tests/observer-knowledge.test.ts"]
+    },
+    {
+      "id": "PD-RULE-068",
+      "section": "21.5",
+      "sourceMarker": "Live spectator delay",
+      "claim": "Live spectator frames are reconstructed at least two turns behind authority with a default three-turn delay and fail closed on reconstruction error.",
+      "formalization": "inequality",
+      "evidence": "E1",
+      "status": "aligned",
+      "implementation": [
+        "engine/src/replay.ts",
+        "server/src/utils/spectator-delay.ts",
+        "server/src/match.ts"
+      ],
+      "verification": ["server/tests/spectator-delay.test.ts"]
+    },
+    {
+      "id": "PD-RULE-069",
+      "section": "21.5",
+      "sourceMarker": "Terminal replay unlock",
+      "claim": "Private card zones seeds and integrity witnesses unlock only for terminal replay while internal liveness and calculation evidence remain restricted.",
+      "formalization": "policy",
+      "evidence": "E1",
+      "status": "aligned",
+      "implementation": ["engine/src/observer-knowledge.ts", "server/src/routes/matches.ts"],
+      "verification": [
+        "engine/tests/observer-knowledge.test.ts",
+        "server/tests/match-replay-api.test.ts",
+        "server/tests/viewer-projection.test.ts"
+      ]
+    },
+    {
+      "id": "PD-RULE-070",
+      "section": "21.6",
+      "sourceMarker": "Competitive bots consume the same information set",
+      "claim": "Competitive bot decisions use only seat-authorized information while omniscient research decisions are explicit and rating-ineligible.",
+      "formalization": "noninterference",
+      "evidence": "E1",
+      "status": "aligned",
+      "implementation": [
+        "engine/src/bot.ts",
+        "engine/src/observer-knowledge.ts",
+        "server/src/match-actor.ts"
+      ],
+      "verification": ["engine/tests/observer-knowledge.test.ts"]
+    },
+    {
+      "id": "PD-RULE-071",
+      "section": "21.7",
+      "sourceMarker": "Calculation provenance is projected as the longest observer-visible prefix",
+      "claim": "Observer-safe calculation projection preserves arithmetic closure and continuity without revealing hidden intermediate steps through a visible suffix.",
+      "formalization": "invariant",
+      "evidence": "E1",
+      "status": "aligned",
+      "implementation": ["engine/src/observer-knowledge.ts"],
+      "verification": [
+        "engine/tests/observer-knowledge.test.ts",
+        "shared/tests/calculation-provenance.test.ts"
       ]
     }
   ]

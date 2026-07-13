@@ -5,6 +5,11 @@
 
 import type { PhalanxEvent, MatchEventLog, TransactionLogEntry } from '@phalanxduel/shared';
 import * as Hash from '@phalanxduel/shared/hash';
+import {
+  observerForViewer,
+  projectEventsForObserver,
+  projectTransactionLogForObserver,
+} from '@phalanxduel/engine';
 const { computeStateHash } = Hash;
 
 /**
@@ -14,34 +19,14 @@ export function redactTransactionLog(
   log: TransactionLogEntry[] | undefined,
   viewerIndex: number | null,
 ): TransactionLogEntry[] | undefined {
-  if (!log) return log;
-
-  return log.map((entry) => {
-    // Redact cardId from deploy/reinforce actions if the viewer is not the acting player.
-    // Participants see their own hand history; spectators and opponents see 'redacted'.
-    const action = entry.action;
-    const actionPlayerIndex = 'playerIndex' in action ? action.playerIndex : null;
-    const isOwner = viewerIndex !== null && actionPlayerIndex === viewerIndex;
-
-    if (!isOwner && (action.type === 'deploy' || action.type === 'reinforce')) {
-      return {
-        ...entry,
-        action: {
-          ...action,
-          cardId: 'redacted',
-        },
-      };
-    }
-    return entry;
-  });
+  return projectTransactionLogForObserver(log, observerForViewer(viewerIndex));
 }
 
 /**
  * Redacts card details in events for public/spectator view.
  */
 export function redactPhalanxEvents(events: PhalanxEvent[]): PhalanxEvent[] {
-  // Currently, events are considered public once they occur on the battlefield.
-  return events;
+  return projectEventsForObserver(events, observerForViewer(null));
 }
 
 /**

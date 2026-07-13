@@ -163,8 +163,8 @@ if (registry) {
     }
   });
 
-  if (registry.rules.length !== 66) {
-    failures.push(`expected 66 registered rules, found ${registry.rules.length}`);
+  if (registry.rules.length !== 71) {
+    failures.push(`expected 71 registered rules, found ${registry.rules.length}`);
   }
 
   const generated = render(registry);

@@ -931,7 +931,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "type": "array",
                 },
                 "deckSeed": {
-                  "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.",
+                  "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock.",
                   "maximum": 9007199254740991,
                   "minimum": -9007199254740991,
                   "type": "integer",
@@ -998,7 +998,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "type": "integer",
                 },
                 "drawpile": {
-                  "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1).",
+                  "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4.",
                   "items": {
                     "additionalProperties": false,
                     "properties": {
@@ -1053,7 +1053,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "type": "integer",
                 },
                 "hand": {
-                  "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).",
+                  "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4.",
                   "items": {
                     "additionalProperties": false,
                     "properties": {
@@ -3771,7 +3771,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "array",
                     },
                     "deckSeed": {
-                      "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.",
+                      "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock.",
                       "maximum": 9007199254740991,
                       "minimum": -9007199254740991,
                       "type": "integer",
@@ -3838,7 +3838,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "integer",
                     },
                     "drawpile": {
-                      "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1).",
+                      "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4.",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -3893,7 +3893,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "integer",
                     },
                     "hand": {
-                      "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).",
+                      "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4.",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -8781,7 +8781,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "array",
                     },
                     "deckSeed": {
-                      "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.",
+                      "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock.",
                       "maximum": 9007199254740991,
                       "minimum": -9007199254740991,
                       "type": "integer",
@@ -8848,7 +8848,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "integer",
                     },
                     "drawpile": {
-                      "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1).",
+                      "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4.",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -8903,7 +8903,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "integer",
                     },
                     "hand": {
-                      "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).",
+                      "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4.",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -11618,7 +11618,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "array",
                     },
                     "deckSeed": {
-                      "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.",
+                      "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock.",
                       "maximum": 9007199254740991,
                       "minimum": -9007199254740991,
                       "type": "integer",
@@ -11685,7 +11685,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "integer",
                     },
                     "drawpile": {
-                      "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1).",
+                      "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4.",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -11740,7 +11740,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "integer",
                     },
                     "hand": {
-                      "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).",
+                      "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4.",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -15258,7 +15258,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "array",
                     },
                     "deckSeed": {
-                      "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.",
+                      "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock.",
                       "maximum": 9007199254740991,
                       "minimum": -9007199254740991,
                       "type": "integer",
@@ -15325,7 +15325,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "integer",
                     },
                     "drawpile": {
-                      "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1).",
+                      "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4.",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -15380,7 +15380,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "integer",
                     },
                     "hand": {
-                      "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).",
+                      "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4.",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -18095,7 +18095,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "array",
                     },
                     "deckSeed": {
-                      "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.",
+                      "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock.",
                       "maximum": 9007199254740991,
                       "minimum": -9007199254740991,
                       "type": "integer",
@@ -18162,7 +18162,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "integer",
                     },
                     "drawpile": {
-                      "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1).",
+                      "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4.",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -18217,7 +18217,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "type": "integer",
                     },
                     "hand": {
-                      "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).",
+                      "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4.",
                       "items": {
                         "additionalProperties": false,
                         "properties": {
@@ -26436,7 +26436,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "type": "array",
                               },
                               "deckSeed": {
-                                "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.",
+                                "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock.",
                                 "maximum": 9007199254740991,
                                 "minimum": -9007199254740991,
                                 "type": "integer",
@@ -26503,7 +26503,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "type": "integer",
                               },
                               "drawpile": {
-                                "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1).",
+                                "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4.",
                                 "items": {
                                   "additionalProperties": false,
                                   "properties": {
@@ -26558,7 +26558,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "type": "integer",
                               },
                               "hand": {
-                                "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).",
+                                "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4.",
                                 "items": {
                                   "additionalProperties": false,
                                   "properties": {
@@ -29273,7 +29273,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "type": "array",
                               },
                               "deckSeed": {
-                                "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.",
+                                "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock.",
                                 "maximum": 9007199254740991,
                                 "minimum": -9007199254740991,
                                 "type": "integer",
@@ -29340,7 +29340,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "type": "integer",
                               },
                               "drawpile": {
-                                "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1).",
+                                "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4.",
                                 "items": {
                                   "additionalProperties": false,
                                   "properties": {
@@ -29395,7 +29395,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "type": "integer",
                               },
                               "hand": {
-                                "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).",
+                                "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4.",
                                 "items": {
                                   "additionalProperties": false,
                                   "properties": {
@@ -33238,7 +33238,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "type": "array",
                           },
                           "deckSeed": {
-                            "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.",
+                            "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock.",
                             "maximum": 9007199254740991,
                             "minimum": -9007199254740991,
                             "type": "integer",
@@ -33305,7 +33305,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "type": "integer",
                           },
                           "drawpile": {
-                            "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1).",
+                            "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4.",
                             "items": {
                               "additionalProperties": false,
                               "properties": {
@@ -33360,7 +33360,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "type": "integer",
                           },
                           "hand": {
-                            "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).",
+                            "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4.",
                             "items": {
                               "additionalProperties": false,
                               "properties": {
@@ -39303,7 +39303,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "type": "array",
                               },
                               "deckSeed": {
-                                "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.",
+                                "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock.",
                                 "maximum": 9007199254740991,
                                 "minimum": -9007199254740991,
                                 "type": "integer",
@@ -39370,7 +39370,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "type": "integer",
                               },
                               "drawpile": {
-                                "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1).",
+                                "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4.",
                                 "items": {
                                   "additionalProperties": false,
                                   "properties": {
@@ -39425,7 +39425,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "type": "integer",
                               },
                               "hand": {
-                                "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).",
+                                "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4.",
                                 "items": {
                                   "additionalProperties": false,
                                   "properties": {
@@ -42140,7 +42140,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "type": "array",
                               },
                               "deckSeed": {
-                                "description": "Deterministic RNG seed for deck shuffling. Ensures replay reproducibility.",
+                                "description": "Deterministic RNG seed for deck shuffling. Internal during live play (observer projections use the documented 0 sentinel) and available after terminal replay unlock.",
                                 "maximum": 9007199254740991,
                                 "minimum": -9007199254740991,
                                 "type": "integer",
@@ -42207,7 +42207,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "type": "integer",
                               },
                               "drawpile": {
-                                "description": "Remaining draw pile. Always hidden from all players and spectators (§21.1).",
+                                "description": "Remaining draw pile. Hidden from every live observer, including its owner; terminal replay follows §21.4.",
                                 "items": {
                                   "additionalProperties": false,
                                   "properties": {
@@ -42262,7 +42262,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "type": "integer",
                               },
                               "hand": {
-                                "description": "Cards in hand. Visible only to the owner; redacted for opponents and spectators (§21.1).",
+                                "description": "Cards in hand. During live play, visible only to the owner and redacted for opponents and spectators; terminal replay follows §21.4.",
                                 "items": {
                                   "additionalProperties": false,
                                   "properties": {

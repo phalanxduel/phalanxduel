@@ -111,6 +111,44 @@ describe('LocalMatchManager', () => {
   });
 
   describe('handleAction', () => {
+    it('broadcasts reconstructed delayed frames to live spectators', async () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+      const spectatorSocket = mockSocket();
+
+      const { matchId } = await manager.createMatch('Player 1', socket1);
+      const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
+      await manager.watchMatch(matchId, spectatorSocket);
+      manager.broadcastMatchState(matchId);
+      await vi.waitFor(() => {
+        expect(lastMessage(spectatorSocket)?.type).toBe('gameState');
+      });
+
+      const playerView = lastMessage(socket2) as Extract<ServerMessage, { type: 'gameState' }>;
+      const cardId = playerView.result.postState.players[1]!.hand[0]!.id;
+      await manager.handleAction(matchId, p2Id, {
+        type: 'deploy',
+        playerIndex: 1,
+        column: 0,
+        cardId,
+        timestamp: new Date().toISOString(),
+      });
+
+      const spectatorView = lastMessage(spectatorSocket) as Extract<
+        ServerMessage,
+        { type: 'gameState' }
+      >;
+      expect(spectatorView.result.action.type).toBe('system:init');
+      expect(spectatorView.result.postState.players[0]!.hand).toEqual([]);
+      expect(spectatorView.result.postState.players[1]!.hand).toEqual([]);
+      expect(spectatorView.result.postState.players[0]!.deckSeed).toBe(0);
+      expect(spectatorView.result.postState.players[1]!.deckSeed).toBe(0);
+      expect(spectatorView.result.postState.players[1]!.battlefield.every((cell) => !cell)).toBe(
+        true,
+      );
+      expect(manager.getMatchSync(matchId)?.state?.players[1]!.battlefield[0]).not.toBeNull();
+    });
+
     it('should accept a valid deploy action and broadcast updated state', async () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
@@ -139,7 +177,7 @@ describe('LocalMatchManager', () => {
       expect(updatedMsg.result.postState.players[1]!.handCount).toBe(11);
     });
 
-    it('should populate turnHash on the last transactionLog entry after a deploy action', async () => {
+    it('should retain internal turnHash while suppressing hidden-state commitments live', async () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();
 
@@ -164,8 +202,11 @@ describe('LocalMatchManager', () => {
       const updatedMsg = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
       const lastEntry = updatedMsg.result.postState.transactionLog?.at(-1);
       expect(lastEntry).toBeDefined();
-      expect(typeof lastEntry?.turnHash).toBe('string');
-      expect(lastEntry?.turnHash).toMatch(/^[0-9a-f]{64}$/);
+      expect(lastEntry?.turnHash).toBeUndefined();
+      expect(updatedMsg.result.turnHash).toBeUndefined();
+      expect(manager.getMatchSync(matchId)?.state?.transactionLog?.at(-1)?.turnHash).toMatch(
+        /^[0-9a-f]{64}$/,
+      );
     });
 
     it('should broadcast non-empty events array after a deploy action', async () => {

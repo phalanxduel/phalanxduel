@@ -13,7 +13,7 @@ This is a generated traceability view of
 
 | Status | Count |
 |---|---:|
-| aligned | 58 |
+| aligned | 63 |
 | partial | 7 |
 | divergent | 0 |
 | unverified | 1 |
@@ -71,9 +71,9 @@ This is a generated traceability view of
 | PD-RULE-047 | §19 | Cards never move from the Graveyard back into the draw pile. | invariant | E2 | aligned | `engine/src/state.ts`<br>`engine/src/turns.ts` | `engine/tests/property-invariants.test.ts` |
 | PD-RULE-048 | §19 | Classic mode cannot silently drift from its versioned parameter template. | invariant | E1 | partial | `shared/src/schema.ts` | `shared/tests/schema.test.ts` |
 | PD-RULE-049 | §2.1 | Drawn cards receive deterministic opaque identifiers from the declared tuple. | function | E1 | partial | `engine/src/state.ts` | `engine/tests/replay.test.ts` |
-| PD-RULE-050 | §21.1 | Draw piles and non-owner hands are hidden while public counts remain visible. | noninterference | E1 | aligned | `engine/src/projection.ts` | `engine/tests/visibility.test.ts`<br>`engine/tests/fog-of-war.test.ts` |
-| PD-RULE-051 | §21.2 | Competitive v3.0 battlefield visibility and deployment orientation are unambiguous. | policy | E1 | aligned | `engine/src/state.ts`<br>`engine/src/projection.ts` | `engine/tests/visibility.test.ts` |
-| PD-RULE-052 | §21.3 | Owners see their Graveyard while other observers see only its top card and count. | noninterference | E1 | aligned | `engine/src/projection.ts` | `engine/tests/visibility.test.ts` |
+| PD-RULE-050 | §21.1 | Draw piles and non-owner hands are hidden while public counts remain visible. | noninterference | E1 | aligned | `engine/src/observer-knowledge.ts` | `engine/tests/visibility.test.ts`<br>`engine/tests/fog-of-war.test.ts`<br>`engine/tests/observer-knowledge.test.ts` |
+| PD-RULE-051 | §21.2 | Competitive v3.0 battlefield visibility and deployment orientation are unambiguous. | policy | E1 | aligned | `engine/src/state.ts`<br>`engine/src/observer-knowledge.ts` | `engine/tests/visibility.test.ts` |
+| PD-RULE-052 | §21.3 | Owners see their Graveyard while other observers see only its top card and count. | noninterference | E1 | aligned | `engine/src/observer-knowledge.ts` | `engine/tests/visibility.test.ts` |
 | PD-RULE-053 | §20.2 | TurnHash commits to stateHashAfter and ordered event identifiers using the declared separator formula. | function | E1 | aligned | `shared/src/hash.ts` | `shared/tests/hash.test.ts` |
 | PD-RULE-054 | §19 | Destruction eligibility remains a function of the immutable origin attacker and active modes across the target chain. | invariant | E1 | aligned | `engine/src/combat.ts` | `engine/tests/facecard.test.ts` |
 | PD-RULE-055 | §16.1 | Competitive v3.0 evaluates liveness only at canonical AttackPhase turn boundaries and leaves older rules versions unchanged. | transition | E2 | aligned | `engine/src/liveness.ts`<br>`engine/src/turns.ts` | `engine/tests/liveness.test.ts`<br>`engine/tests/replay.test.ts` |
@@ -88,6 +88,11 @@ This is a generated traceability view of
 | PD-RULE-064 | §8 | Player-bound damage subtracts from prior LP and clamps the resulting LP at zero. | equation | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/calculation-provenance.ts` | `engine/tests/calculation-provenance.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
 | PD-RULE-065 | §8.1 | Every v3.0 attack stores one ordered rule-linked arithmetic witness and one authoritative resolution shared by live events preview and replay. | protocol | E2 | aligned | `shared/src/schema.ts`<br>`engine/src/calculation-provenance.ts`<br>`engine/src/turns.ts`<br>`engine/src/events.ts` | `shared/tests/calculation-provenance.test.ts`<br>`engine/tests/calculation-provenance.test.ts`<br>`engine/tests/combat-preview.test.ts`<br>`engine/tests/replay.test.ts` |
 | PD-RULE-066 | §8.1 | Calculation witnesses are arithmetically closed and every non-initial step is continuous with an exact earlier result. | invariant | E4 | aligned | `shared/src/calculation-provenance.ts`<br>`engine/src/calculation-provenance.ts` | `shared/tests/calculation-provenance.test.ts`<br>`engine/tests/calculation-provenance.test.ts` |
+| PD-RULE-067 | §21.4 | States equivalent for an observer produce identical state action and event projections despite arbitrary hidden-zone or internal-witness changes. | noninterference | E1 | aligned | `engine/src/observer-knowledge.ts`<br>`server/src/utils/projection.ts` | `engine/tests/observer-knowledge.test.ts` |
+| PD-RULE-068 | §21.5 | Live spectator frames are reconstructed at least two turns behind authority with a default three-turn delay and fail closed on reconstruction error. | inequality | E1 | aligned | `engine/src/replay.ts`<br>`server/src/utils/spectator-delay.ts`<br>`server/src/match.ts` | `server/tests/spectator-delay.test.ts` |
+| PD-RULE-069 | §21.5 | Private card zones seeds and integrity witnesses unlock only for terminal replay while internal liveness and calculation evidence remain restricted. | policy | E1 | aligned | `engine/src/observer-knowledge.ts`<br>`server/src/routes/matches.ts` | `engine/tests/observer-knowledge.test.ts`<br>`server/tests/match-replay-api.test.ts`<br>`server/tests/viewer-projection.test.ts` |
+| PD-RULE-070 | §21.6 | Competitive bot decisions use only seat-authorized information while omniscient research decisions are explicit and rating-ineligible. | noninterference | E1 | aligned | `engine/src/bot.ts`<br>`engine/src/observer-knowledge.ts`<br>`server/src/match-actor.ts` | `engine/tests/observer-knowledge.test.ts` |
+| PD-RULE-071 | §21.7 | Observer-safe calculation projection preserves arithmetic closure and continuity without revealing hidden intermediate steps through a visible suffix. | invariant | E1 | aligned | `engine/src/observer-knowledge.ts` | `engine/tests/observer-knowledge.test.ts`<br>`shared/tests/calculation-provenance.test.ts` |
 
 ## Interpretation
 

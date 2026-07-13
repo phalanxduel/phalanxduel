@@ -60,16 +60,17 @@ describe('filterStateForPlayer', () => {
       expect(filtered.players[0]!.hand).toEqual(originalHand);
     });
 
-    it("should preserve own player's drawpile unchanged", () => {
+    it("should hide the viewing player's exact drawpile order", () => {
       // Arrange
       const state = buildStateWithCards(5, 4);
-      const originalDraw = [...state.players[0]!.drawpile];
+      const originalDrawCount = state.players[0]!.drawpile.length;
 
       // Act
       const filtered = filterStateForPlayer(state, 0);
 
       // Assert
-      expect(filtered.players[0]!.drawpile).toEqual(originalDraw);
+      expect(filtered.players[0]!.drawpile).toEqual([]);
+      expect(filtered.players[0]!.drawpileCount).toBe(originalDrawCount);
     });
 
     it('should have handCount on own player state', () => {

@@ -15,11 +15,12 @@
 | :------------------ | :----------------------- | :------- |
 | @phalanxduel/engine | client/package.json:28:6 | error    |
 
-## Unused exports (1)
+## Unused exports (2)
 
-| Name             | Location                     | Severity |
-| :--------------- | :--------------------------- | :------- |
-| HUD_PHASE_LABELS | client/src/constants.ts:7:14 | error    |
+| Name                 | Location                            | Severity |
+| :------------------- | :---------------------------------- | :------- |
+| redactTransactionLog | server/src/utils/redaction.ts:18:17 | error    |
+| HUD_PHASE_LABELS     | client/src/constants.ts:7:14        | error    |
 
 ## Unused exported types (1)
 
