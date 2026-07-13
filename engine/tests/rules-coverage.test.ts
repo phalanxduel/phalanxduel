@@ -1018,10 +1018,7 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
   });
 
   describe('DEF-003+009 / TASK-194: Heart Shield (§9.3, §19)', () => {
-    it('applies front heart shield when front heart destroyed and back non-heart also destroyed', () => {
-      // DEF-009: Front heart destroyed, back non-heart card also destroyed.
-      // The front heart is the "last destroyed heart before player" — its shield must apply.
-      // Bug: frontHeartShield is only set when !backCard exists, so it's 0 here.
+    it('does not apply an earlier Heart when a back non-Heart is destroyed last', () => {
       const attacker = makeCard('spades', 10, '10', 'number');
       const frontHeart = makeCard('hearts', 3, '3', 'number');
       const backNum = makeCard('clubs', 2, '2', 'number');
@@ -1082,10 +1079,9 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
 
       // 10 damage: front heart (3 HP) destroyed → 7 overflow
       // back clubs (2 HP) destroyed → 5 overflow → LP
-      // Heart shield first: max(5 - 3, 0) = 2
-      // Spade weapon then doubles LP damage: 2 * 2 = 4
-      // LP: 20 - 4 = 16
-      expect(nextState.players[1]!.lifepoints).toBe(16);
+      // The Club is the final destroyed card, so the earlier Heart cannot shield.
+      // Spade weapon doubles LP damage: 5 * 2 = 10; LP: 20 - 10 = 10.
+      expect(nextState.players[1]!.lifepoints).toBe(10);
     });
 
     it('uses only last destroyed heart when both front and back are hearts', () => {

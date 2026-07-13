@@ -81,11 +81,16 @@ Run `pnpm generate:artifacts` after editing schema types, adding routes, or chan
 - `pnpm schema:gen` — regenerate shared JSON Schema artifacts. Run after editing `shared/src/schema.ts`.
 - `pnpm schema:check` — verify schema artifacts are current (runs generation then checks for uncommitted drift).
   Run before committing schema-touching changes, or let `verify:full` call it automatically.
-- `pnpm rules:check` — verify rules docs, runtime FSM consistency, event log coverage, and rule evidence. Runs three scripts:
+- `pnpm rules:check` — verify rules docs, runtime FSM consistency, event log coverage, rule evidence, and the independent combat model. Runs four checks:
   `verify-doc-fsm-consistency.ts` (FSM/rules alignment), `verify-event-log.ts` (confirms every action type
   reachable from the engine produces a non-empty `PhalanxEvent[]`), and `verify-rule-evidence.ts` (validates
-  stable rule IDs, evidence references, and generated traceability freshness). Run for
+  stable rule IDs, evidence references, and generated traceability freshness), followed by
+  `pnpm rules:combat-reference` (1,786,152 deterministic production/reference comparisons over the recorded
+  finite proof domain). Run for
   any turn-lifecycle, state-machine, or event derivation change.
+- `pnpm rules:combat-reference` — run the independent combat model checker directly. It verifies canonical
+  cards, all combat mode combinations, exhaustive primitive transition domains, and the two-rank orchestration
+  basis, then checks the recorded proof digest in `docs/quality/combat-reference-proof.json`.
 - `pnpm rules:evidence:write` — regenerate `docs/quality/gameplay-rule-evidence.md` from the machine-readable
   registry after an intentional evidence update.
 
@@ -322,7 +327,8 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `quality:status` | `tsx scripts/docs/quality-status.ts` |
 | `release:prepare` | `bash scripts/release/release-prepare.sh` |
 | `release:tag` | `bash scripts/release/release-tag.sh` |
-| `rules:check` | `node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts && node --import tsx scripts/ci/verify-rule-evidence.ts` |
+| `rules:check` | `node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts && node --import tsx scripts/ci/verify-rule-evidence.ts && pnpm rules:combat-reference` |
+| `rules:combat-reference` | `node --import tsx scripts/ci/verify-combat-reference.ts` |
 | `rules:evidence:write` | `node --import tsx scripts/ci/verify-rule-evidence.ts --write` |
 | `schema:check` | `bash scripts/ci/verify-schema.sh` |
 | `sdk:gen` | `pnpm tsx scripts/gen-sdk.ts` |

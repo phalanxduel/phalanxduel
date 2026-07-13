@@ -185,10 +185,14 @@
       "sourceMarker": "# 8. Attack Resolution",
       "claim": "Attack resolution initializes carryover from immutable attacker value and unused Club state.",
       "formalization": "assignment",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "aligned",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/rules-coverage.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/rules-coverage.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-018",
@@ -196,10 +200,15 @@
       "sourceMarker": "Build Target Chain:",
       "claim": "The target chain contains all non-null ranks front-to-back followed by the defending player.",
       "formalization": "sequence",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "partial",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/rules-coverage.test.ts", "engine/tests/dynamic-grid.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/rules-coverage.test.ts",
+        "engine/tests/dynamic-grid.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-019",
@@ -207,10 +216,14 @@
       "sourceMarker": "If `defAfterTentative > 0`",
       "claim": "A surviving card consumes all carryover without destruction.",
       "formalization": "equation",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "aligned",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/rules-coverage.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/rules-coverage.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-020",
@@ -218,10 +231,14 @@
       "sourceMarker": "Queue destruction",
       "claim": "An eligible destroyed card subtracts its defense and advances carryover.",
       "formalization": "equation",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "aligned",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/rules-coverage.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/rules-coverage.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-021",
@@ -229,10 +246,14 @@
       "sourceMarker": "Clamp (if cumulative)",
       "claim": "An ineligible target clamps in cumulative mode and halts carryover.",
       "formalization": "equation",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "aligned",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/facecard.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/facecard.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-022",
@@ -240,10 +261,14 @@
       "sourceMarker": "Canonical ordering at every boundary",
       "claim": "Boundary modifiers apply Shield then Weapon then Clamp.",
       "formalization": "sequence",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "aligned",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/rules-coverage.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/rules-coverage.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-023",
@@ -251,10 +276,14 @@
       "sourceMarker": "## 9.1 Diamond",
       "claim": "A destroyed Diamond reduces carryover before the next card by its value.",
       "formalization": "equation",
-      "evidence": "E1",
-      "status": "partial",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/rules-coverage.test.ts"]
+      "evidence": "E4",
+      "status": "aligned",
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/rules-coverage.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-024",
@@ -262,10 +291,14 @@
       "sourceMarker": "## 9.2 Club",
       "claim": "A Club attacker doubles positive carryover at the first eligible card boundary after destruction.",
       "formalization": "equation",
-      "evidence": "E1",
-      "status": "partial",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/rules-coverage.test.ts"]
+      "evidence": "E4",
+      "status": "aligned",
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/rules-coverage.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-025",
@@ -273,10 +306,14 @@
       "sourceMarker": "Applies once per attack",
       "claim": "Club multiplication applies at most once per attack.",
       "formalization": "invariant",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "aligned",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/facecard.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/facecard.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-026",
@@ -284,10 +321,14 @@
       "sourceMarker": "## 9.3 Heart",
       "claim": "The final destroyed Heart before the player reduces remaining player-bound damage by its value.",
       "formalization": "equation",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "aligned",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/golden-scenarios.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/golden-scenarios.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-027",
@@ -295,10 +336,14 @@
       "sourceMarker": "Hearts do not stack",
       "claim": "Heart shields do not stack within an attack.",
       "formalization": "invariant",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "aligned",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/golden-scenarios.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/golden-scenarios.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-028",
@@ -306,10 +351,14 @@
       "sourceMarker": "## 9.4 Spade",
       "claim": "A Spade attacker doubles positive carryover at the player boundary.",
       "formalization": "equation",
-      "evidence": "E1",
-      "status": "partial",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/rules-coverage.test.ts"]
+      "evidence": "E4",
+      "status": "aligned",
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/rules-coverage.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-029",
@@ -317,10 +366,15 @@
       "sourceMarker": "# 10. Classic Aces",
       "claim": "In Classic Ace mode an Ace is destroyable only by a front-rank Ace attacker.",
       "formalization": "predicate",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "aligned",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/rules-coverage.test.ts", "engine/tests/facecard.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/rules-coverage.test.ts",
+        "engine/tests/facecard.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-030",
@@ -328,10 +382,14 @@
       "sourceMarker": "If disabled",
       "claim": "With Classic Ace mode disabled an Ace behaves as a normal value-one card.",
       "formalization": "predicate",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "aligned",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/rules-coverage.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/rules-coverage.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-031",
@@ -339,10 +397,14 @@
       "sourceMarker": "# 11. Classic Face Cards",
       "claim": "Classic face-card destruction follows the Jack Queen King eligibility hierarchy.",
       "formalization": "relation",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "aligned",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/facecard.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/facecard.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-032",
@@ -350,10 +412,14 @@
       "sourceMarker": "clamp to 1 in cumulative mode",
       "claim": "An ineligible face card clamps to one HP in cumulative mode and halts carryover.",
       "formalization": "equation",
-      "evidence": "E1",
+      "evidence": "E4",
       "status": "aligned",
-      "implementation": ["engine/src/combat.ts"],
-      "verification": ["engine/tests/facecard.test.ts"]
+      "implementation": ["engine/src/combat.ts", "engine/src/combat-math.ts"],
+      "verification": [
+        "engine/tests/facecard.test.ts",
+        "engine/tests/combat-reference.test.ts",
+        "scripts/ci/verify-combat-reference.ts"
+      ]
     },
     {
       "id": "PD-RULE-033",

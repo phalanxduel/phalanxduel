@@ -8,6 +8,7 @@ related:
   - docs/gameplay/rules.md
   - docs/reference/test-constitution.md
   - docs/quality/gameplay-rule-evidence.md
+  - docs/quality/combat-reference-proof.md
   - docs/architecture/principles.md
 ---
 
@@ -29,8 +30,8 @@ The authority model remains the one locked by ADR-001:
 
 The rule-evidence registry does not replace any authority. It assigns stable
 identifiers to normative claims and records the current evidence attached to
-them. The future reference model is a verification adapter, not runtime
-authority.
+them. The independent combat reference model is a verification adapter, not
+runtime authority.
 
 ## Assurance Scope
 
@@ -138,7 +139,11 @@ rtk pnpm rules:check
 
 The rule-evidence verifier rejects malformed registries, duplicate or missing
 identifiers, missing normative source markers, missing referenced files, and a
-stale generated traceability view.
+stale generated traceability view. The same gate runs the independent combat
+model checker and rejects implementation coupling, unexplained differential
+mismatches, proof-count drift, and result-digest drift. Its precise finite
+domain and composition argument are documented in
+`docs/quality/combat-reference-proof.md`.
 
 Regenerate the view intentionally with:
 

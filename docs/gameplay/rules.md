@@ -71,6 +71,11 @@ A = 1; 2…9 = face value; T = 10; J = Q = K = 11
 Face-card destruction hierarchy (§11) is independent of this shared numeric
 value.
 
+Competitive v2.0 uses the canonical 52-card manifest and therefore generates
+only `number`, `ace`, `jack`, `queen`, and `king` card types. `joker` remains a
+reserved schema vocabulary value for a future version; it is not generated and
+is outside the competitive v2.0 gameplay domain.
+
 ### 2.1 Deterministic Card ID Specification
 
 To ensure a sortable audit trail while maintaining 100% determinism during replays, Card IDs are generated upon drawing using the following template:
@@ -239,6 +244,13 @@ New matches default to `2.0`, whose corrected order is Shield → Weapon → Cla
 Replay dispatch MUST use the recorded version; clients MUST NOT reinterpret a
 historical trace using the current default.
 
+The v1.0 compatibility branch also preserves its recorded boundary-scope
+semantics: an empty front slot could satisfy the Club boundary precondition, a
+destroyed Diamond could shield a direct player transition, the most recent
+destroyed Heart in the chain could shield even when a later non-Heart was
+destroyed, and LP-step `absorbed` recorded a net arithmetic difference. These
+are replay axioms, not v2.0 rules.
+
 ---
 
 # 4. Turn Lifecycle (Deterministic)
@@ -368,6 +380,10 @@ next = clamp(weaponized)
 At the player boundary, `clamp(x) = max(x, 0)` before LP subtraction. No suit
 effect creates fractional damage. Version 1.0 instead computes
 `max(w * r - s, 0)` for historical replay compatibility.
+
+For v2.0 combat evidence, an LP step's `absorbed` value is the actual shield
+term `min(r, s)` applied before any weapon multiplication. It is not inferred
+after multiplication from `incomingDamage - damage`.
 
 ## 9.1 Diamond (♦) — Card→Card
 

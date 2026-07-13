@@ -13,8 +13,8 @@ This is a generated traceability view of
 
 | Status | Count |
 |---|---:|
-| aligned | 43 |
-| partial | 10 |
+| aligned | 46 |
+| partial | 7 |
 | divergent | 0 |
 | unverified | 1 |
 
@@ -38,22 +38,22 @@ This is a generated traceability view of
 | PD-RULE-014 | §6 | No attacker outside the Special Start window counts as a pass. | transition | E1 | aligned | `engine/src/turns.ts` | `engine/tests/pass-rules.test.ts` |
 | PD-RULE-015 | §7 | No attacker inside the Special Start window does not count as a pass. | transition | E0 | partial | `engine/src/turns.ts` | — |
 | PD-RULE-016 | §7 | The Special Start window closes after both first forced reinforcements and emits its closure event. | protocol | E0 | partial | `engine/src/turns.ts` | — |
-| PD-RULE-017 | §8 | Attack resolution initializes carryover from immutable attacker value and unused Club state. | assignment | E1 | aligned | `engine/src/combat.ts` | `engine/tests/rules-coverage.test.ts` |
-| PD-RULE-018 | §8 | The target chain contains all non-null ranks front-to-back followed by the defending player. | sequence | E1 | partial | `engine/src/combat.ts` | `engine/tests/rules-coverage.test.ts`<br>`engine/tests/dynamic-grid.test.ts` |
-| PD-RULE-019 | §8 | A surviving card consumes all carryover without destruction. | equation | E1 | aligned | `engine/src/combat.ts` | `engine/tests/rules-coverage.test.ts` |
-| PD-RULE-020 | §8 | An eligible destroyed card subtracts its defense and advances carryover. | equation | E1 | aligned | `engine/src/combat.ts` | `engine/tests/rules-coverage.test.ts` |
-| PD-RULE-021 | §8 | An ineligible target clamps in cumulative mode and halts carryover. | equation | E1 | aligned | `engine/src/combat.ts` | `engine/tests/facecard.test.ts` |
-| PD-RULE-022 | §9 | Boundary modifiers apply Shield then Weapon then Clamp. | sequence | E1 | aligned | `engine/src/combat.ts` | `engine/tests/rules-coverage.test.ts` |
-| PD-RULE-023 | §9.1 | A destroyed Diamond reduces carryover before the next card by its value. | equation | E1 | partial | `engine/src/combat.ts` | `engine/tests/rules-coverage.test.ts` |
-| PD-RULE-024 | §9.2 | A Club attacker doubles positive carryover at the first eligible card boundary after destruction. | equation | E1 | partial | `engine/src/combat.ts` | `engine/tests/rules-coverage.test.ts` |
-| PD-RULE-025 | §9.2 | Club multiplication applies at most once per attack. | invariant | E1 | aligned | `engine/src/combat.ts` | `engine/tests/facecard.test.ts` |
-| PD-RULE-026 | §9.3 | The final destroyed Heart before the player reduces remaining player-bound damage by its value. | equation | E1 | aligned | `engine/src/combat.ts` | `engine/tests/golden-scenarios.test.ts` |
-| PD-RULE-027 | §9.3 | Heart shields do not stack within an attack. | invariant | E1 | aligned | `engine/src/combat.ts` | `engine/tests/golden-scenarios.test.ts` |
-| PD-RULE-028 | §9.4 | A Spade attacker doubles positive carryover at the player boundary. | equation | E1 | partial | `engine/src/combat.ts` | `engine/tests/rules-coverage.test.ts` |
-| PD-RULE-029 | §10 | In Classic Ace mode an Ace is destroyable only by a front-rank Ace attacker. | predicate | E1 | aligned | `engine/src/combat.ts` | `engine/tests/rules-coverage.test.ts`<br>`engine/tests/facecard.test.ts` |
-| PD-RULE-030 | §10 | With Classic Ace mode disabled an Ace behaves as a normal value-one card. | predicate | E1 | aligned | `engine/src/combat.ts` | `engine/tests/rules-coverage.test.ts` |
-| PD-RULE-031 | §11 | Classic face-card destruction follows the Jack Queen King eligibility hierarchy. | relation | E1 | aligned | `engine/src/combat.ts` | `engine/tests/facecard.test.ts` |
-| PD-RULE-032 | §11 | An ineligible face card clamps to one HP in cumulative mode and halts carryover. | equation | E1 | aligned | `engine/src/combat.ts` | `engine/tests/facecard.test.ts` |
+| PD-RULE-017 | §8 | Attack resolution initializes carryover from immutable attacker value and unused Club state. | assignment | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/rules-coverage.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-018 | §8 | The target chain contains all non-null ranks front-to-back followed by the defending player. | sequence | E4 | partial | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/rules-coverage.test.ts`<br>`engine/tests/dynamic-grid.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-019 | §8 | A surviving card consumes all carryover without destruction. | equation | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/rules-coverage.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-020 | §8 | An eligible destroyed card subtracts its defense and advances carryover. | equation | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/rules-coverage.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-021 | §8 | An ineligible target clamps in cumulative mode and halts carryover. | equation | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/facecard.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-022 | §9 | Boundary modifiers apply Shield then Weapon then Clamp. | sequence | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/rules-coverage.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-023 | §9.1 | A destroyed Diamond reduces carryover before the next card by its value. | equation | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/rules-coverage.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-024 | §9.2 | A Club attacker doubles positive carryover at the first eligible card boundary after destruction. | equation | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/rules-coverage.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-025 | §9.2 | Club multiplication applies at most once per attack. | invariant | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/facecard.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-026 | §9.3 | The final destroyed Heart before the player reduces remaining player-bound damage by its value. | equation | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/golden-scenarios.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-027 | §9.3 | Heart shields do not stack within an attack. | invariant | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/golden-scenarios.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-028 | §9.4 | A Spade attacker doubles positive carryover at the player boundary. | equation | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/rules-coverage.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-029 | §10 | In Classic Ace mode an Ace is destroyable only by a front-rank Ace attacker. | predicate | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/rules-coverage.test.ts`<br>`engine/tests/facecard.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-030 | §10 | With Classic Ace mode disabled an Ace behaves as a normal value-one card. | predicate | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/rules-coverage.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-031 | §11 | Classic face-card destruction follows the Jack Queen King eligibility hierarchy. | relation | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/facecard.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
+| PD-RULE-032 | §11 | An ineligible face card clamps to one HP in cumulative mode and halts carryover. | equation | E4 | aligned | `engine/src/combat.ts`<br>`engine/src/combat-math.ts` | `engine/tests/facecard.test.ts`<br>`engine/tests/combat-reference.test.ts`<br>`scripts/ci/verify-combat-reference.ts` |
 | PD-RULE-033 | §12 | Classic mode resets surviving card HP between turns. | invariant | E1 | aligned | `engine/src/turns.ts`<br>`engine/src/combat.ts` | `engine/tests/facecard.test.ts` |
 | PD-RULE-034 | §12 | Cumulative mode preserves surviving card HP between turns. | invariant | E1 | aligned | `engine/src/turns.ts`<br>`engine/src/combat.ts` | `engine/tests/facecard.test.ts` |
 | PD-RULE-035 | §13 | Cleanup moves destroyed cards to the LIFO Graveyard and collapses columns forward. | transition | E1 | aligned | `engine/src/combat.ts`<br>`engine/src/state.ts`<br>`engine/src/turns.ts` | `engine/tests/rules-coverage.test.ts` |

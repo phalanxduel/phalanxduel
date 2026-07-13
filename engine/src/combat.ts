@@ -10,9 +10,12 @@ import type {
   BattlefieldCard,
   CombatLogStep,
   CombatLogEntry,
-  CombatBonusType,
-  CardType,
 } from '@phalanxduel/shared';
+import {
+  resolveCardBoundary,
+  resolveCardTransition,
+  resolvePlayerBoundary,
+} from './combat-math.js';
 
 /**
  * Check if a target column is valid for attack.
@@ -34,36 +37,14 @@ export function getBaseAttackDamage(attacker: BattlefieldCard): number {
   return attacker.card.value;
 }
 
-/**
- */
-function isAce(card: BattlefieldCard): boolean {
-  return card.card.type === 'ace';
-}
-
 /** Immutable attack context threaded through the damage chain (PHX-FACECARD-001). */
 interface AttackContext {
   specVersion: GameState['specVersion'];
-  attackerType: CardType;
+  attackerType: BattlefieldCard['card']['type'];
   modeClassicAces: boolean;
   modeClassicFaceCards: boolean;
-  isCumulative: boolean;
+  modeDamagePersistence: GameState['params']['modeDamagePersistence'];
   columns: number;
-}
-
-/**
- * Classic Face Cards (PHX-FACECARD-001): check if attacker is eligible to destroy defender.
- * Number cards and Aces are always eligible. Jokers are always eligible.
- * Face card eligibility matrix:
- *   Jack   → can destroy Jack only
- *   Queen  → can destroy Jack, Queen
- *   King   → can destroy Jack, Queen, King
- */
-function isFaceCardEligible(attackerType: CardType, defenderType: CardType): boolean {
-  if (defenderType !== 'jack' && defenderType !== 'queen' && defenderType !== 'king') return true;
-  if (attackerType === 'king') return true;
-  if (attackerType === 'queen') return defenderType === 'jack' || defenderType === 'queen';
-  if (attackerType === 'jack') return defenderType === 'jack';
-  return true; // number / ace / joker: always eligible
 }
 
 /**
@@ -89,18 +70,18 @@ function resolveColumnOverflow(
   const steps: CombatLogStep[] = [];
   const discarded: BattlefieldCard['card'][] = [];
   let overflow = baseDamage;
-  const attackerIsAce = ctx.attackerType === 'ace';
 
   // Step A: Front card (index = column)
   const frontIdx = column;
   const frontCard = newBf[frontIdx];
   let frontDiamondShield = 0;
   let frontHeartShield = 0;
+  let lastDestroyedHeartShield = 0;
 
   if (frontCard && overflow > 0) {
-    const step = absorbDamage(frontCard, overflow, attackerIsAce, true, ctx);
-    overflow = step.overflow;
-    steps.push(step.logStep);
+    const step = resolveCardTransition(frontCard, overflow, true, ctx);
+    overflow = step.carryover;
+    steps.push(step.step);
 
     if (step.destroyed) {
       discarded.push(frontCard.card);
@@ -110,6 +91,7 @@ function resolveColumnOverflow(
       }
       if (frontCard.card.suit === 'hearts') {
         frontHeartShield = frontCard.card.value;
+        lastDestroyedHeartShield = frontCard.card.value;
       }
     } else {
       newBf[frontIdx] = { ...frontCard, currentHp: step.remainingHp };
@@ -122,54 +104,48 @@ function resolveColumnOverflow(
   let backHeartShield = 0;
 
   if (overflow > 0) {
-    let clubDoubled = false;
-    const applyDiamondShield = (): void => {
-      if (frontDiamondShield <= 0) return;
-      const shieldAbsorbed = Math.min(overflow, frontDiamondShield);
-      overflow -= shieldAbsorbed;
+    const clubBoundaryEligible =
+      ctx.specVersion === '1.0'
+        ? newBf[frontIdx] === null
+        : frontCard !== null && newBf[frontIdx] === null;
+    const boundary = resolveCardBoundary({
+      carryover: overflow,
+      diamondShield: ctx.specVersion === '1.0' || backCard !== null ? frontDiamondShield : 0,
+      clubEligible: backCard !== null && attacker.card.suit === 'clubs' && clubBoundaryEligible,
+      specVersion: ctx.specVersion,
+    });
+    overflow = boundary.carryover;
+
+    if (boundary.diamondApplied) {
       const frontStep = steps.at(-1);
       if (!frontStep) throw new Error('Expected front step in combat log');
       frontStep.overflow = overflow;
       frontStep.remaining = overflow;
       frontStep.bonuses ??= [];
-      if (clubDoubled && overflow === 0) {
-        // Club bonus absorbed by Diamond shield — record it on front step too
+      if (boundary.clubBonusTarget === 'destroyedCard') {
         frontStep.bonuses.push('clubDoubleOverflow');
-        clubDoubled = false;
       }
       frontStep.bonuses.push('diamondDeathShield');
-    };
-
-    if (ctx.specVersion === '2.0') {
-      applyDiamondShield();
-    }
-
-    if (backCard && overflow > 0 && attacker.card.suit === 'clubs' && newBf[frontIdx] === null) {
-      overflow = overflow * 2;
-      clubDoubled = true;
-    }
-
-    // v1.0 replay compatibility: Weapon preceded Shield at card boundaries.
-    if (ctx.specVersion === '1.0') {
-      applyDiamondShield();
     }
 
     if (backCard && overflow > 0) {
-      const step = absorbDamage(backCard, overflow, attackerIsAce, false, ctx);
-      overflow = step.overflow;
+      const step = resolveCardTransition(backCard, overflow, false, ctx);
+      overflow = step.carryover;
 
-      if (clubDoubled) {
-        step.logStep.bonuses ??= [];
-        step.logStep.bonuses.push('clubDoubleOverflow');
+      if (boundary.clubBonusTarget === 'nextCard') {
+        step.step.bonuses ??= [];
+        step.step.bonuses.push('clubDoubleOverflow');
       }
 
-      steps.push(step.logStep);
+      steps.push(step.step);
 
       if (step.destroyed) {
         discarded.push(backCard.card);
         newBf[backIdx] = null;
+        lastDestroyedHeartShield = 0;
         if (backCard.card.suit === 'hearts') {
           backHeartShield = backCard.card.value;
+          lastDestroyedHeartShield = backCard.card.value;
         }
       } else {
         newBf[backIdx] = { ...backCard, currentHp: step.remainingHp };
@@ -182,30 +158,19 @@ function resolveColumnOverflow(
   let newLp = defenderLp;
 
   if (overflow > 0) {
-    let lpDamage = overflow;
-    const bonuses: CombatBonusType[] = [];
-
-    const heartShield = backHeartShield > 0 ? backHeartShield : frontHeartShield;
-    const applyHeartShield = (): void => {
-      if (heartShield <= 0) return;
-      const shieldAbsorbed = Math.min(lpDamage, heartShield);
-      lpDamage -= shieldAbsorbed;
-      bonuses.push('heartDeathShield');
-    };
-
-    if (ctx.specVersion === '2.0') {
-      applyHeartShield();
-    }
-
-    if (attacker.card.suit === 'spades') {
-      lpDamage = lpDamage * 2;
-      bonuses.push('spadeDoubleLp');
-    }
-
-    // v1.0 replay compatibility: Weapon preceded Shield at the player boundary.
-    if (ctx.specVersion === '1.0') {
-      applyHeartShield();
-    }
+    const heartShield =
+      ctx.specVersion === '2.0'
+        ? lastDestroyedHeartShield
+        : backHeartShield > 0
+          ? backHeartShield
+          : frontHeartShield;
+    const boundary = resolvePlayerBoundary({
+      carryover: overflow,
+      heartShield,
+      spadeWeapon: attacker.card.suit === 'spades',
+      specVersion: ctx.specVersion,
+    });
+    const lpDamage = boundary.damage;
 
     totalLpDamage = lpDamage;
     newLp = Math.max(0, defenderLp - lpDamage);
@@ -214,12 +179,13 @@ function resolveColumnOverflow(
       target: 'playerLp',
       incomingDamage: overflow,
       damage: lpDamage,
-      absorbed: Math.max(0, overflow - lpDamage),
+      absorbed:
+        ctx.specVersion === '2.0' ? boundary.heartAbsorbed : Math.max(0, overflow - lpDamage),
       overflow: 0,
       remaining: 0,
       lpBefore: defenderLp,
       lpAfter: newLp,
-      bonuses: bonuses.length > 0 ? bonuses : undefined,
+      bonuses: boundary.bonuses.length > 0 ? boundary.bonuses : undefined,
     };
     steps.push(lpStep);
   }
@@ -227,143 +193,7 @@ function resolveColumnOverflow(
   return { battlefield: newBf, newLp, discarded, steps, totalLpDamage };
 }
 
-/**
- * Absorb damage into a single card. Returns remaining HP, overflow, and log step.
- */
-function absorbDamage(
-  card: BattlefieldCard,
-  incomingDamage: number,
-  attackerIsAce: boolean,
-  isFrontRow: boolean,
-  ctx: AttackContext,
-): {
-  remainingHp: number;
-  overflow: number;
-  destroyed: boolean;
-  logStep: CombatLogStep;
-} {
-  const hpBefore = card.currentHp;
-  const effectiveHp = card.currentHp;
-  const bonuses: CombatBonusType[] = [];
-
-  // PHX-FACECARD-001: Classic Face Cards eligibility check.
-  // Must run before Ace check — face card eligibility is independent of Ace invulnerability.
-  if (ctx.modeClassicFaceCards && !isFaceCardEligible(ctx.attackerType, card.card.type)) {
-    bonuses.push('faceCardIneligible');
-    // Cumulative mode: clamp HP to 1 (persistent damage), no overflow.
-    // Classic mode: no HP change (HP resets each turn anyway), no overflow.
-    const remainingHp = ctx.isCumulative
-      ? Math.max(card.currentHp - incomingDamage, 1)
-      : card.currentHp;
-    const absorbed = card.currentHp - remainingHp;
-    return {
-      remainingHp,
-      overflow: 0,
-      destroyed: false,
-      logStep: {
-        target: isFrontRow ? 'frontCard' : 'backCard',
-        card: card.card,
-        incomingDamage,
-        hpBefore,
-        effectiveHp,
-        absorbed,
-        overflow: 0,
-        remaining: 0,
-        damage: absorbed,
-        hpAfter: remainingHp,
-        destroyed: false,
-        bonuses,
-      },
-    };
-  }
-
-  // (applied after Club doubling when the card is destroyed). No in-place bonus here.
-
-  if (isAce(card) && ctx.modeClassicAces) {
-    if (attackerIsAce && isFrontRow) {
-      // Ace-vs-Ace: invulnerability does not apply (only for front-rank aces, §10)
-      bonuses.push('aceVsAce');
-      const absorbed = Math.min(incomingDamage, card.currentHp);
-      const destroyed = card.currentHp - absorbed <= 0;
-      const hpAfter = destroyed ? 0 : card.currentHp - absorbed;
-      const aceVsAceOverflow = incomingDamage - absorbed;
-      return {
-        remainingHp: hpAfter,
-        overflow: aceVsAceOverflow,
-        destroyed,
-        logStep: {
-          target: isFrontRow ? 'frontCard' : 'backCard',
-          card: card.card,
-          incomingDamage,
-          hpBefore,
-          effectiveHp,
-          absorbed,
-          overflow: aceVsAceOverflow,
-          remaining: aceVsAceOverflow,
-          damage: absorbed,
-          hpAfter,
-          destroyed,
-          bonuses,
-        },
-      };
-    }
-    // Normal attack on Ace: absorbs 1, stays at 1 HP
-    bonuses.push('aceInvulnerable');
-    const absorbed = Math.min(incomingDamage, 1);
-    const aceOverflow = incomingDamage - absorbed;
-    return {
-      remainingHp: 1,
-      overflow: aceOverflow,
-      destroyed: false,
-      logStep: {
-        target: isFrontRow ? 'frontCard' : 'backCard',
-        card: card.card,
-        incomingDamage,
-        hpBefore,
-        effectiveHp,
-        absorbed,
-        overflow: aceOverflow,
-        remaining: aceOverflow,
-        damage: absorbed,
-        hpAfter: 1,
-        destroyed: false,
-        bonuses,
-      },
-    };
-  }
-
-  // Normal card absorption
-  const absorbed = Math.min(incomingDamage, effectiveHp);
-  const overflow = incomingDamage - absorbed;
-  const realHpLoss = absorbed;
-  const newHp = card.currentHp - realHpLoss;
-  const destroyed = newHp <= 0;
-
-  return {
-    remainingHp: destroyed ? 0 : newHp,
-    overflow,
-    destroyed,
-    logStep: {
-      target: isFrontRow ? 'frontCard' : 'backCard',
-      card: card.card,
-      incomingDamage,
-      hpBefore,
-      effectiveHp,
-      absorbed,
-      overflow,
-      remaining: overflow,
-      damage: realHpLoss,
-      hpAfter: destroyed ? 0 : newHp,
-      destroyed,
-      bonuses,
-    },
-  };
-}
-
-/**
- * Used in per-turn damage mode after attack resolution.
- * Only resets cards that are still alive (non-null). Destroyed cards stay gone.
- */
+/** Reset surviving cards in one column to their printed HP. */
 export function resetColumnHp(battlefield: Battlefield, column: number, columns = 4): Battlefield {
   const newBf = [...battlefield] as Battlefield;
   const frontIdx = column;
@@ -415,7 +245,7 @@ export function resolveAttack(
     attackerType: attacker.card.type,
     modeClassicAces: state.params.modeClassicAces,
     modeClassicFaceCards: state.params.modeClassicFaceCards,
-    isCumulative: state.params.modeDamagePersistence === 'cumulative',
+    modeDamagePersistence: state.params.modeDamagePersistence,
     columns,
   };
 

@@ -1,0 +1,15 @@
+{
+  "proofVersion": 1,
+  "rulesVersions": ["2.0", "1.0"],
+  "counts": {
+    "cardTransitions": 647680,
+    "cardBoundaries": 1008,
+    "playerBoundaries": 1968,
+    "emptyChain": 52104,
+    "frontOnly": 292864,
+    "backOnly": 292864,
+    "twoRankBasis": 497664,
+    "total": 1786152
+  },
+  "digest": "938e26025dc42cbe2c4163b51e3c7369d326ea85e464aa9be8b5463c7dc37846"
+}
