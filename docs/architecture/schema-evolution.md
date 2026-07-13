@@ -36,8 +36,14 @@ Phalanx Duel uses a dual-versioning system to separate gameplay logic from trans
 Because every turn is signed by a state hash, any change to the `GameState` schema has the potential to break the chain of trust for historical matches.
 
 ### 3.1 Immutable Replays
-Matches recorded under `specVersion` 1.0 must always be replayable using the 1.0 engine.
-*   **Strategy**: If a breaking change is required, the engine must support "versioned application" (e.g. `applyActionV1`, `applyActionV2`) to ensure historical hash chains remain valid.
+Matches recorded under `specVersion` 1.0 must always dispatch to their historical
+semantics. New matches default to 2.0, while the state and parameters retain the
+recorded version for replay.
+
+*   **Strategy**: Version-sensitive operations branch on immutable `specVersion`.
+    Version 1.0 preserves Weapon → Shield boundary order; version 2.0 uses the
+    corrected Shield → Weapon order. Future breaking changes must add another
+    explicit dispatch path rather than rewriting historical behavior.
 
 ### 3.2 Verification
 Every schema change must be verified against the `engine/tests/replay.test.ts` suite. If the hashes of existing test scenarios change, the modification is considered **Breaking** and must follow the Major Version policy.

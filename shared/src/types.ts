@@ -46,6 +46,7 @@ import type {
   PhaseRulesSchema,
   PlayerSchema,
   PlayerStateSchema,
+  RulesSpecVersionSchema,
   ServerMessageSchema,
   SpectatorMatchSummarySchema,
   StateTransitionSchema,
@@ -100,6 +101,7 @@ export type PhaseHopTrace = z.infer<typeof PhaseHopTraceSchema>;
 export type PhaseRules = z.infer<typeof PhaseRulesSchema>;
 export type Player = z.infer<typeof PlayerSchema>;
 export type PlayerState = z.infer<typeof PlayerStateSchema>;
+export type RulesSpecVersion = z.infer<typeof RulesSpecVersionSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
 export type SpectatorMatchSummary = z.infer<typeof SpectatorMatchSummarySchema>;
 export type StateTransition = z.infer<typeof StateTransitionSchema>;

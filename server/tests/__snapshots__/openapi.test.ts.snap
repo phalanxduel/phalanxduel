@@ -65,7 +65,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "type": "integer",
           },
           "faceDown": {
-            "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
+            "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
             "type": "boolean",
           },
           "position": {
@@ -267,12 +267,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "properties": {
               "classicDeployment": {
                 "default": true,
-                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                 "type": "boolean",
               },
               "damageMode": {
                 "default": "classic",
-                "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                 "enum": [
                   "classic",
                   "cumulative",
@@ -280,12 +280,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "string",
               },
               "quickStart": {
-                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                 "type": "boolean",
               },
               "startingLifepoints": {
                 "default": 20,
-                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                 "maximum": 500,
                 "minimum": 1,
                 "type": "integer",
@@ -456,7 +456,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       },
                       "quickStart": {
                         "default": false,
-                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                        "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                         "type": "boolean",
                       },
                     },
@@ -608,7 +608,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
               "modeQuickStart": {
-                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                 "type": "boolean",
               },
               "modeSpecialStart": {
@@ -635,8 +635,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "integer",
               },
               "specVersion": {
+                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                 "enum": [
                   "1.0",
+                  "2.0",
                 ],
                 "type": "string",
               },
@@ -803,7 +805,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "integer",
                           },
                           "faceDown": {
-                            "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
+                            "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                             "type": "boolean",
                           },
                           "position": {
@@ -1095,9 +1097,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "type": "object",
           },
           "specVersion": {
-            "description": "Rules specification version. Must be "1.0".",
+            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
             "enum": [
               "1.0",
+              "2.0",
             ],
             "type": "string",
           },
@@ -1362,12 +1365,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "properties": {
                                 "classicDeployment": {
                                   "default": true,
-                                  "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                  "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                   "type": "boolean",
                                 },
                                 "damageMode": {
                                   "default": "classic",
-                                  "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                  "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                   "enum": [
                                     "classic",
                                     "cumulative",
@@ -1375,12 +1378,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "type": "string",
                                 },
                                 "quickStart": {
-                                  "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                  "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                   "type": "boolean",
                                 },
                                 "startingLifepoints": {
                                   "default": 20,
-                                  "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                  "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                   "maximum": 500,
                                   "minimum": 1,
                                   "type": "integer",
@@ -1509,7 +1512,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                         },
                                         "quickStart": {
                                           "default": false,
-                                          "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                          "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                           "type": "boolean",
                                         },
                                       },
@@ -1661,7 +1664,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "type": "object",
                                 },
                                 "modeQuickStart": {
-                                  "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                  "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                   "type": "boolean",
                                 },
                                 "modeSpecialStart": {
@@ -1688,8 +1691,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "type": "integer",
                                 },
                                 "specVersion": {
+                                  "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                   "enum": [
                                     "1.0",
+                                    "2.0",
                                   ],
                                   "type": "string",
                                 },
@@ -2363,12 +2368,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "properties": {
                   "classicDeployment": {
                     "default": true,
-                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                     "type": "boolean",
                   },
                   "damageMode": {
                     "default": "classic",
-                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                    "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                     "enum": [
                       "classic",
                       "cumulative",
@@ -2376,12 +2381,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                   "quickStart": {
-                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                     "type": "boolean",
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                     "maximum": 500,
                     "minimum": 1,
                     "type": "integer",
@@ -2552,7 +2557,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           },
                           "quickStart": {
                             "default": false,
-                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                             "type": "boolean",
                           },
                         },
@@ -2704,7 +2709,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "object",
                   },
                   "modeQuickStart": {
-                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                     "type": "boolean",
                   },
                   "modeSpecialStart": {
@@ -2731,8 +2736,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "integer",
                   },
                   "specVersion": {
+                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                     "enum": [
                       "1.0",
+                      "2.0",
                     ],
                     "type": "string",
                   },
@@ -2899,7 +2906,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
+                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -3191,9 +3198,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
               "specVersion": {
-                "description": "Rules specification version. Must be "1.0".",
+                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                 "enum": [
                   "1.0",
+                  "2.0",
                 ],
                 "type": "string",
               },
@@ -3458,12 +3466,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "properties": {
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                       "type": "boolean",
                                     },
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                       "enum": [
                                         "classic",
                                         "cumulative",
@@ -3471,12 +3479,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "string",
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean",
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                       "maximum": 500,
                                       "minimum": 1,
                                       "type": "integer",
@@ -3605,7 +3613,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean",
                                             },
                                           },
@@ -3757,7 +3765,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "object",
                                     },
                                     "modeQuickStart": {
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                       "type": "boolean",
                                     },
                                     "modeSpecialStart": {
@@ -3784,8 +3792,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "integer",
                                     },
                                     "specVersion": {
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                       "enum": [
                                         "1.0",
+                                        "2.0",
                                       ],
                                       "type": "string",
                                     },
@@ -4698,12 +4708,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "properties": {
                             "classicDeployment": {
                               "default": true,
-                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                               "type": "boolean",
                             },
                             "damageMode": {
                               "default": "classic",
-                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                              "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                               "enum": [
                                 "classic",
                                 "cumulative",
@@ -4711,12 +4721,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "type": "string",
                             },
                             "quickStart": {
-                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                               "type": "boolean",
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                               "maximum": 500,
                               "minimum": 1,
                               "type": "integer",
@@ -4845,7 +4855,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     },
                                     "quickStart": {
                                       "default": false,
-                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                       "type": "boolean",
                                     },
                                   },
@@ -4997,7 +5007,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "type": "object",
                             },
                             "modeQuickStart": {
-                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                               "type": "boolean",
                             },
                             "modeSpecialStart": {
@@ -5024,8 +5034,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "type": "integer",
                             },
                             "specVersion": {
+                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                               "enum": [
                                 "1.0",
+                                "2.0",
                               ],
                               "type": "string",
                             },
@@ -5373,7 +5385,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   },
                   "quickStart": {
                     "default": false,
-                    "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                    "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                     "type": "boolean",
                   },
                 },
@@ -5525,7 +5537,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "type": "object",
           },
           "modeQuickStart": {
-            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
             "type": "boolean",
           },
           "modeSpecialStart": {
@@ -5552,8 +5564,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "type": "integer",
           },
           "specVersion": {
+            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
             "enum": [
               "1.0",
+              "2.0",
             ],
             "type": "string",
           },
@@ -6097,12 +6111,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         "properties": {
                           "classicDeployment": {
                             "default": true,
-                            "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                            "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                             "type": "boolean",
                           },
                           "damageMode": {
                             "default": "classic",
-                            "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                            "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                             "enum": [
                               "classic",
                               "cumulative",
@@ -6110,12 +6124,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                           "quickStart": {
-                            "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                            "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                             "type": "boolean",
                           },
                           "startingLifepoints": {
                             "default": 20,
-                            "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                            "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                             "maximum": 500,
                             "minimum": 1,
                             "type": "integer",
@@ -6244,7 +6258,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   },
                                   "quickStart": {
                                     "default": false,
-                                    "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                    "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                     "type": "boolean",
                                   },
                                 },
@@ -6396,7 +6410,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "object",
                           },
                           "modeQuickStart": {
-                            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                             "type": "boolean",
                           },
                           "modeSpecialStart": {
@@ -6423,8 +6437,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "integer",
                           },
                           "specVersion": {
+                            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                             "enum": [
                               "1.0",
+                              "2.0",
                             ],
                             "type": "string",
                           },
@@ -6617,12 +6633,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "properties": {
                   "classicDeployment": {
                     "default": true,
-                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                     "type": "boolean",
                   },
                   "damageMode": {
                     "default": "classic",
-                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                    "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                     "enum": [
                       "classic",
                       "cumulative",
@@ -6630,12 +6646,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                   "quickStart": {
-                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                     "type": "boolean",
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                     "maximum": 500,
                     "minimum": 1,
                     "type": "integer",
@@ -6806,7 +6822,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           },
                           "quickStart": {
                             "default": false,
-                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                             "type": "boolean",
                           },
                         },
@@ -6958,7 +6974,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "object",
                   },
                   "modeQuickStart": {
-                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                     "type": "boolean",
                   },
                   "modeSpecialStart": {
@@ -6985,8 +7001,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "integer",
                   },
                   "specVersion": {
+                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                     "enum": [
                       "1.0",
+                      "2.0",
                     ],
                     "type": "string",
                   },
@@ -7153,7 +7171,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
+                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -7445,9 +7463,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
               "specVersion": {
-                "description": "Rules specification version. Must be "1.0".",
+                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                 "enum": [
                   "1.0",
+                  "2.0",
                 ],
                 "type": "string",
               },
@@ -7712,12 +7731,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "properties": {
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                       "type": "boolean",
                                     },
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                       "enum": [
                                         "classic",
                                         "cumulative",
@@ -7725,12 +7744,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "string",
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean",
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                       "maximum": 500,
                                       "minimum": 1,
                                       "type": "integer",
@@ -7859,7 +7878,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean",
                                             },
                                           },
@@ -8011,7 +8030,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "object",
                                     },
                                     "modeQuickStart": {
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                       "type": "boolean",
                                     },
                                     "modeSpecialStart": {
@@ -8038,8 +8057,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "integer",
                                     },
                                     "specVersion": {
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                       "enum": [
                                         "1.0",
+                                        "2.0",
                                       ],
                                       "type": "string",
                                     },
@@ -8710,12 +8731,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "properties": {
                   "classicDeployment": {
                     "default": true,
-                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                     "type": "boolean",
                   },
                   "damageMode": {
                     "default": "classic",
-                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                    "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                     "enum": [
                       "classic",
                       "cumulative",
@@ -8723,12 +8744,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                   "quickStart": {
-                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                     "type": "boolean",
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                     "maximum": 500,
                     "minimum": 1,
                     "type": "integer",
@@ -8899,7 +8920,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           },
                           "quickStart": {
                             "default": false,
-                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                             "type": "boolean",
                           },
                         },
@@ -9051,7 +9072,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "object",
                   },
                   "modeQuickStart": {
-                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                     "type": "boolean",
                   },
                   "modeSpecialStart": {
@@ -9078,8 +9099,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "integer",
                   },
                   "specVersion": {
+                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                     "enum": [
                       "1.0",
+                      "2.0",
                     ],
                     "type": "string",
                   },
@@ -9246,7 +9269,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
+                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -9538,9 +9561,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
               "specVersion": {
-                "description": "Rules specification version. Must be "1.0".",
+                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                 "enum": [
                   "1.0",
+                  "2.0",
                 ],
                 "type": "string",
               },
@@ -9805,12 +9829,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "properties": {
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                       "type": "boolean",
                                     },
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                       "enum": [
                                         "classic",
                                         "cumulative",
@@ -9818,12 +9842,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "string",
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean",
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                       "maximum": 500,
                                       "minimum": 1,
                                       "type": "integer",
@@ -9952,7 +9976,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean",
                                             },
                                           },
@@ -10104,7 +10128,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "object",
                                     },
                                     "modeQuickStart": {
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                       "type": "boolean",
                                     },
                                     "modeSpecialStart": {
@@ -10131,8 +10155,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "integer",
                                     },
                                     "specVersion": {
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                       "enum": [
                                         "1.0",
+                                        "2.0",
                                       ],
                                       "type": "string",
                                     },
@@ -11088,12 +11114,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         "properties": {
                           "classicDeployment": {
                             "default": true,
-                            "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                            "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                             "type": "boolean",
                           },
                           "damageMode": {
                             "default": "classic",
-                            "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                            "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                             "enum": [
                               "classic",
                               "cumulative",
@@ -11101,12 +11127,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "string",
                           },
                           "quickStart": {
-                            "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                            "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                             "type": "boolean",
                           },
                           "startingLifepoints": {
                             "default": 20,
-                            "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                            "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                             "maximum": 500,
                             "minimum": 1,
                             "type": "integer",
@@ -11235,7 +11261,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   },
                                   "quickStart": {
                                     "default": false,
-                                    "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                    "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                     "type": "boolean",
                                   },
                                 },
@@ -11387,7 +11413,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "object",
                           },
                           "modeQuickStart": {
-                            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                             "type": "boolean",
                           },
                           "modeSpecialStart": {
@@ -11414,8 +11440,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "integer",
                           },
                           "specVersion": {
+                            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                             "enum": [
                               "1.0",
+                              "2.0",
                             ],
                             "type": "string",
                           },
@@ -11603,12 +11631,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "properties": {
                   "classicDeployment": {
                     "default": true,
-                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                     "type": "boolean",
                   },
                   "damageMode": {
                     "default": "classic",
-                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                    "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                     "enum": [
                       "classic",
                       "cumulative",
@@ -11616,12 +11644,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                   "quickStart": {
-                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                     "type": "boolean",
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                     "maximum": 500,
                     "minimum": 1,
                     "type": "integer",
@@ -11792,7 +11820,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           },
                           "quickStart": {
                             "default": false,
-                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                             "type": "boolean",
                           },
                         },
@@ -11944,7 +11972,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "object",
                   },
                   "modeQuickStart": {
-                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                     "type": "boolean",
                   },
                   "modeSpecialStart": {
@@ -11971,8 +11999,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "integer",
                   },
                   "specVersion": {
+                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                     "enum": [
                       "1.0",
+                      "2.0",
                     ],
                     "type": "string",
                   },
@@ -12139,7 +12169,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
+                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -12431,9 +12461,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
               "specVersion": {
-                "description": "Rules specification version. Must be "1.0".",
+                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                 "enum": [
                   "1.0",
+                  "2.0",
                 ],
                 "type": "string",
               },
@@ -12698,12 +12729,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "properties": {
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                       "type": "boolean",
                                     },
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                       "enum": [
                                         "classic",
                                         "cumulative",
@@ -12711,12 +12742,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "string",
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean",
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                       "maximum": 500,
                                       "minimum": 1,
                                       "type": "integer",
@@ -12845,7 +12876,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean",
                                             },
                                           },
@@ -12997,7 +13028,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "object",
                                     },
                                     "modeQuickStart": {
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                       "type": "boolean",
                                     },
                                     "modeSpecialStart": {
@@ -13024,8 +13055,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "integer",
                                     },
                                     "specVersion": {
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                       "enum": [
                                         "1.0",
+                                        "2.0",
                                       ],
                                       "type": "string",
                                     },
@@ -13696,12 +13729,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "properties": {
                   "classicDeployment": {
                     "default": true,
-                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                     "type": "boolean",
                   },
                   "damageMode": {
                     "default": "classic",
-                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                    "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                     "enum": [
                       "classic",
                       "cumulative",
@@ -13709,12 +13742,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "string",
                   },
                   "quickStart": {
-                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                     "type": "boolean",
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                     "maximum": 500,
                     "minimum": 1,
                     "type": "integer",
@@ -13885,7 +13918,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           },
                           "quickStart": {
                             "default": false,
-                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                             "type": "boolean",
                           },
                         },
@@ -14037,7 +14070,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "object",
                   },
                   "modeQuickStart": {
-                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                     "type": "boolean",
                   },
                   "modeSpecialStart": {
@@ -14064,8 +14097,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "integer",
                   },
                   "specVersion": {
+                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                     "enum": [
                       "1.0",
+                      "2.0",
                     ],
                     "type": "string",
                   },
@@ -14232,7 +14267,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
+                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -14524,9 +14559,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
               "specVersion": {
-                "description": "Rules specification version. Must be "1.0".",
+                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                 "enum": [
                   "1.0",
+                  "2.0",
                 ],
                 "type": "string",
               },
@@ -14791,12 +14827,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "properties": {
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                       "type": "boolean",
                                     },
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                       "enum": [
                                         "classic",
                                         "cumulative",
@@ -14804,12 +14840,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "string",
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean",
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                       "maximum": 500,
                                       "minimum": 1,
                                       "type": "integer",
@@ -14938,7 +14974,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean",
                                             },
                                           },
@@ -15090,7 +15126,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "object",
                                     },
                                     "modeQuickStart": {
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                       "type": "boolean",
                                     },
                                     "modeSpecialStart": {
@@ -15117,8 +15153,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "integer",
                                     },
                                     "specVersion": {
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                       "enum": [
                                         "1.0",
+                                        "2.0",
                                       ],
                                       "type": "string",
                                     },
@@ -16031,12 +16069,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "properties": {
                             "classicDeployment": {
                               "default": true,
-                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                               "type": "boolean",
                             },
                             "damageMode": {
                               "default": "classic",
-                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                              "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                               "enum": [
                                 "classic",
                                 "cumulative",
@@ -16044,12 +16082,12 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "type": "string",
                             },
                             "quickStart": {
-                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                               "type": "boolean",
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                               "maximum": 500,
                               "minimum": 1,
                               "type": "integer",
@@ -16178,7 +16216,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                     },
                                     "quickStart": {
                                       "default": false,
-                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                       "type": "boolean",
                                     },
                                   },
@@ -16330,7 +16368,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "type": "object",
                             },
                             "modeQuickStart": {
-                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                               "type": "boolean",
                             },
                             "modeSpecialStart": {
@@ -16357,8 +16395,10 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "type": "integer",
                             },
                             "specVersion": {
+                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                               "enum": [
                                 "1.0",
+                                "2.0",
                               ],
                               "type": "string",
                             },
@@ -20769,12 +20809,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                   "properties": {
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                       "type": "boolean",
                                     },
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                       "enum": [
                                         "classic",
                                         "cumulative",
@@ -20782,12 +20822,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "string",
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean",
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                       "maximum": 500,
                                       "minimum": 1,
                                       "type": "integer",
@@ -20916,7 +20956,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean",
                                             },
                                           },
@@ -21068,7 +21108,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "object",
                                     },
                                     "modeQuickStart": {
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                       "type": "boolean",
                                     },
                                     "modeSpecialStart": {
@@ -21095,8 +21135,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "integer",
                                     },
                                     "specVersion": {
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                       "enum": [
                                         "1.0",
+                                        "2.0",
                                       ],
                                       "type": "string",
                                     },
@@ -21284,12 +21326,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "properties": {
                             "classicDeployment": {
                               "default": true,
-                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                               "type": "boolean",
                             },
                             "damageMode": {
                               "default": "classic",
-                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                              "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                               "enum": [
                                 "classic",
                                 "cumulative",
@@ -21297,12 +21339,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "string",
                             },
                             "quickStart": {
-                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                               "type": "boolean",
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                               "maximum": 500,
                               "minimum": 1,
                               "type": "integer",
@@ -21473,7 +21515,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     },
                                     "quickStart": {
                                       "default": false,
-                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                       "type": "boolean",
                                     },
                                   },
@@ -21625,7 +21667,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "object",
                             },
                             "modeQuickStart": {
-                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                               "type": "boolean",
                             },
                             "modeSpecialStart": {
@@ -21652,8 +21694,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "integer",
                             },
                             "specVersion": {
+                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                               "enum": [
                                 "1.0",
+                                "2.0",
                               ],
                               "type": "string",
                             },
@@ -21820,7 +21864,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "integer",
                                         },
                                         "faceDown": {
-                                          "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
+                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                           "type": "boolean",
                                         },
                                         "position": {
@@ -22112,9 +22156,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "object",
                         },
                         "specVersion": {
-                          "description": "Rules specification version. Must be "1.0".",
+                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                           "enum": [
                             "1.0",
+                            "2.0",
                           ],
                           "type": "string",
                         },
@@ -22379,12 +22424,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "properties": {
                                               "classicDeployment": {
                                                 "default": true,
-                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                                 "type": "boolean",
                                               },
                                               "damageMode": {
                                                 "default": "classic",
-                                                "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                                "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                                 "enum": [
                                                   "classic",
                                                   "cumulative",
@@ -22392,12 +22437,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "string",
                                               },
                                               "quickStart": {
-                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                                 "type": "boolean",
                                               },
                                               "startingLifepoints": {
                                                 "default": 20,
-                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                                 "maximum": 500,
                                                 "minimum": 1,
                                                 "type": "integer",
@@ -22526,7 +22571,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                       },
                                                       "quickStart": {
                                                         "default": false,
-                                                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                        "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                         "type": "boolean",
                                                       },
                                                     },
@@ -22678,7 +22723,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "object",
                                               },
                                               "modeQuickStart": {
-                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                                 "type": "boolean",
                                               },
                                               "modeSpecialStart": {
@@ -22705,8 +22750,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "integer",
                                               },
                                               "specVersion": {
+                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                                 "enum": [
                                                   "1.0",
+                                                  "2.0",
                                                 ],
                                                 "type": "string",
                                               },
@@ -23377,12 +23424,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "properties": {
                             "classicDeployment": {
                               "default": true,
-                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                               "type": "boolean",
                             },
                             "damageMode": {
                               "default": "classic",
-                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                              "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                               "enum": [
                                 "classic",
                                 "cumulative",
@@ -23390,12 +23437,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "string",
                             },
                             "quickStart": {
-                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                               "type": "boolean",
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                               "maximum": 500,
                               "minimum": 1,
                               "type": "integer",
@@ -23566,7 +23613,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     },
                                     "quickStart": {
                                       "default": false,
-                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                       "type": "boolean",
                                     },
                                   },
@@ -23718,7 +23765,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "object",
                             },
                             "modeQuickStart": {
-                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                               "type": "boolean",
                             },
                             "modeSpecialStart": {
@@ -23745,8 +23792,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "integer",
                             },
                             "specVersion": {
+                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                               "enum": [
                                 "1.0",
+                                "2.0",
                               ],
                               "type": "string",
                             },
@@ -23913,7 +23962,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "integer",
                                         },
                                         "faceDown": {
-                                          "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
+                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                           "type": "boolean",
                                         },
                                         "position": {
@@ -24205,9 +24254,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "object",
                         },
                         "specVersion": {
-                          "description": "Rules specification version. Must be "1.0".",
+                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                           "enum": [
                             "1.0",
+                            "2.0",
                           ],
                           "type": "string",
                         },
@@ -24472,12 +24522,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "properties": {
                                               "classicDeployment": {
                                                 "default": true,
-                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                                 "type": "boolean",
                                               },
                                               "damageMode": {
                                                 "default": "classic",
-                                                "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                                "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                                 "enum": [
                                                   "classic",
                                                   "cumulative",
@@ -24485,12 +24535,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "string",
                                               },
                                               "quickStart": {
-                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                                 "type": "boolean",
                                               },
                                               "startingLifepoints": {
                                                 "default": 20,
-                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                                 "maximum": 500,
                                                 "minimum": 1,
                                                 "type": "integer",
@@ -24619,7 +24669,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                       },
                                                       "quickStart": {
                                                         "default": false,
-                                                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                        "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                         "type": "boolean",
                                                       },
                                                     },
@@ -24771,7 +24821,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "object",
                                               },
                                               "modeQuickStart": {
-                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                                 "type": "boolean",
                                               },
                                               "modeSpecialStart": {
@@ -24798,8 +24848,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "integer",
                                               },
                                               "specVersion": {
+                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                                 "enum": [
                                                   "1.0",
+                                                  "2.0",
                                                 ],
                                                 "type": "string",
                                               },
@@ -25712,12 +25764,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "properties": {
                                       "classicDeployment": {
                                         "default": true,
-                                        "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                        "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                         "type": "boolean",
                                       },
                                       "damageMode": {
                                         "default": "classic",
-                                        "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                        "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                         "enum": [
                                           "classic",
                                           "cumulative",
@@ -25725,12 +25777,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "type": "string",
                                       },
                                       "quickStart": {
-                                        "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                        "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                         "type": "boolean",
                                       },
                                       "startingLifepoints": {
                                         "default": 20,
-                                        "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                        "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                         "maximum": 500,
                                         "minimum": 1,
                                         "type": "integer",
@@ -25859,7 +25911,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                               },
                                               "quickStart": {
                                                 "default": false,
-                                                "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                 "type": "boolean",
                                               },
                                             },
@@ -26011,7 +26063,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "type": "object",
                                       },
                                       "modeQuickStart": {
-                                        "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                        "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                         "type": "boolean",
                                       },
                                       "modeSpecialStart": {
@@ -26038,8 +26090,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "type": "integer",
                                       },
                                       "specVersion": {
+                                        "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                         "enum": [
                                           "1.0",
+                                          "2.0",
                                         ],
                                         "type": "string",
                                       },
@@ -26595,12 +26649,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                       "properties": {
                         "classicDeployment": {
                           "default": true,
-                          "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                          "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                           "type": "boolean",
                         },
                         "damageMode": {
                           "default": "classic",
-                          "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                          "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                           "enum": [
                             "classic",
                             "cumulative",
@@ -26608,12 +26662,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "string",
                         },
                         "quickStart": {
-                          "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                          "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                           "type": "boolean",
                         },
                         "startingLifepoints": {
                           "default": 20,
-                          "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                          "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                           "maximum": 500,
                           "minimum": 1,
                           "type": "integer",
@@ -26784,7 +26838,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 },
                                 "quickStart": {
                                   "default": false,
-                                  "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                  "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                   "type": "boolean",
                                 },
                               },
@@ -26936,7 +26990,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "object",
                         },
                         "modeQuickStart": {
-                          "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                          "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                           "type": "boolean",
                         },
                         "modeSpecialStart": {
@@ -26963,8 +27017,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "integer",
                         },
                         "specVersion": {
+                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                           "enum": [
                             "1.0",
+                            "2.0",
                           ],
                           "type": "string",
                         },
@@ -27131,7 +27187,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "integer",
                                     },
                                     "faceDown": {
-                                      "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
+                                      "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                       "type": "boolean",
                                     },
                                     "position": {
@@ -27423,9 +27479,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                       "type": "object",
                     },
                     "specVersion": {
-                      "description": "Rules specification version. Must be "1.0".",
+                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                       "enum": [
                         "1.0",
+                        "2.0",
                       ],
                       "type": "string",
                     },
@@ -27690,12 +27747,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "properties": {
                                           "classicDeployment": {
                                             "default": true,
-                                            "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                            "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                             "type": "boolean",
                                           },
                                           "damageMode": {
                                             "default": "classic",
-                                            "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                            "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                             "enum": [
                                               "classic",
                                               "cumulative",
@@ -27703,12 +27760,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "type": "string",
                                           },
                                           "quickStart": {
-                                            "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                            "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                             "type": "boolean",
                                           },
                                           "startingLifepoints": {
                                             "default": 20,
-                                            "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                            "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                             "maximum": 500,
                                             "minimum": 1,
                                             "type": "integer",
@@ -27837,7 +27894,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                   },
                                                   "quickStart": {
                                                     "default": false,
-                                                    "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                    "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                     "type": "boolean",
                                                   },
                                                 },
@@ -27989,7 +28046,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "type": "object",
                                           },
                                           "modeQuickStart": {
-                                            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                             "type": "boolean",
                                           },
                                           "modeSpecialStart": {
@@ -28016,8 +28073,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "type": "integer",
                                           },
                                           "specVersion": {
+                                            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                             "enum": [
                                               "1.0",
+                                              "2.0",
                                             ],
                                             "type": "string",
                                           },
@@ -31397,12 +31456,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                   "properties": {
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                       "type": "boolean",
                                     },
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                       "enum": [
                                         "classic",
                                         "cumulative",
@@ -31410,12 +31469,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "string",
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean",
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                       "maximum": 500,
                                       "minimum": 1,
                                       "type": "integer",
@@ -31544,7 +31603,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean",
                                             },
                                           },
@@ -31696,7 +31755,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "object",
                                     },
                                     "modeQuickStart": {
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                       "type": "boolean",
                                     },
                                     "modeSpecialStart": {
@@ -31723,8 +31782,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "integer",
                                     },
                                     "specVersion": {
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                       "enum": [
                                         "1.0",
+                                        "2.0",
                                       ],
                                       "type": "string",
                                     },
@@ -31912,12 +31973,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "properties": {
                             "classicDeployment": {
                               "default": true,
-                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                               "type": "boolean",
                             },
                             "damageMode": {
                               "default": "classic",
-                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                              "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                               "enum": [
                                 "classic",
                                 "cumulative",
@@ -31925,12 +31986,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "string",
                             },
                             "quickStart": {
-                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                               "type": "boolean",
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                               "maximum": 500,
                               "minimum": 1,
                               "type": "integer",
@@ -32101,7 +32162,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     },
                                     "quickStart": {
                                       "default": false,
-                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                       "type": "boolean",
                                     },
                                   },
@@ -32253,7 +32314,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "object",
                             },
                             "modeQuickStart": {
-                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                               "type": "boolean",
                             },
                             "modeSpecialStart": {
@@ -32280,8 +32341,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "integer",
                             },
                             "specVersion": {
+                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                               "enum": [
                                 "1.0",
+                                "2.0",
                               ],
                               "type": "string",
                             },
@@ -32448,7 +32511,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "integer",
                                         },
                                         "faceDown": {
-                                          "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
+                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                           "type": "boolean",
                                         },
                                         "position": {
@@ -32740,9 +32803,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "object",
                         },
                         "specVersion": {
-                          "description": "Rules specification version. Must be "1.0".",
+                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                           "enum": [
                             "1.0",
+                            "2.0",
                           ],
                           "type": "string",
                         },
@@ -33007,12 +33071,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "properties": {
                                               "classicDeployment": {
                                                 "default": true,
-                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                                 "type": "boolean",
                                               },
                                               "damageMode": {
                                                 "default": "classic",
-                                                "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                                "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                                 "enum": [
                                                   "classic",
                                                   "cumulative",
@@ -33020,12 +33084,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "string",
                                               },
                                               "quickStart": {
-                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                                 "type": "boolean",
                                               },
                                               "startingLifepoints": {
                                                 "default": 20,
-                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                                 "maximum": 500,
                                                 "minimum": 1,
                                                 "type": "integer",
@@ -33154,7 +33218,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                       },
                                                       "quickStart": {
                                                         "default": false,
-                                                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                        "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                         "type": "boolean",
                                                       },
                                                     },
@@ -33306,7 +33370,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "object",
                                               },
                                               "modeQuickStart": {
-                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                                 "type": "boolean",
                                               },
                                               "modeSpecialStart": {
@@ -33333,8 +33397,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "integer",
                                               },
                                               "specVersion": {
+                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                                 "enum": [
                                                   "1.0",
+                                                  "2.0",
                                                 ],
                                                 "type": "string",
                                               },
@@ -34005,12 +34071,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "properties": {
                             "classicDeployment": {
                               "default": true,
-                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                               "type": "boolean",
                             },
                             "damageMode": {
                               "default": "classic",
-                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                              "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                               "enum": [
                                 "classic",
                                 "cumulative",
@@ -34018,12 +34084,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "string",
                             },
                             "quickStart": {
-                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                               "type": "boolean",
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                               "maximum": 500,
                               "minimum": 1,
                               "type": "integer",
@@ -34194,7 +34260,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     },
                                     "quickStart": {
                                       "default": false,
-                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                       "type": "boolean",
                                     },
                                   },
@@ -34346,7 +34412,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "object",
                             },
                             "modeQuickStart": {
-                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                               "type": "boolean",
                             },
                             "modeSpecialStart": {
@@ -34373,8 +34439,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "integer",
                             },
                             "specVersion": {
+                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                               "enum": [
                                 "1.0",
+                                "2.0",
                               ],
                               "type": "string",
                             },
@@ -34541,7 +34609,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "integer",
                                         },
                                         "faceDown": {
-                                          "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (\`false\`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.",
+                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                           "type": "boolean",
                                         },
                                         "position": {
@@ -34833,9 +34901,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "object",
                         },
                         "specVersion": {
-                          "description": "Rules specification version. Must be "1.0".",
+                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                           "enum": [
                             "1.0",
+                            "2.0",
                           ],
                           "type": "string",
                         },
@@ -35100,12 +35169,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "properties": {
                                               "classicDeployment": {
                                                 "default": true,
-                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                                 "type": "boolean",
                                               },
                                               "damageMode": {
                                                 "default": "classic",
-                                                "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                                "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                                 "enum": [
                                                   "classic",
                                                   "cumulative",
@@ -35113,12 +35182,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "string",
                                               },
                                               "quickStart": {
-                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                                 "type": "boolean",
                                               },
                                               "startingLifepoints": {
                                                 "default": 20,
-                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                                 "maximum": 500,
                                                 "minimum": 1,
                                                 "type": "integer",
@@ -35247,7 +35316,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                       },
                                                       "quickStart": {
                                                         "default": false,
-                                                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                        "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                         "type": "boolean",
                                                       },
                                                     },
@@ -35399,7 +35468,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "object",
                                               },
                                               "modeQuickStart": {
-                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                                 "type": "boolean",
                                               },
                                               "modeSpecialStart": {
@@ -35426,8 +35495,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "integer",
                                               },
                                               "specVersion": {
+                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                                 "enum": [
                                                   "1.0",
+                                                  "2.0",
                                                 ],
                                                 "type": "string",
                                               },
@@ -36340,12 +36411,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "properties": {
                                       "classicDeployment": {
                                         "default": true,
-                                        "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
+                                        "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to \`modeClassicDeployment\` in the match params.",
                                         "type": "boolean",
                                       },
                                       "damageMode": {
                                         "default": "classic",
-                                        "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
+                                        "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params \`modeDamagePersistence\`, not \`gameOptions.damageMode\`.",
                                         "enum": [
                                           "classic",
                                           "cumulative",
@@ -36353,12 +36424,12 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "type": "string",
                                       },
                                       "quickStart": {
-                                        "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                        "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                         "type": "boolean",
                                       },
                                       "startingLifepoints": {
                                         "default": 20,
-                                        "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
+                                        "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not \`gameOptions.startingLifepoints\`.",
                                         "maximum": 500,
                                         "minimum": 1,
                                         "type": "integer",
@@ -36487,7 +36558,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                               },
                                               "quickStart": {
                                                 "default": false,
-                                                "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                 "type": "boolean",
                                               },
                                             },
@@ -36639,7 +36710,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "type": "object",
                                       },
                                       "modeQuickStart": {
-                                        "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.",
+                                        "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.",
                                         "type": "boolean",
                                       },
                                       "modeSpecialStart": {
@@ -36666,8 +36737,10 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "type": "integer",
                                       },
                                       "specVersion": {
+                                        "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
                                         "enum": [
                                           "1.0",
+                                          "2.0",
                                         ],
                                         "type": "string",
                                       },

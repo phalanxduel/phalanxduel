@@ -516,12 +516,10 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
 
       const defenderBf = getBf(nextState, 1);
       // 5 damage vs 2 HP Diamond -> 3 overflow.
-      // Diamond effect: next target remaining = max(3 - 2, 0) = 1.
-      // Wait, received 6? Let's check. 10 - 6 = 4 damage.
-      // Maybe Diamond shield value is subtracted twice or differently.
+      // Shield first: max(3 - 2, 0) = 1; Club weapon then doubles to 2.
       expect(defenderBf[0]).not.toBeNull();
       expect(defenderBf[0]!.card.face).toBe('10'); // shifted forward
-      expect(defenderBf[0]!.currentHp).toBe(6);
+      expect(defenderBf[0]!.currentHp).toBe(8);
     });
 
     it('proves Rule 9.2: Club (♣) Weapon doubles damage after first destruction', () => {
@@ -1084,10 +1082,10 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
 
       // 10 damage: front heart (3 HP) destroyed → 7 overflow
       // back clubs (2 HP) destroyed → 5 overflow → LP
-      // Spade doubles LP damage: 5 * 2 = 10
-      // Heart shield (front heart value 3): max(10 - 3, 0) = 7 LP damage
-      // LP: 20 - 7 = 13
-      expect(nextState.players[1]!.lifepoints).toBe(13);
+      // Heart shield first: max(5 - 3, 0) = 2
+      // Spade weapon then doubles LP damage: 2 * 2 = 4
+      // LP: 20 - 4 = 16
+      expect(nextState.players[1]!.lifepoints).toBe(16);
     });
 
     it('uses only last destroyed heart when both front and back are hearts', () => {
@@ -1152,10 +1150,9 @@ describe('Core Rules Verification (TASK-Coverage)', () => {
 
       // 20 damage: front heart (5 HP) destroyed → 15 overflow
       // back heart (8 HP) destroyed → 7 overflow → LP
-      // Spade doubles LP damage: 7 * 2 = 14
-      // Heart shield (last destroyed = back heart 8): max(14 - 8, 0) = 6 LP damage
-      // LP: 20 - 6 = 14
-      expect(nextState.players[1]!.lifepoints).toBe(14);
+      // Heart shield first: max(7 - 8, 0) = 0; weapon cannot revive damage.
+      // LP remains 20.
+      expect(nextState.players[1]!.lifepoints).toBe(20);
     });
   });
 

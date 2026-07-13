@@ -270,6 +270,29 @@ describe('Shared schemas', () => {
       expect(result.success).toBe(true);
     });
 
+    it('accepts historical v1.0 parameters but restricts strict v2.0 competition to 2x4', () => {
+      expect(MatchParametersSchema.safeParse(validParams()).success).toBe(true);
+
+      const result = MatchParametersSchema.safeParse(
+        validParams({
+          specVersion: '2.0',
+          rows: 3,
+          columns: 4,
+          initialDraw: 16,
+          classic: {
+            ...validParams().classic,
+            battlefield: { rows: 3, columns: 4 },
+            start: { initialDraw: 16 },
+          },
+        }),
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((issue) => issue.message.includes('exactly a 2x4'))).toBe(
+        true,
+      );
+    });
+
     it('should reject the 12x4 boundary when the required initial draw violates scarcity', () => {
       const result = MatchParametersSchema.safeParse(
         validParams({
@@ -591,7 +614,7 @@ const minimalPlayer = (id: string) => ({
 function makeGameState(overrides: Record<string, unknown>) {
   return {
     matchId: MATCH_ID,
-    specVersion: '1.0',
+    specVersion: DEFAULT_MATCH_PARAMS.specVersion,
     params: DEFAULT_MATCH_PARAMS,
     players: [minimalPlayer(PLAYER_ID_1), minimalPlayer(PLAYER_ID_2)],
     activePlayerIndex: 0,
@@ -602,6 +625,12 @@ function makeGameState(overrides: Record<string, unknown>) {
 }
 
 describe('GameStateSchema phase-aware invariants', () => {
+  it('rejects a state whose rules version differs from its parameters', () => {
+    const result = GameStateSchema.safeParse(makeGameState({ specVersion: '1.0' }));
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((issue) => issue.path[0] === 'specVersion')).toBe(true);
+  });
+
   it('accepts a valid DeploymentPhase state without outcome or reinforcement', () => {
     const result = GameStateSchema.safeParse(makeGameState({}));
     expect(result.success).toBe(true);

@@ -122,7 +122,7 @@ export function createInitialState(config: GameConfig): GameState {
 
   const baseState: GameState = {
     matchId,
-    specVersion: '1.0',
+    specVersion: resolvedMatchParams.specVersion,
     params: resolvedMatchParams,
     players: [
       createPlayerState(players[0].id, players[0].name, rngSeed, startingLifepoints, rows, columns),

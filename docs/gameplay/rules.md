@@ -1,4 +1,4 @@
-# Phalanx Duel — Canonical Rules Specification v1.0 (Final)
+# Phalanx Duel — Canonical Rules Specification v2.0
 
 This document defines the authoritative deterministic rules for match configuration, deployment, turn sequencing, attack resolution, suit effects, Classic Aces, Classic Face Cards, cumulative damage behavior, event logging, and replay verification.
 
@@ -62,6 +62,15 @@ Card — immutable:
 }
 ```
 
+Canonical combat values are integers:
+
+```text
+A = 1; 2…9 = face value; T = 10; J = Q = K = 11
+```
+
+Face-card destruction hierarchy (§11) is independent of this shared numeric
+value.
+
 ### 2.1 Deterministic Card ID Specification
 
 To ensure a sortable audit trail while maintaining 100% determinism during replays, Card IDs are generated upon drawing using the following template:
@@ -107,7 +116,7 @@ All matches must include:
 
 ```json
 {
-  "specVersion": "1.0",
+  "specVersion": "2.0",
 
   "classic": {
     "enabled": true,
@@ -183,7 +192,7 @@ If `classic.enabled == false`:
 ## 3.2 Invalid Configuration Conditions
 
 Match creation MUST be rejected if:
-* Required parameters are missing or `specVersion != "1.0"`.
+* Required parameters are missing or `specVersion` is not a supported version.
 * Configuration violates **Global System Constraints (3.3)**.
 * Strict Mode parity is violated.
 * The resolved `initialDraw` would violate the Card Scarcity Invariant and leave fewer than 4 cards in reserve after a player's starting draw.
@@ -199,9 +208,17 @@ All Phalanx System formats (Duel, Arena, Siege) must adhere to these physical li
   `initialDraw = (rows * columns) + columns`
 * **Card Scarcity Invariant:** A game configuration is invalid if `initialDraw` exceeds the available deck size minus a reserve of 4 cards (ensuring at least 4 cards remain in the system after the first player draws).
 
+Competitive v2.0 Duel is intentionally narrower than the general schema: strict
+Classic matches MUST use exactly `rows = 2` and `columns = 4`. Other validated
+geometries remain experimental Hybrid or Manual formats until generalized
+combat receives exhaustive evidence. A partial creation request that specifies
+non-2×4 geometry without an explicit Classic mode is normalized to Hybrid;
+explicit `classic.mode = "strict"` remains an assertion of competitive 2×4 rules
+and is rejected when the geometry differs.
+
 ## 3.4 Canonical vs Compatibility Inputs
 
-The authoritative v1.0 gameplay contract is the `Match Parameters` surface in §3. Transport- or orchestration-level compatibility inputs may still exist in implementation surfaces, but they are not rule-authoritative unless they are represented in the canonical match params.
+The authoritative v2.0 gameplay contract is the `Match Parameters` surface in §3. Transport- or orchestration-level compatibility inputs may still exist in implementation surfaces, but they are not rule-authoritative unless they are represented in the canonical match params.
 
 Compatibility-only examples currently present in implementation surfaces include:
 
@@ -211,7 +228,16 @@ Compatibility-only examples currently present in implementation surfaces include
 
 These fields may be accepted by internal or legacy routes for bootstrap compatibility, but they MUST NOT redefine canonical rule behavior independently of the match params in this document.
 
-`modeQuickStart` remains a reserved compatibility flag in the canonical params object. For v1.0-compliant matches, it is expected to remain `false`; enabling it is a non-standard bootstrap shortcut rather than part of the standard competitive lifecycle.
+`modeQuickStart` remains a reserved compatibility flag in the canonical params object. For v2.0-compliant matches, it is expected to remain `false`; enabling it is a non-standard bootstrap shortcut rather than part of the standard competitive lifecycle.
+
+## 3.5 Rules-Version Compatibility
+
+`specVersion` is immutable match input and MUST be copied to `GameState`. Version
+`1.0` remains accepted solely to replay historical matches byte-for-byte. It
+preserves the historical runtime boundary order, Weapon → Shield → Clamp.
+New matches default to `2.0`, whose corrected order is Shield → Weapon → Clamp.
+Replay dispatch MUST use the recorded version; clients MUST NOT reinterpret a
+historical trace using the current default.
 
 ---
 
@@ -329,6 +355,19 @@ Canonical ordering at every boundary:
 1. Shield
 2. Weapon
 3. Clamp
+
+For a card boundary with incoming carryover `r`, destroyed-card shield `s`, and
+weapon multiplier `w ∈ {1, 2}`, v2.0 computes only integer values:
+
+```text
+shielded = max(r - s, 0)
+weaponized = w * shielded
+next = clamp(weaponized)
+```
+
+At the player boundary, `clamp(x) = max(x, 0)` before LP subtraction. No suit
+effect creates fractional damage. Version 1.0 instead computes
+`max(w * r - s, 0)` for historical replay compatibility.
 
 ## 9.1 Diamond (♦) — Card→Card
 
@@ -468,8 +507,8 @@ Pass recorded when:
 
 Limits:
 
-* > maxConsecutivePasses → forfeit
-* > maxTotalPassesPerPlayer → forfeit
+* `consecutivePasses >= maxConsecutivePasses` → forfeit
+* `totalPasses >= maxTotalPassesPerPlayer` → forfeit
 
 Pass does not depend on “good attack availability”.
 
@@ -524,6 +563,8 @@ stateHashAfter = sha256(canonicalize(gameStateWithoutTransactionLog_after))
 Replay guarantee:
 Identical `specVersion`, `params`, `preState`, and `turnInput` MUST produce
 identical `postState`, `stateHashAfter`, and phase-hop trace sequence.
+
+The state-level and parameter-level `specVersion` values MUST be equal.
 
 Integrity metadata is recorded in `transactionLog` entries (`stateHashBefore`,
 `stateHashAfter`, optional `phaseTrace`, optional `phaseTraceDigest`). It is not
@@ -584,9 +625,9 @@ To maintain strategic depth, the Phalanx System enforces strict hidden-informati
 *   **Player Hand:** Fully visible to the owner. Redacted to an empty array for all other players and spectators. Only the count (`handCount`) is public.
 
 ### 21.2 Battlefield
-*   **Deployment:** Cards can be deployed face-up or face-down. All cards in the game are eligible to be played face-down.
-*   **Visibility:** Face-down cards are strictly hidden from the opponent, spectators, and replay viewers. They are only revealed when flipped during gameplay or when the match ends.
-*   **Combat Interaction:** Face-down cards can be attacked directly by the opponent. When a face-down card is attacked, it is forced to immediately reveal before damage calculation occurs.
+*   **Competitive v2.0 Deployment:** All battlefield cards are deployed face-up. Players, spectators, bots, and replay viewers receive the same public battlefield card identities.
+*   **Future Hidden-Deployment Formats:** Face-down battlefield cards are reserved for a future rules version and are not legal in competitive v2.0 Duel.
+*   **Historical Compatibility:** Version 1.0 replay data may contain `faceDown`, but replay projection follows the recorded state and version rather than changing historical hashes.
 
 ### 21.3 Graveyard (Discard Pile)
 *   **Historical Transparency:** The owner can see their full discard pile.
@@ -594,6 +635,6 @@ To maintain strategic depth, the Phalanx System enforces strict hidden-informati
 
 ---
 
-Phalanx Duel Rules Specification v1.0 — Final and Canonical.
+Phalanx Duel Rules Specification v2.0 — Canonical.
 
 Further changes require version bump.

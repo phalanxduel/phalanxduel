@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { deriveEventsFromEntry, replayGame } from '../src/index.ts';
 import type { GameConfig } from '../src/index.ts';
 import type { Action } from '@phalanxduel/shared';
-import { TelemetryName } from '@phalanxduel/shared';
+import { DEFAULT_MATCH_PARAMS, TelemetryName } from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 
 const MOCK_TIMESTAMP = '2026-02-24T12:00:00.000Z';
@@ -91,6 +91,21 @@ describe('PHX-TXLOG-003: Game is replayable from initial config + ordered action
     expect(first.finalState.transactionLog?.[0]?.timestamp).toBe(
       second.finalState.transactionLog?.[0]?.timestamp,
     );
+    expect(computeStateHash(first.finalState)).toBe(computeStateHash(second.finalState));
+  });
+
+  it('preserves deterministic historical v1.0 replay dispatch', () => {
+    const historicalConfig: GameConfig = {
+      ...testConfig,
+      matchParams: { ...DEFAULT_MATCH_PARAMS, specVersion: '1.0' },
+    };
+
+    const first = replayGame(historicalConfig, []);
+    const second = replayGame(historicalConfig, []);
+
+    expect(first.valid).toBe(true);
+    expect(first.finalState.specVersion).toBe('1.0');
+    expect(first.finalState.params.specVersion).toBe('1.0');
     expect(computeStateHash(first.finalState)).toBe(computeStateHash(second.finalState));
   });
 

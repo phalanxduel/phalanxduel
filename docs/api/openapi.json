@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Phalanx Duel Game Server",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "Authoritative game server for Phalanx Duel.\n\n## Authoritative References\n\n- **[RULES.md](https://github.com/phalanxduel/phalanxduel/blob/main/docs/gameplay/rules.md)** — Canonical deterministic rules specification (v1.0). All game logic, state machine transitions, suit boundary effects, and victory conditions are defined here.\n- **[EVENT_SCHEMAS.md](https://github.com/phalanxduel/phalanxduel/blob/main/docs/api/event-schemas.md)** — External event validation schemas.\n- **[AsyncAPI Spec](/docs/asyncapi.yaml)** — WebSocket protocol specification for real-time gameplay.\n\n## Discovery Endpoints\n\n- `GET /api/rules/phases` — State machine transition table. Returns all valid phase transitions and their triggers.\n- `GET /api/cards/manifest` — Card manifest. Returns all possible cards in a standard deck with deterministic stats.\n- `GET /api/defaults` — Default match parameters and system constraints.\n\n## State Machine Constraints\n\nA schema-valid action can be semantically invalid if sent in the wrong phase. The `deploy` action is only valid during `DeploymentPhase`. The `attack` and `pass` actions are only valid during `AttackPhase`. The `reinforce` action is only valid during `ReinforcementPhase`. The `forfeit` action is valid in any phase. See the `/api/rules/phases` endpoint for the full transition table."
   },
   "components": {
@@ -160,7 +160,7 @@
           },
           "faceDown": {
             "type": "boolean",
-            "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2."
+            "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
           }
         },
         "required": ["card", "position", "currentHp", "faceDown"],
@@ -213,7 +213,8 @@
         "properties": {
           "specVersion": {
             "type": "string",
-            "enum": ["1.0"]
+            "enum": ["1.0", "2.0"],
+            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
           },
           "classic": {
             "type": "object",
@@ -298,7 +299,7 @@
                   },
                   "quickStart": {
                     "default": false,
-                    "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                    "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                     "type": "boolean"
                   }
                 },
@@ -401,7 +402,7 @@
           },
           "modeQuickStart": {
             "type": "boolean",
-            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
           },
           "modeSpecialStart": {
             "type": "object",
@@ -484,15 +485,16 @@
           },
           "specVersion": {
             "type": "string",
-            "description": "Rules specification version. Must be \"1.0\".",
-            "enum": ["1.0"]
+            "enum": ["1.0", "2.0"],
+            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
           },
           "params": {
             "type": "object",
             "properties": {
               "specVersion": {
                 "type": "string",
-                "enum": ["1.0"]
+                "enum": ["1.0", "2.0"],
+                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
               },
               "classic": {
                 "type": "object",
@@ -577,7 +579,7 @@
                       },
                       "quickStart": {
                         "default": false,
-                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                        "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                         "type": "boolean"
                       }
                     },
@@ -685,7 +687,7 @@
               },
               "modeQuickStart": {
                 "type": "boolean",
-                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
               },
               "modeSpecialStart": {
                 "type": "object",
@@ -887,7 +889,7 @@
                           },
                           "faceDown": {
                             "type": "boolean",
-                            "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2."
+                            "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                           }
                         },
                         "required": ["card", "position", "currentHp", "faceDown"],
@@ -1054,24 +1056,24 @@
             "properties": {
               "damageMode": {
                 "default": "classic",
-                "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                 "type": "string",
                 "enum": ["classic", "cumulative"]
               },
               "startingLifepoints": {
                 "default": 20,
-                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 500
               },
               "classicDeployment": {
                 "default": true,
-                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                 "type": "boolean"
               },
               "quickStart": {
-                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                 "type": "boolean"
               }
             },
@@ -1436,24 +1438,24 @@
                               "properties": {
                                 "damageMode": {
                                   "default": "classic",
-                                  "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                  "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                   "type": "string",
                                   "enum": ["classic", "cumulative"]
                                 },
                                 "startingLifepoints": {
                                   "default": 20,
-                                  "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                  "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                   "type": "integer",
                                   "minimum": 1,
                                   "maximum": 500
                                 },
                                 "classicDeployment": {
                                   "default": true,
-                                  "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                  "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                   "type": "boolean"
                                 },
                                 "quickStart": {
-                                  "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                  "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                   "type": "boolean"
                                 }
                               },
@@ -1470,7 +1472,8 @@
                               "properties": {
                                 "specVersion": {
                                   "type": "string",
-                                  "enum": ["1.0"]
+                                  "enum": ["1.0", "2.0"],
+                                  "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                 },
                                 "classic": {
                                   "type": "object",
@@ -1555,7 +1558,7 @@
                                         },
                                         "quickStart": {
                                           "default": false,
-                                          "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                          "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                           "type": "boolean"
                                         }
                                       },
@@ -1666,7 +1669,7 @@
                                 },
                                 "modeQuickStart": {
                                   "type": "boolean",
-                                  "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                  "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                 },
                                 "modeSpecialStart": {
                                   "type": "object",
@@ -2265,15 +2268,16 @@
               },
               "specVersion": {
                 "type": "string",
-                "description": "Rules specification version. Must be \"1.0\".",
-                "enum": ["1.0"]
+                "enum": ["1.0", "2.0"],
+                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
               },
               "params": {
                 "type": "object",
                 "properties": {
                   "specVersion": {
                     "type": "string",
-                    "enum": ["1.0"]
+                    "enum": ["1.0", "2.0"],
+                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                   },
                   "classic": {
                     "type": "object",
@@ -2358,7 +2362,7 @@
                           },
                           "quickStart": {
                             "default": false,
-                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                             "type": "boolean"
                           }
                         },
@@ -2466,7 +2470,7 @@
                   },
                   "modeQuickStart": {
                     "type": "boolean",
-                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                   },
                   "modeSpecialStart": {
                     "type": "object",
@@ -2668,7 +2672,7 @@
                               },
                               "faceDown": {
                                 "type": "boolean",
-                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2."
+                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                               }
                             },
                             "required": ["card", "position", "currentHp", "faceDown"],
@@ -2835,24 +2839,24 @@
                 "properties": {
                   "damageMode": {
                     "default": "classic",
-                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                    "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                     "type": "string",
                     "enum": ["classic", "cumulative"]
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 500
                   },
                   "classicDeployment": {
                     "default": true,
-                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                     "type": "boolean"
                   },
                   "quickStart": {
-                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                     "type": "boolean"
                   }
                 },
@@ -3217,24 +3221,24 @@
                                   "properties": {
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                       "type": "string",
                                       "enum": ["classic", "cumulative"]
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                       "type": "integer",
                                       "minimum": 1,
                                       "maximum": 500
                                     },
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                       "type": "boolean"
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean"
                                     }
                                   },
@@ -3255,7 +3259,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0"]
+                                      "enum": ["1.0", "2.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -3340,7 +3345,7 @@
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean"
                                             }
                                           },
@@ -3451,7 +3456,7 @@
                                     },
                                     "modeQuickStart": {
                                       "type": "boolean",
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                     },
                                     "modeSpecialStart": {
                                       "type": "object",
@@ -4052,15 +4057,16 @@
               },
               "specVersion": {
                 "type": "string",
-                "description": "Rules specification version. Must be \"1.0\".",
-                "enum": ["1.0"]
+                "enum": ["1.0", "2.0"],
+                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
               },
               "params": {
                 "type": "object",
                 "properties": {
                   "specVersion": {
                     "type": "string",
-                    "enum": ["1.0"]
+                    "enum": ["1.0", "2.0"],
+                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                   },
                   "classic": {
                     "type": "object",
@@ -4145,7 +4151,7 @@
                           },
                           "quickStart": {
                             "default": false,
-                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                             "type": "boolean"
                           }
                         },
@@ -4253,7 +4259,7 @@
                   },
                   "modeQuickStart": {
                     "type": "boolean",
-                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                   },
                   "modeSpecialStart": {
                     "type": "object",
@@ -4455,7 +4461,7 @@
                               },
                               "faceDown": {
                                 "type": "boolean",
-                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2."
+                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                               }
                             },
                             "required": ["card", "position", "currentHp", "faceDown"],
@@ -4622,24 +4628,24 @@
                 "properties": {
                   "damageMode": {
                     "default": "classic",
-                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                    "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                     "type": "string",
                     "enum": ["classic", "cumulative"]
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 500
                   },
                   "classicDeployment": {
                     "default": true,
-                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                     "type": "boolean"
                   },
                   "quickStart": {
-                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                     "type": "boolean"
                   }
                 },
@@ -5004,24 +5010,24 @@
                                   "properties": {
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                       "type": "string",
                                       "enum": ["classic", "cumulative"]
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                       "type": "integer",
                                       "minimum": 1,
                                       "maximum": 500
                                     },
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                       "type": "boolean"
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean"
                                     }
                                   },
@@ -5042,7 +5048,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0"]
+                                      "enum": ["1.0", "2.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -5127,7 +5134,7 @@
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean"
                                             }
                                           },
@@ -5238,7 +5245,7 @@
                                     },
                                     "modeQuickStart": {
                                       "type": "boolean",
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                     },
                                     "modeSpecialStart": {
                                       "type": "object",
@@ -6109,24 +6116,24 @@
                         "properties": {
                           "damageMode": {
                             "default": "classic",
-                            "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                            "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                             "type": "string",
                             "enum": ["classic", "cumulative"]
                           },
                           "startingLifepoints": {
                             "default": 20,
-                            "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                            "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                             "type": "integer",
                             "minimum": 1,
                             "maximum": 500
                           },
                           "classicDeployment": {
                             "default": true,
-                            "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                            "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                             "type": "boolean"
                           },
                           "quickStart": {
-                            "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                            "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                             "type": "boolean"
                           }
                         },
@@ -6143,7 +6150,8 @@
                         "properties": {
                           "specVersion": {
                             "type": "string",
-                            "enum": ["1.0"]
+                            "enum": ["1.0", "2.0"],
+                            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                           },
                           "classic": {
                             "type": "object",
@@ -6228,7 +6236,7 @@
                                   },
                                   "quickStart": {
                                     "default": false,
-                                    "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                    "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                     "type": "boolean"
                                   }
                                 },
@@ -6336,7 +6344,7 @@
                           },
                           "modeQuickStart": {
                             "type": "boolean",
-                            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                           },
                           "modeSpecialStart": {
                             "type": "object",
@@ -6589,15 +6597,16 @@
               },
               "specVersion": {
                 "type": "string",
-                "description": "Rules specification version. Must be \"1.0\".",
-                "enum": ["1.0"]
+                "enum": ["1.0", "2.0"],
+                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
               },
               "params": {
                 "type": "object",
                 "properties": {
                   "specVersion": {
                     "type": "string",
-                    "enum": ["1.0"]
+                    "enum": ["1.0", "2.0"],
+                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                   },
                   "classic": {
                     "type": "object",
@@ -6682,7 +6691,7 @@
                           },
                           "quickStart": {
                             "default": false,
-                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                             "type": "boolean"
                           }
                         },
@@ -6790,7 +6799,7 @@
                   },
                   "modeQuickStart": {
                     "type": "boolean",
-                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                   },
                   "modeSpecialStart": {
                     "type": "object",
@@ -6992,7 +7001,7 @@
                               },
                               "faceDown": {
                                 "type": "boolean",
-                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2."
+                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                               }
                             },
                             "required": ["card", "position", "currentHp", "faceDown"],
@@ -7159,24 +7168,24 @@
                 "properties": {
                   "damageMode": {
                     "default": "classic",
-                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                    "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                     "type": "string",
                     "enum": ["classic", "cumulative"]
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 500
                   },
                   "classicDeployment": {
                     "default": true,
-                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                     "type": "boolean"
                   },
                   "quickStart": {
-                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                     "type": "boolean"
                   }
                 },
@@ -7541,24 +7550,24 @@
                                   "properties": {
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                       "type": "string",
                                       "enum": ["classic", "cumulative"]
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                       "type": "integer",
                                       "minimum": 1,
                                       "maximum": 500
                                     },
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                       "type": "boolean"
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean"
                                     }
                                   },
@@ -7579,7 +7588,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0"]
+                                      "enum": ["1.0", "2.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -7664,7 +7674,7 @@
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean"
                                             }
                                           },
@@ -7775,7 +7785,7 @@
                                     },
                                     "modeQuickStart": {
                                       "type": "boolean",
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                     },
                                     "modeSpecialStart": {
                                       "type": "object",
@@ -8660,24 +8670,24 @@
                           "properties": {
                             "damageMode": {
                               "default": "classic",
-                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                              "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                               "type": "string",
                               "enum": ["classic", "cumulative"]
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                               "type": "integer",
                               "minimum": 1,
                               "maximum": 500
                             },
                             "classicDeployment": {
                               "default": true,
-                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                               "type": "boolean"
                             },
                             "quickStart": {
-                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                               "type": "boolean"
                             }
                           },
@@ -8694,7 +8704,8 @@
                           "properties": {
                             "specVersion": {
                               "type": "string",
-                              "enum": ["1.0"]
+                              "enum": ["1.0", "2.0"],
+                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                             },
                             "classic": {
                               "type": "object",
@@ -8779,7 +8790,7 @@
                                     },
                                     "quickStart": {
                                       "default": false,
-                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                       "type": "boolean"
                                     }
                                   },
@@ -8887,7 +8898,7 @@
                             },
                             "modeQuickStart": {
                               "type": "boolean",
-                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                             },
                             "modeSpecialStart": {
                               "type": "object",
@@ -9019,15 +9030,16 @@
               },
               "specVersion": {
                 "type": "string",
-                "description": "Rules specification version. Must be \"1.0\".",
-                "enum": ["1.0"]
+                "enum": ["1.0", "2.0"],
+                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
               },
               "params": {
                 "type": "object",
                 "properties": {
                   "specVersion": {
                     "type": "string",
-                    "enum": ["1.0"]
+                    "enum": ["1.0", "2.0"],
+                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                   },
                   "classic": {
                     "type": "object",
@@ -9112,7 +9124,7 @@
                           },
                           "quickStart": {
                             "default": false,
-                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                             "type": "boolean"
                           }
                         },
@@ -9220,7 +9232,7 @@
                   },
                   "modeQuickStart": {
                     "type": "boolean",
-                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                   },
                   "modeSpecialStart": {
                     "type": "object",
@@ -9422,7 +9434,7 @@
                               },
                               "faceDown": {
                                 "type": "boolean",
-                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2."
+                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                               }
                             },
                             "required": ["card", "position", "currentHp", "faceDown"],
@@ -9589,24 +9601,24 @@
                 "properties": {
                   "damageMode": {
                     "default": "classic",
-                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                    "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                     "type": "string",
                     "enum": ["classic", "cumulative"]
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 500
                   },
                   "classicDeployment": {
                     "default": true,
-                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                     "type": "boolean"
                   },
                   "quickStart": {
-                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                     "type": "boolean"
                   }
                 },
@@ -9971,24 +9983,24 @@
                                   "properties": {
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                       "type": "string",
                                       "enum": ["classic", "cumulative"]
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                       "type": "integer",
                                       "minimum": 1,
                                       "maximum": 500
                                     },
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                       "type": "boolean"
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean"
                                     }
                                   },
@@ -10009,7 +10021,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0"]
+                                      "enum": ["1.0", "2.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -10094,7 +10107,7 @@
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean"
                                             }
                                           },
@@ -10205,7 +10218,7 @@
                                     },
                                     "modeQuickStart": {
                                       "type": "boolean",
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                     },
                                     "modeSpecialStart": {
                                       "type": "object",
@@ -10806,15 +10819,16 @@
               },
               "specVersion": {
                 "type": "string",
-                "description": "Rules specification version. Must be \"1.0\".",
-                "enum": ["1.0"]
+                "enum": ["1.0", "2.0"],
+                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
               },
               "params": {
                 "type": "object",
                 "properties": {
                   "specVersion": {
                     "type": "string",
-                    "enum": ["1.0"]
+                    "enum": ["1.0", "2.0"],
+                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                   },
                   "classic": {
                     "type": "object",
@@ -10899,7 +10913,7 @@
                           },
                           "quickStart": {
                             "default": false,
-                            "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                            "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                             "type": "boolean"
                           }
                         },
@@ -11007,7 +11021,7 @@
                   },
                   "modeQuickStart": {
                     "type": "boolean",
-                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                    "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                   },
                   "modeSpecialStart": {
                     "type": "object",
@@ -11209,7 +11223,7 @@
                               },
                               "faceDown": {
                                 "type": "boolean",
-                                "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2."
+                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                               }
                             },
                             "required": ["card", "position", "currentHp", "faceDown"],
@@ -11376,24 +11390,24 @@
                 "properties": {
                   "damageMode": {
                     "default": "classic",
-                    "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                    "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                     "type": "string",
                     "enum": ["classic", "cumulative"]
                   },
                   "startingLifepoints": {
                     "default": 20,
-                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                    "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 500
                   },
                   "classicDeployment": {
                     "default": true,
-                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                    "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                     "type": "boolean"
                   },
                   "quickStart": {
-                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                    "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                     "type": "boolean"
                   }
                 },
@@ -11758,24 +11772,24 @@
                                   "properties": {
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                       "type": "string",
                                       "enum": ["classic", "cumulative"]
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                       "type": "integer",
                                       "minimum": 1,
                                       "maximum": 500
                                     },
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                       "type": "boolean"
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean"
                                     }
                                   },
@@ -11796,7 +11810,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0"]
+                                      "enum": ["1.0", "2.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -11881,7 +11896,7 @@
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean"
                                             }
                                           },
@@ -11992,7 +12007,7 @@
                                     },
                                     "modeQuickStart": {
                                       "type": "boolean",
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                     },
                                     "modeSpecialStart": {
                                       "type": "object",
@@ -12863,24 +12878,24 @@
                         "properties": {
                           "damageMode": {
                             "default": "classic",
-                            "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                            "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                             "type": "string",
                             "enum": ["classic", "cumulative"]
                           },
                           "startingLifepoints": {
                             "default": 20,
-                            "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                            "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                             "type": "integer",
                             "minimum": 1,
                             "maximum": 500
                           },
                           "classicDeployment": {
                             "default": true,
-                            "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                            "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                             "type": "boolean"
                           },
                           "quickStart": {
-                            "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                            "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                             "type": "boolean"
                           }
                         },
@@ -12897,7 +12912,8 @@
                         "properties": {
                           "specVersion": {
                             "type": "string",
-                            "enum": ["1.0"]
+                            "enum": ["1.0", "2.0"],
+                            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                           },
                           "classic": {
                             "type": "object",
@@ -12982,7 +12998,7 @@
                                   },
                                   "quickStart": {
                                     "default": false,
-                                    "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                    "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                     "type": "boolean"
                                   }
                                 },
@@ -13090,7 +13106,7 @@
                           },
                           "modeQuickStart": {
                             "type": "boolean",
-                            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                           },
                           "modeSpecialStart": {
                             "type": "object",
@@ -13506,24 +13522,24 @@
                           "properties": {
                             "damageMode": {
                               "default": "classic",
-                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                              "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                               "type": "string",
                               "enum": ["classic", "cumulative"]
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                               "type": "integer",
                               "minimum": 1,
                               "maximum": 500
                             },
                             "classicDeployment": {
                               "default": true,
-                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                               "type": "boolean"
                             },
                             "quickStart": {
-                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                               "type": "boolean"
                             }
                           },
@@ -13540,7 +13556,8 @@
                           "properties": {
                             "specVersion": {
                               "type": "string",
-                              "enum": ["1.0"]
+                              "enum": ["1.0", "2.0"],
+                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                             },
                             "classic": {
                               "type": "object",
@@ -13625,7 +13642,7 @@
                                     },
                                     "quickStart": {
                                       "default": false,
-                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                       "type": "boolean"
                                     }
                                   },
@@ -13733,7 +13750,7 @@
                             },
                             "modeQuickStart": {
                               "type": "boolean",
-                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                             },
                             "modeSpecialStart": {
                               "type": "object",
@@ -17688,15 +17705,16 @@
                     },
                     "specVersion": {
                       "type": "string",
-                      "description": "Rules specification version. Must be \"1.0\".",
-                      "enum": ["1.0"]
+                      "enum": ["1.0", "2.0"],
+                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                     },
                     "params": {
                       "type": "object",
                       "properties": {
                         "specVersion": {
                           "type": "string",
-                          "enum": ["1.0"]
+                          "enum": ["1.0", "2.0"],
+                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                         },
                         "classic": {
                           "type": "object",
@@ -17781,7 +17799,7 @@
                                 },
                                 "quickStart": {
                                   "default": false,
-                                  "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                  "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                   "type": "boolean"
                                 }
                               },
@@ -17889,7 +17907,7 @@
                         },
                         "modeQuickStart": {
                           "type": "boolean",
-                          "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                          "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                         },
                         "modeSpecialStart": {
                           "type": "object",
@@ -18098,7 +18116,7 @@
                                     },
                                     "faceDown": {
                                       "type": "boolean",
-                                      "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2."
+                                      "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                                     }
                                   },
                                   "required": ["card", "position", "currentHp", "faceDown"],
@@ -18265,24 +18283,24 @@
                       "properties": {
                         "damageMode": {
                           "default": "classic",
-                          "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                          "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                           "type": "string",
                           "enum": ["classic", "cumulative"]
                         },
                         "startingLifepoints": {
                           "default": 20,
-                          "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                          "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                           "type": "integer",
                           "minimum": 1,
                           "maximum": 500
                         },
                         "classicDeployment": {
                           "default": true,
-                          "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                          "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                           "type": "boolean"
                         },
                         "quickStart": {
-                          "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                          "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                           "type": "boolean"
                         }
                       },
@@ -18653,24 +18671,24 @@
                                         "properties": {
                                           "damageMode": {
                                             "default": "classic",
-                                            "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                            "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                             "type": "string",
                                             "enum": ["classic", "cumulative"]
                                           },
                                           "startingLifepoints": {
                                             "default": 20,
-                                            "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                            "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                             "type": "integer",
                                             "minimum": 1,
                                             "maximum": 500
                                           },
                                           "classicDeployment": {
                                             "default": true,
-                                            "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                            "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                             "type": "boolean"
                                           },
                                           "quickStart": {
-                                            "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                            "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                             "type": "boolean"
                                           }
                                         },
@@ -18691,7 +18709,8 @@
                                         "properties": {
                                           "specVersion": {
                                             "type": "string",
-                                            "enum": ["1.0"]
+                                            "enum": ["1.0", "2.0"],
+                                            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                           },
                                           "classic": {
                                             "type": "object",
@@ -18776,7 +18795,7 @@
                                                   },
                                                   "quickStart": {
                                                     "default": false,
-                                                    "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                    "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                     "type": "boolean"
                                                   }
                                                 },
@@ -18887,7 +18906,7 @@
                                           },
                                           "modeQuickStart": {
                                             "type": "boolean",
-                                            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                            "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                           },
                                           "modeSpecialStart": {
                                             "type": "object",
@@ -19590,15 +19609,16 @@
                         },
                         "specVersion": {
                           "type": "string",
-                          "description": "Rules specification version. Must be \"1.0\".",
-                          "enum": ["1.0"]
+                          "enum": ["1.0", "2.0"],
+                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                         },
                         "params": {
                           "type": "object",
                           "properties": {
                             "specVersion": {
                               "type": "string",
-                              "enum": ["1.0"]
+                              "enum": ["1.0", "2.0"],
+                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                             },
                             "classic": {
                               "type": "object",
@@ -19683,7 +19703,7 @@
                                     },
                                     "quickStart": {
                                       "default": false,
-                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                       "type": "boolean"
                                     }
                                   },
@@ -19791,7 +19811,7 @@
                             },
                             "modeQuickStart": {
                               "type": "boolean",
-                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                             },
                             "modeSpecialStart": {
                               "type": "object",
@@ -20000,7 +20020,7 @@
                                         },
                                         "faceDown": {
                                           "type": "boolean",
-                                          "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2."
+                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                                         }
                                       },
                                       "required": ["card", "position", "currentHp", "faceDown"],
@@ -20167,24 +20187,24 @@
                           "properties": {
                             "damageMode": {
                               "default": "classic",
-                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                              "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                               "type": "string",
                               "enum": ["classic", "cumulative"]
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                               "type": "integer",
                               "minimum": 1,
                               "maximum": 500
                             },
                             "classicDeployment": {
                               "default": true,
-                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                               "type": "boolean"
                             },
                             "quickStart": {
-                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                               "type": "boolean"
                             }
                           },
@@ -20555,24 +20575,24 @@
                                             "properties": {
                                               "damageMode": {
                                                 "default": "classic",
-                                                "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                                "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                                 "type": "string",
                                                 "enum": ["classic", "cumulative"]
                                               },
                                               "startingLifepoints": {
                                                 "default": 20,
-                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                                 "type": "integer",
                                                 "minimum": 1,
                                                 "maximum": 500
                                               },
                                               "classicDeployment": {
                                                 "default": true,
-                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                                 "type": "boolean"
                                               },
                                               "quickStart": {
-                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                                 "type": "boolean"
                                               }
                                             },
@@ -20593,7 +20613,8 @@
                                             "properties": {
                                               "specVersion": {
                                                 "type": "string",
-                                                "enum": ["1.0"]
+                                                "enum": ["1.0", "2.0"],
+                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                               },
                                               "classic": {
                                                 "type": "object",
@@ -20678,7 +20699,7 @@
                                                       },
                                                       "quickStart": {
                                                         "default": false,
-                                                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                        "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                         "type": "boolean"
                                                       }
                                                     },
@@ -20789,7 +20810,7 @@
                                               },
                                               "modeQuickStart": {
                                                 "type": "boolean",
-                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                               },
                                               "modeSpecialStart": {
                                                 "type": "object",
@@ -21408,15 +21429,16 @@
                         },
                         "specVersion": {
                           "type": "string",
-                          "description": "Rules specification version. Must be \"1.0\".",
-                          "enum": ["1.0"]
+                          "enum": ["1.0", "2.0"],
+                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                         },
                         "params": {
                           "type": "object",
                           "properties": {
                             "specVersion": {
                               "type": "string",
-                              "enum": ["1.0"]
+                              "enum": ["1.0", "2.0"],
+                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                             },
                             "classic": {
                               "type": "object",
@@ -21501,7 +21523,7 @@
                                     },
                                     "quickStart": {
                                       "default": false,
-                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                       "type": "boolean"
                                     }
                                   },
@@ -21609,7 +21631,7 @@
                             },
                             "modeQuickStart": {
                               "type": "boolean",
-                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                             },
                             "modeSpecialStart": {
                               "type": "object",
@@ -21818,7 +21840,7 @@
                                         },
                                         "faceDown": {
                                           "type": "boolean",
-                                          "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2."
+                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                                         }
                                       },
                                       "required": ["card", "position", "currentHp", "faceDown"],
@@ -21985,24 +22007,24 @@
                           "properties": {
                             "damageMode": {
                               "default": "classic",
-                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                              "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                               "type": "string",
                               "enum": ["classic", "cumulative"]
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                               "type": "integer",
                               "minimum": 1,
                               "maximum": 500
                             },
                             "classicDeployment": {
                               "default": true,
-                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                               "type": "boolean"
                             },
                             "quickStart": {
-                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                               "type": "boolean"
                             }
                           },
@@ -22373,24 +22395,24 @@
                                             "properties": {
                                               "damageMode": {
                                                 "default": "classic",
-                                                "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                                "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                                 "type": "string",
                                                 "enum": ["classic", "cumulative"]
                                               },
                                               "startingLifepoints": {
                                                 "default": 20,
-                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                                 "type": "integer",
                                                 "minimum": 1,
                                                 "maximum": 500
                                               },
                                               "classicDeployment": {
                                                 "default": true,
-                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                                 "type": "boolean"
                                               },
                                               "quickStart": {
-                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                                 "type": "boolean"
                                               }
                                             },
@@ -22411,7 +22433,8 @@
                                             "properties": {
                                               "specVersion": {
                                                 "type": "string",
-                                                "enum": ["1.0"]
+                                                "enum": ["1.0", "2.0"],
+                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                               },
                                               "classic": {
                                                 "type": "object",
@@ -22496,7 +22519,7 @@
                                                       },
                                                       "quickStart": {
                                                         "default": false,
-                                                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                        "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                         "type": "boolean"
                                                       }
                                                     },
@@ -22607,7 +22630,7 @@
                                               },
                                               "modeQuickStart": {
                                                 "type": "boolean",
-                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                               },
                                               "modeSpecialStart": {
                                                 "type": "object",
@@ -23496,24 +23519,24 @@
                                   "properties": {
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                       "type": "string",
                                       "enum": ["classic", "cumulative"]
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                       "type": "integer",
                                       "minimum": 1,
                                       "maximum": 500
                                     },
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                       "type": "boolean"
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean"
                                     }
                                   },
@@ -23534,7 +23557,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0"]
+                                      "enum": ["1.0", "2.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -23619,7 +23643,7 @@
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean"
                                             }
                                           },
@@ -23730,7 +23754,7 @@
                                     },
                                     "modeQuickStart": {
                                       "type": "boolean",
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                     },
                                     "modeSpecialStart": {
                                       "type": "object",
@@ -24154,24 +24178,24 @@
                                     "properties": {
                                       "damageMode": {
                                         "default": "classic",
-                                        "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                        "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                         "type": "string",
                                         "enum": ["classic", "cumulative"]
                                       },
                                       "startingLifepoints": {
                                         "default": 20,
-                                        "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                        "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                         "type": "integer",
                                         "minimum": 1,
                                         "maximum": 500
                                       },
                                       "classicDeployment": {
                                         "default": true,
-                                        "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                        "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                         "type": "boolean"
                                       },
                                       "quickStart": {
-                                        "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                        "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                         "type": "boolean"
                                       }
                                     },
@@ -24192,7 +24216,8 @@
                                     "properties": {
                                       "specVersion": {
                                         "type": "string",
-                                        "enum": ["1.0"]
+                                        "enum": ["1.0", "2.0"],
+                                        "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                       },
                                       "classic": {
                                         "type": "object",
@@ -24277,7 +24302,7 @@
                                               },
                                               "quickStart": {
                                                 "default": false,
-                                                "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                 "type": "boolean"
                                               }
                                             },
@@ -24388,7 +24413,7 @@
                                       },
                                       "modeQuickStart": {
                                         "type": "boolean",
-                                        "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                        "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                       },
                                       "modeSpecialStart": {
                                         "type": "object",
@@ -24647,15 +24672,16 @@
                         },
                         "specVersion": {
                           "type": "string",
-                          "description": "Rules specification version. Must be \"1.0\".",
-                          "enum": ["1.0"]
+                          "enum": ["1.0", "2.0"],
+                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                         },
                         "params": {
                           "type": "object",
                           "properties": {
                             "specVersion": {
                               "type": "string",
-                              "enum": ["1.0"]
+                              "enum": ["1.0", "2.0"],
+                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                             },
                             "classic": {
                               "type": "object",
@@ -24740,7 +24766,7 @@
                                     },
                                     "quickStart": {
                                       "default": false,
-                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                       "type": "boolean"
                                     }
                                   },
@@ -24848,7 +24874,7 @@
                             },
                             "modeQuickStart": {
                               "type": "boolean",
-                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                             },
                             "modeSpecialStart": {
                               "type": "object",
@@ -25057,7 +25083,7 @@
                                         },
                                         "faceDown": {
                                           "type": "boolean",
-                                          "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2."
+                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                                         }
                                       },
                                       "required": ["card", "position", "currentHp", "faceDown"],
@@ -25224,24 +25250,24 @@
                           "properties": {
                             "damageMode": {
                               "default": "classic",
-                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                              "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                               "type": "string",
                               "enum": ["classic", "cumulative"]
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                               "type": "integer",
                               "minimum": 1,
                               "maximum": 500
                             },
                             "classicDeployment": {
                               "default": true,
-                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                               "type": "boolean"
                             },
                             "quickStart": {
-                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                               "type": "boolean"
                             }
                           },
@@ -25612,24 +25638,24 @@
                                             "properties": {
                                               "damageMode": {
                                                 "default": "classic",
-                                                "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                                "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                                 "type": "string",
                                                 "enum": ["classic", "cumulative"]
                                               },
                                               "startingLifepoints": {
                                                 "default": 20,
-                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                                 "type": "integer",
                                                 "minimum": 1,
                                                 "maximum": 500
                                               },
                                               "classicDeployment": {
                                                 "default": true,
-                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                                 "type": "boolean"
                                               },
                                               "quickStart": {
-                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                                 "type": "boolean"
                                               }
                                             },
@@ -25650,7 +25676,8 @@
                                             "properties": {
                                               "specVersion": {
                                                 "type": "string",
-                                                "enum": ["1.0"]
+                                                "enum": ["1.0", "2.0"],
+                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                               },
                                               "classic": {
                                                 "type": "object",
@@ -25735,7 +25762,7 @@
                                                       },
                                                       "quickStart": {
                                                         "default": false,
-                                                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                        "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                         "type": "boolean"
                                                       }
                                                     },
@@ -25846,7 +25873,7 @@
                                               },
                                               "modeQuickStart": {
                                                 "type": "boolean",
-                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                               },
                                               "modeSpecialStart": {
                                                 "type": "object",
@@ -26465,15 +26492,16 @@
                         },
                         "specVersion": {
                           "type": "string",
-                          "description": "Rules specification version. Must be \"1.0\".",
-                          "enum": ["1.0"]
+                          "enum": ["1.0", "2.0"],
+                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                         },
                         "params": {
                           "type": "object",
                           "properties": {
                             "specVersion": {
                               "type": "string",
-                              "enum": ["1.0"]
+                              "enum": ["1.0", "2.0"],
+                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                             },
                             "classic": {
                               "type": "object",
@@ -26558,7 +26586,7 @@
                                     },
                                     "quickStart": {
                                       "default": false,
-                                      "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                      "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                       "type": "boolean"
                                     }
                                   },
@@ -26666,7 +26694,7 @@
                             },
                             "modeQuickStart": {
                               "type": "boolean",
-                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                              "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                             },
                             "modeSpecialStart": {
                               "type": "object",
@@ -26875,7 +26903,7 @@
                                         },
                                         "faceDown": {
                                           "type": "boolean",
-                                          "description": "Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2."
+                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                                         }
                                       },
                                       "required": ["card", "position", "currentHp", "faceDown"],
@@ -27042,24 +27070,24 @@
                           "properties": {
                             "damageMode": {
                               "default": "classic",
-                              "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                              "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                               "type": "string",
                               "enum": ["classic", "cumulative"]
                             },
                             "startingLifepoints": {
                               "default": 20,
-                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                              "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                               "type": "integer",
                               "minimum": 1,
                               "maximum": 500
                             },
                             "classicDeployment": {
                               "default": true,
-                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                              "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                               "type": "boolean"
                             },
                             "quickStart": {
-                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                              "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                               "type": "boolean"
                             }
                           },
@@ -27430,24 +27458,24 @@
                                             "properties": {
                                               "damageMode": {
                                                 "default": "classic",
-                                                "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                                "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                                 "type": "string",
                                                 "enum": ["classic", "cumulative"]
                                               },
                                               "startingLifepoints": {
                                                 "default": 20,
-                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                                "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                                 "type": "integer",
                                                 "minimum": 1,
                                                 "maximum": 500
                                               },
                                               "classicDeployment": {
                                                 "default": true,
-                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                                "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                                 "type": "boolean"
                                               },
                                               "quickStart": {
-                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                                "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                                 "type": "boolean"
                                               }
                                             },
@@ -27468,7 +27496,8 @@
                                             "properties": {
                                               "specVersion": {
                                                 "type": "string",
-                                                "enum": ["1.0"]
+                                                "enum": ["1.0", "2.0"],
+                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                               },
                                               "classic": {
                                                 "type": "object",
@@ -27553,7 +27582,7 @@
                                                       },
                                                       "quickStart": {
                                                         "default": false,
-                                                        "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                        "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                         "type": "boolean"
                                                       }
                                                     },
@@ -27664,7 +27693,7 @@
                                               },
                                               "modeQuickStart": {
                                                 "type": "boolean",
-                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                                "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                               },
                                               "modeSpecialStart": {
                                                 "type": "object",
@@ -28553,24 +28582,24 @@
                                   "properties": {
                                     "damageMode": {
                                       "default": "classic",
-                                      "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                      "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                       "type": "string",
                                       "enum": ["classic", "cumulative"]
                                     },
                                     "startingLifepoints": {
                                       "default": 20,
-                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                      "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                       "type": "integer",
                                       "minimum": 1,
                                       "maximum": 500
                                     },
                                     "classicDeployment": {
                                       "default": true,
-                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                      "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                       "type": "boolean"
                                     },
                                     "quickStart": {
-                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                      "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                       "type": "boolean"
                                     }
                                   },
@@ -28591,7 +28620,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0"]
+                                      "enum": ["1.0", "2.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -28676,7 +28706,7 @@
                                             },
                                             "quickStart": {
                                               "default": false,
-                                              "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                              "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                               "type": "boolean"
                                             }
                                           },
@@ -28787,7 +28817,7 @@
                                     },
                                     "modeQuickStart": {
                                       "type": "boolean",
-                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                      "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                     },
                                     "modeSpecialStart": {
                                       "type": "object",
@@ -29211,24 +29241,24 @@
                                     "properties": {
                                       "damageMode": {
                                         "default": "classic",
-                                        "description": "Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
+                                        "description": "Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.",
                                         "type": "string",
                                         "enum": ["classic", "cumulative"]
                                       },
                                       "startingLifepoints": {
                                         "default": 20,
-                                        "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
+                                        "description": "Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.",
                                         "type": "integer",
                                         "minimum": 1,
                                         "maximum": 500
                                       },
                                       "classicDeployment": {
                                         "default": true,
-                                        "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.",
+                                        "description": "Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.",
                                         "type": "boolean"
                                       },
                                       "quickStart": {
-                                        "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.",
+                                        "description": "Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.",
                                         "type": "boolean"
                                       }
                                     },
@@ -29249,7 +29279,8 @@
                                     "properties": {
                                       "specVersion": {
                                         "type": "string",
-                                        "enum": ["1.0"]
+                                        "enum": ["1.0", "2.0"],
+                                        "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
                                       },
                                       "classic": {
                                         "type": "object",
@@ -29334,7 +29365,7 @@
                                               },
                                               "quickStart": {
                                                 "default": false,
-                                                "description": "Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).",
+                                                "description": "Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).",
                                                 "type": "boolean"
                                               }
                                             },
@@ -29445,7 +29476,7 @@
                                       },
                                       "modeQuickStart": {
                                         "type": "boolean",
-                                        "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false."
+                                        "description": "Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false."
                                       },
                                       "modeSpecialStart": {
                                         "type": "object",

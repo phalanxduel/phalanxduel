@@ -102,6 +102,24 @@ describe('PHX-PASS-001: Pass Rule Enforcement', () => {
     expect(state.outcome?.victoryType).toBe('passLimit');
   });
 
+  it('does not forfeit below either configured pass threshold', () => {
+    let state = seedState();
+    state.params.modePassRules = {
+      maxConsecutivePasses: 3,
+      maxTotalPassesPerPlayer: 5,
+    };
+    state.passState = { consecutivePasses: [1, 0], totalPasses: [3, 0] };
+
+    state = applyAction(state, {
+      type: 'pass',
+      playerIndex: 0,
+      timestamp: '2026-01-01T00:00:02.500Z',
+    });
+
+    expect(state.passState).toEqual({ consecutivePasses: [2, 0], totalPasses: [4, 0] });
+    expect(state.phase).not.toBe('gameOver');
+  });
+
   it('triggers forfeit when total pass limit is reached', () => {
     let state = seedState();
     state.params.modePassRules.maxTotalPassesPerPlayer = 5;

@@ -2,7 +2,7 @@
  * Copyright © 2026 Mike Hall
  * Licensed under the GNU Affero General Public License v3.0.
  *
- * Phalanx System — Authoritative Schema v1.0
+ * Phalanx System — Authoritative Schema v2.0
  * Defines the core deterministic types and the Phalanx: Duel format extension.
  */
 
@@ -25,7 +25,7 @@ export const CardTypeSchema = z
   );
 
 /**
- * Standard Numeric Value Lookup (v1.0):
+ * Standard Numeric Value Lookup (v2.0):
  * A=1, 2-9=face, T=10, J/Q/K=11
  */
 export const RANK_VALUES: Record<string, number> = {
@@ -111,7 +111,7 @@ export const BattlefieldCardSchema = z.object({
   faceDown: z
     .boolean()
     .describe(
-      'Whether the card is face-down. Canonical v1.0 gameplay keeps battlefield cards face-up (`false`). This field remains for forward-compatibility and non-v1 visibility experiments; see §21.2.',
+      'Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2.',
     ),
 });
 
@@ -119,7 +119,7 @@ export const BattlefieldSchema = z.array(z.union([BattlefieldCardSchema, z.null(
 
 // --- 2. Turn Lifecycle & Event Spans ---
 
-/** 8-phase turn lifecycle mandated by v1.0 RULES.md §4. */
+/** 8-phase turn lifecycle mandated by the versioned rules specification §4. */
 export const TurnPhaseSchema = z
   .enum([
     'StartTurn',
@@ -209,6 +209,12 @@ export const ClassicModeTypeSchema = z
     'Classic schema binding mode (§3.1). strict: all top-level parameters must exactly match the classic template. hybrid: classic values serve as defaults, top-level may override within Global System Constraints.',
   );
 
+export const RulesSpecVersionSchema = z
+  .enum(['1.0', '2.0'])
+  .describe(
+    'Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.',
+  );
+
 export const MatchConfigClassicSchema = z.object({
   enabled: z.boolean().describe('Whether Classic schema binding is active (§3.1).'),
   mode: ClassicModeTypeSchema.default('strict'),
@@ -266,7 +272,7 @@ export const MatchConfigClassicSchema = z.object({
     quickStart: z
       .boolean()
       .default(false)
-      .describe('Reserved compatibility flag. Must be false for v1.0-compliant matches (§3.4).'),
+      .describe('Reserved compatibility flag. Must be false for v2.0-compliant matches (§3.4).'),
   }),
   initiative: z.object({
     deployFirst: z
@@ -304,7 +310,7 @@ export const DamageModeSchema = z
 
 export const GameOptionsSchema = z.object({
   damageMode: DamageModeSchema.default('classic').describe(
-    'Compatibility-only runtime override. Canonical v1.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.',
+    'Compatibility-only runtime override. Canonical v2.0 rule authority belongs to match params `modeDamagePersistence`, not `gameOptions.damageMode`.',
   ),
   startingLifepoints: z
     .number()
@@ -313,19 +319,19 @@ export const GameOptionsSchema = z.object({
     .max(500)
     .default(20)
     .describe(
-      'Compatibility-only runtime override for bootstrap surfaces. Canonical v1.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.',
+      'Compatibility-only runtime override for bootstrap surfaces. Canonical v2.0 gameplay is defined by the match params contract, not `gameOptions.startingLifepoints`.',
     ),
   classicDeployment: z
     .boolean()
     .default(true)
     .describe(
-      'Compatibility-only runtime override for deployment bootstrap. Canonical v1.0 rule authority belongs to `modeClassicDeployment` in the match params.',
+      'Compatibility-only runtime override for deployment bootstrap. Canonical v2.0 rule authority belongs to `modeClassicDeployment` in the match params.',
     ),
   quickStart: z
     .boolean()
     .optional()
     .describe(
-      'Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v1.0-compliant matches keep this disabled.',
+      'Compatibility-only bootstrap shortcut. If true, runtime may skip deployment and pre-fill the battlefield, but canonical v2.0-compliant matches keep this disabled.',
     ),
 });
 
@@ -405,6 +411,7 @@ const MatchParametersCoreShape = {
 
 export const CreateMatchParamsPartialSchema = z
   .object({
+    specVersion: RulesSpecVersionSchema.optional(),
     ...MatchParametersCoreShape,
     classic: ClassicConfigPartialSchema.optional(),
     modeClassicAces: z.boolean().optional(),
@@ -442,7 +449,7 @@ export const CreateMatchParamsPartialSchema = z
  */
 export const MatchParametersSchema = z
   .object({
-    specVersion: z.literal('1.0'),
+    specVersion: RulesSpecVersionSchema,
     classic: MatchConfigClassicSchema,
 
     // Top-level overrides/parameters
@@ -461,7 +468,7 @@ export const MatchParametersSchema = z
     modeQuickStart: z
       .boolean()
       .describe(
-        'Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v1.0-compliant matches keep this false.',
+        'Reserved compatibility flag for non-standard quick-start bootstrap. Canonical v2.0-compliant matches keep this false.',
       ),
 
     modeSpecialStart: z.object({
@@ -537,6 +544,19 @@ export const MatchParametersSchema = z
       });
     }
 
+    if (
+      data.specVersion === '2.0' &&
+      data.classic.enabled &&
+      data.classic.mode === 'strict' &&
+      (data.rows !== 2 || data.columns !== 4)
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Competitive rules v2.0 supports exactly a 2x4 battlefield.',
+        path: ['rows', 'columns'],
+      });
+    }
+
     // Strict Mode Parity (3.1.1)
     if (data.classic.enabled && data.classic.mode === 'strict') {
       const checks: [string, unknown, unknown][] = [
@@ -584,7 +604,7 @@ export const MatchParametersSchema = z
 
 /** Default match parameters for the standard 2x4 grid configuration. */
 export const DEFAULT_MATCH_PARAMS: z.infer<typeof MatchParametersSchema> = {
-  specVersion: '1.0',
+  specVersion: '2.0',
   classic: {
     enabled: true,
     mode: 'strict',
@@ -619,7 +639,14 @@ export function normalizeCreateMatchParams(
   matchParams?: z.input<typeof CreateMatchParamsPartialSchema>,
 ) {
   const classicEnabled = matchParams?.classic?.enabled ?? DEFAULT_MATCH_PARAMS.classic.enabled;
-  const classicMode = matchParams?.classic?.mode ?? DEFAULT_MATCH_PARAMS.classic.mode;
+  const requestedRows = matchParams?.rows ?? matchParams?.classic?.battlefield?.rows;
+  const requestedColumns = matchParams?.columns ?? matchParams?.classic?.battlefield?.columns;
+  const requestsNonCompetitiveGeometry =
+    (requestedRows !== undefined && requestedRows !== DEFAULT_MATCH_PARAMS.rows) ||
+    (requestedColumns !== undefined && requestedColumns !== DEFAULT_MATCH_PARAMS.columns);
+  const classicMode =
+    matchParams?.classic?.mode ??
+    (requestsNonCompetitiveGeometry ? 'hybrid' : DEFAULT_MATCH_PARAMS.classic.mode);
   const rows =
     matchParams?.rows ??
     (classicEnabled ? matchParams?.classic?.battlefield?.rows : undefined) ??
@@ -706,6 +733,7 @@ export function normalizeCreateMatchParams(
 
   const merged = {
     ...DEFAULT_MATCH_PARAMS,
+    specVersion: matchParams?.specVersion ?? DEFAULT_MATCH_PARAMS.specVersion,
     classic: {
       battlefield: {
         rows: classicRows,
@@ -772,7 +800,7 @@ export const ActionDSLSchema = z
   .string()
   .regex(/^(D:\d+:[\w:]+|A:\d+:\d+|P|R:[\w:]+|F)$/)
   .describe(
-    'Phalanx Action DSL (v1.0). Format: D:col:cardId (Deploy), A:atkCol:defCol (Attack), P (Pass), R:cardId (Reinforce), F (Forfeit).',
+    'Phalanx Action DSL. Format: D:col:cardId (Deploy), A:atkCol:defCol (Attack), P (Pass), R:cardId (Reinforce), F (Forfeit).',
   );
 
 const ActionTransportFieldsSchema = z.object({
@@ -1043,7 +1071,7 @@ export const TransactionLogEntrySchema = z.object({
 export const GameStateSchema = z
   .object({
     matchId: z.uuid().describe('Unique match identifier (UUID v4).'),
-    specVersion: z.literal('1.0').describe('Rules specification version. Must be "1.0".'),
+    specVersion: RulesSpecVersionSchema,
     params: MatchParametersSchema,
 
     players: z
@@ -1125,6 +1153,13 @@ export const GameStateSchema = z
       .describe('Match outcome. Present only when phase is gameOver.'),
   })
   .superRefine((state, ctx) => {
+    if (state.specVersion !== state.params.specVersion) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['specVersion'],
+        message: 'GameState specVersion must equal params.specVersion.',
+      });
+    }
     if (state.phase === 'gameOver' && !state.outcome) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

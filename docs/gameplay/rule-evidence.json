@@ -1,6 +1,6 @@
 {
   "registryVersion": 1,
-  "rulesVersion": "1.0",
+  "rulesVersion": "2.0",
   "normativeSource": "docs/gameplay/rules.md",
   "rules": [
     {
@@ -241,7 +241,7 @@
       "claim": "Boundary modifiers apply Shield then Weapon then Clamp.",
       "formalization": "sequence",
       "evidence": "E1",
-      "status": "divergent",
+      "status": "aligned",
       "implementation": ["engine/src/combat.ts"],
       "verification": ["engine/tests/rules-coverage.test.ts"]
     },
@@ -424,11 +424,11 @@
     {
       "id": "PD-RULE-039",
       "section": "16",
-      "sourceMarker": "> maxConsecutivePasses",
-      "claim": "Crossing a configured consecutive or total pass limit forfeits the match.",
+      "sourceMarker": "consecutivePasses >= maxConsecutivePasses",
+      "claim": "Reaching a configured consecutive or total pass threshold forfeits the match.",
       "formalization": "inequality",
       "evidence": "E1",
-      "status": "divergent",
+      "status": "aligned",
       "implementation": ["engine/src/state.ts"],
       "verification": ["engine/tests/pass-rules.test.ts"]
     },
@@ -557,10 +557,10 @@
       "id": "PD-RULE-051",
       "section": "21.2",
       "sourceMarker": "### 21.2 Battlefield",
-      "claim": "Competitive v1 battlefield visibility and deployment orientation are unambiguous.",
+      "claim": "Competitive v2.0 battlefield visibility and deployment orientation are unambiguous.",
       "formalization": "policy",
       "evidence": "E1",
-      "status": "divergent",
+      "status": "aligned",
       "implementation": ["engine/src/state.ts", "engine/src/projection.ts"],
       "verification": ["engine/tests/visibility.test.ts"]
     },

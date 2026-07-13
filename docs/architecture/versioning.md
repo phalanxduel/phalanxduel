@@ -33,7 +33,9 @@ The `SCHEMA_VERSION` governs the contract between the server and its clients (We
 
 - **MAJOR (`X.0.0`)**: Breaking changes to the wire protocol or public API.
   - *Examples:* Renaming required fields in `GameState`, removing public endpoints, breaking changes to the WebSocket message structure.
-  - *Requirement:* A bump in `specVersion` ALWAYS requires a MAJOR bump in `SCHEMA_VERSION`.
+  - *Requirement:* A `specVersion` bump requires a schema major only when the
+    transport contract becomes incompatible. Adding a supported rules-version
+    enum value with explicit multi-version dispatch is additive.
 - **MINOR (`0.X.0`)**: Backward-compatible additions.
   - *Examples:* Adding new optional fields to existing schemas, adding new API endpoints, introducing new event types that clients can safely ignore.
 - **PATCH (`0.0.X`)**: Backward-compatible bug fixes or internal changes.
@@ -96,7 +98,8 @@ The `specVersion` governs the deterministic execution of game turns. It is the k
 2. Increment the version header in `RULES.md` (e.g., `v1.0` → `v2.0`).
 3. Update `specVersion` literals in `shared/src/schema.ts`.
 4. Update the default `specVersion` in `engine/src/state.ts`.
-5. Perform a MAJOR bump of `SCHEMA_VERSION` using `sync-version.sh`.
+5. Classify the wire-format impact independently. Bump `SCHEMA_VERSION` with
+   `sync-version.sh` only when the transport compatibility rules in §2 require it.
 
 ---
 
@@ -115,7 +118,8 @@ The Phalanx Duel trust model relies on 100% deterministic replays.
 
 | specVersion | SCHEMA_VERSION Range | Compatibility Notes |
 |-------------|----------------------|---------------------|
-| `1.0`       | `0.4.0` - `0.x.x`    | Initial stable release of the Phalanx Duel system. |
+| `1.0`       | `0.4.0` and later    | Initial stable rules retained for historical replay. |
+| `2.0`       | `1.4.0` and later    | Corrected Shield → Weapon semantics; engine retains explicit v1.0 replay dispatch. |
 
 *This matrix is updated whenever a version bump occurs.*
 

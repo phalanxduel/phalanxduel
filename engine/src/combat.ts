@@ -42,6 +42,7 @@ function isAce(card: BattlefieldCard): boolean {
 
 /** Immutable attack context threaded through the damage chain (PHX-FACECARD-001). */
 interface AttackContext {
+  specVersion: GameState['specVersion'];
   attackerType: CardType;
   modeClassicAces: boolean;
   modeClassicFaceCards: boolean;
@@ -122,13 +123,8 @@ function resolveColumnOverflow(
 
   if (overflow > 0) {
     let clubDoubled = false;
-    if (backCard && attacker.card.suit === 'clubs' && newBf[frontIdx] === null) {
-      overflow = overflow * 2;
-      clubDoubled = true;
-    }
-
-    // Recorded on the front card's log step; overflow field updated to net value.
-    if (frontDiamondShield > 0) {
+    const applyDiamondShield = (): void => {
+      if (frontDiamondShield <= 0) return;
       const shieldAbsorbed = Math.min(overflow, frontDiamondShield);
       overflow -= shieldAbsorbed;
       const frontStep = steps.at(-1);
@@ -142,6 +138,20 @@ function resolveColumnOverflow(
         clubDoubled = false;
       }
       frontStep.bonuses.push('diamondDeathShield');
+    };
+
+    if (ctx.specVersion === '2.0') {
+      applyDiamondShield();
+    }
+
+    if (backCard && overflow > 0 && attacker.card.suit === 'clubs' && newBf[frontIdx] === null) {
+      overflow = overflow * 2;
+      clubDoubled = true;
+    }
+
+    // v1.0 replay compatibility: Weapon preceded Shield at card boundaries.
+    if (ctx.specVersion === '1.0') {
+      applyDiamondShield();
     }
 
     if (backCard && overflow > 0) {
@@ -175,16 +185,26 @@ function resolveColumnOverflow(
     let lpDamage = overflow;
     const bonuses: CombatBonusType[] = [];
 
+    const heartShield = backHeartShield > 0 ? backHeartShield : frontHeartShield;
+    const applyHeartShield = (): void => {
+      if (heartShield <= 0) return;
+      const shieldAbsorbed = Math.min(lpDamage, heartShield);
+      lpDamage -= shieldAbsorbed;
+      bonuses.push('heartDeathShield');
+    };
+
+    if (ctx.specVersion === '2.0') {
+      applyHeartShield();
+    }
+
     if (attacker.card.suit === 'spades') {
       lpDamage = lpDamage * 2;
       bonuses.push('spadeDoubleLp');
     }
 
-    const heartShield = backHeartShield > 0 ? backHeartShield : frontHeartShield;
-    if (heartShield > 0) {
-      const shieldAbsorbed = Math.min(lpDamage, heartShield);
-      lpDamage -= shieldAbsorbed;
-      bonuses.push('heartDeathShield');
+    // v1.0 replay compatibility: Weapon preceded Shield at the player boundary.
+    if (ctx.specVersion === '1.0') {
+      applyHeartShield();
     }
 
     totalLpDamage = lpDamage;
@@ -391,6 +411,7 @@ export function resolveAttack(
   const defender = state.players[defenderIndex];
   if (!defender) throw new Error(`No player at index ${defenderIndex}`);
   const ctx: AttackContext = {
+    specVersion: state.specVersion,
     attackerType: attacker.card.type,
     modeClassicAces: state.params.modeClassicAces,
     modeClassicFaceCards: state.params.modeClassicFaceCards,

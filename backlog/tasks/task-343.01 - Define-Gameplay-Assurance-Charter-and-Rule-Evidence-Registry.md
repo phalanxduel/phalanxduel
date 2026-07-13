@@ -1,11 +1,11 @@
 ---
 id: TASK-343.01
 title: Define Gameplay Assurance Charter and Rule Evidence Registry
-status: Verification
+status: Done
 assignee:
   - codex
 created_date: '2026-07-13 14:00'
-updated_date: '2026-07-13 14:30'
+updated_date: '2026-07-13 14:33'
 labels:
   - gameplay
   - assurance
@@ -63,6 +63,12 @@ Verification surfaced and resolved two independent harness defects: the broad `u
 
 Verification passed: `pnpm rules:check`; `pnpm schema:check`; `pnpm check` (build, lint, DB isolation, typecheck, docs artifacts, markdown, formatting, and all workspace tests). Full test counts include shared 145, engine 353, server 381, client 209, admin 7, MCP 5.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Established the scientific assurance foundation for Phalanx Duel. Added a versioned charter defining authority, claim scope, evidence levels E0–E6, gap lifecycle, and honest completion semantics. Inventoried all 54 normative gameplay claims into a machine-readable registry with stable IDs, formalization types, implementation/verification references, and explicit alignment status; generated a reviewable traceability report and made validation part of `pnpm rules:check`. The first baseline reports 40 aligned, 10 partial, 3 divergent, and 1 unverified claim, making subsequent work evidence-driven rather than anecdotal. During full verification, corrected an incompatible broad undici override and centralized jsdom's matchMedia test stub. Verified with `pnpm rules:check`, `pnpm schema:check`, and the complete `pnpm check` gate. Committed as `3212abf`.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
