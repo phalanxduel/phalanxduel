@@ -507,6 +507,12 @@ describe('renderGame', () => {
 
     renderGame(container, state);
 
+    const feedbackLayer = container.querySelector('[data-testid="combat-feedback-layer"]');
+    expect(feedbackLayer).toBeTruthy();
+    expect(feedbackLayer?.parentElement).toBe(
+      container.querySelector('[data-testid="game-layout"]'),
+    );
+
     const previewCell = container.querySelector('[data-testid="opponent-cell-r0-c0"]');
     expect(previewCell?.getAttribute('data-action-preview')).toBe('WINNING_EXCHANGE');
     expect(container.querySelector('.phx-action-preview-chip')?.textContent).toBe(
@@ -550,8 +556,8 @@ describe('renderGame', () => {
     renderGame(container, state);
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(container.querySelector('[data-testid="combat-feedback-banner"]')?.textContent).toBe(
-      'LP damage landed',
-    );
+    const feedbackBanner = container.querySelector('[data-testid="combat-feedback-banner"]');
+    expect(feedbackBanner?.textContent).toBe('LP damage landed');
+    expect(feedbackBanner?.parentElement).toBe(feedbackLayer);
   });
 });

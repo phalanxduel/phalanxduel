@@ -973,7 +973,14 @@ function GameApp({ state }: { state: AppState }) {
         </div>
       </header>
 
-      <CombatFeedbackBanner gs={gs} />
+      <div
+        class="phx-combat-feedback-layer"
+        data-testid="combat-feedback-layer"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <CombatFeedbackBanner gs={gs} />
+      </div>
 
       <div class="phx-main-content">
         <section class="phx-opponent-zone">

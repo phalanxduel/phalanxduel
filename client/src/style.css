@@ -3565,9 +3565,21 @@ select:focus {
   color: var(--neon-orange, #ffb23f);
 }
 
+.phx-combat-feedback-layer {
+  grid-area: hud-bottom;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: max(0.5rem, env(safe-area-inset-bottom)) 0.5rem;
+  pointer-events: none;
+  z-index: 2500;
+}
+
 .phx-combat-feedback {
   align-self: center;
-  margin: 0.5rem auto 0;
+  margin: 0;
   padding: 0.45rem 1.25rem;
   border-radius: 999px;
   font-family: var(--font-display);
@@ -3581,6 +3593,7 @@ select:focus {
     0 0 24px rgba(0, 0, 0, 0.5),
     inset 0 0 12px rgba(255, 255, 255, 0.05);
   width: fit-content;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3618,6 +3631,8 @@ select:focus {
 
 .phx-combat-cause-labels {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0.5rem;
   margin-top: 0.1rem;
 }
