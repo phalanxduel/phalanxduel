@@ -10,6 +10,7 @@ export default defineConfig({
   plugins: [preferTsSourceImports()],
   test: {
     environment: 'jsdom',
+    setupFiles: ['./tests/setup.ts'],
     include: ['tests/**/*.test.ts'],
     testTimeout: 15_000,
     coverage: {

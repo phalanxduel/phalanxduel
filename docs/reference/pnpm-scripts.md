@@ -81,10 +81,13 @@ Run `pnpm generate:artifacts` after editing schema types, adding routes, or chan
 - `pnpm schema:gen` — regenerate shared JSON Schema artifacts. Run after editing `shared/src/schema.ts`.
 - `pnpm schema:check` — verify schema artifacts are current (runs generation then checks for uncommitted drift).
   Run before committing schema-touching changes, or let `verify:full` call it automatically.
-- `pnpm rules:check` — verify rules docs, runtime FSM consistency, and event log coverage. Runs three scripts:
+- `pnpm rules:check` — verify rules docs, runtime FSM consistency, event log coverage, and rule evidence. Runs three scripts:
   `verify-doc-fsm-consistency.ts` (FSM/rules alignment), `verify-event-log.ts` (confirms every action type
-  reachable from the engine produces a non-empty `PhalanxEvent[]`), and `verify-feature-flag-env.ts`. Run for
+  reachable from the engine produces a non-empty `PhalanxEvent[]`), and `verify-rule-evidence.ts` (validates
+  stable rule IDs, evidence references, and generated traceability freshness). Run for
   any turn-lifecycle, state-machine, or event derivation change.
+- `pnpm rules:evidence:write` — regenerate `docs/quality/gameplay-rule-evidence.md` from the machine-readable
+  registry after an intentional evidence update.
 
 ## QA Playthroughs
 
@@ -319,7 +322,8 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `quality:status` | `tsx scripts/docs/quality-status.ts` |
 | `release:prepare` | `bash scripts/release/release-prepare.sh` |
 | `release:tag` | `bash scripts/release/release-tag.sh` |
-| `rules:check` | `node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts` |
+| `rules:check` | `node --import tsx scripts/ci/verify-doc-fsm-consistency.ts && node --import tsx scripts/ci/verify-event-log.ts && node --import tsx scripts/ci/verify-rule-evidence.ts` |
+| `rules:evidence:write` | `node --import tsx scripts/ci/verify-rule-evidence.ts --write` |
 | `schema:check` | `bash scripts/ci/verify-schema.sh` |
 | `sdk:gen` | `pnpm tsx scripts/gen-sdk.ts` |
 | `services` | `bash bin/services` |

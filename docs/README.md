@@ -29,6 +29,7 @@ Welcome to the central documentation hub. This directory contains the canonical 
 | **[Architecture Principles](./architecture/principles.md)** | Core design, boundaries, and hashing model |
 | **[Domain Glossary](./reference/glossary.md)** | Canonical terminology for the game and system |
 | **[Match Spec](./gameplay/rules.md)** | Detailed technical specification of the game rules |
+| **[Gameplay Assurance](./reference/gameplay-assurance.md)** | Scientific evidence levels, rule traceability, and gap lifecycle |
 | **[Security Strategy](./architecture/security-strategy.md)** | Threat model and security mitigations |
 | **[Audit Trail](./architecture/audit-trail.md)** | Transaction logging and state recovery |
 | **[Definition of Done](./reference/dod.md)** | Completion checklist and source index |

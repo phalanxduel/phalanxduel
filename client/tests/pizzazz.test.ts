@@ -6,11 +6,6 @@ vi.mock('../src/state', () => ({
   getState: vi.fn(() => ({ playerIndex: 0, gameState: null })),
 }));
 
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockReturnValue({ matches: false }),
-});
-
 function makeMinimalGameState(overrides: Record<string, unknown> = {}) {
   return {
     phase: 'AttackPhase',
