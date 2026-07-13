@@ -35,6 +35,14 @@ export { validateAction, applyAction, getValidActions } from './turns.js';
 export type { ApplyActionOptions } from './turns.js';
 export { replayGame } from './replay.js';
 export type { ReplayResult } from './replay.js';
+export {
+  LIVENESS_POLICY,
+  evaluateLiveness,
+  hasIrreversibleProgress,
+  progressMarker,
+  semanticPositionSignature,
+} from './liveness.js';
+export type { LivenessEvaluation } from './liveness.js';
 export type { GameConfig } from './state.js';
 
 // State machine canonical spec — used for testing and documentation

@@ -85,7 +85,7 @@ Run `pnpm generate:artifacts` after editing schema types, adding routes, or chan
   `verify-doc-fsm-consistency.ts` (FSM/rules alignment), `verify-event-log.ts` (confirms every action type
   reachable from the engine produces a non-empty `PhalanxEvent[]`), and `verify-rule-evidence.ts` (validates
   stable rule IDs, evidence references, and generated traceability freshness), followed by
-  `pnpm rules:combat-reference` (1,786,152 deterministic production/reference comparisons over the recorded
+  `pnpm rules:combat-reference` (2,355,388 deterministic production/reference comparisons over the recorded
   finite proof domain). Run for
   any turn-lifecycle, state-machine, or event derivation change.
 - `pnpm rules:combat-reference` — run the independent combat model checker directly. It verifies canonical
@@ -350,6 +350,7 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `verify:full` | `bash scripts/ci/verify.sh full` |
 | `verify:integration:api` | `bash scripts/ci/verify-integration-api.sh` |
 | `verify:mutation` | `pnpm --filter @phalanxduel/engine exec stryker run` |
+| `verify:mutation:gameplay` | `pnpm --filter @phalanxduel/engine exec stryker run stryker.gameplay.config.json` |
 | `verify:perf` | `tsx bin/qa/verify-perf.ts` |
 | `verify:perf:ws` | `k6 run tests/load/ws-smoke.js` |
 | `verify:property` | `pnpm --filter @phalanxduel/engine test tests/property-fastcheck.test.ts` |

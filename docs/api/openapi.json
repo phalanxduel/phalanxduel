@@ -160,7 +160,7 @@
           },
           "faceDown": {
             "type": "boolean",
-            "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
+            "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
           }
         },
         "required": ["card", "position", "currentHp", "faceDown"],
@@ -205,16 +205,24 @@
       },
       "VictoryType": {
         "type": "string",
-        "enum": ["lpDepletion", "cardDepletion", "forfeit", "passLimit"],
-        "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
+        "enum": [
+          "lpDepletion",
+          "cardDepletion",
+          "forfeit",
+          "passLimit",
+          "repetitionDraw",
+          "noProgressDraw",
+          "turnLimitDraw"
+        ],
+        "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1)."
       },
       "MatchParameters": {
         "type": "object",
         "properties": {
           "specVersion": {
             "type": "string",
-            "enum": ["1.0", "2.0"],
-            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+            "enum": ["1.0", "2.0", "3.0"],
+            "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
           },
           "classic": {
             "type": "object",
@@ -485,16 +493,16 @@
           },
           "specVersion": {
             "type": "string",
-            "enum": ["1.0", "2.0"],
-            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+            "enum": ["1.0", "2.0", "3.0"],
+            "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
           },
           "params": {
             "type": "object",
             "properties": {
               "specVersion": {
                 "type": "string",
-                "enum": ["1.0", "2.0"],
-                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                "enum": ["1.0", "2.0", "3.0"],
+                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
               },
               "classic": {
                 "type": "object",
@@ -889,7 +897,7 @@
                           },
                           "faceDown": {
                             "type": "boolean",
-                            "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
+                            "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                           }
                         },
                         "required": ["card", "position", "currentHp", "faceDown"],
@@ -1144,6 +1152,72 @@
               }
             },
             "required": ["consecutivePasses", "totalPasses"],
+            "additionalProperties": false
+          },
+          "liveness": {
+            "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+            "type": "object",
+            "properties": {
+              "positionOccurrences": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "signature": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": ["signature", "count"],
+                  "additionalProperties": false
+                },
+                "description": "Canonical turn-boundary positions and their occurrence counts."
+              },
+              "noProgressTurns": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Completed turns since the latest irreversible progress event."
+              },
+              "progressMarker": {
+                "type": "object",
+                "properties": {
+                  "totalLifepoints": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "totalBattlefieldHp": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "totalDrawpileCards": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "totalDiscardedCards": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "totalLifepoints",
+                  "totalBattlefieldHp",
+                  "totalDrawpileCards",
+                  "totalDiscardedCards"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": ["positionOccurrences", "noProgressTurns", "progressMarker"],
             "additionalProperties": false
           },
           "transactionLog": {
@@ -1472,8 +1546,8 @@
                               "properties": {
                                 "specVersion": {
                                   "type": "string",
-                                  "enum": ["1.0", "2.0"],
-                                  "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                  "enum": ["1.0", "2.0", "3.0"],
+                                  "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                 },
                                 "classic": {
                                   "type": "object",
@@ -2201,27 +2275,42 @@
             }
           },
           "outcome": {
-            "description": "Match outcome. Present only when phase is gameOver.",
+            "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
             "anyOf": [
               {
                 "type": "object",
                 "properties": {
                   "winnerIndex": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 1,
-                    "description": "Index of the winning player (0 or 1)."
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "Index of the winning player (0 or 1), or null for a draw."
                   },
                   "victoryType": {
                     "type": "string",
-                    "enum": ["lpDepletion", "cardDepletion", "forfeit", "passLimit"],
-                    "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
+                    "enum": [
+                      "lpDepletion",
+                      "cardDepletion",
+                      "forfeit",
+                      "passLimit",
+                      "repetitionDraw",
+                      "noProgressDraw",
+                      "turnLimitDraw"
+                    ],
+                    "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1)."
                   },
                   "turnNumber": {
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991,
-                    "description": "Turn number when victory was achieved."
+                    "description": "Turn number when the terminal result resolved."
                   }
                 },
                 "required": ["winnerIndex", "victoryType", "turnNumber"],
@@ -2268,16 +2357,16 @@
               },
               "specVersion": {
                 "type": "string",
-                "enum": ["1.0", "2.0"],
-                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                "enum": ["1.0", "2.0", "3.0"],
+                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
               },
               "params": {
                 "type": "object",
                 "properties": {
                   "specVersion": {
                     "type": "string",
-                    "enum": ["1.0", "2.0"],
-                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                    "enum": ["1.0", "2.0", "3.0"],
+                    "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                   },
                   "classic": {
                     "type": "object",
@@ -2672,7 +2761,7 @@
                               },
                               "faceDown": {
                                 "type": "boolean",
-                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
+                                "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                               }
                             },
                             "required": ["card", "position", "currentHp", "faceDown"],
@@ -2927,6 +3016,72 @@
                   }
                 },
                 "required": ["consecutivePasses", "totalPasses"],
+                "additionalProperties": false
+              },
+              "liveness": {
+                "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                "type": "object",
+                "properties": {
+                  "positionOccurrences": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "signature": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": ["signature", "count"],
+                      "additionalProperties": false
+                    },
+                    "description": "Canonical turn-boundary positions and their occurrence counts."
+                  },
+                  "noProgressTurns": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "Completed turns since the latest irreversible progress event."
+                  },
+                  "progressMarker": {
+                    "type": "object",
+                    "properties": {
+                      "totalLifepoints": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalBattlefieldHp": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalDrawpileCards": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalDiscardedCards": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "totalLifepoints",
+                      "totalBattlefieldHp",
+                      "totalDrawpileCards",
+                      "totalDiscardedCards"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["positionOccurrences", "noProgressTurns", "progressMarker"],
                 "additionalProperties": false
               },
               "transactionLog": {
@@ -3259,8 +3414,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0", "2.0"],
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                      "enum": ["1.0", "2.0", "3.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -4003,27 +4158,42 @@
                 }
               },
               "outcome": {
-                "description": "Match outcome. Present only when phase is gameOver.",
+                "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                 "anyOf": [
                   {
                     "type": "object",
                     "properties": {
                       "winnerIndex": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 1,
-                        "description": "Index of the winning player (0 or 1)."
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "Index of the winning player (0 or 1), or null for a draw."
                       },
                       "victoryType": {
                         "type": "string",
-                        "enum": ["lpDepletion", "cardDepletion", "forfeit", "passLimit"],
-                        "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
+                        "enum": [
+                          "lpDepletion",
+                          "cardDepletion",
+                          "forfeit",
+                          "passLimit",
+                          "repetitionDraw",
+                          "noProgressDraw",
+                          "turnLimitDraw"
+                        ],
+                        "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1)."
                       },
                       "turnNumber": {
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 9007199254740991,
-                        "description": "Turn number when victory was achieved."
+                        "description": "Turn number when the terminal result resolved."
                       }
                     },
                     "required": ["winnerIndex", "victoryType", "turnNumber"],
@@ -4057,16 +4227,16 @@
               },
               "specVersion": {
                 "type": "string",
-                "enum": ["1.0", "2.0"],
-                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                "enum": ["1.0", "2.0", "3.0"],
+                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
               },
               "params": {
                 "type": "object",
                 "properties": {
                   "specVersion": {
                     "type": "string",
-                    "enum": ["1.0", "2.0"],
-                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                    "enum": ["1.0", "2.0", "3.0"],
+                    "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                   },
                   "classic": {
                     "type": "object",
@@ -4461,7 +4631,7 @@
                               },
                               "faceDown": {
                                 "type": "boolean",
-                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
+                                "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                               }
                             },
                             "required": ["card", "position", "currentHp", "faceDown"],
@@ -4716,6 +4886,72 @@
                   }
                 },
                 "required": ["consecutivePasses", "totalPasses"],
+                "additionalProperties": false
+              },
+              "liveness": {
+                "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                "type": "object",
+                "properties": {
+                  "positionOccurrences": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "signature": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": ["signature", "count"],
+                      "additionalProperties": false
+                    },
+                    "description": "Canonical turn-boundary positions and their occurrence counts."
+                  },
+                  "noProgressTurns": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "Completed turns since the latest irreversible progress event."
+                  },
+                  "progressMarker": {
+                    "type": "object",
+                    "properties": {
+                      "totalLifepoints": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalBattlefieldHp": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalDrawpileCards": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalDiscardedCards": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "totalLifepoints",
+                      "totalBattlefieldHp",
+                      "totalDrawpileCards",
+                      "totalDiscardedCards"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["positionOccurrences", "noProgressTurns", "progressMarker"],
                 "additionalProperties": false
               },
               "transactionLog": {
@@ -5048,8 +5284,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0", "2.0"],
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                      "enum": ["1.0", "2.0", "3.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -5792,27 +6028,42 @@
                 }
               },
               "outcome": {
-                "description": "Match outcome. Present only when phase is gameOver.",
+                "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                 "anyOf": [
                   {
                     "type": "object",
                     "properties": {
                       "winnerIndex": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 1,
-                        "description": "Index of the winning player (0 or 1)."
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "Index of the winning player (0 or 1), or null for a draw."
                       },
                       "victoryType": {
                         "type": "string",
-                        "enum": ["lpDepletion", "cardDepletion", "forfeit", "passLimit"],
-                        "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
+                        "enum": [
+                          "lpDepletion",
+                          "cardDepletion",
+                          "forfeit",
+                          "passLimit",
+                          "repetitionDraw",
+                          "noProgressDraw",
+                          "turnLimitDraw"
+                        ],
+                        "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1)."
                       },
                       "turnNumber": {
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 9007199254740991,
-                        "description": "Turn number when victory was achieved."
+                        "description": "Turn number when the terminal result resolved."
                       }
                     },
                     "required": ["winnerIndex", "victoryType", "turnNumber"],
@@ -6150,8 +6401,8 @@
                         "properties": {
                           "specVersion": {
                             "type": "string",
-                            "enum": ["1.0", "2.0"],
-                            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                            "enum": ["1.0", "2.0", "3.0"],
+                            "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                           },
                           "classic": {
                             "type": "object",
@@ -6597,16 +6848,16 @@
               },
               "specVersion": {
                 "type": "string",
-                "enum": ["1.0", "2.0"],
-                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                "enum": ["1.0", "2.0", "3.0"],
+                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
               },
               "params": {
                 "type": "object",
                 "properties": {
                   "specVersion": {
                     "type": "string",
-                    "enum": ["1.0", "2.0"],
-                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                    "enum": ["1.0", "2.0", "3.0"],
+                    "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                   },
                   "classic": {
                     "type": "object",
@@ -7001,7 +7252,7 @@
                               },
                               "faceDown": {
                                 "type": "boolean",
-                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
+                                "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                               }
                             },
                             "required": ["card", "position", "currentHp", "faceDown"],
@@ -7256,6 +7507,72 @@
                   }
                 },
                 "required": ["consecutivePasses", "totalPasses"],
+                "additionalProperties": false
+              },
+              "liveness": {
+                "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                "type": "object",
+                "properties": {
+                  "positionOccurrences": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "signature": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": ["signature", "count"],
+                      "additionalProperties": false
+                    },
+                    "description": "Canonical turn-boundary positions and their occurrence counts."
+                  },
+                  "noProgressTurns": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "Completed turns since the latest irreversible progress event."
+                  },
+                  "progressMarker": {
+                    "type": "object",
+                    "properties": {
+                      "totalLifepoints": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalBattlefieldHp": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalDrawpileCards": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalDiscardedCards": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "totalLifepoints",
+                      "totalBattlefieldHp",
+                      "totalDrawpileCards",
+                      "totalDiscardedCards"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["positionOccurrences", "noProgressTurns", "progressMarker"],
                 "additionalProperties": false
               },
               "transactionLog": {
@@ -7588,8 +7905,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0", "2.0"],
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                      "enum": ["1.0", "2.0", "3.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -8332,27 +8649,42 @@
                 }
               },
               "outcome": {
-                "description": "Match outcome. Present only when phase is gameOver.",
+                "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                 "anyOf": [
                   {
                     "type": "object",
                     "properties": {
                       "winnerIndex": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 1,
-                        "description": "Index of the winning player (0 or 1)."
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "Index of the winning player (0 or 1), or null for a draw."
                       },
                       "victoryType": {
                         "type": "string",
-                        "enum": ["lpDepletion", "cardDepletion", "forfeit", "passLimit"],
-                        "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
+                        "enum": [
+                          "lpDepletion",
+                          "cardDepletion",
+                          "forfeit",
+                          "passLimit",
+                          "repetitionDraw",
+                          "noProgressDraw",
+                          "turnLimitDraw"
+                        ],
+                        "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1)."
                       },
                       "turnNumber": {
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 9007199254740991,
-                        "description": "Turn number when victory was achieved."
+                        "description": "Turn number when the terminal result resolved."
                       }
                     },
                     "required": ["winnerIndex", "victoryType", "turnNumber"],
@@ -8704,8 +9036,8 @@
                           "properties": {
                             "specVersion": {
                               "type": "string",
-                              "enum": ["1.0", "2.0"],
-                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                              "enum": ["1.0", "2.0", "3.0"],
+                              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                             },
                             "classic": {
                               "type": "object",
@@ -9030,16 +9362,16 @@
               },
               "specVersion": {
                 "type": "string",
-                "enum": ["1.0", "2.0"],
-                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                "enum": ["1.0", "2.0", "3.0"],
+                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
               },
               "params": {
                 "type": "object",
                 "properties": {
                   "specVersion": {
                     "type": "string",
-                    "enum": ["1.0", "2.0"],
-                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                    "enum": ["1.0", "2.0", "3.0"],
+                    "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                   },
                   "classic": {
                     "type": "object",
@@ -9434,7 +9766,7 @@
                               },
                               "faceDown": {
                                 "type": "boolean",
-                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
+                                "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                               }
                             },
                             "required": ["card", "position", "currentHp", "faceDown"],
@@ -9689,6 +10021,72 @@
                   }
                 },
                 "required": ["consecutivePasses", "totalPasses"],
+                "additionalProperties": false
+              },
+              "liveness": {
+                "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                "type": "object",
+                "properties": {
+                  "positionOccurrences": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "signature": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": ["signature", "count"],
+                      "additionalProperties": false
+                    },
+                    "description": "Canonical turn-boundary positions and their occurrence counts."
+                  },
+                  "noProgressTurns": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "Completed turns since the latest irreversible progress event."
+                  },
+                  "progressMarker": {
+                    "type": "object",
+                    "properties": {
+                      "totalLifepoints": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalBattlefieldHp": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalDrawpileCards": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalDiscardedCards": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "totalLifepoints",
+                      "totalBattlefieldHp",
+                      "totalDrawpileCards",
+                      "totalDiscardedCards"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["positionOccurrences", "noProgressTurns", "progressMarker"],
                 "additionalProperties": false
               },
               "transactionLog": {
@@ -10021,8 +10419,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0", "2.0"],
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                      "enum": ["1.0", "2.0", "3.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -10765,27 +11163,42 @@
                 }
               },
               "outcome": {
-                "description": "Match outcome. Present only when phase is gameOver.",
+                "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                 "anyOf": [
                   {
                     "type": "object",
                     "properties": {
                       "winnerIndex": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 1,
-                        "description": "Index of the winning player (0 or 1)."
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "Index of the winning player (0 or 1), or null for a draw."
                       },
                       "victoryType": {
                         "type": "string",
-                        "enum": ["lpDepletion", "cardDepletion", "forfeit", "passLimit"],
-                        "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
+                        "enum": [
+                          "lpDepletion",
+                          "cardDepletion",
+                          "forfeit",
+                          "passLimit",
+                          "repetitionDraw",
+                          "noProgressDraw",
+                          "turnLimitDraw"
+                        ],
+                        "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1)."
                       },
                       "turnNumber": {
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 9007199254740991,
-                        "description": "Turn number when victory was achieved."
+                        "description": "Turn number when the terminal result resolved."
                       }
                     },
                     "required": ["winnerIndex", "victoryType", "turnNumber"],
@@ -10819,16 +11232,16 @@
               },
               "specVersion": {
                 "type": "string",
-                "enum": ["1.0", "2.0"],
-                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                "enum": ["1.0", "2.0", "3.0"],
+                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
               },
               "params": {
                 "type": "object",
                 "properties": {
                   "specVersion": {
                     "type": "string",
-                    "enum": ["1.0", "2.0"],
-                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                    "enum": ["1.0", "2.0", "3.0"],
+                    "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                   },
                   "classic": {
                     "type": "object",
@@ -11223,7 +11636,7 @@
                               },
                               "faceDown": {
                                 "type": "boolean",
-                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
+                                "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                               }
                             },
                             "required": ["card", "position", "currentHp", "faceDown"],
@@ -11478,6 +11891,72 @@
                   }
                 },
                 "required": ["consecutivePasses", "totalPasses"],
+                "additionalProperties": false
+              },
+              "liveness": {
+                "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                "type": "object",
+                "properties": {
+                  "positionOccurrences": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "signature": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "count": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": ["signature", "count"],
+                      "additionalProperties": false
+                    },
+                    "description": "Canonical turn-boundary positions and their occurrence counts."
+                  },
+                  "noProgressTurns": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "Completed turns since the latest irreversible progress event."
+                  },
+                  "progressMarker": {
+                    "type": "object",
+                    "properties": {
+                      "totalLifepoints": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalBattlefieldHp": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalDrawpileCards": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "totalDiscardedCards": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "totalLifepoints",
+                      "totalBattlefieldHp",
+                      "totalDrawpileCards",
+                      "totalDiscardedCards"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["positionOccurrences", "noProgressTurns", "progressMarker"],
                 "additionalProperties": false
               },
               "transactionLog": {
@@ -11810,8 +12289,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0", "2.0"],
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                      "enum": ["1.0", "2.0", "3.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -12554,27 +13033,42 @@
                 }
               },
               "outcome": {
-                "description": "Match outcome. Present only when phase is gameOver.",
+                "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                 "anyOf": [
                   {
                     "type": "object",
                     "properties": {
                       "winnerIndex": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 1,
-                        "description": "Index of the winning player (0 or 1)."
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ],
+                        "description": "Index of the winning player (0 or 1), or null for a draw."
                       },
                       "victoryType": {
                         "type": "string",
-                        "enum": ["lpDepletion", "cardDepletion", "forfeit", "passLimit"],
-                        "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
+                        "enum": [
+                          "lpDepletion",
+                          "cardDepletion",
+                          "forfeit",
+                          "passLimit",
+                          "repetitionDraw",
+                          "noProgressDraw",
+                          "turnLimitDraw"
+                        ],
+                        "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1)."
                       },
                       "turnNumber": {
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 9007199254740991,
-                        "description": "Turn number when victory was achieved."
+                        "description": "Turn number when the terminal result resolved."
                       }
                     },
                     "required": ["winnerIndex", "victoryType", "turnNumber"],
@@ -12912,8 +13406,8 @@
                         "properties": {
                           "specVersion": {
                             "type": "string",
-                            "enum": ["1.0", "2.0"],
-                            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                            "enum": ["1.0", "2.0", "3.0"],
+                            "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                           },
                           "classic": {
                             "type": "object",
@@ -13556,8 +14050,8 @@
                           "properties": {
                             "specVersion": {
                               "type": "string",
-                              "enum": ["1.0", "2.0"],
-                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                              "enum": ["1.0", "2.0", "3.0"],
+                              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                             },
                             "classic": {
                               "type": "object",
@@ -13946,6 +14440,7 @@
                 "reinforce:complete",
                 "forfeit",
                 "system:advance",
+                "system:draw",
                 "system:victory",
                 "system:init"
               ],
@@ -14024,6 +14519,7 @@
               "reinforce:complete",
               "forfeit",
               "system:advance",
+              "system:draw",
               "system:victory",
               "system:init"
             ],
@@ -14052,6 +14548,7 @@
           "reinforce:complete",
           "forfeit",
           "system:advance",
+          "system:draw",
           "system:victory",
           "system:init"
         ],
@@ -17705,16 +18202,16 @@
                     },
                     "specVersion": {
                       "type": "string",
-                      "enum": ["1.0", "2.0"],
-                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                      "enum": ["1.0", "2.0", "3.0"],
+                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                     },
                     "params": {
                       "type": "object",
                       "properties": {
                         "specVersion": {
                           "type": "string",
-                          "enum": ["1.0", "2.0"],
-                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                          "enum": ["1.0", "2.0", "3.0"],
+                          "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                         },
                         "classic": {
                           "type": "object",
@@ -18116,7 +18613,7 @@
                                     },
                                     "faceDown": {
                                       "type": "boolean",
-                                      "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
+                                      "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                                     }
                                   },
                                   "required": ["card", "position", "currentHp", "faceDown"],
@@ -18371,6 +18868,72 @@
                         }
                       },
                       "required": ["consecutivePasses", "totalPasses"],
+                      "additionalProperties": false
+                    },
+                    "liveness": {
+                      "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                      "type": "object",
+                      "properties": {
+                        "positionOccurrences": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "signature": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "count": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": ["signature", "count"],
+                            "additionalProperties": false
+                          },
+                          "description": "Canonical turn-boundary positions and their occurrence counts."
+                        },
+                        "noProgressTurns": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991,
+                          "description": "Completed turns since the latest irreversible progress event."
+                        },
+                        "progressMarker": {
+                          "type": "object",
+                          "properties": {
+                            "totalLifepoints": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "totalBattlefieldHp": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "totalDrawpileCards": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "totalDiscardedCards": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "totalLifepoints",
+                            "totalBattlefieldHp",
+                            "totalDrawpileCards",
+                            "totalDiscardedCards"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": ["positionOccurrences", "noProgressTurns", "progressMarker"],
                       "additionalProperties": false
                     },
                     "transactionLog": {
@@ -18709,8 +19272,8 @@
                                         "properties": {
                                           "specVersion": {
                                             "type": "string",
-                                            "enum": ["1.0", "2.0"],
-                                            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                            "enum": ["1.0", "2.0", "3.0"],
+                                            "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                           },
                                           "classic": {
                                             "type": "object",
@@ -19460,27 +20023,42 @@
                       }
                     },
                     "outcome": {
-                      "description": "Match outcome. Present only when phase is gameOver.",
+                      "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                       "anyOf": [
                         {
                           "type": "object",
                           "properties": {
                             "winnerIndex": {
-                              "type": "integer",
-                              "minimum": 0,
-                              "maximum": 1,
-                              "description": "Index of the winning player (0 or 1)."
+                              "anyOf": [
+                                {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 1
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "Index of the winning player (0 or 1), or null for a draw."
                             },
                             "victoryType": {
                               "type": "string",
-                              "enum": ["lpDepletion", "cardDepletion", "forfeit", "passLimit"],
-                              "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
+                              "enum": [
+                                "lpDepletion",
+                                "cardDepletion",
+                                "forfeit",
+                                "passLimit",
+                                "repetitionDraw",
+                                "noProgressDraw",
+                                "turnLimitDraw"
+                              ],
+                              "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1)."
                             },
                             "turnNumber": {
                               "type": "integer",
                               "minimum": 0,
                               "maximum": 9007199254740991,
-                              "description": "Turn number when victory was achieved."
+                              "description": "Turn number when the terminal result resolved."
                             }
                           },
                           "required": ["winnerIndex", "victoryType", "turnNumber"],
@@ -19609,16 +20187,16 @@
                         },
                         "specVersion": {
                           "type": "string",
-                          "enum": ["1.0", "2.0"],
-                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                          "enum": ["1.0", "2.0", "3.0"],
+                          "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                         },
                         "params": {
                           "type": "object",
                           "properties": {
                             "specVersion": {
                               "type": "string",
-                              "enum": ["1.0", "2.0"],
-                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                              "enum": ["1.0", "2.0", "3.0"],
+                              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                             },
                             "classic": {
                               "type": "object",
@@ -20020,7 +20598,7 @@
                                         },
                                         "faceDown": {
                                           "type": "boolean",
-                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
+                                          "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                                         }
                                       },
                                       "required": ["card", "position", "currentHp", "faceDown"],
@@ -20275,6 +20853,72 @@
                             }
                           },
                           "required": ["consecutivePasses", "totalPasses"],
+                          "additionalProperties": false
+                        },
+                        "liveness": {
+                          "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                          "type": "object",
+                          "properties": {
+                            "positionOccurrences": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "signature": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "count": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": ["signature", "count"],
+                                "additionalProperties": false
+                              },
+                              "description": "Canonical turn-boundary positions and their occurrence counts."
+                            },
+                            "noProgressTurns": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991,
+                              "description": "Completed turns since the latest irreversible progress event."
+                            },
+                            "progressMarker": {
+                              "type": "object",
+                              "properties": {
+                                "totalLifepoints": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "totalBattlefieldHp": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "totalDrawpileCards": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "totalDiscardedCards": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "totalLifepoints",
+                                "totalBattlefieldHp",
+                                "totalDrawpileCards",
+                                "totalDiscardedCards"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": ["positionOccurrences", "noProgressTurns", "progressMarker"],
                           "additionalProperties": false
                         },
                         "transactionLog": {
@@ -20613,8 +21257,8 @@
                                             "properties": {
                                               "specVersion": {
                                                 "type": "string",
-                                                "enum": ["1.0", "2.0"],
-                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                                "enum": ["1.0", "2.0", "3.0"],
+                                                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                               },
                                               "classic": {
                                                 "type": "object",
@@ -21375,27 +22019,42 @@
                           }
                         },
                         "outcome": {
-                          "description": "Match outcome. Present only when phase is gameOver.",
+                          "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                           "anyOf": [
                             {
                               "type": "object",
                               "properties": {
                                 "winnerIndex": {
-                                  "type": "integer",
-                                  "minimum": 0,
-                                  "maximum": 1,
-                                  "description": "Index of the winning player (0 or 1)."
+                                  "anyOf": [
+                                    {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 1
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ],
+                                  "description": "Index of the winning player (0 or 1), or null for a draw."
                                 },
                                 "victoryType": {
                                   "type": "string",
-                                  "enum": ["lpDepletion", "cardDepletion", "forfeit", "passLimit"],
-                                  "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
+                                  "enum": [
+                                    "lpDepletion",
+                                    "cardDepletion",
+                                    "forfeit",
+                                    "passLimit",
+                                    "repetitionDraw",
+                                    "noProgressDraw",
+                                    "turnLimitDraw"
+                                  ],
+                                  "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1)."
                                 },
                                 "turnNumber": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "maximum": 9007199254740991,
-                                  "description": "Turn number when victory was achieved."
+                                  "description": "Turn number when the terminal result resolved."
                                 }
                               },
                               "required": ["winnerIndex", "victoryType", "turnNumber"],
@@ -21429,16 +22088,16 @@
                         },
                         "specVersion": {
                           "type": "string",
-                          "enum": ["1.0", "2.0"],
-                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                          "enum": ["1.0", "2.0", "3.0"],
+                          "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                         },
                         "params": {
                           "type": "object",
                           "properties": {
                             "specVersion": {
                               "type": "string",
-                              "enum": ["1.0", "2.0"],
-                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                              "enum": ["1.0", "2.0", "3.0"],
+                              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                             },
                             "classic": {
                               "type": "object",
@@ -21840,7 +22499,7 @@
                                         },
                                         "faceDown": {
                                           "type": "boolean",
-                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
+                                          "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                                         }
                                       },
                                       "required": ["card", "position", "currentHp", "faceDown"],
@@ -22095,6 +22754,72 @@
                             }
                           },
                           "required": ["consecutivePasses", "totalPasses"],
+                          "additionalProperties": false
+                        },
+                        "liveness": {
+                          "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                          "type": "object",
+                          "properties": {
+                            "positionOccurrences": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "signature": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "count": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": ["signature", "count"],
+                                "additionalProperties": false
+                              },
+                              "description": "Canonical turn-boundary positions and their occurrence counts."
+                            },
+                            "noProgressTurns": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991,
+                              "description": "Completed turns since the latest irreversible progress event."
+                            },
+                            "progressMarker": {
+                              "type": "object",
+                              "properties": {
+                                "totalLifepoints": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "totalBattlefieldHp": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "totalDrawpileCards": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "totalDiscardedCards": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "totalLifepoints",
+                                "totalBattlefieldHp",
+                                "totalDrawpileCards",
+                                "totalDiscardedCards"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": ["positionOccurrences", "noProgressTurns", "progressMarker"],
                           "additionalProperties": false
                         },
                         "transactionLog": {
@@ -22433,8 +23158,8 @@
                                             "properties": {
                                               "specVersion": {
                                                 "type": "string",
-                                                "enum": ["1.0", "2.0"],
-                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                                "enum": ["1.0", "2.0", "3.0"],
+                                                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                               },
                                               "classic": {
                                                 "type": "object",
@@ -23195,27 +23920,42 @@
                           }
                         },
                         "outcome": {
-                          "description": "Match outcome. Present only when phase is gameOver.",
+                          "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                           "anyOf": [
                             {
                               "type": "object",
                               "properties": {
                                 "winnerIndex": {
-                                  "type": "integer",
-                                  "minimum": 0,
-                                  "maximum": 1,
-                                  "description": "Index of the winning player (0 or 1)."
+                                  "anyOf": [
+                                    {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 1
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ],
+                                  "description": "Index of the winning player (0 or 1), or null for a draw."
                                 },
                                 "victoryType": {
                                   "type": "string",
-                                  "enum": ["lpDepletion", "cardDepletion", "forfeit", "passLimit"],
-                                  "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
+                                  "enum": [
+                                    "lpDepletion",
+                                    "cardDepletion",
+                                    "forfeit",
+                                    "passLimit",
+                                    "repetitionDraw",
+                                    "noProgressDraw",
+                                    "turnLimitDraw"
+                                  ],
+                                  "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1)."
                                 },
                                 "turnNumber": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "maximum": 9007199254740991,
-                                  "description": "Turn number when victory was achieved."
+                                  "description": "Turn number when the terminal result resolved."
                                 }
                               },
                               "required": ["winnerIndex", "victoryType", "turnNumber"],
@@ -23557,8 +24297,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0", "2.0"],
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                      "enum": ["1.0", "2.0", "3.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -24216,8 +24956,8 @@
                                     "properties": {
                                       "specVersion": {
                                         "type": "string",
-                                        "enum": ["1.0", "2.0"],
-                                        "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                        "enum": ["1.0", "2.0", "3.0"],
+                                        "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                       },
                                       "classic": {
                                         "type": "object",
@@ -24672,16 +25412,16 @@
                         },
                         "specVersion": {
                           "type": "string",
-                          "enum": ["1.0", "2.0"],
-                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                          "enum": ["1.0", "2.0", "3.0"],
+                          "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                         },
                         "params": {
                           "type": "object",
                           "properties": {
                             "specVersion": {
                               "type": "string",
-                              "enum": ["1.0", "2.0"],
-                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                              "enum": ["1.0", "2.0", "3.0"],
+                              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                             },
                             "classic": {
                               "type": "object",
@@ -25083,7 +25823,7 @@
                                         },
                                         "faceDown": {
                                           "type": "boolean",
-                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
+                                          "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                                         }
                                       },
                                       "required": ["card", "position", "currentHp", "faceDown"],
@@ -25338,6 +26078,72 @@
                             }
                           },
                           "required": ["consecutivePasses", "totalPasses"],
+                          "additionalProperties": false
+                        },
+                        "liveness": {
+                          "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                          "type": "object",
+                          "properties": {
+                            "positionOccurrences": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "signature": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "count": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": ["signature", "count"],
+                                "additionalProperties": false
+                              },
+                              "description": "Canonical turn-boundary positions and their occurrence counts."
+                            },
+                            "noProgressTurns": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991,
+                              "description": "Completed turns since the latest irreversible progress event."
+                            },
+                            "progressMarker": {
+                              "type": "object",
+                              "properties": {
+                                "totalLifepoints": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "totalBattlefieldHp": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "totalDrawpileCards": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "totalDiscardedCards": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "totalLifepoints",
+                                "totalBattlefieldHp",
+                                "totalDrawpileCards",
+                                "totalDiscardedCards"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": ["positionOccurrences", "noProgressTurns", "progressMarker"],
                           "additionalProperties": false
                         },
                         "transactionLog": {
@@ -25676,8 +26482,8 @@
                                             "properties": {
                                               "specVersion": {
                                                 "type": "string",
-                                                "enum": ["1.0", "2.0"],
-                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                                "enum": ["1.0", "2.0", "3.0"],
+                                                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                               },
                                               "classic": {
                                                 "type": "object",
@@ -26438,27 +27244,42 @@
                           }
                         },
                         "outcome": {
-                          "description": "Match outcome. Present only when phase is gameOver.",
+                          "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                           "anyOf": [
                             {
                               "type": "object",
                               "properties": {
                                 "winnerIndex": {
-                                  "type": "integer",
-                                  "minimum": 0,
-                                  "maximum": 1,
-                                  "description": "Index of the winning player (0 or 1)."
+                                  "anyOf": [
+                                    {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 1
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ],
+                                  "description": "Index of the winning player (0 or 1), or null for a draw."
                                 },
                                 "victoryType": {
                                   "type": "string",
-                                  "enum": ["lpDepletion", "cardDepletion", "forfeit", "passLimit"],
-                                  "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
+                                  "enum": [
+                                    "lpDepletion",
+                                    "cardDepletion",
+                                    "forfeit",
+                                    "passLimit",
+                                    "repetitionDraw",
+                                    "noProgressDraw",
+                                    "turnLimitDraw"
+                                  ],
+                                  "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1)."
                                 },
                                 "turnNumber": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "maximum": 9007199254740991,
-                                  "description": "Turn number when victory was achieved."
+                                  "description": "Turn number when the terminal result resolved."
                                 }
                               },
                               "required": ["winnerIndex", "victoryType", "turnNumber"],
@@ -26492,16 +27313,16 @@
                         },
                         "specVersion": {
                           "type": "string",
-                          "enum": ["1.0", "2.0"],
-                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                          "enum": ["1.0", "2.0", "3.0"],
+                          "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                         },
                         "params": {
                           "type": "object",
                           "properties": {
                             "specVersion": {
                               "type": "string",
-                              "enum": ["1.0", "2.0"],
-                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                              "enum": ["1.0", "2.0", "3.0"],
+                              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                             },
                             "classic": {
                               "type": "object",
@@ -26903,7 +27724,7 @@
                                         },
                                         "faceDown": {
                                           "type": "boolean",
-                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
+                                          "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2."
                                         }
                                       },
                                       "required": ["card", "position", "currentHp", "faceDown"],
@@ -27158,6 +27979,72 @@
                             }
                           },
                           "required": ["consecutivePasses", "totalPasses"],
+                          "additionalProperties": false
+                        },
+                        "liveness": {
+                          "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                          "type": "object",
+                          "properties": {
+                            "positionOccurrences": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "signature": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "count": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": ["signature", "count"],
+                                "additionalProperties": false
+                              },
+                              "description": "Canonical turn-boundary positions and their occurrence counts."
+                            },
+                            "noProgressTurns": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991,
+                              "description": "Completed turns since the latest irreversible progress event."
+                            },
+                            "progressMarker": {
+                              "type": "object",
+                              "properties": {
+                                "totalLifepoints": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "totalBattlefieldHp": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "totalDrawpileCards": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "totalDiscardedCards": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "totalLifepoints",
+                                "totalBattlefieldHp",
+                                "totalDrawpileCards",
+                                "totalDiscardedCards"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": ["positionOccurrences", "noProgressTurns", "progressMarker"],
                           "additionalProperties": false
                         },
                         "transactionLog": {
@@ -27496,8 +28383,8 @@
                                             "properties": {
                                               "specVersion": {
                                                 "type": "string",
-                                                "enum": ["1.0", "2.0"],
-                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                                "enum": ["1.0", "2.0", "3.0"],
+                                                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                               },
                                               "classic": {
                                                 "type": "object",
@@ -28258,27 +29145,42 @@
                           }
                         },
                         "outcome": {
-                          "description": "Match outcome. Present only when phase is gameOver.",
+                          "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                           "anyOf": [
                             {
                               "type": "object",
                               "properties": {
                                 "winnerIndex": {
-                                  "type": "integer",
-                                  "minimum": 0,
-                                  "maximum": 1,
-                                  "description": "Index of the winning player (0 or 1)."
+                                  "anyOf": [
+                                    {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 1
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ],
+                                  "description": "Index of the winning player (0 or 1), or null for a draw."
                                 },
                                 "victoryType": {
                                   "type": "string",
-                                  "enum": ["lpDepletion", "cardDepletion", "forfeit", "passLimit"],
-                                  "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16)."
+                                  "enum": [
+                                    "lpDepletion",
+                                    "cardDepletion",
+                                    "forfeit",
+                                    "passLimit",
+                                    "repetitionDraw",
+                                    "noProgressDraw",
+                                    "turnLimitDraw"
+                                  ],
+                                  "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1)."
                                 },
                                 "turnNumber": {
                                   "type": "integer",
                                   "minimum": 0,
                                   "maximum": 9007199254740991,
-                                  "description": "Turn number when victory was achieved."
+                                  "description": "Turn number when the terminal result resolved."
                                 }
                               },
                               "required": ["winnerIndex", "victoryType", "turnNumber"],
@@ -28620,8 +29522,8 @@
                                   "properties": {
                                     "specVersion": {
                                       "type": "string",
-                                      "enum": ["1.0", "2.0"],
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                      "enum": ["1.0", "2.0", "3.0"],
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                     },
                                     "classic": {
                                       "type": "object",
@@ -29279,8 +30181,8 @@
                                     "properties": {
                                       "specVersion": {
                                         "type": "string",
-                                        "enum": ["1.0", "2.0"],
-                                        "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                                        "enum": ["1.0", "2.0", "3.0"],
+                                        "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                                       },
                                       "classic": {
                                         "type": "object",
@@ -29940,6 +30842,7 @@
                           "reinforce:complete",
                           "forfeit",
                           "system:advance",
+                          "system:draw",
                           "system:victory",
                           "system:init"
                         ],

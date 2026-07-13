@@ -3,7 +3,7 @@ import { el } from './renderer';
 interface MatchSummary {
   matchId: string;
   playerNames: string[];
-  winnerIndex: number;
+  winnerIndex: number | null;
   victoryType: string;
   turnCount: number;
   completedAt: string;
@@ -13,6 +13,10 @@ const VICTORY_LABELS: Record<string, string> = {
   lpDepletion: 'LP Depletion',
   cardDepletion: 'Card Depletion',
   forfeit: 'Forfeit',
+  passLimit: 'Pass Limit Exceeded',
+  repetitionDraw: 'Threefold Repetition',
+  noProgressDraw: 'No-Progress Limit',
+  turnLimitDraw: 'Hard Turn Limit',
 };
 
 function formatDate(iso: string): string {
@@ -33,11 +37,14 @@ function renderRow(match: MatchSummary): HTMLElement {
   row.setAttribute('data-testid', 'match-row');
 
   const players = match.playerNames.join(' vs ');
-  const winner = match.playerNames[match.winnerIndex] ?? `Player ${match.winnerIndex + 1}`;
   const outcome = VICTORY_LABELS[match.victoryType] ?? match.victoryType;
+  const result =
+    match.winnerIndex === null
+      ? `draw (${outcome})`
+      : `${match.playerNames[match.winnerIndex] ?? `Player ${match.winnerIndex + 1}`} wins (${outcome})`;
 
   const info = el('span', 'match-info');
-  info.textContent = `${formatDate(match.completedAt)} · ${players} · ${winner} wins (${outcome}) · ${match.turnCount} turns`;
+  info.textContent = `${formatDate(match.completedAt)} · ${players} · ${result} · ${match.turnCount} turns`;
   row.appendChild(info);
 
   const link = el('a', 'btn btn-secondary match-log-link') as HTMLAnchorElement;

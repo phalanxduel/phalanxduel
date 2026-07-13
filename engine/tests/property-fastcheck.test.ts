@@ -33,7 +33,7 @@ function checkInvariants(state: GameState, prevState?: GameState): void {
     for (const slot of p.battlefield) {
       if (slot !== null) {
         // Invariant: Card HP cannot exceed its base value
-        expect(slot.currentHp).toBeGreaterThanOrEqual(0);
+        expect(slot.currentHp).toBeGreaterThan(0);
         expect(slot.currentHp).toBeLessThanOrEqual(slot.card.value);
       }
     }
@@ -49,7 +49,7 @@ function checkInvariants(state: GameState, prevState?: GameState): void {
 
   if (state.phase === 'gameOver') {
     expect(state.outcome).toBeDefined();
-    expect([0, 1]).toContain(state.outcome?.winnerIndex);
+    expect([null, 0, 1]).toContain(state.outcome?.winnerIndex);
   }
 }
 

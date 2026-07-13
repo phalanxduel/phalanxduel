@@ -65,7 +65,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "type": "integer",
           },
           "faceDown": {
-            "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
+            "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
             "type": "boolean",
           },
           "position": {
@@ -298,6 +298,79 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             ],
             "type": "object",
           },
+          "liveness": {
+            "additionalProperties": false,
+            "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+            "properties": {
+              "noProgressTurns": {
+                "description": "Completed turns since the latest irreversible progress event.",
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer",
+              },
+              "positionOccurrences": {
+                "description": "Canonical turn-boundary positions and their occurrence counts.",
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "count": {
+                      "maximum": 9007199254740991,
+                      "minimum": 1,
+                      "type": "integer",
+                    },
+                    "signature": {
+                      "minLength": 1,
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "signature",
+                    "count",
+                  ],
+                  "type": "object",
+                },
+                "type": "array",
+              },
+              "progressMarker": {
+                "additionalProperties": false,
+                "properties": {
+                  "totalBattlefieldHp": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "totalDiscardedCards": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "totalDrawpileCards": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "totalLifepoints": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                },
+                "required": [
+                  "totalLifepoints",
+                  "totalBattlefieldHp",
+                  "totalDrawpileCards",
+                  "totalDiscardedCards",
+                ],
+                "type": "object",
+              },
+            },
+            "required": [
+              "positionOccurrences",
+              "noProgressTurns",
+              "progressMarker",
+            ],
+            "type": "object",
+          },
           "matchId": {
             "description": "Unique match identifier (UUID v4).",
             "format": "uuid",
@@ -310,26 +383,36 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "additionalProperties": false,
                 "properties": {
                   "turnNumber": {
-                    "description": "Turn number when victory was achieved.",
+                    "description": "Turn number when the terminal result resolved.",
                     "maximum": 9007199254740991,
                     "minimum": 0,
                     "type": "integer",
                   },
                   "victoryType": {
-                    "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).",
+                    "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).",
                     "enum": [
                       "lpDepletion",
                       "cardDepletion",
                       "forfeit",
                       "passLimit",
+                      "repetitionDraw",
+                      "noProgressDraw",
+                      "turnLimitDraw",
                     ],
                     "type": "string",
                   },
                   "winnerIndex": {
-                    "description": "Index of the winning player (0 or 1).",
-                    "maximum": 1,
-                    "minimum": 0,
-                    "type": "integer",
+                    "anyOf": [
+                      {
+                        "maximum": 1,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                    "description": "Index of the winning player (0 or 1), or null for a draw.",
                   },
                 },
                 "required": [
@@ -343,7 +426,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "null",
               },
             ],
-            "description": "Match outcome. Present only when phase is gameOver.",
+            "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
           },
           "params": {
             "additionalProperties": false,
@@ -635,10 +718,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "integer",
               },
               "specVersion": {
-                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                 "enum": [
                   "1.0",
                   "2.0",
+                  "3.0",
                 ],
                 "type": "string",
               },
@@ -805,7 +889,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "integer",
                           },
                           "faceDown": {
-                            "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
+                            "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                             "type": "boolean",
                           },
                           "position": {
@@ -1097,10 +1181,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "type": "object",
           },
           "specVersion": {
-            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+            "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
             "enum": [
               "1.0",
               "2.0",
+              "3.0",
             ],
             "type": "string",
           },
@@ -1691,10 +1776,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                   "type": "integer",
                                 },
                                 "specVersion": {
-                                  "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                  "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                   "enum": [
                                     "1.0",
                                     "2.0",
+                                    "3.0",
                                   ],
                                   "type": "string",
                                 },
@@ -2399,6 +2485,79 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 ],
                 "type": "object",
               },
+              "liveness": {
+                "additionalProperties": false,
+                "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                "properties": {
+                  "noProgressTurns": {
+                    "description": "Completed turns since the latest irreversible progress event.",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "positionOccurrences": {
+                    "description": "Canonical turn-boundary positions and their occurrence counts.",
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "count": {
+                          "maximum": 9007199254740991,
+                          "minimum": 1,
+                          "type": "integer",
+                        },
+                        "signature": {
+                          "minLength": 1,
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "signature",
+                        "count",
+                      ],
+                      "type": "object",
+                    },
+                    "type": "array",
+                  },
+                  "progressMarker": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "totalBattlefieldHp": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalDiscardedCards": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalDrawpileCards": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalLifepoints": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                    },
+                    "required": [
+                      "totalLifepoints",
+                      "totalBattlefieldHp",
+                      "totalDrawpileCards",
+                      "totalDiscardedCards",
+                    ],
+                    "type": "object",
+                  },
+                },
+                "required": [
+                  "positionOccurrences",
+                  "noProgressTurns",
+                  "progressMarker",
+                ],
+                "type": "object",
+              },
               "matchId": {
                 "description": "Unique match identifier (UUID v4).",
                 "format": "uuid",
@@ -2411,26 +2570,36 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "additionalProperties": false,
                     "properties": {
                       "turnNumber": {
-                        "description": "Turn number when victory was achieved.",
+                        "description": "Turn number when the terminal result resolved.",
                         "maximum": 9007199254740991,
                         "minimum": 0,
                         "type": "integer",
                       },
                       "victoryType": {
-                        "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).",
+                        "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).",
                         "enum": [
                           "lpDepletion",
                           "cardDepletion",
                           "forfeit",
                           "passLimit",
+                          "repetitionDraw",
+                          "noProgressDraw",
+                          "turnLimitDraw",
                         ],
                         "type": "string",
                       },
                       "winnerIndex": {
-                        "description": "Index of the winning player (0 or 1).",
-                        "maximum": 1,
-                        "minimum": 0,
-                        "type": "integer",
+                        "anyOf": [
+                          {
+                            "maximum": 1,
+                            "minimum": 0,
+                            "type": "integer",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                        "description": "Index of the winning player (0 or 1), or null for a draw.",
                       },
                     },
                     "required": [
@@ -2444,7 +2613,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "null",
                   },
                 ],
-                "description": "Match outcome. Present only when phase is gameOver.",
+                "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
               },
               "params": {
                 "additionalProperties": false,
@@ -2736,10 +2905,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "integer",
                   },
                   "specVersion": {
-                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                    "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                     "enum": [
                       "1.0",
                       "2.0",
+                      "3.0",
                     ],
                     "type": "string",
                   },
@@ -2906,7 +3076,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
+                                "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -3198,10 +3368,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
               "specVersion": {
-                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                 "enum": [
                   "1.0",
                   "2.0",
+                  "3.0",
                 ],
                 "type": "string",
               },
@@ -3792,10 +3963,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "integer",
                                     },
                                     "specVersion": {
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                       "enum": [
                                         "1.0",
                                         "2.0",
+                                        "3.0",
                                       ],
                                       "type": "string",
                                     },
@@ -5034,10 +5206,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "type": "integer",
                             },
                             "specVersion": {
-                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                               "enum": [
                                 "1.0",
                                 "2.0",
+                                "3.0",
                               ],
                               "type": "string",
                             },
@@ -5564,10 +5737,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "type": "integer",
           },
           "specVersion": {
-            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+            "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
             "enum": [
               "1.0",
               "2.0",
+              "3.0",
             ],
             "type": "string",
           },
@@ -5708,6 +5882,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "reinforce:complete",
                 "forfeit",
                 "system:advance",
+                "system:draw",
                 "system:victory",
                 "system:init",
               ],
@@ -5796,6 +5971,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               "reinforce:complete",
               "forfeit",
               "system:advance",
+              "system:draw",
               "system:victory",
               "system:init",
             ],
@@ -5833,6 +6009,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
           "reinforce:complete",
           "forfeit",
           "system:advance",
+          "system:draw",
           "system:victory",
           "system:init",
         ],
@@ -6437,10 +6614,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "integer",
                           },
                           "specVersion": {
-                            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                            "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                             "enum": [
                               "1.0",
                               "2.0",
+                              "3.0",
                             ],
                             "type": "string",
                           },
@@ -6664,6 +6842,79 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 ],
                 "type": "object",
               },
+              "liveness": {
+                "additionalProperties": false,
+                "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                "properties": {
+                  "noProgressTurns": {
+                    "description": "Completed turns since the latest irreversible progress event.",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "positionOccurrences": {
+                    "description": "Canonical turn-boundary positions and their occurrence counts.",
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "count": {
+                          "maximum": 9007199254740991,
+                          "minimum": 1,
+                          "type": "integer",
+                        },
+                        "signature": {
+                          "minLength": 1,
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "signature",
+                        "count",
+                      ],
+                      "type": "object",
+                    },
+                    "type": "array",
+                  },
+                  "progressMarker": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "totalBattlefieldHp": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalDiscardedCards": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalDrawpileCards": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalLifepoints": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                    },
+                    "required": [
+                      "totalLifepoints",
+                      "totalBattlefieldHp",
+                      "totalDrawpileCards",
+                      "totalDiscardedCards",
+                    ],
+                    "type": "object",
+                  },
+                },
+                "required": [
+                  "positionOccurrences",
+                  "noProgressTurns",
+                  "progressMarker",
+                ],
+                "type": "object",
+              },
               "matchId": {
                 "description": "Unique match identifier (UUID v4).",
                 "format": "uuid",
@@ -6676,26 +6927,36 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "additionalProperties": false,
                     "properties": {
                       "turnNumber": {
-                        "description": "Turn number when victory was achieved.",
+                        "description": "Turn number when the terminal result resolved.",
                         "maximum": 9007199254740991,
                         "minimum": 0,
                         "type": "integer",
                       },
                       "victoryType": {
-                        "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).",
+                        "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).",
                         "enum": [
                           "lpDepletion",
                           "cardDepletion",
                           "forfeit",
                           "passLimit",
+                          "repetitionDraw",
+                          "noProgressDraw",
+                          "turnLimitDraw",
                         ],
                         "type": "string",
                       },
                       "winnerIndex": {
-                        "description": "Index of the winning player (0 or 1).",
-                        "maximum": 1,
-                        "minimum": 0,
-                        "type": "integer",
+                        "anyOf": [
+                          {
+                            "maximum": 1,
+                            "minimum": 0,
+                            "type": "integer",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                        "description": "Index of the winning player (0 or 1), or null for a draw.",
                       },
                     },
                     "required": [
@@ -6709,7 +6970,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "null",
                   },
                 ],
-                "description": "Match outcome. Present only when phase is gameOver.",
+                "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
               },
               "params": {
                 "additionalProperties": false,
@@ -7001,10 +7262,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "integer",
                   },
                   "specVersion": {
-                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                    "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                     "enum": [
                       "1.0",
                       "2.0",
+                      "3.0",
                     ],
                     "type": "string",
                   },
@@ -7171,7 +7433,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
+                                "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -7463,10 +7725,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
               "specVersion": {
-                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                 "enum": [
                   "1.0",
                   "2.0",
+                  "3.0",
                 ],
                 "type": "string",
               },
@@ -8057,10 +8320,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "integer",
                                     },
                                     "specVersion": {
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                       "enum": [
                                         "1.0",
                                         "2.0",
+                                        "3.0",
                                       ],
                                       "type": "string",
                                     },
@@ -8762,6 +9026,79 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 ],
                 "type": "object",
               },
+              "liveness": {
+                "additionalProperties": false,
+                "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                "properties": {
+                  "noProgressTurns": {
+                    "description": "Completed turns since the latest irreversible progress event.",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "positionOccurrences": {
+                    "description": "Canonical turn-boundary positions and their occurrence counts.",
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "count": {
+                          "maximum": 9007199254740991,
+                          "minimum": 1,
+                          "type": "integer",
+                        },
+                        "signature": {
+                          "minLength": 1,
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "signature",
+                        "count",
+                      ],
+                      "type": "object",
+                    },
+                    "type": "array",
+                  },
+                  "progressMarker": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "totalBattlefieldHp": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalDiscardedCards": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalDrawpileCards": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalLifepoints": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                    },
+                    "required": [
+                      "totalLifepoints",
+                      "totalBattlefieldHp",
+                      "totalDrawpileCards",
+                      "totalDiscardedCards",
+                    ],
+                    "type": "object",
+                  },
+                },
+                "required": [
+                  "positionOccurrences",
+                  "noProgressTurns",
+                  "progressMarker",
+                ],
+                "type": "object",
+              },
               "matchId": {
                 "description": "Unique match identifier (UUID v4).",
                 "format": "uuid",
@@ -8774,26 +9111,36 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "additionalProperties": false,
                     "properties": {
                       "turnNumber": {
-                        "description": "Turn number when victory was achieved.",
+                        "description": "Turn number when the terminal result resolved.",
                         "maximum": 9007199254740991,
                         "minimum": 0,
                         "type": "integer",
                       },
                       "victoryType": {
-                        "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).",
+                        "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).",
                         "enum": [
                           "lpDepletion",
                           "cardDepletion",
                           "forfeit",
                           "passLimit",
+                          "repetitionDraw",
+                          "noProgressDraw",
+                          "turnLimitDraw",
                         ],
                         "type": "string",
                       },
                       "winnerIndex": {
-                        "description": "Index of the winning player (0 or 1).",
-                        "maximum": 1,
-                        "minimum": 0,
-                        "type": "integer",
+                        "anyOf": [
+                          {
+                            "maximum": 1,
+                            "minimum": 0,
+                            "type": "integer",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                        "description": "Index of the winning player (0 or 1), or null for a draw.",
                       },
                     },
                     "required": [
@@ -8807,7 +9154,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "null",
                   },
                 ],
-                "description": "Match outcome. Present only when phase is gameOver.",
+                "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
               },
               "params": {
                 "additionalProperties": false,
@@ -9099,10 +9446,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "integer",
                   },
                   "specVersion": {
-                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                    "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                     "enum": [
                       "1.0",
                       "2.0",
+                      "3.0",
                     ],
                     "type": "string",
                   },
@@ -9269,7 +9617,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
+                                "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -9561,10 +9909,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
               "specVersion": {
-                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                 "enum": [
                   "1.0",
                   "2.0",
+                  "3.0",
                 ],
                 "type": "string",
               },
@@ -10155,10 +10504,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "integer",
                                     },
                                     "specVersion": {
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                       "enum": [
                                         "1.0",
                                         "2.0",
+                                        "3.0",
                                       ],
                                       "type": "string",
                                     },
@@ -11440,10 +11790,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "type": "integer",
                           },
                           "specVersion": {
-                            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                            "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                             "enum": [
                               "1.0",
                               "2.0",
+                              "3.0",
                             ],
                             "type": "string",
                           },
@@ -11662,6 +12013,79 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 ],
                 "type": "object",
               },
+              "liveness": {
+                "additionalProperties": false,
+                "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                "properties": {
+                  "noProgressTurns": {
+                    "description": "Completed turns since the latest irreversible progress event.",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "positionOccurrences": {
+                    "description": "Canonical turn-boundary positions and their occurrence counts.",
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "count": {
+                          "maximum": 9007199254740991,
+                          "minimum": 1,
+                          "type": "integer",
+                        },
+                        "signature": {
+                          "minLength": 1,
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "signature",
+                        "count",
+                      ],
+                      "type": "object",
+                    },
+                    "type": "array",
+                  },
+                  "progressMarker": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "totalBattlefieldHp": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalDiscardedCards": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalDrawpileCards": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalLifepoints": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                    },
+                    "required": [
+                      "totalLifepoints",
+                      "totalBattlefieldHp",
+                      "totalDrawpileCards",
+                      "totalDiscardedCards",
+                    ],
+                    "type": "object",
+                  },
+                },
+                "required": [
+                  "positionOccurrences",
+                  "noProgressTurns",
+                  "progressMarker",
+                ],
+                "type": "object",
+              },
               "matchId": {
                 "description": "Unique match identifier (UUID v4).",
                 "format": "uuid",
@@ -11674,26 +12098,36 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "additionalProperties": false,
                     "properties": {
                       "turnNumber": {
-                        "description": "Turn number when victory was achieved.",
+                        "description": "Turn number when the terminal result resolved.",
                         "maximum": 9007199254740991,
                         "minimum": 0,
                         "type": "integer",
                       },
                       "victoryType": {
-                        "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).",
+                        "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).",
                         "enum": [
                           "lpDepletion",
                           "cardDepletion",
                           "forfeit",
                           "passLimit",
+                          "repetitionDraw",
+                          "noProgressDraw",
+                          "turnLimitDraw",
                         ],
                         "type": "string",
                       },
                       "winnerIndex": {
-                        "description": "Index of the winning player (0 or 1).",
-                        "maximum": 1,
-                        "minimum": 0,
-                        "type": "integer",
+                        "anyOf": [
+                          {
+                            "maximum": 1,
+                            "minimum": 0,
+                            "type": "integer",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                        "description": "Index of the winning player (0 or 1), or null for a draw.",
                       },
                     },
                     "required": [
@@ -11707,7 +12141,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "null",
                   },
                 ],
-                "description": "Match outcome. Present only when phase is gameOver.",
+                "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
               },
               "params": {
                 "additionalProperties": false,
@@ -11999,10 +12433,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "integer",
                   },
                   "specVersion": {
-                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                    "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                     "enum": [
                       "1.0",
                       "2.0",
+                      "3.0",
                     ],
                     "type": "string",
                   },
@@ -12169,7 +12604,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
+                                "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -12461,10 +12896,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
               "specVersion": {
-                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                 "enum": [
                   "1.0",
                   "2.0",
+                  "3.0",
                 ],
                 "type": "string",
               },
@@ -13055,10 +13491,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "integer",
                                     },
                                     "specVersion": {
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                       "enum": [
                                         "1.0",
                                         "2.0",
+                                        "3.0",
                                       ],
                                       "type": "string",
                                     },
@@ -13760,6 +14197,79 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 ],
                 "type": "object",
               },
+              "liveness": {
+                "additionalProperties": false,
+                "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                "properties": {
+                  "noProgressTurns": {
+                    "description": "Completed turns since the latest irreversible progress event.",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "positionOccurrences": {
+                    "description": "Canonical turn-boundary positions and their occurrence counts.",
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "count": {
+                          "maximum": 9007199254740991,
+                          "minimum": 1,
+                          "type": "integer",
+                        },
+                        "signature": {
+                          "minLength": 1,
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "signature",
+                        "count",
+                      ],
+                      "type": "object",
+                    },
+                    "type": "array",
+                  },
+                  "progressMarker": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "totalBattlefieldHp": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalDiscardedCards": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalDrawpileCards": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                      "totalLifepoints": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer",
+                      },
+                    },
+                    "required": [
+                      "totalLifepoints",
+                      "totalBattlefieldHp",
+                      "totalDrawpileCards",
+                      "totalDiscardedCards",
+                    ],
+                    "type": "object",
+                  },
+                },
+                "required": [
+                  "positionOccurrences",
+                  "noProgressTurns",
+                  "progressMarker",
+                ],
+                "type": "object",
+              },
               "matchId": {
                 "description": "Unique match identifier (UUID v4).",
                 "format": "uuid",
@@ -13772,26 +14282,36 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "additionalProperties": false,
                     "properties": {
                       "turnNumber": {
-                        "description": "Turn number when victory was achieved.",
+                        "description": "Turn number when the terminal result resolved.",
                         "maximum": 9007199254740991,
                         "minimum": 0,
                         "type": "integer",
                       },
                       "victoryType": {
-                        "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).",
+                        "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).",
                         "enum": [
                           "lpDepletion",
                           "cardDepletion",
                           "forfeit",
                           "passLimit",
+                          "repetitionDraw",
+                          "noProgressDraw",
+                          "turnLimitDraw",
                         ],
                         "type": "string",
                       },
                       "winnerIndex": {
-                        "description": "Index of the winning player (0 or 1).",
-                        "maximum": 1,
-                        "minimum": 0,
-                        "type": "integer",
+                        "anyOf": [
+                          {
+                            "maximum": 1,
+                            "minimum": 0,
+                            "type": "integer",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                        "description": "Index of the winning player (0 or 1), or null for a draw.",
                       },
                     },
                     "required": [
@@ -13805,7 +14325,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "null",
                   },
                 ],
-                "description": "Match outcome. Present only when phase is gameOver.",
+                "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
               },
               "params": {
                 "additionalProperties": false,
@@ -14097,10 +14617,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "integer",
                   },
                   "specVersion": {
-                    "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                    "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                     "enum": [
                       "1.0",
                       "2.0",
+                      "3.0",
                     ],
                     "type": "string",
                   },
@@ -14267,7 +14788,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                 "type": "integer",
                               },
                               "faceDown": {
-                                "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
+                                "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                 "type": "boolean",
                               },
                               "position": {
@@ -14559,10 +15080,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
               "specVersion": {
-                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                 "enum": [
                   "1.0",
                   "2.0",
+                  "3.0",
                 ],
                 "type": "string",
               },
@@ -15153,10 +15675,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                                       "type": "integer",
                                     },
                                     "specVersion": {
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                       "enum": [
                                         "1.0",
                                         "2.0",
+                                        "3.0",
                                       ],
                                       "type": "string",
                                     },
@@ -16395,10 +16918,11 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               "type": "integer",
                             },
                             "specVersion": {
-                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                               "enum": [
                                 "1.0",
                                 "2.0",
+                                "3.0",
                               ],
                               "type": "string",
                             },
@@ -16540,12 +17064,15 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         "type": "object",
       },
       "VictoryType": {
-        "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).",
+        "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).",
         "enum": [
           "lpDepletion",
           "cardDepletion",
           "forfeit",
           "passLimit",
+          "repetitionDraw",
+          "noProgressDraw",
+          "turnLimitDraw",
         ],
         "type": "string",
       },
@@ -21135,10 +21662,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "integer",
                                     },
                                     "specVersion": {
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                       "enum": [
                                         "1.0",
                                         "2.0",
+                                        "3.0",
                                       ],
                                       "type": "string",
                                     },
@@ -21357,6 +21885,79 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           ],
                           "type": "object",
                         },
+                        "liveness": {
+                          "additionalProperties": false,
+                          "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                          "properties": {
+                            "noProgressTurns": {
+                              "description": "Completed turns since the latest irreversible progress event.",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "positionOccurrences": {
+                              "description": "Canonical turn-boundary positions and their occurrence counts.",
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "count": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 1,
+                                    "type": "integer",
+                                  },
+                                  "signature": {
+                                    "minLength": 1,
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "signature",
+                                  "count",
+                                ],
+                                "type": "object",
+                              },
+                              "type": "array",
+                            },
+                            "progressMarker": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "totalBattlefieldHp": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                "totalDiscardedCards": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                "totalDrawpileCards": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                "totalLifepoints": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                              },
+                              "required": [
+                                "totalLifepoints",
+                                "totalBattlefieldHp",
+                                "totalDrawpileCards",
+                                "totalDiscardedCards",
+                              ],
+                              "type": "object",
+                            },
+                          },
+                          "required": [
+                            "positionOccurrences",
+                            "noProgressTurns",
+                            "progressMarker",
+                          ],
+                          "type": "object",
+                        },
                         "matchId": {
                           "description": "Unique match identifier (UUID v4).",
                           "format": "uuid",
@@ -21369,26 +21970,36 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "additionalProperties": false,
                               "properties": {
                                 "turnNumber": {
-                                  "description": "Turn number when victory was achieved.",
+                                  "description": "Turn number when the terminal result resolved.",
                                   "maximum": 9007199254740991,
                                   "minimum": 0,
                                   "type": "integer",
                                 },
                                 "victoryType": {
-                                  "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).",
+                                  "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).",
                                   "enum": [
                                     "lpDepletion",
                                     "cardDepletion",
                                     "forfeit",
                                     "passLimit",
+                                    "repetitionDraw",
+                                    "noProgressDraw",
+                                    "turnLimitDraw",
                                   ],
                                   "type": "string",
                                 },
                                 "winnerIndex": {
-                                  "description": "Index of the winning player (0 or 1).",
-                                  "maximum": 1,
-                                  "minimum": 0,
-                                  "type": "integer",
+                                  "anyOf": [
+                                    {
+                                      "maximum": 1,
+                                      "minimum": 0,
+                                      "type": "integer",
+                                    },
+                                    {
+                                      "type": "null",
+                                    },
+                                  ],
+                                  "description": "Index of the winning player (0 or 1), or null for a draw.",
                                 },
                               },
                               "required": [
@@ -21402,7 +22013,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "null",
                             },
                           ],
-                          "description": "Match outcome. Present only when phase is gameOver.",
+                          "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                         },
                         "params": {
                           "additionalProperties": false,
@@ -21694,10 +22305,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "integer",
                             },
                             "specVersion": {
-                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                               "enum": [
                                 "1.0",
                                 "2.0",
+                                "3.0",
                               ],
                               "type": "string",
                             },
@@ -21864,7 +22476,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "integer",
                                         },
                                         "faceDown": {
-                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
+                                          "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                           "type": "boolean",
                                         },
                                         "position": {
@@ -22156,10 +22768,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "object",
                         },
                         "specVersion": {
-                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                          "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                           "enum": [
                             "1.0",
                             "2.0",
+                            "3.0",
                           ],
                           "type": "string",
                         },
@@ -22750,10 +23363,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "integer",
                                               },
                                               "specVersion": {
-                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                                 "enum": [
                                                   "1.0",
                                                   "2.0",
+                                                  "3.0",
                                                 ],
                                                 "type": "string",
                                               },
@@ -23455,6 +24069,79 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           ],
                           "type": "object",
                         },
+                        "liveness": {
+                          "additionalProperties": false,
+                          "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                          "properties": {
+                            "noProgressTurns": {
+                              "description": "Completed turns since the latest irreversible progress event.",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "positionOccurrences": {
+                              "description": "Canonical turn-boundary positions and their occurrence counts.",
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "count": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 1,
+                                    "type": "integer",
+                                  },
+                                  "signature": {
+                                    "minLength": 1,
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "signature",
+                                  "count",
+                                ],
+                                "type": "object",
+                              },
+                              "type": "array",
+                            },
+                            "progressMarker": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "totalBattlefieldHp": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                "totalDiscardedCards": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                "totalDrawpileCards": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                "totalLifepoints": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                              },
+                              "required": [
+                                "totalLifepoints",
+                                "totalBattlefieldHp",
+                                "totalDrawpileCards",
+                                "totalDiscardedCards",
+                              ],
+                              "type": "object",
+                            },
+                          },
+                          "required": [
+                            "positionOccurrences",
+                            "noProgressTurns",
+                            "progressMarker",
+                          ],
+                          "type": "object",
+                        },
                         "matchId": {
                           "description": "Unique match identifier (UUID v4).",
                           "format": "uuid",
@@ -23467,26 +24154,36 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "additionalProperties": false,
                               "properties": {
                                 "turnNumber": {
-                                  "description": "Turn number when victory was achieved.",
+                                  "description": "Turn number when the terminal result resolved.",
                                   "maximum": 9007199254740991,
                                   "minimum": 0,
                                   "type": "integer",
                                 },
                                 "victoryType": {
-                                  "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).",
+                                  "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).",
                                   "enum": [
                                     "lpDepletion",
                                     "cardDepletion",
                                     "forfeit",
                                     "passLimit",
+                                    "repetitionDraw",
+                                    "noProgressDraw",
+                                    "turnLimitDraw",
                                   ],
                                   "type": "string",
                                 },
                                 "winnerIndex": {
-                                  "description": "Index of the winning player (0 or 1).",
-                                  "maximum": 1,
-                                  "minimum": 0,
-                                  "type": "integer",
+                                  "anyOf": [
+                                    {
+                                      "maximum": 1,
+                                      "minimum": 0,
+                                      "type": "integer",
+                                    },
+                                    {
+                                      "type": "null",
+                                    },
+                                  ],
+                                  "description": "Index of the winning player (0 or 1), or null for a draw.",
                                 },
                               },
                               "required": [
@@ -23500,7 +24197,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "null",
                             },
                           ],
-                          "description": "Match outcome. Present only when phase is gameOver.",
+                          "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                         },
                         "params": {
                           "additionalProperties": false,
@@ -23792,10 +24489,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "integer",
                             },
                             "specVersion": {
-                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                               "enum": [
                                 "1.0",
                                 "2.0",
+                                "3.0",
                               ],
                               "type": "string",
                             },
@@ -23962,7 +24660,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "integer",
                                         },
                                         "faceDown": {
-                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
+                                          "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                           "type": "boolean",
                                         },
                                         "position": {
@@ -24254,10 +24952,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "object",
                         },
                         "specVersion": {
-                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                          "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                           "enum": [
                             "1.0",
                             "2.0",
+                            "3.0",
                           ],
                           "type": "string",
                         },
@@ -24848,10 +25547,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "integer",
                                               },
                                               "specVersion": {
-                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                                 "enum": [
                                                   "1.0",
                                                   "2.0",
+                                                  "3.0",
                                                 ],
                                                 "type": "string",
                                               },
@@ -26090,10 +26790,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "type": "integer",
                                       },
                                       "specVersion": {
-                                        "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                        "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                         "enum": [
                                           "1.0",
                                           "2.0",
+                                          "3.0",
                                         ],
                                         "type": "string",
                                       },
@@ -26680,6 +27381,79 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                       ],
                       "type": "object",
                     },
+                    "liveness": {
+                      "additionalProperties": false,
+                      "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                      "properties": {
+                        "noProgressTurns": {
+                          "description": "Completed turns since the latest irreversible progress event.",
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer",
+                        },
+                        "positionOccurrences": {
+                          "description": "Canonical turn-boundary positions and their occurrence counts.",
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "count": {
+                                "maximum": 9007199254740991,
+                                "minimum": 1,
+                                "type": "integer",
+                              },
+                              "signature": {
+                                "minLength": 1,
+                                "type": "string",
+                              },
+                            },
+                            "required": [
+                              "signature",
+                              "count",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
+                        "progressMarker": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "totalBattlefieldHp": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "totalDiscardedCards": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "totalDrawpileCards": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "totalLifepoints": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                          },
+                          "required": [
+                            "totalLifepoints",
+                            "totalBattlefieldHp",
+                            "totalDrawpileCards",
+                            "totalDiscardedCards",
+                          ],
+                          "type": "object",
+                        },
+                      },
+                      "required": [
+                        "positionOccurrences",
+                        "noProgressTurns",
+                        "progressMarker",
+                      ],
+                      "type": "object",
+                    },
                     "matchId": {
                       "description": "Unique match identifier (UUID v4).",
                       "format": "uuid",
@@ -26692,26 +27466,36 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "additionalProperties": false,
                           "properties": {
                             "turnNumber": {
-                              "description": "Turn number when victory was achieved.",
+                              "description": "Turn number when the terminal result resolved.",
                               "maximum": 9007199254740991,
                               "minimum": 0,
                               "type": "integer",
                             },
                             "victoryType": {
-                              "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).",
+                              "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).",
                               "enum": [
                                 "lpDepletion",
                                 "cardDepletion",
                                 "forfeit",
                                 "passLimit",
+                                "repetitionDraw",
+                                "noProgressDraw",
+                                "turnLimitDraw",
                               ],
                               "type": "string",
                             },
                             "winnerIndex": {
-                              "description": "Index of the winning player (0 or 1).",
-                              "maximum": 1,
-                              "minimum": 0,
-                              "type": "integer",
+                              "anyOf": [
+                                {
+                                  "maximum": 1,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                {
+                                  "type": "null",
+                                },
+                              ],
+                              "description": "Index of the winning player (0 or 1), or null for a draw.",
                             },
                           },
                           "required": [
@@ -26725,7 +27509,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "null",
                         },
                       ],
-                      "description": "Match outcome. Present only when phase is gameOver.",
+                      "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                     },
                     "params": {
                       "additionalProperties": false,
@@ -27017,10 +27801,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "integer",
                         },
                         "specVersion": {
-                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                          "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                           "enum": [
                             "1.0",
                             "2.0",
+                            "3.0",
                           ],
                           "type": "string",
                         },
@@ -27187,7 +27972,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "integer",
                                     },
                                     "faceDown": {
-                                      "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
+                                      "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                       "type": "boolean",
                                     },
                                     "position": {
@@ -27479,10 +28264,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                       "type": "object",
                     },
                     "specVersion": {
-                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                       "enum": [
                         "1.0",
                         "2.0",
+                        "3.0",
                       ],
                       "type": "string",
                     },
@@ -28073,10 +28859,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                             "type": "integer",
                                           },
                                           "specVersion": {
-                                            "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                            "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                             "enum": [
                                               "1.0",
                                               "2.0",
+                                              "3.0",
                                             ],
                                             "type": "string",
                                           },
@@ -29774,6 +30561,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "reinforce:complete",
                           "forfeit",
                           "system:advance",
+                          "system:draw",
                           "system:victory",
                           "system:init",
                         ],
@@ -31782,10 +32570,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "type": "integer",
                                     },
                                     "specVersion": {
-                                      "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                      "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                       "enum": [
                                         "1.0",
                                         "2.0",
+                                        "3.0",
                                       ],
                                       "type": "string",
                                     },
@@ -32004,6 +32793,79 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           ],
                           "type": "object",
                         },
+                        "liveness": {
+                          "additionalProperties": false,
+                          "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                          "properties": {
+                            "noProgressTurns": {
+                              "description": "Completed turns since the latest irreversible progress event.",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "positionOccurrences": {
+                              "description": "Canonical turn-boundary positions and their occurrence counts.",
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "count": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 1,
+                                    "type": "integer",
+                                  },
+                                  "signature": {
+                                    "minLength": 1,
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "signature",
+                                  "count",
+                                ],
+                                "type": "object",
+                              },
+                              "type": "array",
+                            },
+                            "progressMarker": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "totalBattlefieldHp": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                "totalDiscardedCards": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                "totalDrawpileCards": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                "totalLifepoints": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                              },
+                              "required": [
+                                "totalLifepoints",
+                                "totalBattlefieldHp",
+                                "totalDrawpileCards",
+                                "totalDiscardedCards",
+                              ],
+                              "type": "object",
+                            },
+                          },
+                          "required": [
+                            "positionOccurrences",
+                            "noProgressTurns",
+                            "progressMarker",
+                          ],
+                          "type": "object",
+                        },
                         "matchId": {
                           "description": "Unique match identifier (UUID v4).",
                           "format": "uuid",
@@ -32016,26 +32878,36 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "additionalProperties": false,
                               "properties": {
                                 "turnNumber": {
-                                  "description": "Turn number when victory was achieved.",
+                                  "description": "Turn number when the terminal result resolved.",
                                   "maximum": 9007199254740991,
                                   "minimum": 0,
                                   "type": "integer",
                                 },
                                 "victoryType": {
-                                  "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).",
+                                  "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).",
                                   "enum": [
                                     "lpDepletion",
                                     "cardDepletion",
                                     "forfeit",
                                     "passLimit",
+                                    "repetitionDraw",
+                                    "noProgressDraw",
+                                    "turnLimitDraw",
                                   ],
                                   "type": "string",
                                 },
                                 "winnerIndex": {
-                                  "description": "Index of the winning player (0 or 1).",
-                                  "maximum": 1,
-                                  "minimum": 0,
-                                  "type": "integer",
+                                  "anyOf": [
+                                    {
+                                      "maximum": 1,
+                                      "minimum": 0,
+                                      "type": "integer",
+                                    },
+                                    {
+                                      "type": "null",
+                                    },
+                                  ],
+                                  "description": "Index of the winning player (0 or 1), or null for a draw.",
                                 },
                               },
                               "required": [
@@ -32049,7 +32921,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "null",
                             },
                           ],
-                          "description": "Match outcome. Present only when phase is gameOver.",
+                          "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                         },
                         "params": {
                           "additionalProperties": false,
@@ -32341,10 +33213,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "integer",
                             },
                             "specVersion": {
-                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                               "enum": [
                                 "1.0",
                                 "2.0",
+                                "3.0",
                               ],
                               "type": "string",
                             },
@@ -32511,7 +33384,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "integer",
                                         },
                                         "faceDown": {
-                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
+                                          "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                           "type": "boolean",
                                         },
                                         "position": {
@@ -32803,10 +33676,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "object",
                         },
                         "specVersion": {
-                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                          "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                           "enum": [
                             "1.0",
                             "2.0",
+                            "3.0",
                           ],
                           "type": "string",
                         },
@@ -33397,10 +34271,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "integer",
                                               },
                                               "specVersion": {
-                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                                 "enum": [
                                                   "1.0",
                                                   "2.0",
+                                                  "3.0",
                                                 ],
                                                 "type": "string",
                                               },
@@ -34102,6 +34977,79 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           ],
                           "type": "object",
                         },
+                        "liveness": {
+                          "additionalProperties": false,
+                          "description": "Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.",
+                          "properties": {
+                            "noProgressTurns": {
+                              "description": "Completed turns since the latest irreversible progress event.",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "positionOccurrences": {
+                              "description": "Canonical turn-boundary positions and their occurrence counts.",
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "count": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 1,
+                                    "type": "integer",
+                                  },
+                                  "signature": {
+                                    "minLength": 1,
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "signature",
+                                  "count",
+                                ],
+                                "type": "object",
+                              },
+                              "type": "array",
+                            },
+                            "progressMarker": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "totalBattlefieldHp": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                "totalDiscardedCards": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                "totalDrawpileCards": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                                "totalLifepoints": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": 0,
+                                  "type": "integer",
+                                },
+                              },
+                              "required": [
+                                "totalLifepoints",
+                                "totalBattlefieldHp",
+                                "totalDrawpileCards",
+                                "totalDiscardedCards",
+                              ],
+                              "type": "object",
+                            },
+                          },
+                          "required": [
+                            "positionOccurrences",
+                            "noProgressTurns",
+                            "progressMarker",
+                          ],
+                          "type": "object",
+                        },
                         "matchId": {
                           "description": "Unique match identifier (UUID v4).",
                           "format": "uuid",
@@ -34114,26 +35062,36 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "additionalProperties": false,
                               "properties": {
                                 "turnNumber": {
-                                  "description": "Turn number when victory was achieved.",
+                                  "description": "Turn number when the terminal result resolved.",
                                   "maximum": 9007199254740991,
                                   "minimum": 0,
                                   "type": "integer",
                                 },
                                 "victoryType": {
-                                  "description": "Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).",
+                                  "description": "Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).",
                                   "enum": [
                                     "lpDepletion",
                                     "cardDepletion",
                                     "forfeit",
                                     "passLimit",
+                                    "repetitionDraw",
+                                    "noProgressDraw",
+                                    "turnLimitDraw",
                                   ],
                                   "type": "string",
                                 },
                                 "winnerIndex": {
-                                  "description": "Index of the winning player (0 or 1).",
-                                  "maximum": 1,
-                                  "minimum": 0,
-                                  "type": "integer",
+                                  "anyOf": [
+                                    {
+                                      "maximum": 1,
+                                      "minimum": 0,
+                                      "type": "integer",
+                                    },
+                                    {
+                                      "type": "null",
+                                    },
+                                  ],
+                                  "description": "Index of the winning player (0 or 1), or null for a draw.",
                                 },
                               },
                               "required": [
@@ -34147,7 +35105,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "null",
                             },
                           ],
-                          "description": "Match outcome. Present only when phase is gameOver.",
+                          "description": "Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.",
                         },
                         "params": {
                           "additionalProperties": false,
@@ -34439,10 +35397,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "integer",
                             },
                             "specVersion": {
-                              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                               "enum": [
                                 "1.0",
                                 "2.0",
+                                "3.0",
                               ],
                               "type": "string",
                             },
@@ -34609,7 +35568,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                           "type": "integer",
                                         },
                                         "faceDown": {
-                                          "description": "Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
+                                          "description": "Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (\`false\`). This field remains for historical replay compatibility and future versioned formats; see §21.2.",
                                           "type": "boolean",
                                         },
                                         "position": {
@@ -34901,10 +35860,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "object",
                         },
                         "specVersion": {
-                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                          "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                           "enum": [
                             "1.0",
                             "2.0",
+                            "3.0",
                           ],
                           "type": "string",
                         },
@@ -35495,10 +36455,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                                 "type": "integer",
                                               },
                                               "specVersion": {
-                                                "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                                "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                                 "enum": [
                                                   "1.0",
                                                   "2.0",
+                                                  "3.0",
                                                 ],
                                                 "type": "string",
                                               },
@@ -36737,10 +37698,11 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         "type": "integer",
                                       },
                                       "specVersion": {
-                                        "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.",
+                                        "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.",
                                         "enum": [
                                           "1.0",
                                           "2.0",
+                                          "3.0",
                                         ],
                                         "type": "string",
                                       },

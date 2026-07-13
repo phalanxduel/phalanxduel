@@ -59,6 +59,8 @@ function redactHiddenCards(playerState: PlayerState): PlayerState {
 export function projectGameState(state: GameState, viewerIndex: number | null): GameViewModel {
   const p0 = state.players[0]!;
   const p1 = state.players[1]!;
+  const { liveness: internalLiveness, ...viewerSafeState } = state;
+  void internalLiveness;
 
   // TASK-257: For completed matches, disable redaction for all viewers (including spectators).
   // This allows full visibility of final hands and battlefield units during rewatch.
@@ -75,7 +77,7 @@ export function projectGameState(state: GameState, viewerIndex: number | null): 
       : redactHiddenCards(p1);
 
   const redactedState: GameState = {
-    ...state,
+    ...viewerSafeState,
     players: [projectedP0, projectedP1],
     transactionLog: redactTransactionLog(state.transactionLog, viewerIndex),
   };

@@ -270,7 +270,7 @@ describe('Shared schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('accepts historical v1.0 parameters but restricts strict v2.0 competition to 2x4', () => {
+    it('accepts historical v1.0 parameters but restricts strict v2+ competition to 2x4', () => {
       expect(MatchParametersSchema.safeParse(validParams()).success).toBe(true);
 
       const result = MatchParametersSchema.safeParse(
@@ -655,6 +655,31 @@ describe('GameStateSchema phase-aware invariants', () => {
       }),
     );
     expect(result.success).toBe(true);
+  });
+
+  it('accepts a draw only when winnerIndex is null', () => {
+    const draw = GameStateSchema.safeParse(
+      makeGameState({
+        phase: 'gameOver',
+        outcome: { winnerIndex: null, victoryType: 'repetitionDraw', turnNumber: 9 },
+      }),
+    );
+    const falseWinner = GameStateSchema.safeParse(
+      makeGameState({
+        phase: 'gameOver',
+        outcome: { winnerIndex: 0, victoryType: 'repetitionDraw', turnNumber: 9 },
+      }),
+    );
+    const missingWinner = GameStateSchema.safeParse(
+      makeGameState({
+        phase: 'gameOver',
+        outcome: { winnerIndex: null, victoryType: 'lpDepletion', turnNumber: 9 },
+      }),
+    );
+
+    expect(draw.success).toBe(true);
+    expect(falseWinner.success).toBe(false);
+    expect(missingWinner.success).toBe(false);
   });
 
   it('rejects outcome present on a non-gameOver phase', () => {

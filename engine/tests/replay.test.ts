@@ -109,6 +109,21 @@ describe('PHX-TXLOG-003: Game is replayable from initial config + ordered action
     expect(computeStateHash(first.finalState)).toBe(computeStateHash(second.finalState));
   });
 
+  it('preserves deterministic pre-liveness v2.0 replay dispatch', () => {
+    const historicalConfig: GameConfig = {
+      ...testConfig,
+      matchParams: { ...DEFAULT_MATCH_PARAMS, specVersion: '2.0' },
+    };
+
+    const first = replayGame(historicalConfig, []);
+    const second = replayGame(historicalConfig, []);
+
+    expect(first.valid).toBe(true);
+    expect(first.finalState.specVersion).toBe('2.0');
+    expect(first.finalState.liveness).toBeUndefined();
+    expect(computeStateHash(first.finalState)).toBe(computeStateHash(second.finalState));
+  });
+
   it('reuses deterministic timestamps across repeated actionful replays without drawTimestamp', () => {
     const configWithoutDrawTimestamp: GameConfig = {
       ...testConfig,

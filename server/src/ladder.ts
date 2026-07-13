@@ -83,8 +83,8 @@ export class LadderService {
     let winCount = 0;
 
     for (const row of rows) {
-      const outcome = row.outcome as { winnerIndex: number } | null;
-      if (!outcome) continue;
+      const outcome = row.outcome as { winnerIndex: number | null } | null;
+      if (!outcome || outcome.winnerIndex === null) continue;
 
       const isPlayer1 = row.player1Id === userId;
       const playerIndex = isPlayer1 ? 0 : 1;

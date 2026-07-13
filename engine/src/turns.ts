@@ -25,6 +25,7 @@ import { assertTransition, canHandleAction } from './state-machine.js';
 import type { TransitionTrigger } from './state-machine.js';
 import type { PlayerState, Battlefield, Card, BattlefieldCard } from '@phalanxduel/shared';
 import { isGameOver, isReinforcementPhase, isActionPhase } from '@phalanxduel/shared';
+import { evaluateLiveness } from './liveness.js';
 
 /** Safely retrieve a player from state, throwing if missing. */
 function getPlayer(state: GameState, index: number): PlayerState {
@@ -613,6 +614,20 @@ export function applyAction(
       resultState = transition(state, 'system:init', toPhase, patch);
       details = { type: 'system:init' };
       break;
+    }
+  }
+
+  const liveness = evaluateLiveness(state, resultState, action);
+  if (liveness) {
+    resultState = { ...resultState, liveness: liveness.liveness };
+    if (liveness.drawReason) {
+      resultState = transition(resultState, 'system:draw', 'gameOver', {
+        outcome: {
+          winnerIndex: null,
+          victoryType: liveness.drawReason,
+          turnNumber: liveness.completedTurnNumber ?? resultState.turnNumber,
+        },
+      });
     }
   }
 

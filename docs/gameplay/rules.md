@@ -1,4 +1,4 @@
-# Phalanx Duel — Canonical Rules Specification v2.0
+# Phalanx Duel — Canonical Rules Specification v3.0
 
 This document defines the authoritative deterministic rules for match configuration, deployment, turn sequencing, attack resolution, suit effects, Classic Aces, Classic Face Cards, cumulative damage behavior, event logging, and replay verification.
 
@@ -31,7 +31,7 @@ If any implementation produces different output for identical inputs under this 
 * Cumulative vs Classic persistence
 * Cleanup and column collapse
 * Reinforcement and draw
-* Pass logic
+* Pass and deterministic draw logic
 * Event emission model (Span-based)
 * Replay hash guarantees
 * Game DSL for cross-platform play
@@ -71,10 +71,10 @@ A = 1; 2…9 = face value; T = 10; J = Q = K = 11
 Face-card destruction hierarchy (§11) is independent of this shared numeric
 value.
 
-Competitive v2.0 uses the canonical 52-card manifest and therefore generates
+Competitive v3.0 uses the canonical 52-card manifest and therefore generates
 only `number`, `ace`, `jack`, `queen`, and `king` card types. `joker` remains a
 reserved schema vocabulary value for a future version; it is not generated and
-is outside the competitive v2.0 gameplay domain.
+is outside the competitive v3.0 gameplay domain.
 
 ### 2.1 Deterministic Card ID Specification
 
@@ -121,7 +121,7 @@ All matches must include:
 
 ```json
 {
-  "specVersion": "2.0",
+  "specVersion": "3.0",
 
   "classic": {
     "enabled": true,
@@ -213,7 +213,7 @@ All Phalanx System formats (Duel, Arena, Siege) must adhere to these physical li
   `initialDraw = (rows * columns) + columns`
 * **Card Scarcity Invariant:** A game configuration is invalid if `initialDraw` exceeds the available deck size minus a reserve of 4 cards (ensuring at least 4 cards remain in the system after the first player draws).
 
-Competitive v2.0 Duel is intentionally narrower than the general schema: strict
+Competitive v3.0 Duel is intentionally narrower than the general schema: strict
 Classic matches MUST use exactly `rows = 2` and `columns = 4`. Other validated
 geometries remain experimental Hybrid or Manual formats until generalized
 combat receives exhaustive evidence. A partial creation request that specifies
@@ -223,7 +223,7 @@ and is rejected when the geometry differs.
 
 ## 3.4 Canonical vs Compatibility Inputs
 
-The authoritative v2.0 gameplay contract is the `Match Parameters` surface in §3. Transport- or orchestration-level compatibility inputs may still exist in implementation surfaces, but they are not rule-authoritative unless they are represented in the canonical match params.
+The authoritative v3.0 gameplay contract is the `Match Parameters` surface in §3. Transport- or orchestration-level compatibility inputs may still exist in implementation surfaces, but they are not rule-authoritative unless they are represented in the canonical match params.
 
 Compatibility-only examples currently present in implementation surfaces include:
 
@@ -233,23 +233,25 @@ Compatibility-only examples currently present in implementation surfaces include
 
 These fields may be accepted by internal or legacy routes for bootstrap compatibility, but they MUST NOT redefine canonical rule behavior independently of the match params in this document.
 
-`modeQuickStart` remains a reserved compatibility flag in the canonical params object. For v2.0-compliant matches, it is expected to remain `false`; enabling it is a non-standard bootstrap shortcut rather than part of the standard competitive lifecycle.
+`modeQuickStart` remains a reserved compatibility flag in the canonical params object. For v3.0-compliant matches, it is expected to remain `false`; enabling it is a non-standard bootstrap shortcut rather than part of the standard competitive lifecycle.
 
 ## 3.5 Rules-Version Compatibility
 
 `specVersion` is immutable match input and MUST be copied to `GameState`. Version
 `1.0` remains accepted solely to replay historical matches byte-for-byte. It
 preserves the historical runtime boundary order, Weapon → Shield → Clamp.
-New matches default to `2.0`, whose corrected order is Shield → Weapon → Clamp.
-Replay dispatch MUST use the recorded version; clients MUST NOT reinterpret a
-historical trace using the current default.
+Version `2.0` preserves the corrected Shield → Weapon → Clamp combat semantics
+from before normative liveness draws. New matches default to `3.0`, which keeps
+the v2.0 combat relation and adds §16.1. Replay dispatch MUST use the recorded
+version; clients MUST NOT reinterpret a historical trace using the current
+default.
 
 The v1.0 compatibility branch also preserves its recorded boundary-scope
 semantics: an empty front slot could satisfy the Club boundary precondition, a
 destroyed Diamond could shield a direct player transition, the most recent
 destroyed Heart in the chain could shield even when a later non-Heart was
 destroyed, and LP-step `absorbed` recorded a net arithmetic difference. These
-are replay axioms, not v2.0 rules.
+are replay axioms, not v2.0 or v3.0 rules.
 
 ---
 
@@ -528,6 +530,73 @@ Limits:
 
 Pass does not depend on “good attack availability”.
 
+## 16.1 Deterministic Draw and Liveness Policy
+
+This section applies only to `specVersion = "3.0"`. Versions 1.0 and 2.0 do not
+retroactively acquire liveness state or draw transitions.
+
+Liveness is evaluated after decisive victory checks and only at the canonical
+turn boundary immediately before the next `AttackPhase`. A terminal draw has
+`winnerIndex = null`. If more than one draw predicate becomes true at the same
+boundary, precedence is:
+
+```text
+threefold repetition → no-progress limit → hard-turn limit
+```
+
+### 16.1.1 Exact Threefold Repetition
+
+Let `S(t)` be the collision-free canonical position witness at boundary `t`.
+It contains the rules version, phase, active player, pass counters, and for each
+player the deck seed, LP, ordered hand, ordered battlefield with HP/orientation,
+ordered draw pile, and ordered Graveyard. Audit metadata, turn number, and the
+liveness counters themselves are excluded because they do not change a legal
+continuation.
+
+```text
+occurrences_t(s) = |{ k : 0 ≤ k ≤ t and S(k) = s }|
+```
+
+If `occurrences_t(S(t)) >= 3`, the result is `repetitionDraw`.
+
+### 16.1.2 No-Progress Limit
+
+At each canonical boundary define the progress marker:
+
+```text
+M(t) = (
+  totalLifepoints,
+  totalBattlefieldHp,
+  totalDrawpileCards,
+  totalDiscardedCards
+)
+```
+
+Turn `t` makes irreversible progress iff LP, battlefield HP, or draw-pile size
+decreases, or Graveyard size increases. Let `N(t)` be the consecutive
+no-progress counter:
+
+```text
+N(t) = 0                 if irreversible progress occurred
+N(t) = N(t - 1) + 1     otherwise
+```
+
+If `N(t) >= 50`, the result is `noProgressDraw`.
+
+### 16.1.3 Hard-Turn Limit and Termination Argument
+
+After completing turn 200, a still-live match becomes `turnLimitDraw`. The
+outcome records turn 200 even though the intermediate lifecycle would otherwise
+advance toward turn 201.
+
+Under competitive v3.0, deployment is finite because each legal deployment
+consumes one hand card and fills one of finitely many slots. Each turn contains
+one attack/pass plus a reinforcement sequence bounded by empty ranks and hand
+size. Every completed nonterminal turn increments the turn number. Decisive
+outcomes may terminate earlier; otherwise the hard-turn predicate terminates
+the match after turn 200. Therefore every legal competitive v3.0 match has a
+finite action sequence to `gameOver`.
+
 ---
 
 # 17. Structured Event Model (Spans & Audit)
@@ -580,6 +649,10 @@ Replay guarantee:
 Identical `specVersion`, `params`, `preState`, and `turnInput` MUST produce
 identical `postState`, `stateHashAfter`, and phase-hop trace sequence.
 
+Authoritative combat preview, committed execution, and replay-derived combat
+events MUST agree on the same semantic resolution payload for the same state
+and attack input.
+
 The state-level and parameter-level `specVersion` values MUST be equal.
 
 Integrity metadata is recorded in `transactionLog` entries (`stateHashBefore`,
@@ -597,6 +670,12 @@ modeled as top-level `GameState` hash fields.
 * No reshuffle from graveyard.
 * No silent parameter drift when Classic enabled.
 * No automatic loss due solely to empty deck.
+* Card identity is conserved across hand, battlefield, draw pile, and Graveyard.
+* Live-card HP remains in `[1, value]`; player LP remains in
+  `[0, startingLifepoints]`.
+* Rejected actions do not mutate authoritative state or append audit entries.
+* Exchanging player seats maps expected initiative, combat, and decisive
+  outcomes to the opposite seat without changing seat-neutral arithmetic.
 
 ---
 
@@ -641,8 +720,8 @@ To maintain strategic depth, the Phalanx System enforces strict hidden-informati
 *   **Player Hand:** Fully visible to the owner. Redacted to an empty array for all other players and spectators. Only the count (`handCount`) is public.
 
 ### 21.2 Battlefield
-*   **Competitive v2.0 Deployment:** All battlefield cards are deployed face-up. Players, spectators, bots, and replay viewers receive the same public battlefield card identities.
-*   **Future Hidden-Deployment Formats:** Face-down battlefield cards are reserved for a future rules version and are not legal in competitive v2.0 Duel.
+*   **Competitive v3.0 Deployment:** All battlefield cards are deployed face-up. Players, spectators, bots, and replay viewers receive the same public battlefield card identities.
+*   **Future Hidden-Deployment Formats:** Face-down battlefield cards are reserved for a future rules version and are not legal in competitive v3.0 Duel.
 *   **Historical Compatibility:** Version 1.0 replay data may contain `faceDown`, but replay projection follows the recorded state and version rather than changing historical hashes.
 
 ### 21.3 Graveyard (Discard Pile)
@@ -651,6 +730,6 @@ To maintain strategic depth, the Phalanx System enforces strict hidden-informati
 
 ---
 
-Phalanx Duel Rules Specification v2.0 — Canonical.
+Phalanx Duel Rules Specification v3.0 — Canonical.
 
 Further changes require version bump.

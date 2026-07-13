@@ -34,7 +34,7 @@ Two version identifiers exist in the schema:
 | Identifier | Current Value | Purpose |
 |------------|---------------|---------|
 | `SCHEMA_VERSION` | `1.4.0` | Runtime/transport schema revision. Tracks TypeScript type changes, field additions, protocol evolution. Follows semver. |
-| `specVersion` | `2.0` (current), `1.0` (replay) | Game rules specification version. Tracks gameplay logic changes (attack resolution, suit effects, turn lifecycle). Matches RULES.md version. |
+| `specVersion` | `3.0` (current), `2.0` and `1.0` (replay) | Game rules specification version. Tracks gameplay logic changes (attack resolution, suit effects, turn lifecycle). Matches RULES.md version. |
 
 **Resolution:** These are intentionally separate. External clients should:
 

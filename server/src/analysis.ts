@@ -44,7 +44,10 @@ export class MatchAnalysisService {
     const winnerName = outcome?.winnerIndex === 0 ? p1 : outcome?.winnerIndex === 1 ? p2 : 'None';
 
     let summary = `Match ${match.matchId} between ${p1} and ${p2}. `;
-    summary += `Duration: ${state.turnNumber} turns. Winner: ${winnerName} (${outcome?.victoryType ?? 'N/A'}). `;
+    summary +=
+      outcome?.winnerIndex === null
+        ? `Duration: ${state.turnNumber} turns. Result: Draw (${outcome.victoryType}). `
+        : `Duration: ${state.turnNumber} turns. Winner: ${winnerName} (${outcome?.victoryType ?? 'N/A'}). `;
 
     // Simple tactical summary based on suits
     const suits = match.players.map((_, i) => {

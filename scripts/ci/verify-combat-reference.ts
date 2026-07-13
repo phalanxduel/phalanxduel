@@ -277,7 +277,7 @@ function verifyDomain(): { counts: ProofCounts; digest: string } {
   };
 
   const attackerTypes: CardType[] = ['ace', 'number', 'jack', 'queen', 'king'];
-  const transitionModes = modes.filter((value) => value.specVersion === '2.0');
+  const transitionModes = modes.filter((value) => value.specVersion === '3.0');
   for (const mode of transitionModes) {
     for (const attackerType of attackerTypes) {
       for (const isFrontRank of [true, false]) {
@@ -326,7 +326,7 @@ function verifyDomain(): { counts: ProofCounts; digest: string } {
     }
   }
 
-  for (const specVersion of ['2.0', '1.0'] as const) {
+  for (const specVersion of ['3.0', '2.0', '1.0'] as const) {
     for (let carryover = 0; carryover <= 20; carryover += 1) {
       for (let diamondShield = 0; diamondShield <= 11; diamondShield += 1) {
         for (const clubEligible of [false, true]) {
@@ -362,12 +362,14 @@ function verifyDomain(): { counts: ProofCounts; digest: string } {
     }
   }
 
-  const emptyModes: ReferenceCombatModes[] = (['2.0', '1.0'] as const).map((specVersion) => ({
-    specVersion,
-    modeClassicAces: false,
-    modeClassicFaceCards: false,
-    modeDamagePersistence: 'classic',
-  }));
+  const emptyModes: ReferenceCombatModes[] = (['3.0', '2.0', '1.0'] as const).map(
+    (specVersion) => ({
+      specVersion,
+      modeClassicAces: false,
+      modeClassicFaceCards: false,
+      modeDamagePersistence: 'classic',
+    }),
+  );
   for (const modesValue of emptyModes) {
     for (const attacker of attackers) {
       for (const defenderLp of referenceLpDomain()) {

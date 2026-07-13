@@ -7,7 +7,7 @@ import {
   transitionsTo,
   findTransition,
 } from '../src/state-machine.ts';
-import { createInitialState, applyAction, validateAction } from '../src/index.ts';
+import { createInitialState, applyAction, progressMarker, validateAction } from '../src/index.ts';
 
 import type {
   GameState,
@@ -561,6 +561,22 @@ describe('STATE_MACHINE implementation coverage', () => {
         timestamp: MOCK_TIMESTAMP,
       }),
     );
+
+    // 8. Canonical turn boundary -> draw termination
+    const drawState = structuredClone(quickStartState);
+    drawState.turnNumber = 200;
+    drawState.liveness = {
+      positionOccurrences: [],
+      noProgressTurns: 0,
+      progressMarker: progressMarker(drawState),
+    };
+    const drawn = applyAction(drawState, {
+      type: 'pass',
+      playerIndex: drawState.activePlayerIndex,
+      timestamp: MOCK_TIMESTAMP,
+    });
+    track(drawn);
+    expect(drawn.outcome?.victoryType).toBe('turnLimitDraw');
 
     // Final Coverage Check
     const allTransitions = STATE_MACHINE.map((t) => `${t.from}|${t.trigger}|${t.to}`);

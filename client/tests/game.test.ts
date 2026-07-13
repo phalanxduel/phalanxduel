@@ -326,7 +326,7 @@ describe('renderGame', () => {
         type: 'attack',
         playerIndex: 0,
         attackingColumn: 0,
-        defendingColumn: 1,
+        defendingColumn: 0,
         timestamp: '',
       } as Action,
       { type: 'pass', playerIndex: 0, timestamp: '' } as Action,
@@ -343,7 +343,7 @@ describe('renderGame', () => {
 
     renderGame(container, state);
 
-    const target = container.querySelector('[data-testid="opponent-cell-r0-c1"]');
+    const target = container.querySelector('[data-testid="opponent-cell-r0-c0"]');
     expect(target?.classList.contains('valid-target')).toBe(true);
     expect(target?.classList.contains('bf-cell')).toBe(true);
   });

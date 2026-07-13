@@ -90,9 +90,10 @@
               "type": "string",
               "enum": [
                 "1.0",
-                "2.0"
+                "2.0",
+                "3.0"
               ],
-              "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+              "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
             },
             "rows": {
               "type": "integer",
@@ -924,9 +925,10 @@
                           "type": "string",
                           "enum": [
                             "1.0",
-                            "2.0"
+                            "2.0",
+                            "3.0"
                           ],
-                          "description": "Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset."
+                          "description": "Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset."
                         },
                         "classic": {
                           "type": "object",

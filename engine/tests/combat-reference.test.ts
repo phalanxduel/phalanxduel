@@ -26,7 +26,7 @@ describe('independent combat reference model', () => {
     );
     expect(frontStates).toHaveLength(352);
     expect(referenceBattlefieldStates(1)).toHaveLength(352);
-    expect(referenceModeDomain()).toHaveLength(16);
+    expect(referenceModeDomain()).toHaveLength(24);
     expect(referenceLpDomain()).toEqual(Array.from({ length: 501 }, (_, value) => value));
   });
 

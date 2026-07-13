@@ -71,6 +71,25 @@ describe('projectForViewer', () => {
     expect(result.viewerIndex).toBeNull();
   });
 
+  it('never exposes internal liveness position witnesses', () => {
+    const state = buildState({
+      liveness: {
+        positionOccurrences: [{ signature: 'contains-hidden-zone-order', count: 1 }],
+        noProgressTurns: 0,
+        progressMarker: {
+          totalLifepoints: 40,
+          totalBattlefieldHp: 0,
+          totalDrawpileCards: 80,
+          totalDiscardedCards: 0,
+        },
+      },
+    });
+    const result = projectForViewer(buildMatch(state), null);
+
+    expect(result.preState.liveness).toBeUndefined();
+    expect(result.postState.liveness).toBeUndefined();
+  });
+
   it('completed match: all cards revealed for any viewer', () => {
     const state = buildState({
       phase: 'gameOver',

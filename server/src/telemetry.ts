@@ -41,7 +41,7 @@ function recordVictory(finalState: GameState) {
 
   gameOutcomeCounter.add(1, {
     victory_type: outcome.victoryType,
-    winner: String(outcome.winnerIndex),
+    winner: outcome.winnerIndex === null ? 'draw' : String(outcome.winnerIndex),
   });
   gameOutcomeTurnHistogram.record(outcome.turnNumber, {
     victory_type: outcome.victoryType,

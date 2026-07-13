@@ -154,9 +154,12 @@ export function MatchDetailsDialog({ matchId, onClose, token }: Props) {
                 fontSize: '0.9rem',
               }}
             >
-              WINNER:{' '}
-              {gameState.players[gameState.outcome.winnerIndex]?.player.name ??
-                `Player ${gameState.outcome.winnerIndex + 1}`}
+              {gameState.outcome.winnerIndex === null
+                ? 'RESULT: DRAW'
+                : `WINNER: ${
+                    gameState.players[gameState.outcome.winnerIndex]?.player.name ??
+                    `Player ${gameState.outcome.winnerIndex + 1}`
+                  }`}
               {gameState.outcome.victoryType ? ` (${gameState.outcome.victoryType})` : ''}
               {' · '}
               TOTAL TURNS: {gameState.turnNumber}

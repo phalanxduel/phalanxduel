@@ -51,7 +51,7 @@ export function referenceBattlefieldStates(rank: 0 | 1): BattlefieldCard[] {
 
 export function referenceModeDomain(): ReferenceCombatModes[] {
   const result: ReferenceCombatModes[] = [];
-  for (const specVersion of ['2.0', '1.0'] as const) {
+  for (const specVersion of ['3.0', '2.0', '1.0'] as const) {
     for (const modeClassicAces of [false, true]) {
       for (const modeClassicFaceCards of [false, true]) {
         for (const modeDamagePersistence of ['classic', 'cumulative'] as const) {

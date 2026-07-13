@@ -18,6 +18,9 @@ function OutcomeDetails({ outcome }: { outcome: NonNullable<GameState['outcome']
     cardDepletion: 'Card Depletion',
     passLimit: 'Pass Limit Exceeded',
     forfeit: 'Forfeit',
+    repetitionDraw: 'Threefold Repetition',
+    noProgressDraw: 'No-Progress Limit',
+    turnLimitDraw: 'Hard Turn Limit',
   };
   return (
     <p class="lp-summary">
@@ -133,7 +136,10 @@ function GameOverApp({ state }: { state: AppState }) {
 
   if (gs && outcome) {
     winnerIndex = outcome.winnerIndex;
-    if (state.playerIndex !== null) {
+    if (winnerIndex === null) {
+      resultText = 'Draw';
+      resultClass = 'draw';
+    } else if (state.playerIndex !== null) {
       const iWin = winnerIndex === state.playerIndex;
       resultText = iWin ? 'You Win!' : 'You Lose';
       resultClass = iWin ? 'win' : 'lose';

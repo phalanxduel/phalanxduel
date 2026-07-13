@@ -22,6 +22,7 @@ import type {
   CombatPreviewSchema,
   CreateMatchParamsPartialSchema,
   DamageModeSchema,
+  DrawTerminationTypeSchema,
   ErrorResponseSchema,
   EventStatusSchema,
   EventTypeSchema,
@@ -33,6 +34,7 @@ import type {
   GameViewModelSchema,
   GameViewStateSchema,
   GridPositionSchema,
+  LivenessStateSchema,
   MatchConfigClassicSchema,
   MatchCreatedMessageSchema,
   MatchEventLogSchema,
@@ -77,6 +79,7 @@ export type CombatLogStep = z.infer<typeof CombatLogStepSchema>;
 export type CombatPreview = z.infer<typeof CombatPreviewSchema>;
 export type CreateMatchParamsPartial = z.infer<typeof CreateMatchParamsPartialSchema>;
 export type DamageMode = z.infer<typeof DamageModeSchema>;
+export type DrawTerminationType = z.infer<typeof DrawTerminationTypeSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
 export type EventStatus = z.infer<typeof EventStatusSchema>;
 export type EventType = z.infer<typeof EventTypeSchema>;
@@ -88,6 +91,7 @@ export type GameViewModelMessage = z.infer<typeof GameViewModelMessageSchema>;
 export type GameViewModel = z.infer<typeof GameViewModelSchema>;
 export type GameViewState = z.infer<typeof GameViewStateSchema>;
 export type GridPosition = z.infer<typeof GridPositionSchema>;
+export type LivenessState = z.infer<typeof LivenessStateSchema>;
 export type MatchConfigClassic = z.infer<typeof MatchConfigClassicSchema>;
 export type MatchCreatedMessage = z.infer<typeof MatchCreatedMessageSchema>;
 export type MatchEventLog = z.infer<typeof MatchEventLogSchema>;

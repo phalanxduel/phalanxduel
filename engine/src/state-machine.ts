@@ -130,6 +130,12 @@ export const STATE_MACHINE: StateTransition[] = [
     action: 'forfeit',
     description: 'Active player forfeits during attack phase',
   },
+  {
+    from: 'AttackPhase',
+    to: 'gameOver',
+    trigger: 'system:draw',
+    description: 'Canonical turn-boundary liveness policy terminates the match as a draw',
+  },
 
   // --- AttackResolution ---
   {

@@ -24,6 +24,17 @@ const SAMPLE_MATCHES = [
     createdAt: '2026-03-15T11:00:00.000Z',
     completedAt: '2026-03-15T11:02:00.000Z',
   },
+  {
+    matchId: 'match-ccc',
+    playerIds: ['p4', 'p5'],
+    playerNames: ['Dana', 'Eli'],
+    winnerIndex: null,
+    victoryType: 'noProgressDraw',
+    turnCount: 50,
+    fingerprint: 'ghi789',
+    createdAt: '2026-03-15T12:00:00.000Z',
+    completedAt: '2026-03-15T12:10:00.000Z',
+  },
 ];
 
 describe('renderMatchHistory', () => {
@@ -51,7 +62,20 @@ describe('renderMatchHistory', () => {
     } as Response);
     renderMatchHistory(container);
     await vi.waitFor(() => {
-      expect(container.querySelectorAll('[data-testid="match-row"]').length).toBe(2);
+      expect(container.querySelectorAll('[data-testid="match-row"]').length).toBe(3);
+    });
+  });
+
+  it('renders a draw without naming a winner', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: async () => SAMPLE_MATCHES,
+    } as Response);
+    renderMatchHistory(container);
+    await vi.waitFor(() => {
+      const rows = container.querySelectorAll('[data-testid="match-row"]');
+      expect(rows[2]!.textContent).toContain('draw (No-Progress Limit)');
+      expect(rows[2]!.textContent).not.toContain('wins');
     });
   });
 

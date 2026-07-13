@@ -2,17 +2,17 @@
  * Copyright © 2026 Mike Hall
  * Licensed under the GNU Affero General Public License v3.0.
  *
- * Deterministic attack preview: simulates resolveAttack on a cloned state
+ * Deterministic attack preview: applies the authoritative turn on a cloned state
  * so the UI can show the expected outcome before the action is submitted.
- * All combat math is delegated to resolveAttack — no rule logic lives here.
+ * All transition and combat semantics are delegated to applyAction — no rule logic
+ * lives here.
  */
 
 import type { Action, GameState } from '@phalanxduel/shared';
-import { deriveCombatResolution } from '@phalanxduel/shared';
 import type { CombatResolutionContext } from '@phalanxduel/shared';
-import { resolveAttack } from './combat.js';
-import { isColumnFull } from './state.js';
-import { checkVictory } from './state.js';
+import { TelemetryName } from '@phalanxduel/shared';
+import { deriveEventsFromEntry } from './events.js';
+import { applyAction } from './turns.js';
 
 export type AttackPreviewVerdict =
   | 'WINNING_EXCHANGE'
@@ -40,33 +40,20 @@ export function simulateAttack(
   // Deep clone via JSON round-trip — state is already JSON-serializable.
   const cloned = JSON.parse(JSON.stringify(state)) as GameState;
 
-  const { combatEntry, state: postState } = resolveAttack(
-    cloned,
-    action.playerIndex,
-    action.attackingColumn,
-    action.defendingColumn,
+  const committed = applyAction(cloned, action, { timestamp: action.timestamp });
+  const entry = committed.transactionLog?.at(-1);
+  if (!entry) {
+    throw new Error('Authoritative attack preview produced no transaction entry');
+  }
+
+  const resolvedEvent = deriveEventsFromEntry(entry, 'preview').find(
+    (event) => event.name === TelemetryName.EVENT_ATTACK_RESOLVED,
   );
+  if (!resolvedEvent) {
+    throw new Error('Authoritative attack preview produced no attack.resolved event');
+  }
 
-  const defenderIndex = action.playerIndex === 0 ? 1 : 0;
-  const targetCol = action.attackingColumn;
-  const { rows, columns } = state.params;
-
-  const defender = postState.players[defenderIndex];
-  const defenderBf = defender?.battlefield ?? [];
-
-  // Use checkVictory (same logic as turns.ts) to match victoryTriggered exactly.
-  const victoryTriggered = checkVictory(postState) !== null;
-  const frontAfterNull = (defenderBf[targetCol] ?? null) === null;
-  const reinforcementTriggered =
-    frontAfterNull &&
-    (defender?.hand.length ?? 0) > 0 &&
-    !isColumnFull(defenderBf, targetCol, rows, columns);
-
-  // mode is intentionally omitted — events.ts also omits it, keeping outputs byte-identical.
-  const resolution = deriveCombatResolution(combatEntry, {
-    reinforcementTriggered,
-    victoryTriggered,
-  });
+  const resolution = resolvedEvent.payload as unknown as CombatResolutionContext;
 
   const verdict = resolveVerdict(resolution);
 

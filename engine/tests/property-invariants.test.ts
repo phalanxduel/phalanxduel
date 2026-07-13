@@ -16,7 +16,16 @@
  */
 import { describe, it, expect } from 'vitest';
 import type { GameState, Action, GamePhase } from '@phalanxduel/shared';
-import { createInitialState, applyAction, validateAction, replayGame } from '../src/index.js';
+import { TelemetryName } from '@phalanxduel/shared';
+import {
+  createInitialState,
+  applyAction,
+  validateAction,
+  replayGame,
+  createDeck,
+  deriveEventsFromEntry,
+  simulateAttack,
+} from '../src/index.js';
 import type { GameConfig } from '../src/index.js';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 
@@ -26,6 +35,9 @@ const ACTION_TS = '2026-01-01T00:00:00.000Z';
 
 const STANDARD_SEEDS = [1, 7, 42, 99, 256];
 const EXTRA_SEEDS = [13, 100, 999, 1337, 8192];
+const CANONICAL_CARD_IDENTITIES = createDeck()
+  .map((card) => `${card.suit}:${card.face}`)
+  .sort();
 
 const VALID_PHASES: GamePhase[] = [
   'StartTurn',
@@ -54,17 +66,23 @@ function checkInvariants(state: GameState, label: string): void {
     const p = state.players[pi]!;
 
     // Card conservation: sum across all zones must equal 52
-    const bfCount = p.battlefield.filter((s) => s !== null).length;
-    const total = bfCount + p.hand.length + p.drawpile.length + p.discardPile.length;
+    const cards = [
+      ...p.hand,
+      ...p.battlefield.flatMap((slot) => (slot ? [slot.card] : [])),
+      ...p.drawpile,
+      ...p.discardPile,
+    ];
+    const total = cards.length;
     expect(total, `${label}: p${pi} card total = ${total}, want 52`).toBe(52);
+    expect(
+      cards.map((card) => `${card.suit}:${card.face}`).sort(),
+      `${label}: p${pi} card identities differ from the canonical deck`,
+    ).toEqual(CANONICAL_CARD_IDENTITIES);
 
     // HP bounds: no negative HP on any live battlefield card
     for (const slot of p.battlefield) {
       if (slot !== null) {
-        expect(
-          slot.currentHp,
-          `${label}: p${pi} card hp=${slot.currentHp} < 0`,
-        ).toBeGreaterThanOrEqual(0);
+        expect(slot.currentHp, `${label}: p${pi} card hp=${slot.currentHp} < 0`).toBeGreaterThan(0);
         expect(
           slot.currentHp,
           `${label}: p${pi} card hp=${slot.currentHp} > value=${slot.card.value}`,
@@ -74,12 +92,18 @@ function checkInvariants(state: GameState, label: string): void {
 
     // Lifepoints are non-negative
     expect(p.lifepoints, `${label}: p${pi} lp=${p.lifepoints} < 0`).toBeGreaterThanOrEqual(0);
+    expect(
+      p.lifepoints,
+      `${label}: p${pi} lp=${p.lifepoints} exceeds its starting bound`,
+    ).toBeLessThanOrEqual(state.gameOptions?.startingLifepoints ?? 20);
   }
 
   // Terminal state integrity: gameOver must carry outcome
   if (state.phase === 'gameOver') {
     expect(state.outcome, `${label}: gameOver without outcome`).toBeDefined();
-    expect([0, 1], `${label}: outcome.winnerIndex invalid`).toContain(state.outcome?.winnerIndex);
+    expect([null, 0, 1], `${label}: outcome.winnerIndex invalid`).toContain(
+      state.outcome?.winnerIndex,
+    );
   }
 }
 
@@ -153,20 +177,24 @@ function runGame(config: GameConfig, maxActions = 600): PlayRecord {
 
   const states: GameState[] = [state];
   const actions: Action[] = [];
-  let passStreak = 0;
 
   while (state.phase !== 'gameOver' && actions.length < maxActions) {
     const action = nextAction(state);
     if (action === null) break;
 
-    if (action.type === 'pass') {
-      passStreak++;
-      if (passStreak > 8) break; // true stalemate guard
-    } else {
-      passStreak = 0;
-    }
-
+    const preview = action.type === 'attack' ? simulateAttack(state, action) : null;
     state = applyAction(state, action);
+    if (preview) {
+      const entry = state.transactionLog?.at(-1);
+      const event = entry
+        ? deriveEventsFromEntry(entry, state.matchId).find(
+            (candidate) => candidate.name === TelemetryName.EVENT_ATTACK_RESOLVED,
+          )
+        : undefined;
+      expect(event?.payload, `missing attack preview evidence at action ${actions.length}`).toEqual(
+        preview.resolution,
+      );
+    }
     actions.push(action);
     states.push(state);
   }
@@ -206,6 +234,7 @@ describe('Property: invariants hold at every action step', () => {
         checkInvariants(states[i]!, `seed=${seed} step=${i}`);
       }
       expect(states.length).toBeGreaterThan(1);
+      expect(states.at(-1)?.phase, `seed=${seed}: match did not terminate`).toBe('gameOver');
     });
   }
 
@@ -216,6 +245,7 @@ describe('Property: invariants hold at every action step', () => {
         checkInvariants(states[i]!, `seed=${seed}(qs) step=${i}`);
       }
       expect(states.length).toBeGreaterThan(1);
+      expect(states.at(-1)?.phase, `seed=${seed}(qs): match did not terminate`).toBe('gameOver');
     });
   }
 });
@@ -287,7 +317,7 @@ describe('Property: no legal action is available after gameOver', () => {
       const { states } = runGame(makeConfig(seed));
       const terminal = states[states.length - 1]!;
 
-      if (terminal.phase !== 'gameOver') return; // stalemate guard triggered — skip
+      expect(terminal.phase).toBe('gameOver');
 
       const candidateActions: Action[] = [
         { type: 'pass', playerIndex: 0, timestamp: ACTION_TS },
@@ -332,8 +362,35 @@ describe('Property: game concludes within action budget across diverse seeds', (
       // Must not have run forever
       expect(actions.length, `seed=${seed}: exceeded action budget`).toBeLessThanOrEqual(600);
 
+      // The v2.0 hard-turn policy makes the action budget a test guard, not a
+      // semantic escape hatch.
+      expect(final.phase, `seed=${seed}: match did not terminate`).toBe('gameOver');
+
       // Final state must be valid
       checkInvariants(final, `seed=${seed} final`);
+    });
+  }
+});
+
+describe('Property: rejected actions are observationally pure', () => {
+  for (const seed of STANDARD_SEEDS) {
+    it(`seed=${seed}`, () => {
+      const { states } = runGame(makeConfig(seed));
+      for (const [index, state] of states.entries()) {
+        const invalid: Action = {
+          type: 'attack',
+          playerIndex: state.activePlayerIndex === 0 ? 1 : 0,
+          attackingColumn: 0,
+          defendingColumn: 1,
+          timestamp: ACTION_TS,
+        };
+        const hashBefore = computeStateHash(state);
+        expect(validateAction(state, invalid).valid, `seed=${seed} step=${index}`).toBe(false);
+        expect(() => applyAction(state, invalid), `seed=${seed} step=${index}`).toThrow();
+        expect(computeStateHash(state), `seed=${seed} step=${index}: rejection mutated state`).toBe(
+          hashBefore,
+        );
+      }
     });
   }
 });

@@ -233,7 +233,7 @@ export function resolveReferenceCardBoundary(
     carryover -= diamondAbsorbed;
   };
 
-  if (input.specVersion === '2.0') applyDiamond();
+  if (input.specVersion !== '1.0') applyDiamond();
   if (input.clubEligible && carryover > 0) {
     carryover *= 2;
     clubApplied = true;
@@ -267,7 +267,7 @@ export function resolveReferencePlayerBoundary(
     bonuses.push('heartDeathShield');
   };
 
-  if (input.specVersion === '2.0') applyHeart();
+  if (input.specVersion !== '1.0') applyHeart();
   if (input.spadeWeapon && damage > 0) {
     damage *= 2;
     bonuses.push('spadeDoubleLp');
@@ -395,7 +395,7 @@ export function resolveReferenceCombat(input: ReferenceCombatInput): ReferenceCo
   if (carryover > 0) {
     const incomingDamage = carryover;
     const heartShield =
-      input.specVersion === '2.0'
+      input.specVersion !== '1.0'
         ? lastDestroyed?.suit === 'hearts'
           ? lastDestroyed.value
           : 0
@@ -415,7 +415,7 @@ export function resolveReferenceCombat(input: ReferenceCombatInput): ReferenceCo
       incomingDamage,
       damage: lpDamage,
       absorbed:
-        input.specVersion === '2.0'
+        input.specVersion !== '1.0'
           ? boundary.heartAbsorbed
           : Math.max(0, incomingDamage - lpDamage),
       overflow: 0,

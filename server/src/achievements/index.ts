@@ -26,7 +26,7 @@ export async function processMatchAchievements({
   if (!db) return;
 
   const outcome = finalState.outcome;
-  if (!outcome) return;
+  if (!outcome || outcome.winnerIndex === null) return;
 
   const transactionLog = finalState.transactionLog ?? [];
 

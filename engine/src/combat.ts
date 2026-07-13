@@ -159,7 +159,7 @@ function resolveColumnOverflow(
 
   if (overflow > 0) {
     const heartShield =
-      ctx.specVersion === '2.0'
+      ctx.specVersion !== '1.0'
         ? lastDestroyedHeartShield
         : backHeartShield > 0
           ? backHeartShield
@@ -180,7 +180,7 @@ function resolveColumnOverflow(
       incomingDamage: overflow,
       damage: lpDamage,
       absorbed:
-        ctx.specVersion === '2.0' ? boundary.heartAbsorbed : Math.max(0, overflow - lpDamage),
+        ctx.specVersion !== '1.0' ? boundary.heartAbsorbed : Math.max(0, overflow - lpDamage),
       overflow: 0,
       remaining: 0,
       lpBefore: defenderLp,

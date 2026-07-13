@@ -412,9 +412,10 @@ export class PizzazzEngine {
     if (!outcome) return;
 
     const playerIndex = state.playerIndex;
+    const isDraw = outcome.winnerIndex === null;
     const isWin = playerIndex !== null && outcome.winnerIndex === playerIndex;
-    const text = isWin ? 'VICTORY' : 'DEFEAT';
-    const variant = isWin ? 'victory' : 'defeat';
+    const text = isDraw ? 'DRAW' : isWin ? 'VICTORY' : 'DEFEAT';
+    const variant = isDraw ? 'draw' : isWin ? 'victory' : 'defeat';
 
     this.trackAnimation(1800 + 1600); // delay + splash duration
     setTimeout(() => {

@@ -145,7 +145,7 @@ describe('rules-version semantic dispatch', () => {
     });
   });
 
-  it('deploys competitive v2.0 cards face-up', () => {
+  it('deploys competitive v3.0 cards face-up', () => {
     const state = createInitialState({
       matchId: MATCH_ID,
       players: [
@@ -157,7 +157,7 @@ describe('rules-version semantic dispatch', () => {
     });
 
     const deployed = deployCard(state, 0, 0, 0);
-    expect(deployed.specVersion).toBe('2.0');
+    expect(deployed.specVersion).toBe('3.0');
     expect(deployed.players[0]!.battlefield[0]!.faceDown).toBe(false);
   });
 });

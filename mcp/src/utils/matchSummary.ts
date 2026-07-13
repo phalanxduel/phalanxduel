@@ -30,7 +30,10 @@ function outcomeStr(
   p2Name: string | null,
   actionCount: number,
 ): string {
-  if (outcome?.winnerIndex == null) return 'Match did not complete.';
+  if (!outcome) return 'Match did not complete.';
+  if (outcome.winnerIndex == null) {
+    return `Draw via ${outcome.victoryType ?? 'unknown'} in ${outcome.turnNumber ?? actionCount} turns.`;
+  }
   const winner = outcome.winnerIndex === 0 ? p1Name : outcome.winnerIndex === 1 ? p2Name : null;
   return `Winner: ${winner ?? 'unknown'} via ${outcome.victoryType ?? 'unknown'} in ${outcome.turnNumber ?? actionCount} turns.`;
 }

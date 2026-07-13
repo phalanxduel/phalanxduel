@@ -120,6 +120,7 @@ The Phalanx Duel trust model relies on 100% deterministic replays.
 |-------------|----------------------|---------------------|
 | `1.0`       | `0.4.0` and later    | Initial stable rules retained for historical replay. |
 | `2.0`       | `1.4.0` and later    | Corrected Shield → Weapon semantics; engine retains explicit v1.0 replay dispatch. |
+| `3.0`       | `1.4.0` and later    | Current rules: v2.0 combat plus deterministic repetition, no-progress, and hard-turn draw termination. |
 
 *This matrix is updated whenever a version bump occurs.*
 

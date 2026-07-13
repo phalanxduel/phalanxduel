@@ -111,7 +111,7 @@ export const BattlefieldCardSchema = z.object({
   faceDown: z
     .boolean()
     .describe(
-      'Whether the card is face-down. Competitive v2.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2.',
+      'Whether the card is face-down. Competitive v3.0 gameplay requires battlefield cards to be face-up (`false`). This field remains for historical replay compatibility and future versioned formats; see §21.2.',
     ),
 });
 
@@ -153,6 +153,7 @@ export const TransitionTriggerSchema = z
     'reinforce:complete',
     'forfeit',
     'system:advance',
+    'system:draw',
     'system:victory',
     'system:init',
   ])
@@ -173,10 +174,24 @@ export const CardManifestSchema = z.array(PartialCardSchema);
 export const PhaseRulesSchema = z.array(StateTransitionSchema);
 
 export const VictoryTypeSchema = z
-  .enum(['lpDepletion', 'cardDepletion', 'forfeit', 'passLimit'])
+  .enum([
+    'lpDepletion',
+    'cardDepletion',
+    'forfeit',
+    'passLimit',
+    'repetitionDraw',
+    'noProgressDraw',
+    'turnLimitDraw',
+  ])
   .describe(
-    'Victory condition type. lpDepletion: opponent LP reaches 0. cardDepletion: opponent has no cards on battlefield or in hand. forfeit: player explicitly forfeits. passLimit: player exceeds maxConsecutivePasses or maxTotalPassesPerPlayer (§16).',
+    'Terminal condition type. Decisive results: lpDepletion, cardDepletion, forfeit, passLimit. Draw results: repetitionDraw, noProgressDraw, turnLimitDraw (§16.1).',
   );
+
+export const DrawTerminationTypeSchema = z.enum([
+  'repetitionDraw',
+  'noProgressDraw',
+  'turnLimitDraw',
+]);
 
 export const EventTypeSchema = z.enum([
   'span_started',
@@ -210,9 +225,9 @@ export const ClassicModeTypeSchema = z
   );
 
 export const RulesSpecVersionSchema = z
-  .enum(['1.0', '2.0'])
+  .enum(['1.0', '2.0', '3.0'])
   .describe(
-    'Rules semantics version. 1.0 preserves historical replay behavior; 2.0 is the corrected competitive ruleset.',
+    'Rules semantics version. 1.0 preserves historical behavior; 2.0 preserves corrected combat before liveness draws; 3.0 is the current competitive ruleset.',
   );
 
 export const MatchConfigClassicSchema = z.object({
@@ -545,7 +560,7 @@ export const MatchParametersSchema = z
     }
 
     if (
-      data.specVersion === '2.0' &&
+      data.specVersion !== '1.0' &&
       data.classic.enabled &&
       data.classic.mode === 'strict' &&
       (data.rows !== 2 || data.columns !== 4)
@@ -604,7 +619,7 @@ export const MatchParametersSchema = z
 
 /** Default match parameters for the standard 2x4 grid configuration. */
 export const DEFAULT_MATCH_PARAMS: z.infer<typeof MatchParametersSchema> = {
-  specVersion: '2.0',
+  specVersion: '3.0',
   classic: {
     enabled: true,
     mode: 'strict',
@@ -1065,6 +1080,29 @@ export const TransactionLogEntrySchema = z.object({
   turnHash: z.string().optional(),
 });
 
+/** Internal deterministic counters used by competitive v3.0 liveness rules. */
+export const LivenessStateSchema = z.object({
+  positionOccurrences: z
+    .array(
+      z.object({
+        signature: z.string().min(1),
+        count: z.number().int().min(1),
+      }),
+    )
+    .describe('Canonical turn-boundary positions and their occurrence counts.'),
+  noProgressTurns: z
+    .number()
+    .int()
+    .min(0)
+    .describe('Completed turns since the latest irreversible progress event.'),
+  progressMarker: z.object({
+    totalLifepoints: z.number().int().min(0),
+    totalBattlefieldHp: z.number().int().min(0),
+    totalDrawpileCards: z.number().int().min(0),
+    totalDiscardedCards: z.number().int().min(0),
+  }),
+});
+
 /**
  * Phalanx: Duel Match State
  */
@@ -1130,6 +1168,10 @@ export const GameStateSchema = z
       .optional()
       .describe('Pass tracking state for modePassRules enforcement (§16).'),
 
+    liveness: LivenessStateSchema.optional().describe(
+      'Internal competitive v3.0 repetition and no-progress state (§16.1). Omitted for historical v1.0 and v2.0 replay.',
+    ),
+
     // Replay integrity metadata is stored per transaction entry.
     transactionLog: z
       .array(TransactionLogEntrySchema)
@@ -1145,12 +1187,36 @@ export const GameStateSchema = z
           .int()
           .min(0)
           .max(1)
-          .describe('Index of the winning player (0 or 1).'),
+          .nullable()
+          .describe('Index of the winning player (0 or 1), or null for a draw.'),
         victoryType: VictoryTypeSchema,
-        turnNumber: z.number().int().min(0).describe('Turn number when victory was achieved.'),
+        turnNumber: z
+          .number()
+          .int()
+          .min(0)
+          .describe('Turn number when the terminal result resolved.'),
+      })
+      .superRefine((outcome, ctx) => {
+        const isDraw = DrawTerminationTypeSchema.safeParse(outcome.victoryType).success;
+        if (isDraw && outcome.winnerIndex !== null) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['winnerIndex'],
+            message: 'Draw outcomes must not identify a winner.',
+          });
+        }
+        if (!isDraw && outcome.winnerIndex === null) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['winnerIndex'],
+            message: 'Decisive outcomes require a winner.',
+          });
+        }
       })
       .nullish()
-      .describe('Match outcome. Present only when phase is gameOver.'),
+      .describe(
+        'Match outcome. Present only when phase is gameOver; winnerIndex is null for draws.',
+      ),
   })
   .superRefine((state, ctx) => {
     if (state.specVersion !== state.params.specVersion) {

@@ -20,13 +20,15 @@ export function formatShareText(
 ): string {
   const outcome = gs.outcome ?? null;
   const resultLabel =
-    outcome && playerIndex !== null
-      ? outcome.winnerIndex === playerIndex
-        ? 'Win'
-        : 'Loss'
-      : outcome
-        ? 'Win/Loss'
-        : 'Pending';
+    outcome?.winnerIndex === null
+      ? 'Draw'
+      : outcome && playerIndex !== null
+        ? outcome.winnerIndex === playerIndex
+          ? 'Win'
+          : 'Loss'
+        : outcome
+          ? 'Win/Loss'
+          : 'Pending';
 
   const resultTurn = outcome ? outcome.turnNumber : (turningPoint?.turnNumber ?? gs.turnNumber);
   const turningPointLine = turningPoint

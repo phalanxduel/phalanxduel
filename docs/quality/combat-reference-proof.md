@@ -26,9 +26,11 @@ The verifier establishes extensional equality over this finite domain:
 - all generated competitive card types: number, ace, jack, queen, and king;
 - every legal live HP value for every target card, producing 352 card states
   per rank (`sum(card.value)` over the 52-card manifest);
-- both supported rules dispatches, v2.0 and historical v1.0;
+- all supported rules dispatches: current v3.0, pre-liveness v2.0, and
+  historical v1.0; v3.0 and v2.0 intentionally share corrected combat while
+  retaining distinct match-liveness semantics;
 - both values of Classic Aces and Classic Face Cards, and both classic and
-  cumulative damage persistence, producing 16 mode configurations;
+  cumulative damage persistence, producing 24 versioned mode configurations;
 - card-transition incoming damage 0–22, a conservative superset of every
   reachable two-rank input including the historical v1.0 empty-front Club
   behavior;

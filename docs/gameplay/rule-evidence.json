@@ -1,6 +1,6 @@
 {
   "registryVersion": 1,
-  "rulesVersion": "2.0",
+  "rulesVersion": "3.0",
   "normativeSource": "docs/gameplay/rules.md",
   "rules": [
     {
@@ -623,7 +623,7 @@
       "id": "PD-RULE-051",
       "section": "21.2",
       "sourceMarker": "### 21.2 Battlefield",
-      "claim": "Competitive v2.0 battlefield visibility and deployment orientation are unambiguous.",
+      "claim": "Competitive v3.0 battlefield visibility and deployment orientation are unambiguous.",
       "formalization": "policy",
       "evidence": "E1",
       "status": "aligned",
@@ -662,6 +662,136 @@
       "status": "aligned",
       "implementation": ["engine/src/combat.ts"],
       "verification": ["engine/tests/facecard.test.ts"]
+    },
+    {
+      "id": "PD-RULE-055",
+      "section": "16.1",
+      "sourceMarker": "## 16.1 Deterministic Draw and Liveness Policy",
+      "claim": "Competitive v3.0 evaluates liveness only at canonical AttackPhase turn boundaries and leaves older rules versions unchanged.",
+      "formalization": "transition",
+      "evidence": "E2",
+      "status": "aligned",
+      "implementation": ["engine/src/liveness.ts", "engine/src/turns.ts"],
+      "verification": ["engine/tests/liveness.test.ts", "engine/tests/replay.test.ts"]
+    },
+    {
+      "id": "PD-RULE-056",
+      "section": "16.1.1",
+      "sourceMarker": "### 16.1.1 Exact Threefold Repetition",
+      "claim": "The third occurrence of an exact canonical position terminates the match as a draw.",
+      "formalization": "invariant",
+      "evidence": "E2",
+      "status": "aligned",
+      "implementation": ["engine/src/liveness.ts", "engine/src/turns.ts"],
+      "verification": [
+        "engine/tests/liveness.test.ts",
+        "engine/tests/mutation-sensitivity.test.ts",
+        "engine/stryker.gameplay.config.json"
+      ]
+    },
+    {
+      "id": "PD-RULE-057",
+      "section": "16.1.2",
+      "sourceMarker": "### 16.1.2 No-Progress Limit",
+      "claim": "Fifty completed turns without an irreversible LP HP draw-pile or Graveyard change terminate the match as a draw.",
+      "formalization": "recurrence",
+      "evidence": "E2",
+      "status": "aligned",
+      "implementation": ["engine/src/liveness.ts", "engine/src/turns.ts"],
+      "verification": [
+        "engine/tests/liveness.test.ts",
+        "engine/tests/mutation-sensitivity.test.ts",
+        "engine/stryker.gameplay.config.json"
+      ]
+    },
+    {
+      "id": "PD-RULE-058",
+      "section": "16.1.3",
+      "sourceMarker": "### 16.1.3 Hard-Turn Limit and Termination Argument",
+      "claim": "A still-live match draws after completing turn 200.",
+      "formalization": "inequality",
+      "evidence": "E4",
+      "status": "aligned",
+      "implementation": ["engine/src/liveness.ts", "engine/src/turns.ts"],
+      "verification": [
+        "engine/tests/liveness.test.ts",
+        "engine/tests/mutation-sensitivity.test.ts",
+        "engine/stryker.gameplay.config.json"
+      ]
+    },
+    {
+      "id": "PD-RULE-059",
+      "section": "16.1",
+      "sourceMarker": "threefold repetition → no-progress limit → hard-turn limit",
+      "claim": "Draws have no winner and simultaneous draw predicates use the declared deterministic precedence.",
+      "formalization": "sequence",
+      "evidence": "E2",
+      "status": "aligned",
+      "implementation": ["shared/src/schema.ts", "engine/src/liveness.ts", "engine/src/turns.ts"],
+      "verification": ["shared/tests/schema.test.ts", "engine/tests/liveness.test.ts"]
+    },
+    {
+      "id": "PD-RULE-060",
+      "section": "16.1.3",
+      "sourceMarker": "Therefore every legal competitive v3.0 match",
+      "claim": "Every legal competitive v3.0 match reaches gameOver after a finite action sequence.",
+      "formalization": "proof",
+      "evidence": "E4",
+      "status": "aligned",
+      "implementation": [
+        "engine/src/liveness.ts",
+        "engine/src/turns.ts",
+        "engine/src/state-machine.ts"
+      ],
+      "verification": [
+        "engine/tests/property-invariants.test.ts",
+        "engine/tests/property-fastcheck.test.ts",
+        "engine/tests/liveness.test.ts"
+      ]
+    },
+    {
+      "id": "PD-RULE-061",
+      "section": "19",
+      "sourceMarker": "Card identity is conserved",
+      "claim": "Generated legal action sequences conserve exact card identities and preserve phase HP LP and rejection-purity invariants.",
+      "formalization": "invariant",
+      "evidence": "E2",
+      "status": "aligned",
+      "implementation": ["engine/src/state.ts", "engine/src/turns.ts", "engine/src/combat.ts"],
+      "verification": [
+        "engine/tests/property-invariants.test.ts",
+        "engine/tests/property-fastcheck.test.ts"
+      ]
+    },
+    {
+      "id": "PD-RULE-062",
+      "section": "18",
+      "sourceMarker": "Authoritative combat preview",
+      "claim": "Generated live combat previews committed events and replay prefixes agree semantically.",
+      "formalization": "equivalence",
+      "evidence": "E2",
+      "status": "aligned",
+      "implementation": [
+        "engine/src/combat-preview.ts",
+        "engine/src/replay.ts",
+        "engine/src/turns.ts"
+      ],
+      "verification": [
+        "engine/tests/property-invariants.test.ts",
+        "engine/tests/combat-preview.test.ts",
+        "engine/tests/replay.test.ts"
+      ]
+    },
+    {
+      "id": "PD-RULE-063",
+      "section": "19",
+      "sourceMarker": "Exchanging player seats",
+      "claim": "Player-seat and initiative exchange commute with the seat-neutral gameplay relations where symmetry is expected.",
+      "formalization": "metamorphic",
+      "evidence": "E2",
+      "status": "aligned",
+      "implementation": ["engine/src/state.ts", "engine/src/combat.ts"],
+      "verification": ["engine/tests/metamorphic-symmetry.test.ts"]
     }
   ]
 }

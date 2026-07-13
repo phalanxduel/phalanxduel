@@ -117,4 +117,14 @@ describe('ux derivations', () => {
     expect(text).toContain('Turning Point: Turn 6');
     expect(text).toContain('https://example.test/game');
   });
+
+  it('formats a terminal draw as a draw for either player', () => {
+    const state = makeState([], {
+      outcome: { winnerIndex: null, victoryType: 'turnLimitDraw', turnNumber: 200 },
+    });
+
+    expect(formatShareText(state, null, 'https://example.test/game', 0)).toContain(
+      'Result: Draw on Turn 200',
+    );
+  });
 });

@@ -25,7 +25,7 @@ function makePlayer(name: string, lp: number) {
 
 function makeState(overrides: {
   playerIndex?: number | null;
-  winnerIndex?: number;
+  winnerIndex?: number | null;
   victoryType?: string;
   turnNumber?: number;
   p0Lp?: number;
@@ -98,6 +98,20 @@ describe('renderGameOver', () => {
     expect(result).toBeTruthy();
     expect(result!.textContent).toBe('You Lose');
     expect(result!.classList.contains('lose')).toBe(true);
+  });
+
+  it('shows a neutral draw result without inventing a winner', () => {
+    const state = makeState({
+      playerIndex: 0,
+      winnerIndex: null,
+      victoryType: 'repetitionDraw',
+    });
+    renderGameOver(container, state);
+
+    const result = container.querySelector('[data-testid="game-over-result"]');
+    expect(result?.textContent).toBe('Draw');
+    expect(result?.classList.contains('draw')).toBe(true);
+    expect(container.textContent).toContain('Threefold Repetition');
   });
 
   it('shows victory type and turn number', () => {

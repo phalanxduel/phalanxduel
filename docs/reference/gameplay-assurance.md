@@ -85,7 +85,7 @@ example support; it is not exhaustively proved.
 
 ## Stable Rule Identifiers
 
-Normative claims use identifiers `PD-RULE-001` through `PD-RULE-054`. The
+Normative claims use identifiers `PD-RULE-001` through `PD-RULE-063`. The
 machine-readable registry is `docs/gameplay/rule-evidence.json`. Identifiers are
 never recycled. A changed claim retains its identifier only when its meaning is
 compatible; otherwise a new identifier and rules-version decision are required.
@@ -122,7 +122,11 @@ No failing test, silence, or an archived status label is a disposition.
 
 A claim is complete only relative to its declared scope. Formalizable finite
 claims should reach `E3` or `E4`. Stateful invariants should have `E2` evidence
-and mutation resistance. Balance claims require `E5`. Production drift is
+and mutation resistance. `pnpm verify:mutation:gameplay` targets
+fairness-critical combat arithmetic and liveness predicates with a 90% break
+threshold. It excludes syntax-shape mutators that do not represent the declared
+arithmetic/predicate threat model; the reviewed v3.0 baseline kills all 204
+included semantic mutants. Balance claims require `E5`. Production drift is
 monitored with `E6` but cannot replace lower-level semantic evidence.
 
 A release assurance manifest may say “proved” only for `E3` or `E4` claims and

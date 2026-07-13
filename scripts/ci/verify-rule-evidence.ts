@@ -10,13 +10,17 @@ const STATUSES = new Set(['aligned', 'partial', 'divergent', 'unverified']);
 const FORMALIZATIONS = new Set([
   'assignment',
   'equation',
+  'equivalence',
   'function',
   'inequality',
   'invariant',
+  'metamorphic',
   'noninterference',
   'policy',
   'predicate',
+  'proof',
   'protocol',
+  'recurrence',
   'relation',
   'schema',
   'sequence',
@@ -159,8 +163,8 @@ if (registry) {
     }
   });
 
-  if (registry.rules.length !== 54) {
-    failures.push(`expected 54 registered rules, found ${registry.rules.length}`);
+  if (registry.rules.length !== 63) {
+    failures.push(`expected 63 registered rules, found ${registry.rules.length}`);
   }
 
   const generated = render(registry);

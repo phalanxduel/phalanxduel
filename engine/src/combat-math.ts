@@ -57,7 +57,6 @@ export interface PlayerBoundaryResult {
 
 function isFaceCardEligible(attackerType: CardType, defenderType: CardType): boolean {
   if (!['jack', 'queen', 'king'].includes(defenderType)) return true;
-  if (attackerType === 'king') return true;
   if (attackerType === 'queen') return defenderType === 'jack' || defenderType === 'queen';
   if (attackerType === 'jack') return defenderType === 'jack';
   return true;
@@ -190,7 +189,7 @@ export function resolveCardBoundary(input: CardBoundaryInput): CardBoundaryResul
     carryover -= diamondAbsorbed;
   };
 
-  if (input.specVersion === '2.0') applyDiamond();
+  if (input.specVersion !== '1.0') applyDiamond();
   if (input.clubEligible && carryover > 0) {
     carryover *= 2;
     clubApplied = true;
@@ -202,11 +201,7 @@ export function resolveCardBoundary(input: CardBoundaryInput): CardBoundaryResul
     diamondApplied,
     diamondAbsorbed,
     clubApplied,
-    clubBonusTarget: !clubApplied
-      ? null
-      : input.specVersion === '1.0' && diamondApplied && carryover === 0
-        ? 'destroyedCard'
-        : 'nextCard',
+    clubBonusTarget: !clubApplied ? null : carryover === 0 ? 'destroyedCard' : 'nextCard',
   };
 }
 
@@ -222,7 +217,7 @@ export function resolvePlayerBoundary(input: PlayerBoundaryInput): PlayerBoundar
     bonuses.push('heartDeathShield');
   };
 
-  if (input.specVersion === '2.0') applyHeart();
+  if (input.specVersion !== '1.0') applyHeart();
   if (input.spadeWeapon && damage > 0) {
     damage *= 2;
     bonuses.push('spadeDoubleLp');

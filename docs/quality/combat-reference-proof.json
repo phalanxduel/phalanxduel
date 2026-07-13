@@ -1,15 +1,15 @@
 {
   "proofVersion": 1,
-  "rulesVersions": ["2.0", "1.0"],
+  "rulesVersions": ["3.0", "2.0", "1.0"],
   "counts": {
     "cardTransitions": 647680,
-    "cardBoundaries": 1008,
-    "playerBoundaries": 1968,
-    "emptyChain": 52104,
-    "frontOnly": 292864,
-    "backOnly": 292864,
-    "twoRankBasis": 497664,
-    "total": 1786152
+    "cardBoundaries": 1512,
+    "playerBoundaries": 2952,
+    "emptyChain": 78156,
+    "frontOnly": 439296,
+    "backOnly": 439296,
+    "twoRankBasis": 746496,
+    "total": 2355388
   },
-  "digest": "938e26025dc42cbe2c4163b51e3c7369d326ea85e464aa9be8b5463c7dc37846"
+  "digest": "9e3d7f6d1a034c70eca28998bb1636184d520a7815bd8231f0684ab3ab8741dc"
 }
