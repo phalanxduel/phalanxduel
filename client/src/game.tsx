@@ -37,6 +37,7 @@ import {
 } from '@phalanxduel/shared';
 import { projectCalculationProvenance, simulateAttack } from '@phalanxduel/engine';
 import type { AttackPreviewVerdict } from '@phalanxduel/engine';
+import { PRESENTATION_TIMING } from './presentation-timing';
 
 type GameScreenState = BaseState & Extract<ScreenState, { screen: 'game' }>;
 
@@ -797,7 +798,7 @@ function CombatFeedbackBanner({ gs }: { gs: GameState }) {
     feedbackTimerRef.current = setTimeout(() => {
       setCombatFeedback(null);
       feedbackTimerRef.current = null;
-    }, 2600);
+    }, PRESENTATION_TIMING.overlay.combatFeedback);
 
     return () => {
       if (feedbackTimerRef.current) {

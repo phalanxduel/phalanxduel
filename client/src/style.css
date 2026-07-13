@@ -39,6 +39,13 @@
 
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-med: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-enter: 180ms;
+  --motion-impact: 320ms;
+  --motion-exit: 240ms;
+  --motion-beam: 440ms;
+  --motion-damage: 720ms;
+  --motion-emphasis: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-settle: cubic-bezier(0.22, 1, 0.36, 1);
 
   --shadow-brutal: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-brutal-gold: 0 10px 15px -3px var(--gold-glow), 0 4px 6px -2px var(--gold-glow);
@@ -852,7 +859,7 @@ select:focus {
   }
 }
 .pz-screen-shake {
-  animation: pz-screen-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  animation: pz-screen-shake 320ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 @keyframes pz-damage-float {
@@ -878,7 +885,7 @@ select:focus {
   font-size: 2rem;
   pointer-events: none;
   text-shadow: 4px 4px 0 #000;
-  animation: pz-damage-float 0.8s ease-out forwards;
+  animation: pz-damage-float var(--motion-damage) var(--motion-emphasis) forwards;
 }
 .pz-damage-pop.pz-crit {
   color: var(--amber);
@@ -895,7 +902,7 @@ select:focus {
   }
 }
 .pz-hit-flash {
-  animation: pz-hit-flash 0.5s ease-out;
+  animation: pz-hit-flash 400ms var(--motion-settle);
 }
 
 .pz-lp-flash {
@@ -933,7 +940,7 @@ select:focus {
   transform-origin: left center;
   z-index: 5500;
   pointer-events: none;
-  animation: pz-beam-shoot 0.5s ease-in forwards;
+  animation: pz-beam-shoot var(--motion-beam) cubic-bezier(0.3, 0, 0.2, 1) forwards;
   box-shadow:
     0 0 6px var(--neon-blue-glow),
     0 0 16px var(--neon-blue-glow);
@@ -968,7 +975,7 @@ select:focus {
 }
 
 .pz-impact-flash {
-  animation: pz-impact-flash 0.35s ease-out;
+  animation: pz-impact-flash var(--motion-impact) var(--motion-settle);
 }
 
 /* ── Column Glow ─────────────────────────────── */
@@ -992,7 +999,7 @@ select:focus {
 }
 
 .pz-column-glow {
-  animation: pz-column-glow-anim 0.7s ease-out;
+  animation: pz-column-glow-anim 520ms var(--motion-settle);
 }
 
 /* ── Suit Pip Burst ──────────────────────────── */
@@ -1019,7 +1026,7 @@ select:focus {
   line-height: 1;
   z-index: 6100;
   pointer-events: none;
-  animation: pz-suit-burst 0.65s ease-out forwards;
+  animation: pz-suit-burst 560ms var(--motion-emphasis) forwards;
 }
 
 .pz-suit-pip--spade {
@@ -1075,7 +1082,7 @@ select:focus {
 }
 
 .pz-deploy-flash {
-  animation: pz-deploy-land 0.6s ease-out;
+  animation: pz-deploy-land 480ms var(--motion-settle);
 }
 
 @keyframes pz-deploy-fly-anim {
@@ -1109,7 +1116,7 @@ select:focus {
     0 0 28px var(--gold-glow);
   z-index: 5800;
   pointer-events: none;
-  animation: pz-deploy-fly-anim 0.5s cubic-bezier(0.2, 0, 0.4, 1) forwards;
+  animation: pz-deploy-fly-anim 460ms var(--motion-emphasis) forwards;
 }
 
 @keyframes pz-deploy-label-rise {
@@ -1144,7 +1151,7 @@ select:focus {
   z-index: 6050;
   pointer-events: none;
   white-space: nowrap;
-  animation: pz-deploy-label-rise 0.8s ease-out forwards;
+  animation: pz-deploy-label-rise 620ms var(--motion-emphasis) forwards;
 }
 
 .pz-deploy-label--opponent {
@@ -1200,7 +1207,7 @@ select:focus {
 }
 
 .pz-exit {
-  animation: pz-splash-out 0.4s ease-in forwards;
+  animation: pz-splash-out 300ms var(--motion-settle) forwards;
 }
 
 @keyframes pz-splash-out {
@@ -1634,13 +1641,25 @@ select:focus {
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
-  transition: opacity 0.5s ease-out;
+  opacity: 1;
+  transition:
+    opacity var(--motion-exit) var(--motion-settle),
+    transform var(--motion-exit) var(--motion-settle),
+    filter var(--motion-exit) var(--motion-settle);
   width: 90%;
   text-align: center;
 }
 
-.nr-overlay.nr-fade-out {
+.nr-overlay[data-presentation-state='entering'] {
   opacity: 0;
+  transform: translate(-50%, calc(-50% + 10px)) scale(0.98);
+  filter: blur(5px);
+}
+
+.nr-overlay[data-presentation-state='exiting'] {
+  opacity: 0;
+  transform: translate(-50%, calc(-50% - 8px)) scale(0.985);
+  filter: blur(3px);
 }
 
 .nr-overlay-line {
@@ -1653,6 +1672,33 @@ select:focus {
     0 2px 6px rgba(0, 0, 0, 0.7);
   white-space: nowrap;
   letter-spacing: 0.04em;
+  transition:
+    opacity var(--motion-exit) var(--motion-settle),
+    transform var(--motion-exit) var(--motion-settle),
+    filter var(--motion-exit) var(--motion-settle);
+}
+
+@keyframes nr-line-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.nr-line-enter {
+  animation: nr-line-reveal var(--motion-enter) var(--motion-emphasis) both;
+}
+
+.nr-overlay-line.nr-line-prior {
+  opacity: 0.42;
+  transform: translateY(-4px) scale(0.96);
+  filter: saturate(0.65);
 }
 
 .nr-overlay-line.nr-destroyed {
@@ -1683,6 +1729,9 @@ select:focus {
   text-shadow:
     0 0 30px rgba(255, 255, 255, 0.9),
     0 0 60px rgba(255, 255, 255, 0.5);
+  padding: 0.35em 0.8em;
+  border-block: 1px solid rgba(255, 255, 255, 0.28);
+  background: linear-gradient(90deg, transparent, rgba(5, 10, 20, 0.86), transparent);
 }
 
 /* ── Narration Ticker ──────────────────────────── */
@@ -1700,7 +1749,7 @@ select:focus {
   border-bottom: 2px solid var(--gold-dim);
   box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.04);
   z-index: 50;
-  transition: width 0.2s ease;
+  transition: width var(--motion-exit) var(--motion-settle);
 }
 .nr-ticker-container.is-open {
   width: 260px;
@@ -1761,6 +1810,23 @@ select:focus {
   padding: 0.35rem 0.6rem;
   border: 1px solid var(--border);
   white-space: nowrap;
+}
+
+@keyframes nr-ticker-reveal {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+    border-color: transparent;
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+    border-color: var(--border);
+  }
+}
+
+.nr-ticker-enter {
+  animation: nr-ticker-reveal var(--motion-enter) var(--motion-emphasis) both;
 }
 
 .nr-ticker-line.nr-ticker-destroyed {
@@ -2775,6 +2841,38 @@ select:focus {
   border-radius: 4px; /* Sharper brutalist edges */
   backdrop-filter: blur(12px) saturate(1.8);
   text-shadow: 0 0 20px currentColor;
+  transition:
+    color var(--motion-impact) var(--motion-settle),
+    border-color var(--motion-impact) var(--motion-settle),
+    background var(--motion-impact) var(--motion-settle),
+    box-shadow var(--motion-impact) var(--motion-settle);
+  animation-duration: 460ms;
+  animation-timing-function: var(--motion-emphasis);
+  animation-fill-mode: both;
+}
+
+@keyframes phase-indicator-deploy {
+  from {
+    opacity: 0.35;
+    transform: translateY(4px) scaleX(0.94);
+    filter: brightness(1.8);
+  }
+}
+
+@keyframes phase-indicator-attack {
+  from {
+    opacity: 0.35;
+    transform: translateY(4px) scaleX(0.94);
+    filter: brightness(1.8);
+  }
+}
+
+@keyframes phase-indicator-recover {
+  from {
+    opacity: 0.35;
+    transform: translateY(4px) scaleX(0.94);
+    filter: brightness(1.8);
+  }
 }
 
 @keyframes phase-pulse {
@@ -2822,14 +2920,17 @@ select:focus {
 
 .phx-phase-indicator[data-phase-tone='deploy'] {
   color: #8dd2ff;
+  animation-name: phase-indicator-deploy;
 }
 
 .phx-phase-indicator[data-phase-tone='attack'] {
   color: #ff7d98;
+  animation-name: phase-indicator-attack;
 }
 
 .phx-phase-indicator[data-phase-tone='recover'] {
   color: #89e3c7;
+  animation-name: phase-indicator-recover;
 }
 
 @media (min-width: 900px) {
@@ -3484,7 +3585,7 @@ select:focus {
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
-  animation: phx-feedback-pulse 2600ms cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation: phx-feedback-pulse 2200ms var(--motion-emphasis) forwards;
   z-index: 100;
 }
 
@@ -4514,10 +4615,14 @@ select:focus {
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  background: rgba(0, 0, 0, 0.85);
+  background:
+    radial-gradient(circle at 50% 48%, rgba(240, 192, 64, 0.12), transparent 36%),
+    rgba(0, 0, 0, 0.68);
   opacity: 0;
-  transition: opacity 0.3s ease-out;
-  backdrop-filter: blur(8px);
+  transition:
+    opacity var(--motion-exit) var(--motion-settle),
+    backdrop-filter var(--motion-exit) var(--motion-settle);
+  backdrop-filter: blur(10px) saturate(0.8);
 }
 
 .cinematic-modal.is-active {
@@ -4526,22 +4631,42 @@ select:focus {
 
 .cinematic-content {
   text-align: center;
-  transform: scale(0.8) translateY(20px);
+  width: min(92vw, 70rem);
+  padding: clamp(1rem, 4vw, 3rem);
+  transform: scale(0.94) translateY(14px);
   opacity: 0;
   transition:
-    transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    opacity 0.4s ease-out;
+    transform var(--motion-impact) var(--motion-emphasis),
+    opacity var(--motion-enter) var(--motion-settle),
+    filter var(--motion-impact) var(--motion-settle);
+  filter: blur(8px);
+}
+
+.cinematic-content::before,
+.cinematic-content::after {
+  content: '';
+  display: block;
+  width: min(72vw, 44rem);
+  height: 1px;
+  margin: 0 auto clamp(0.8rem, 2vw, 1.4rem);
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+  opacity: 0.45;
+}
+
+.cinematic-content::after {
+  margin: clamp(0.8rem, 2vw, 1.4rem) auto 0;
 }
 
 .cinematic-modal.is-active .cinematic-content {
   transform: scale(1) translateY(0);
   opacity: 1;
+  filter: blur(0);
 }
 
 .cinematic-message {
   font-family: 'Outfit', sans-serif;
   font-weight: 900;
-  font-size: 5rem;
+  font-size: clamp(2.1rem, 8vw, 5rem);
   letter-spacing: 0.1em;
   color: var(--gold);
   text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
@@ -4552,7 +4677,7 @@ select:focus {
 .cinematic-submessage {
   font-family: 'Inter', sans-serif;
   font-weight: 600;
-  font-size: 2rem;
+  font-size: clamp(0.9rem, 3vw, 2rem);
   color: var(--white);
   margin-top: 1rem;
   opacity: 0.9;
@@ -4585,8 +4710,9 @@ select:focus {
 .cinematic-lethal {
   background: radial-gradient(
     ellipse at center,
-    rgba(180, 0, 0, 0.85) 0%,
-    rgba(60, 0, 0, 0.95) 100%
+    rgba(180, 0, 0, 0.7) 0%,
+    rgba(25, 0, 8, 0.9) 72%,
+    rgba(0, 0, 0, 0.96) 100%
   );
 }
 
@@ -4610,5 +4736,45 @@ select:focus {
   100% {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+/* Motion changes duration and ornament, never semantic cue order. */
+@media (prefers-reduced-motion: reduce) {
+  .nr-overlay,
+  .nr-overlay-line,
+  .nr-ticker-container,
+  .cinematic-modal,
+  .cinematic-content,
+  .phx-phase-indicator {
+    transition: none !important;
+  }
+
+  .nr-line-enter,
+  .nr-ticker-enter,
+  .cinematic-message,
+  .phx-phase-indicator,
+  .phx-combat-feedback,
+  .pz-splash-text,
+  .pz-active-pulse {
+    animation: none !important;
+  }
+
+  .nr-overlay[data-presentation-state='entering'],
+  .nr-overlay[data-presentation-state='holding'] {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+    filter: none;
+  }
+
+  .nr-overlay-line.nr-line-prior {
+    transform: none;
+    filter: none;
+  }
+
+  .cinematic-content,
+  .cinematic-modal.is-active .cinematic-content {
+    transform: none;
+    filter: none;
   }
 }

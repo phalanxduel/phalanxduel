@@ -3,6 +3,7 @@ import type { NarrationBus, NarrationEvent } from './narration-bus';
 import type { CardType } from './narration-bus';
 import { suitColor } from './cards';
 import { PHASE_DISPLAY } from './constants';
+import { PRESENTATION_TIMING, type PresentationState } from './presentation-timing';
 
 const ROW_LABELS = ['Front Row', 'Back Row'];
 const COLUMN_LABELS = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
@@ -14,9 +15,10 @@ const COLUMN_LABELS = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
  */
 export class NarrationOverlay {
   private container: HTMLElement | null = null;
-  private fadeTimer: ReturnType<typeof setTimeout> | null = null;
+  private holdTimer: ReturnType<typeof setTimeout> | null = null;
+  private exitTimer: ReturnType<typeof setTimeout> | null = null;
   private unsub: (() => void) | null = null;
-  private reducedMotion: boolean;
+  private readonly reducedMotion: boolean;
 
   constructor(private bus: NarrationBus) {
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -51,8 +53,16 @@ export class NarrationOverlay {
     const text = this.formatEvent(event);
     if (!text) return;
 
+    if (this.container?.dataset.presentationState === 'exiting') {
+      this.clearContainer();
+    }
     const container = this.ensureContainer();
-    this.resetFadeTimer();
+    this.clearLifecycleTimers();
+    this.setPresentationState('holding');
+
+    const existingLines = [...container.querySelectorAll<HTMLElement>('.nr-overlay-line')];
+    for (const existingLine of existingLines) existingLine.classList.add('nr-line-prior');
+    for (const staleLine of existingLines.slice(0, -2)) staleLine.remove();
 
     const line = document.createElement('div');
     line.className = this.getLineClass(event);
@@ -75,21 +85,25 @@ export class NarrationOverlay {
     }
 
     container.appendChild(line);
-
-    // Auto-fade after last event
-    this.fadeTimer = setTimeout(() => {
-      container.classList.add('nr-fade-out');
-      setTimeout(() => {
-        this.clearContainer();
-      }, 600);
-    }, 1200);
+    this.scheduleExit(
+      this.reducedMotion
+        ? PRESENTATION_TIMING.overlay.reducedHold
+        : PRESENTATION_TIMING.overlay.narrationHold,
+    );
   }
 
   private showPhaseAnnouncement(label: string): void {
-    // Clear any existing narration to make room for the phase header
-    this.clearContainer();
+    if (this.container) {
+      this.beginExit(() => this.renderPhaseAnnouncement(label));
+      return;
+    }
+    this.renderPhaseAnnouncement(label);
+  }
 
+  private renderPhaseAnnouncement(label: string): void {
     const container = this.ensureContainer();
+    this.setPresentationState('holding');
+    container.dataset.presentationKind = 'phase';
 
     const line = document.createElement('div');
     line.className = 'nr-overlay-line nr-phase-announce';
@@ -100,14 +114,11 @@ export class NarrationOverlay {
     }
 
     container.appendChild(line);
-
-    // Phase announcements hold for 1.5s then fade
-    this.fadeTimer = setTimeout(() => {
-      container.classList.add('nr-fade-out');
-      setTimeout(() => {
-        this.clearContainer();
-      }, 500);
-    }, 1500);
+    this.scheduleExit(
+      this.reducedMotion
+        ? PRESENTATION_TIMING.overlay.reducedHold
+        : PRESENTATION_TIMING.overlay.phaseHold,
+    );
   }
 
   private formatEvent(event: NarrationEvent): string | null {
@@ -168,26 +179,51 @@ export class NarrationOverlay {
       this.container = document.createElement('div');
       this.container.className = 'nr-overlay';
       this.container.setAttribute('aria-hidden', 'true');
+      this.container.dataset.component = 'NarrationView';
+      this.container.dataset.presentationKind = 'event';
+      this.setPresentationState('entering');
       document.body.appendChild(this.container);
     }
     return this.container;
   }
 
   private clearContainer(): void {
-    if (this.fadeTimer) {
-      clearTimeout(this.fadeTimer);
-      this.fadeTimer = null;
-    }
+    this.clearLifecycleTimers();
     this.container?.remove();
     this.container = null;
   }
 
-  private resetFadeTimer(): void {
-    if (this.fadeTimer) {
-      clearTimeout(this.fadeTimer);
-      this.fadeTimer = null;
+  private scheduleExit(holdMs: number): void {
+    this.holdTimer = setTimeout(() => this.beginExit(), holdMs);
+  }
+
+  private beginExit(afterExit?: () => void): void {
+    if (!this.container) {
+      afterExit?.();
+      return;
     }
-    // Remove fade-out class if present (new events arrived)
-    this.container?.classList.remove('nr-fade-out');
+    if (this.holdTimer) {
+      clearTimeout(this.holdTimer);
+      this.holdTimer = null;
+    }
+    this.setPresentationState('exiting');
+    const exitMs = this.reducedMotion ? 0 : PRESENTATION_TIMING.overlay.exit;
+    this.exitTimer = setTimeout(() => {
+      this.exitTimer = null;
+      this.container?.remove();
+      this.container = null;
+      afterExit?.();
+    }, exitMs);
+  }
+
+  private setPresentationState(state: PresentationState): void {
+    if (this.container) this.container.dataset.presentationState = state;
+  }
+
+  private clearLifecycleTimers(): void {
+    if (this.holdTimer) clearTimeout(this.holdTimer);
+    if (this.exitTimer) clearTimeout(this.exitTimer);
+    this.holdTimer = null;
+    this.exitTimer = null;
   }
 }

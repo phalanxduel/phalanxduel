@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NarrationBus, type NarrationEntry } from '../src/narration-bus';
 import { NarrationProducer } from '../src/narration-producer';
+import { PRESENTATION_TIMING } from '../src/presentation-timing';
 import type {
   PhalanxTurnResult,
   GameState,
@@ -171,7 +172,7 @@ describe('NarrationProducer', () => {
           column: 0,
           row: 0,
         }),
-        delayMs: 600,
+        delayMs: PRESENTATION_TIMING.cue.deploy,
       }),
     );
   });
@@ -236,17 +237,17 @@ describe('NarrationProducer', () => {
         suit: 'hearts',
         cardType: 'face',
       },
-      delayMs: 800,
+      delayMs: PRESENTATION_TIMING.cue.attack,
     });
     // Destroyed
     expect(entries[1]).toEqual({
       event: { type: 'destroyed', card: '2\u2660', suit: 'spades', cardType: 'number' },
-      delayMs: 400,
+      delayMs: PRESENTATION_TIMING.cue.destroyed,
     });
     // LP damage
     expect(entries[2]).toEqual({
       event: { type: 'lp-damage', player: 'Bot', damage: 3, suit: 'hearts' },
-      delayMs: 800,
+      delayMs: PRESENTATION_TIMING.cue.attack,
     });
   });
 
@@ -497,7 +498,7 @@ describe('NarrationProducer', () => {
     const phaseEntry = entries.find((e) => e.event.type === 'phase-change');
     expect(phaseEntry).toBeDefined();
     expect(phaseEntry!.event).toEqual({ type: 'phase-change', phase: 'AttackPhase' });
-    expect(phaseEntry!.delayMs).toBe(400);
+    expect(phaseEntry!.delayMs).toBe(PRESENTATION_TIMING.cue.phase);
   });
 
   it('orders lethal calculations before the terminal verdict and suppresses terminal phase bleed', () => {

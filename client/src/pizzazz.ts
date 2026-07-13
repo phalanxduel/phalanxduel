@@ -1,6 +1,7 @@
 import type { PhalanxTurnResult, CombatLogEntry } from '@phalanxduel/shared';
 import { getState } from './state';
 import type { NarrationBus, NarrationEvent } from './narration-bus';
+import { PRESENTATION_TIMING } from './presentation-timing';
 
 export interface PizzazzTrigger {
   type:
@@ -145,13 +146,15 @@ export class PizzazzEngine {
     overlay.appendChild(splash);
     document.body.appendChild(overlay);
 
-    this.trackAnimation(1600); // 1200ms display + 400ms exit
+    const totalDuration =
+      PRESENTATION_TIMING.effects.terminalHold + PRESENTATION_TIMING.effects.terminalExit;
+    this.trackAnimation(totalDuration);
     setTimeout(() => {
       splash.classList.add('pz-exit');
       setTimeout(() => {
         overlay.remove();
-      }, 400);
-    }, 1200);
+      }, PRESENTATION_TIMING.effects.terminalExit);
+    }, PRESENTATION_TIMING.effects.terminalHold);
   }
 
   // ── Combat Effects ───────────────────────────────
@@ -185,10 +188,10 @@ export class PizzazzEngine {
     const app = document.getElementById('app');
     if (!app) return;
     app.classList.add('pz-screen-shake');
-    this.trackAnimation(400);
+    this.trackAnimation(PRESENTATION_TIMING.effects.screenShake);
     setTimeout(() => {
       app.classList.remove('pz-screen-shake');
-    }, 400);
+    }, PRESENTATION_TIMING.effects.screenShake);
   }
 
   // ── Column highlight ─────────────────────────────
@@ -199,10 +202,10 @@ export class PizzazzEngine {
         const el = document.querySelector(`[data-testid="${tag}-cell-r${row}-c${col}"]`);
         if (!el) continue;
         el.classList.add('pz-column-glow');
-        this.trackAnimation(700);
+        this.trackAnimation(PRESENTATION_TIMING.effects.column);
         setTimeout(() => {
           el.classList.remove('pz-column-glow');
-        }, 700);
+        }, PRESENTATION_TIMING.effects.column);
       }
     }
   }
@@ -262,16 +265,19 @@ export class PizzazzEngine {
     beam.style.transform = `rotate(${angle}deg)`;
 
     document.body.appendChild(beam);
-    this.trackAnimation(550);
+    this.trackAnimation(PRESENTATION_TIMING.effects.beam);
     setTimeout(() => {
       beam.remove();
-    }, 550);
+    }, PRESENTATION_TIMING.effects.beam);
 
-    // Impact flash at target end
-    defenderEl.classList.add('pz-impact-flash');
+    // Land the impact after the beam reaches its target, preserving causality.
     setTimeout(() => {
-      defenderEl.classList.remove('pz-impact-flash');
-    }, 350);
+      defenderEl.classList.add('pz-impact-flash');
+      this.trackAnimation(PRESENTATION_TIMING.effects.impact);
+      setTimeout(() => {
+        defenderEl.classList.remove('pz-impact-flash');
+      }, PRESENTATION_TIMING.effects.impact);
+    }, PRESENTATION_TIMING.effects.impactDelay);
   }
 
   // ── Damage pops + suit pip bursts ────────────────
@@ -283,53 +289,56 @@ export class PizzazzEngine {
     combat.steps
       .filter((s) => s.damage > 0)
       .forEach((step, idx) => {
-        setTimeout(() => {
-          const isLp = step.target === 'playerLp';
-          let targetEl: Element | null = null;
+        setTimeout(
+          () => {
+            const isLp = step.target === 'playerLp';
+            let targetEl: Element | null = null;
 
-          if (isLp) {
-            const isAttackerMine = combat.attackerPlayerIndex === viewerIndex;
-            const selector = isAttackerMine
-              ? '.phx-opponent-zone, .stats-block.opponent'
-              : '.phx-player-zone, .stats-block.mine';
-            targetEl = document.querySelector(selector);
-          } else {
-            const row = step.target === 'frontCard' ? 0 : 1;
-            const isAttackerMine = combat.attackerPlayerIndex === viewerIndex;
-            const playerTag = isAttackerMine ? 'opponent' : 'player';
-            targetEl = document.querySelector(
-              `[data-testid="${playerTag}-cell-r${row}-c${combat.targetColumn}"]`,
-            );
-          }
+            if (isLp) {
+              const isAttackerMine = combat.attackerPlayerIndex === viewerIndex;
+              const selector = isAttackerMine
+                ? '.phx-opponent-zone, .stats-block.opponent'
+                : '.phx-player-zone, .stats-block.mine';
+              targetEl = document.querySelector(selector);
+            } else {
+              const row = step.target === 'frontCard' ? 0 : 1;
+              const isAttackerMine = combat.attackerPlayerIndex === viewerIndex;
+              const playerTag = isAttackerMine ? 'opponent' : 'player';
+              targetEl = document.querySelector(
+                `[data-testid="${playerTag}-cell-r${row}-c${combat.targetColumn}"]`,
+              );
+            }
 
-          if (!targetEl) return;
+            if (!targetEl) return;
 
-          const rect = targetEl.getBoundingClientRect();
-          const pop = this.makeEl('div', 'pz-damage-pop');
-          if (step.bonuses?.length) pop.classList.add('pz-crit');
-          pop.textContent = `-${step.damage}`;
-          pop.style.left = `${rect.left + rect.width / 2}px`;
-          pop.style.top = `${rect.top + rect.height / 2}px`;
+            const rect = targetEl.getBoundingClientRect();
+            const pop = this.makeEl('div', 'pz-damage-pop');
+            if (step.bonuses?.length) pop.classList.add('pz-crit');
+            pop.textContent = `-${step.damage}`;
+            pop.style.left = `${rect.left + rect.width / 2}px`;
+            pop.style.top = `${rect.top + rect.height / 2}px`;
 
-          this.recordTrigger('damagePop', `-${step.damage}`);
-          document.body.appendChild(pop);
-          pop.addEventListener('animationend', () => {
-            pop.remove();
-          });
+            this.recordTrigger('damagePop', `-${step.damage}`);
+            document.body.appendChild(pop);
+            pop.addEventListener('animationend', () => {
+              pop.remove();
+            });
 
-          // Suit pip burst for each bonus on this step
-          for (const bonus of step.bonuses ?? []) {
-            this.showSuitPipAt(bonus, targetEl);
-          }
+            // Suit pip burst for each bonus on this step
+            for (const bonus of step.bonuses ?? []) {
+              this.showSuitPipAt(bonus, targetEl);
+            }
 
-          // Hit flash on target element
-          targetEl.classList.add('pz-hit-flash');
-          if (isLp) targetEl.classList.add('pz-lp-flash');
-          setTimeout(() => {
-            targetEl.classList.remove('pz-hit-flash', 'pz-lp-flash');
-          }, 500);
-          this.trackAnimation(idx * 300 + 500); // stagger + hit flash duration
-        }, idx * 300); // Stagger steps
+            // Hit flash on target element
+            targetEl.classList.add('pz-hit-flash');
+            if (isLp) targetEl.classList.add('pz-lp-flash');
+            setTimeout(() => {
+              targetEl.classList.remove('pz-hit-flash', 'pz-lp-flash');
+            }, PRESENTATION_TIMING.effects.hit);
+            this.trackAnimation(PRESENTATION_TIMING.effects.hit);
+          },
+          PRESENTATION_TIMING.effects.impactDelay + idx * PRESENTATION_TIMING.effects.damageStagger,
+        );
       });
   }
 
@@ -342,7 +351,7 @@ export class PizzazzEngine {
     pip.style.left = `${rect.left + rect.width / 2}px`;
     pip.style.top = `${rect.top + rect.height / 2}px`;
     document.body.appendChild(pip);
-    this.trackAnimation(650);
+    this.trackAnimation(PRESENTATION_TIMING.effects.suit);
     pip.addEventListener('animationend', () => {
       pip.remove();
     });
@@ -362,10 +371,10 @@ export class PizzazzEngine {
     if (!destEl) return;
 
     destEl.classList.add('pz-deploy-flash');
-    this.trackAnimation(600);
+    this.trackAnimation(PRESENTATION_TIMING.effects.deployFlash);
     setTimeout(() => {
       destEl.classList.remove('pz-deploy-flash');
-    }, 600);
+    }, PRESENTATION_TIMING.effects.deployFlash);
 
     // Floating "DEPLOY" label over the destination cell
     const dRect0 = destEl.getBoundingClientRect();
@@ -377,7 +386,7 @@ export class PizzazzEngine {
     label.style.left = `${dRect0.left + dRect0.width / 2}px`;
     label.style.top = `${dRect0.top}px`;
     document.body.appendChild(label);
-    this.trackAnimation(800);
+    this.trackAnimation(PRESENTATION_TIMING.effects.deployLabel);
     label.addEventListener('animationend', () => {
       label.remove();
     });
@@ -402,7 +411,7 @@ export class PizzazzEngine {
     fly.style.setProperty('--pz-from-y', `${hRect.top + hRect.height / 2 - ty}px`);
 
     document.body.appendChild(fly);
-    this.trackAnimation(500);
+    this.trackAnimation(PRESENTATION_TIMING.effects.deployFlight);
     fly.addEventListener('animationend', () => {
       fly.remove();
     });

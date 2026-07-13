@@ -13,17 +13,18 @@ import { cardLabel } from './cards';
 import type { NarrationBus, NarrationEntry } from './narration-bus';
 import type { CardType } from './narration-bus';
 import { buildCombatExplanation, explanationLinesForMode } from './combat-explanation';
+import { PRESENTATION_TIMING } from './presentation-timing';
 
 // ── Timing Constants ─────────────────────────────
 
-const DELAY_ATTACK = 800;
-const DELAY_DESTROYED = 400;
-const DELAY_OVERFLOW = 600;
-const DELAY_DEPLOY = 600;
-const DELAY_BONUS = 500;
-const DELAY_PHASE = 400;
-const DELAY_CALCULATION = 900;
-const DELAY_TERMINAL = 1600;
+const DELAY_ATTACK = PRESENTATION_TIMING.cue.attack;
+const DELAY_DESTROYED = PRESENTATION_TIMING.cue.destroyed;
+const DELAY_OVERFLOW = PRESENTATION_TIMING.cue.overflow;
+const DELAY_DEPLOY = PRESENTATION_TIMING.cue.deploy;
+const DELAY_BONUS = PRESENTATION_TIMING.cue.bonus;
+const DELAY_PHASE = PRESENTATION_TIMING.cue.phase;
+const DELAY_CALCULATION = PRESENTATION_TIMING.cue.calculation;
+const DELAY_TERMINAL = PRESENTATION_TIMING.cue.terminal;
 
 // ── Card Classification ──────────────────────────
 
@@ -308,7 +309,7 @@ export class NarrationProducer {
                 submessage: `${attackerLabel} finishes ${defenderName}`,
                 suit: attackerSuit,
               },
-              delayMs: 2500,
+              delayMs: PRESENTATION_TIMING.cue.cinematic,
             });
           }
 

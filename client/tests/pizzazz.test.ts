@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { PhalanxTurnResult } from '@phalanxduel/shared';
 import { PizzazzEngine } from '../src/pizzazz';
 import { NarrationBus } from '../src/narration-bus';
+import { PRESENTATION_TIMING } from '../src/presentation-timing';
 
 vi.mock('../src/state', () => ({
   getState: vi.fn(() => ({ screen: 'gameOver', playerIndex: 0, gameState: null })),
@@ -142,6 +143,44 @@ describe('PizzazzEngine animation hook', () => {
     const triggers = engine.getTriggers();
     expect(triggers.some((t) => t.type === 'attackVector' && t.detail === 'col=4')).toBe(true);
     expect(triggers.some((t) => t.type === 'columnActive' && t.detail === 'col=4')).toBe(true);
+  });
+
+  it('lands impact and damage only after the attack vector reaches its target', async () => {
+    vi.useFakeTimers();
+    const attacker = document.createElement('div');
+    attacker.dataset.testid = 'player-cell-r0-c0';
+    const defender = document.createElement('div');
+    defender.dataset.testid = 'opponent-stats';
+    defender.className = 'phx-opponent-zone';
+    document.body.append(attacker, defender);
+
+    const pre = makeMinimalGameState({ transactionLog: [] });
+    const post = makeMinimalGameState({
+      transactionLog: [
+        {
+          details: { type: 'attack', combat: makeCombatEntry(0, 5) },
+          stateHashAfter: 'x',
+        },
+      ],
+    });
+
+    engine.onTurnResult(makeTurnResult(pre, post));
+    expect(document.querySelector('.pz-attack-beam')).not.toBeNull();
+    expect(defender.classList.contains('pz-impact-flash')).toBe(false);
+    expect(document.querySelector('.pz-damage-pop')).toBeNull();
+
+    await vi.advanceTimersByTimeAsync(PRESENTATION_TIMING.effects.impactDelay);
+
+    expect(defender.classList.contains('pz-impact-flash')).toBe(true);
+    expect(document.querySelector('.pz-damage-pop')?.textContent).toBe('-5');
+
+    vi.clearAllTimers();
+    document
+      .querySelectorAll('.pz-attack-beam, .pz-damage-pop')
+      .forEach((element) => element.remove());
+    attacker.remove();
+    defender.remove();
+    vi.useRealTimers();
   });
 
   it('records suitPip trigger when a step has bonuses', () => {
