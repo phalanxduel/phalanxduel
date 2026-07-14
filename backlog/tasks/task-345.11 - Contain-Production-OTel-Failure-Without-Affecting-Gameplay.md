@@ -1,11 +1,11 @@
 ---
 id: TASK-345.11
 title: Contain Production OTel Failure Without Affecting Gameplay
-status: In Progress
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-07-14 00:52'
-updated_date: '2026-07-14 01:12'
+updated_date: '2026-07-14 01:51'
 labels:
   - production
   - observability
@@ -49,10 +49,10 @@ Production OTel failed live validation on 2026-07-14: the collector image reject
 <!-- AC:BEGIN -->
 - [x] #1 Production gameplay liveness and database readiness remain passing while OTel is deliberately disabled
 - [x] #2 The production deployment contract cannot recreate a collector process or activate application exporters unintentionally
-- [ ] #3 The production health response reports observability as disabled rather than active and exposes no endpoint or secret data
+- [x] #3 The production health response reports observability as disabled rather than active and exposes no endpoint or secret data
 - [x] #4 Automated tests cover the disabled health signal and production deployment configuration
 - [x] #5 Operator documentation records the temporary disabled posture, direct failure evidence, and explicit restoration prerequisites
-- [ ] #6 The production-only pipeline deploys the containment change and live verification confirms the expected release identity, healthy gameplay surface, and absent collector group
+- [x] #6 The production-only pipeline deploys the containment change and live verification confirms the expected release identity, healthy gameplay surface, and absent collector group
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -80,7 +80,17 @@ The documentation artifact checker generated the expected dependency-graph updat
 Unified host verification is green: `pnpm check` completed build, lint, typecheck, documentation artifacts, database-isolation assertions, and all workspace unit/integration suites (shared 153, engine 418, server 385, migration 4, client 231, admin 7, MCP 5). Schema, OpenAPI, and SDK generation produced zero tracked drift; `schema:check`, `rules:check`, and `verify:contracts` passed. The exhaustive combat reference checked 2,355,388 cases with digest `9e3d7f6d1a034c70eca28998bb1636184d520a7815bd8231f0684ab3ab8741dc`.
 
 The optional local container parity run was stopped during image assembly when host free space crossed the explicit 5 GiB safety floor (4.0 GiB observed). No tests had started and no product failure occurred. Only the temporary container, layers, network, and credential-free Docker config created for this run were removed; guest discard reclaimed 8.6 GiB and restored 11 GiB host free space. The existing Colima service was left running. CI remains the authoritative isolated-container gate.
+
+Production pipeline [run 29298115294](https://github.com/phalanxduel/phalanxduel/actions/runs/29298115294) completed successfully for `cf1b3ddb2159ee095a6a208d5e3527f7c6bdc4af`: adversarial security, test/lint, SDK publication, immutable image build/push, and production promotion were all green.
+
+Post-deploy live evidence at 2026-07-14T01:36Z: `/health` returned HTTP 200 with version `1.4.0`, build `425-1`, exact commit `cf1b3ddb2159ee095a6a208d5e3527f7c6bdc4af`, and `observability.otel_active=false`; `/ready` returned `ready=true` and `database=ok`; `/api/stats` returned `activeMatches=0`. Fly status showed only stopped `admin` and started `web`, with web 2/2 checks passing and no `otel` process group. Bounded recent production logs contained no OTel, error, panic, fatal, or unhandled entries.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Contained the broken production OTel path without coupling telemetry to gameplay. Production now explicitly disables the application SDK, cannot recreate the collector through the canonical Fly configuration, truthfully reports observability inactive, and documents measurable restoration prerequisites. Automated host and CI gates are green, production promotion completed for commit `cf1b3ddb2159ee095a6a208d5e3527f7c6bdc4af`, and live health/readiness plus Fly topology were verified. Full collector restoration remains tracked separately by TASK-345.02.
+<!-- SECTION:FINAL_SUMMARY:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
