@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-07-14 00:52'
-updated_date: '2026-07-14 00:55'
+updated_date: '2026-07-14 01:12'
 labels:
   - production
   - observability
@@ -76,14 +76,18 @@ Repository containment implemented: `fly.production.toml` explicitly disables th
 Targeted verification: guarded `phalanxduel_test` health suite passed 11/11; server TypeScript check passed; `pnpm verify:production-contract` passed; Prettier check passed for all touched supported file types.
 
 The documentation artifact checker generated the expected dependency-graph update for the new shared OTel config module. Because this checker compares generated files to `HEAD`, the focused change must be committed before the full check can prove the artifact is stable.
+
+Unified host verification is green: `pnpm check` completed build, lint, typecheck, documentation artifacts, database-isolation assertions, and all workspace unit/integration suites (shared 153, engine 418, server 385, migration 4, client 231, admin 7, MCP 5). Schema, OpenAPI, and SDK generation produced zero tracked drift; `schema:check`, `rules:check`, and `verify:contracts` passed. The exhaustive combat reference checked 2,355,388 cases with digest `9e3d7f6d1a034c70eca28998bb1636184d520a7815bd8231f0684ab3ab8741dc`.
+
+The optional local container parity run was stopped during image assembly when host free space crossed the explicit 5 GiB safety floor (4.0 GiB observed). No tests had started and no product failure occurred. Only the temporary container, layers, network, and credential-free Docker config created for this run were removed; guest discard reclaimed 8.6 GiB and restored 11 GiB host free space. The existing Colima service was left running. CI remains the authoritative isolated-container gate.
 <!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Code builds without errors (pnpm build)
-- [ ] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
-- [ ] #3 All unit and integration tests pass (pnpm test:run:all)
-- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
-- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
-- [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
