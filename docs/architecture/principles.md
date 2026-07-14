@@ -7,12 +7,20 @@ audience: agent
 authoritative_source: "engine/src/state-machine.ts, shared/src/schema.ts"
 related:
   - docs/gameplay/rules.md
+  - docs/ops/production-support-contract.md
   - docs/reference/client-compatibility.md
   - docs/architecture/type-ownership.md
   - docs/reference/pnpm-scripts.md
 ---
 
 # Architecture
+
+The deployed-system scope, ownership, health semantics, and release evidence are
+defined by the canonical
+[Production Support Contract](../ops/production-support-contract.md). Architecture
+documents describe how supported components work; the contract decides which
+components must be operational before the whole production system can be
+certified healthy.
 
 ## System Overview
 

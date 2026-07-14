@@ -5,20 +5,22 @@ Use it with:
 
 - `docs/deployment.md` for the automation flow
 - `docs/ops/runbook.md` for rollback and incident response
-- `.github/workflows/pipeline.yml`, `fly.staging.toml`, and
-  `fly.production.toml` as the live configuration truth
+- `docs/ops/production-support-contract.md` for the required subsystem matrix
+- `.github/workflows/pipeline.yml` and `fly.production.toml` as the executable
+  configuration truth
 
-The older staging/Fly notes in `docs/deployment/` remain only as compatibility
-history; use the canonical docs above for current operator guidance.
+Production is the only deployed game environment. Staging is retired. Older
+staging/Fly notes under historical or archived documentation are not operator
+instructions.
 
 ## Pre-Deployment
 
 - [ ] `rtk ./bin/check` passes locally
 - [ ] required env/secrets are present and audited:
-  - `rtk pnpm env:audit:staging`
   - `rtk pnpm env:audit:production`
 - [ ] schema/migration changes are understood and safe to promote
-- [ ] staging is the next target; do not skip directly to production
+- [ ] the candidate GHCR image was built from the approved Git SHA
+- [ ] test, adversarial-security, SDK, and image-build jobs are green
 - [ ] rollback owner and procedure are clear before promotion
 - [ ] active-match impact is understood: deploys and rollbacks may drop sockets,
       and reconnect continues under the original timeout window rather than a
@@ -27,49 +29,18 @@ history; use the canonical docs above for current operator guidance.
       no schema-incompatible downgrade, and no expectation of automatic match
       rewind
 
-## Staging Deployment
-
-Preferred path:
-
-1. Push the reviewed change to `main`.
-2. Let `.github/workflows/pipeline.yml` run tests.
-3. Let the workflow deploy staging with:
-
-   ```bash
-   flyctl deploy --app phalanxduel-staging --config fly.staging.toml --remote-only
-   ```
-
-Manual repo-native path when needed:
-
-```bash
-rtk pnpm deploy:run:staging
-```
-
-Verify staging:
-
-```bash
-curl -s https://phalanxduel-staging.fly.dev/health | jq .
-curl -s https://phalanxduel-staging.fly.dev/ready | jq .
-fly logs --app phalanxduel-staging
-```
-
-Staging checklist:
-
-- [ ] `/health` returns `status: ok`
-- [ ] `/ready` returns `ready: true`
-- [ ] no obvious startup, migration, or auth errors in logs
-- [ ] changed gameplay/admin/operator paths were smoke-tested
-
 ## Production Promotion
 
 Production releases are gated by manual approval in GitHub Actions.
 
-1. Review the successful staging deploy.
-2. Approve the `production` environment in the pipeline.
-3. Let the workflow run:
+1. Review the successful test, adversarial, SDK, and image-build jobs.
+2. Confirm the image metadata matches the approved release SHA.
+3. Approve the `production` environment in the pipeline.
+4. Let the workflow promote the tested image:
 
    ```bash
-   flyctl deploy --app phalanxduel-production --config fly.production.toml --remote-only
+   flyctl deploy --app phalanxduel-production --config fly.production.toml \
+     --local-only --image phalanxduel-production:latest
    ```
 
 Manual repo-native path when needed:
@@ -90,8 +61,11 @@ Production checklist:
 
 - [ ] `/health` returns `status: ok`
 - [ ] `/ready` returns `ready: true`
+- [ ] deployed version, build ID, and commit SHA match the approved release
 - [ ] no immediate ERROR spike in logs or telemetry
 - [ ] admin and support-critical paths still work if touched
+- [ ] every required subsystem in the Production Support Contract has current
+      evidence; anything not tested is reported as `NOT_TESTED`
 - [ ] if live matches were active, reconnect/rejoin behavior was spot-checked
       and any forced forfeits were consistent with the pre-existing reconnect
       deadline
@@ -129,5 +103,6 @@ Rollback and recovery checklist:
 
 - `docs/deployment.md`
 - `docs/ops/runbook.md`
+- `docs/ops/production-support-contract.md`
 - `docs/reference/environment-variables.md`
 - `docs/configuration.md`

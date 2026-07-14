@@ -4,6 +4,11 @@ This document is the canonical source for supporting the Phalanx Duel
 production system. It covers health monitoring, standard deployment
 procedures, and incident response.
 
+Use the [Production Support Contract](production-support-contract.md) to decide
+which subsystems are required for a whole-system health claim. Production is
+the only deployed game environment. Staging is retired and is not a deployment
+prerequisite, health target, or rollback destination.
+
 ---
 
 ## 1. Health Monitoring
@@ -24,7 +29,8 @@ rtk ./bin/check
 
 For database performance insights and slow query analysis, use **PgHero**:
 *   **Local**: `http://127.0.0.1:8081` (after running `rtk docker-compose up -d pghero`)
-*   **Staging/Production**: Connected to the respective environment's Neon/RDS instance via standard Postgres proxies.
+*   **Production**: Connect through the approved production database proxy and
+    operator authentication path. Never copy production credentials into logs.
 
 ---
 
@@ -40,23 +46,21 @@ rtk ./bin/check
 Use `docs/ops/deployment-checklist.md` for the operator checklist and
 `docs/deployment.md` for the exact GitHub Actions promotion path.
 
-### 2.2 Staging Deployment
+### 2.2 Production Promotion
 
-Automated via GitHub Actions on push to `main`. Manual trigger:
-```bash
-rtk pnpm deploy:run:staging
-```
+1. Verify the `main` test, adversarial-security, SDK, and image-build jobs.
+2. Confirm the candidate GHCR image identifies the approved Git SHA.
+3. Trigger or approve the `Promote: Production` workflow in GitHub Actions.
+4. Verify production identity, health, and readiness at
+   `https://play.phalanxduel.com/health` and `/ready`.
+5. Evaluate every required row in the Production Support Contract before
+   claiming whole-system health.
 
-### 2.3 Production Promotion
-1. Verify staging health via `https://phalanxduel-staging.fly.dev/health`.
-2. Trigger or approve the `Promote: Production` workflow in GitHub Actions.
-3. Verify production health via `https://play.phalanxduel.com/health`.
+### 2.3 Active-Match Deployment Semantics
 
-### 2.4 Active-Match Deployment Semantics
-
-Current production promotions use Fly.io remote source deploys. Treat each
-promotion or rollback as a rolling app restart with possible client reconnects,
-not as a seamless no-disconnect hot swap.
+Current production promotions deploy the tested GHCR image to Fly.io. Treat
+each promotion or rollback as a rolling app restart with possible client
+reconnects, not as a seamless no-disconnect hot swap.
 
 Supported operator expectations:
 
@@ -85,14 +89,14 @@ If a deployment succeeds but the application fails to load or behaves incorrectl
 The first step is always to check the logs. Use the `--config` flag to ensure you are looking at the correct environment.
 
 ```bash
-# Continuous tailing (best for watching startup)
-fly logs --config fly.staging.toml
+    # Continuous tailing (best for watching startup)
+    fly logs --app phalanxduel-production
 
-# View recent logs without tailing
-fly logs --config fly.staging.toml --no-tail
+    # View recent logs without tailing
+    fly logs --app phalanxduel-production --no-tail
 
-# Watch logs for a specific machine ID
-fly logs --machine <id> --app phalanxduel-staging
+    # Watch logs for a specific machine ID
+    fly logs --machine <id> --app phalanxduel-production
 ```
 
 ### 3.2 Common Startup Errors
@@ -109,14 +113,14 @@ Use `fly ssh console` to inspect the live container environment.
 
 ```bash
 # Open an interactive shell
-fly ssh console --config fly.staging.toml
+    fly ssh console --app phalanxduel-production
 
 # Check if migration files exist in the container
 ls -R /app/server/migrations
 
 # Run a one-off ESM script using Node.js
 # Note: You must use --input-type=module and provide absolute paths to node_modules
-fly ssh console --app phalanxduel-staging -C "node --input-type=module -e \"import postgres from './server/node_modules/postgres/src/index.js'; ...\""
+    fly ssh console --app phalanxduel-production -C "node --input-type=module -e \"import postgres from './server/node_modules/postgres/src/index.js'; ...\""
 ```
 
 ### 3.4 Database Migration Triage
@@ -126,12 +130,12 @@ If migrations are failing or appear skipped:
 1.  **Check applied migrations**:
     ```bash
     # Run the internal check script via SSH
-    fly ssh console --app phalanxduel-staging -C "node server/dist/db/check-migrations.js"
+        fly ssh console --app phalanxduel-production -C "node server/dist/db/check-migrations.js"
     ```
 2.  **Manually trigger migrations**:
     ```bash
     # Run the migration script directly
-    fly ssh console --app phalanxduel-staging -C "node server/dist/db/migrate.js"
+        fly ssh console --app phalanxduel-production -C "node server/dist/db/migrate.js"
     ```
 3.  **Verify table existence**:
     Use the `node -e` approach in section 3.3 to query `information_schema.tables`.

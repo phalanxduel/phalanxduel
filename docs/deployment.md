@@ -1,27 +1,27 @@
 # Phalanx Duel CI/CD Pipeline
 
-This document defines the authoritative release automation for Phalanx Duel,
-from local verification through staging deploy and production promotion.
+This document defines the authoritative production-only release automation for
+Phalanx Duel. The required deployed subsystem scope and health evidence live in
+the [Production Support Contract](ops/production-support-contract.md).
+
+Staging is retired. Production promotion does not depend on or target a staging
+environment.
 
 ## 1. Pipeline Overview
 
-The pipeline is designed for **high fidelity and safety**. The repo still
-builds and pushes a GHCR artifact on `main`, but the actual Fly.io deploy jobs
-currently deploy from source using `flyctl --remote-only` with
-`fly.staging.toml` and `fly.production.toml`.
+The pipeline is designed for **high fidelity and safety**. It builds and pushes
+a GHCR image on `main`, then the manually approved production job promotes that
+tested image to Fly.io with `fly.production.toml`.
 
 ```mermaid
 graph TD
     Dev[Local Development] --> Husky[Husky Hooks]
     Husky --> PR[Pull Request]
-    PR --> CI[CI Gate: Test & Lint]
+    PR --> CI[CI Gate: Test, Audit, and Adversarial Security]
     CI --> Merge[Merge to Main]
     Merge --> Build[Build Production Image]
     Build --> GHCR[(GHCR Registry)]
-    GHCR --> Scan[Security Scan: Trivy]
-    Scan --> Staging[Auto-Deploy: Staging]
-    Staging --> Settle[Staging Settling Period]
-    Settle --> Manual[Manual Approval Gate]
+    GHCR --> Manual[Manual Production Approval Gate]
     Manual --> Production[Promote: Production]
 ```
 
@@ -62,43 +62,27 @@ Once merged into `main`, the pipeline switches to **Artifact Production**.
   workflows, but it is **not** the runtime artifact currently promoted to Fly.
 
 ### Runtime Deployment Path
-- **Staging deploy**: `.github/workflows/pipeline.yml` runs
-  `flyctl deploy --app phalanxduel-staging --config fly.staging.toml --remote-only`.
-- **Production promotion**: after staging succeeds, a maintainer manually
-  approves the production environment and the workflow runs
-  `flyctl deploy --app phalanxduel-production --config fly.production.toml --remote-only`.
-- Because deploys currently happen from source, docs must not claim immutable
-  "same image promoted from staging" behavior.
-- Operational implication: promotion and rollback behave like rolling app
-  restarts. Active matches should recover through persisted state and rejoin,
-  but clients may need to reconnect and rollback does not rewind schema or
-  persisted gameplay data.
+
+- `.github/workflows/pipeline.yml` builds and pushes a content-addressed GHCR
+  image from the verified Git SHA.
+- A maintainer approves the production environment.
+- The workflow pulls and locally tags that tested image, then deploys it to
+  `phalanxduel-production` with `flyctl --local-only --image`.
+- Promotion and rollback behave like rolling app restarts. Active matches
+  recover through persisted state and rejoin; clients may need to reconnect,
+  and rollback does not rewind schema or persisted gameplay data.
 
 ---
 
-## 5. Phase 4: Staging (The Sandbox)
-
-Upon successful tests on `main`, the workflow automatically deploys staging via
-Fly.io.
-
-- **App**: `phalanxduel-staging`
-- **URL**: [phalanxduel-staging.fly.dev](https://phalanxduel-staging.fly.dev)
-- **Deployment Strategy**: rolling via Fly.io and the staging Fly config.
-- **Verification**: Automatic health check (`/health`) and readiness check (`/ready`) gate.
-
----
-
-## 6. Phase 5: Production (The Promotion)
+## 5. Phase 4: Production (The Promotion)
 
 Production releases are **never automatic**. They require manual approval after
-staging succeeds.
+the test, adversarial-security, SDK, and image-build jobs succeed.
 
 ### Promotion Gate
 - **Manual Approval**: A maintainer must explicitly click **"Approve and Deploy"** in the GitHub Actions Environment UI.
-- **Current deployment mode**: the workflow performs a second Fly.io remote
-  deploy from the repo source using `fly.production.toml`.
-- **Implication**: the process is staged and gated, but it is not yet a strict
-  build-once immutable promotion flow.
+- **Current deployment mode**: the workflow promotes the tested GHCR image
+  using `fly.production.toml`; it does not rebuild application source.
 - **Rollback constraint**: app rollback is only safe while the previous release
   remains compatible with the live schema and persisted state.
 
@@ -115,8 +99,7 @@ staging succeeds.
 |-------|-----------------|-----------------|
 | **CI (Test)** | Logic, types, or formatting regression. | Fix code and push update. |
 | **Build** | Docker build failure or registry auth issue. | Check Dockerfile and GitHub Secrets. |
-| **Staging** | Unhealthy deployment in staging. | Inspect Fly.io logs; fix config or logic. |
-| **Promotion** | Rejected manually or production outage. | Investigate staging stability or production infra. |
+| **Promotion** | Rejected manually or production outage. | Investigate release evidence or production infrastructure. |
 
 ## Operational Recovery Notes
 
@@ -187,5 +170,7 @@ the `pipeline.yml` automated promotion flow. Deploy them manually after verifyin
 - `docs/ops/deployment-checklist.md` for the operator-facing deployment
   checklist
 - `docs/ops/runbook.md` for incident response and rollback
+- `docs/ops/production-support-contract.md` for required production subsystems
+  and evidence
 - `.github/workflows/pipeline.yml` for the exact automation source of truth
 - `mcp/README.md` for MCP tool reference, profile matrix, and `.mcp.json` config

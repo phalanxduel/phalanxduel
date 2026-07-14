@@ -39,5 +39,11 @@ export default defineConfig({
     // Disable parallelism to avoid cross-test data interference.
     fileParallelism: false,
     maxConcurrency: 1,
+    // Unit/integration workers must not boot runtime exporters or layer the
+    // OTel console patch over Vitest's own console RPC interception.
+    env: {
+      OTEL_SDK_DISABLED: 'true',
+      OTEL_CONSOLE_LOGS_ENABLED: 'false',
+    },
   },
 });
