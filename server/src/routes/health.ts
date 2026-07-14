@@ -6,6 +6,7 @@ import { join, dirname } from 'node:path';
 import { SCHEMA_VERSION } from '@phalanxduel/shared';
 import { db } from '../db/index.js';
 import { traceDbQuery } from '../db/observability.js';
+import { isOtelSdkDisabled } from '../otel-config.js';
 
 /**
  * Register health check endpoints:
@@ -87,7 +88,7 @@ export function registerHealthRoutes(app: FastifyInstance) {
       }
 
       const memory = process.memoryUsage();
-      const otelEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+      const otelEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT?.trim();
 
       return {
         status: 'ok',
@@ -98,7 +99,7 @@ export function registerHealthRoutes(app: FastifyInstance) {
         uptime_seconds: Math.floor(process.uptime()),
         memory_heap_used_mb: Math.floor(memory.heapUsed / 1024 / 1024),
         observability: {
-          otel_active: !!otelEndpoint,
+          otel_active: Boolean(otelEndpoint) && !isOtelSdkDisabled(),
           region: process.env.FLY_REGION ?? 'local',
         },
       };

@@ -2,15 +2,17 @@
 id: TASK-345.02
 title: Repair Production OTel Collector Topology
 status: To Do
-assignee: []
+assignee:
+  - '@codex'
 created_date: '2026-07-14 00:17'
-updated_date: '2026-07-14 00:17'
+updated_date: '2026-07-14 00:52'
 labels:
   - production
   - observability
   - fly
 dependencies:
   - TASK-345.04
+  - TASK-345.11
 references:
   - 'https://fly.io/docs/launch/processes/'
   - 'https://fly.io/docs/networking/private-networking/'
@@ -39,6 +41,22 @@ Replace the invalid localhost assumption between separate Fly Machines with a su
 - [ ] #5 Collector/export failure produces an observable degraded signal without making core gameplay unavailable
 - [ ] #6 Topology has automated configuration tests and updated operator documentation
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Inventory the current Fly process groups, collector configuration, pipeline deployment behavior, production environment names, and existing topology verification conventions; validate the intended private-network pattern against current official Fly documentation.
+2. Choose the smallest supported collector-first topology that provides a private process-specific OTLP address, keeps receivers off public ports, pins at least one collector machine, and defines explicit health/restart behavior.
+3. Add automated configuration assertions first, then update Fly/collector/runtime configuration and canonical operator documentation so cross-machine localhost cannot regress.
+4. Extend the production verification path to emit and query a correlation-stable synthetic trace and to report collector/export failure as degraded while leaving gameplay liveness available.
+5. Run targeted topology/observability tests, `pnpm check`, schema/rules gates, and containerized verification; deploy through the production-only pipeline, verify live collector/process/trace evidence, and record exact operational results.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Paused by explicit user direction on 2026-07-14 in favor of a stable week-end production posture. Live validation found two independent blockers: collector v0.153.0 rejects the deprecated `logging` exporter and the configured LGTM upstream is unreachable from Fly. TASK-345.11 contains the deliberate fail-open containment; resume this repair only after that stable baseline is complete and an accessible centralized LGTM upstream is confirmed.
+<!-- SECTION:NOTES:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

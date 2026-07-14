@@ -12,7 +12,6 @@ kill_timeout = "35s"
 [processes]
 web = "node server/dist/index.js"
 admin = "node admin/dist/server/index.js"
-otel = "/app/otel-collector/otelcol-contrib --config=/app/otel-collector.fly.yaml"
 
 [deploy]
 release_command = "node server/dist/db/migrate.js"
@@ -22,7 +21,8 @@ strategy = "rolling"
 APP_ENV = "production"
 NODE_ENV = "production"
 PHALANX_SERVER_PORT = "3001"
-OTEL_EXPORTER_OTLP_ENDPOINT = "http://127.0.0.1:4318"
+# Temporary production containment. See TASK-345.11 and the support contract.
+OTEL_SDK_DISABLED = "true"
 
 [[statics]]
 guest_path = "/app/client/dist"

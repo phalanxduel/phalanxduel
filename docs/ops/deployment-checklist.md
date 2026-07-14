@@ -62,7 +62,10 @@ Production checklist:
 - [ ] `/health` returns `status: ok`
 - [ ] `/ready` returns `ready: true`
 - [ ] deployed version, build ID, and commit SHA match the approved release
-- [ ] no immediate ERROR spike in logs or telemetry
+- [ ] no immediate ERROR spike in logs; inspect telemetry only when the support
+      contract says OTel is enabled
+- [ ] `/health` reports `observability.otel_active: false` while the temporary
+      OTel containment is active, and Fly has no `otel` process group
 - [ ] admin and support-critical paths still work if touched
 - [ ] every required subsystem in the Production Support Contract has current
       evidence; anything not tested is reported as `NOT_TESTED`

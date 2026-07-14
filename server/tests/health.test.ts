@@ -40,6 +40,50 @@ describe('Health Endpoints', () => {
         expect(response.body.version).toMatch(/^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/);
       });
 
+      it('should report OTel inactive when the SDK kill switch is enabled', async () => {
+        const previousEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+        const previousDisabled = process.env.OTEL_SDK_DISABLED;
+
+        try {
+          process.env.OTEL_EXPORTER_OTLP_ENDPOINT = 'http://127.0.0.1:4318';
+          process.env.OTEL_SDK_DISABLED = 'true';
+
+          const response = await request.get('/health');
+
+          expect(response.body.observability).toEqual(
+            expect.objectContaining({ otel_active: false }),
+          );
+        } finally {
+          if (previousEndpoint === undefined) delete process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+          else process.env.OTEL_EXPORTER_OTLP_ENDPOINT = previousEndpoint;
+
+          if (previousDisabled === undefined) delete process.env.OTEL_SDK_DISABLED;
+          else process.env.OTEL_SDK_DISABLED = previousDisabled;
+        }
+      });
+
+      it('should report OTel active only when an endpoint is configured and the SDK is enabled', async () => {
+        const previousEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+        const previousDisabled = process.env.OTEL_SDK_DISABLED;
+
+        try {
+          process.env.OTEL_EXPORTER_OTLP_ENDPOINT = 'http://127.0.0.1:4318';
+          process.env.OTEL_SDK_DISABLED = 'false';
+
+          const response = await request.get('/health');
+
+          expect(response.body.observability).toEqual(
+            expect.objectContaining({ otel_active: true }),
+          );
+        } finally {
+          if (previousEndpoint === undefined) delete process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+          else process.env.OTEL_EXPORTER_OTLP_ENDPOINT = previousEndpoint;
+
+          if (previousDisabled === undefined) delete process.env.OTEL_SDK_DISABLED;
+          else process.env.OTEL_SDK_DISABLED = previousDisabled;
+        }
+      });
+
       it('should allow localhost and 127.0.0.1 local connect sources in CSP', async () => {
         const response = await request.get('/health');
         const contentSecurityPolicy = response.headers['content-security-policy'];

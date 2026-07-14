@@ -16,6 +16,7 @@ Duel runtime and observability workflow.
 | `PHALANX_ADMIN_USER` | Server/Admin | none | no | Admin basic-auth username |
 | `PHALANX_ADMIN_PASSWORD` | Server/Admin | none | no | Admin basic-auth password |
 | `ADMIN_INTERNAL_TOKEN` | Server/Admin | none | no | Shared internal auth token |
+| `OTEL_SDK_DISABLED` | Server/Admin | `false` | yes during production containment | Prevent OTel exporters from starting |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Server/Admin | `http://127.0.0.1:4318` | no | OTLP collector intake |
 | `OTEL_EXPORTER_OTLP_PROTOCOL` | Server/Admin | `http/protobuf` | no | OTLP transport protocol |
 | `OTEL_SERVICE_NAME` | Server/Admin | service-specific | no | Service name in traces/logs/metrics |
@@ -119,6 +120,21 @@ Shared token used for server-to-admin internal API calls.
 
 Applications should export to a collector boundary. Routing beyond that
 boundary belongs to collector configuration, not application runtime code.
+
+Production telemetry is temporarily contained: the application SDK is
+disabled and no production collector process is declared. This preserves game
+liveness while `TASK-345.02` repairs and proves the collector-to-LGTM path.
+
+### OTEL_SDK_DISABLED
+
+Set to `true` to prevent application telemetry exporters from starting. This
+is the production fail-open kill switch; it must remain explicit in
+`fly.production.toml` until every restoration gate in the Production Support
+Contract passes.
+
+```bash
+OTEL_SDK_DISABLED=true
+```
 
 ### OTEL_EXPORTER_OTLP_ENDPOINT
 
@@ -394,9 +410,7 @@ OTEL_SERVICE_NAME=phx-server
 APP_ENV=production
 NODE_ENV=production
 PHALANX_SERVER_PORT=3001
-OTEL_EXPORTER_OTLP_ENDPOINT="http://127.0.0.1:4318"
-OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-OTEL_SERVICE_NAME=phx-server
+OTEL_SDK_DISABLED=true
 ```
 
 ## Validation
@@ -407,8 +421,10 @@ node -e "console.log(process.env.OTEL_EXPORTER_OTLP_ENDPOINT)"
 rtk curl -sS http://127.0.0.1:3001/health
 ```
 
-The `/health` endpoint should report `observability.otel_active: true` when
-the OTLP endpoint is configured.
+The `/health` endpoint reports `observability.otel_active: false` when
+`OTEL_SDK_DISABLED=true`, even if an image-level endpoint default exists. Once
+restoration is proven, it reports `true` only when the SDK is enabled and an
+OTLP endpoint is configured.
 
 ## References
 

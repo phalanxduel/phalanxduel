@@ -15,6 +15,7 @@ import { OTLPMetricExporter as GrpcMetricExporter } from '@opentelemetry/exporte
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { isOtelSdkDisabled } from './otel-config.js';
 
 // Keep reference to original console for internal debugging
 const originalConsole = {
@@ -65,20 +66,18 @@ const resource = resourceFromAttributes({
   'host.name': hostname(),
 });
 
-originalConsole.log(
-  `[instrument] Initializing Pure OTel SDK: ${serviceName} -> ${otlpEndpoint} (${protocol})`,
-);
-
 // ── OTel Configuration ─────────────────────────────────────────────
 
 // Start the SDK only if not in CI or if explicitly enabled
-const otelDisabled =
-  process.env.OTEL_SDK_DISABLED === 'true' ||
-  (process.env.CI === 'true' && !process.env.OTEL_EXPORTER_OTLP_ENDPOINT);
+const otelDisabled = isOtelSdkDisabled();
 
 if (otelDisabled) {
   originalConsole.log('[instrument] OTel SDK is disabled (CI or OTEL_SDK_DISABLED)');
 } else {
+  originalConsole.log(
+    `[instrument] Initializing Pure OTel SDK: ${serviceName} -> ${otlpEndpoint} (${protocol})`,
+  );
+
   // 1. Configure Exporters
   const traceExporter = isHttp
     ? new HttpTraceExporter({ url: `${otlpEndpoint}/v1/traces` })

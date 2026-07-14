@@ -97,6 +97,34 @@ This contract defines required outcomes; it does not hide current gaps.
 are complete, OTel, admin, MCP, and email may remain `DEGRADED`, `FAIL`, or
 `NOT_TESTED`, and the system must not be described as entirely operational.
 
+### Temporary OTel containment (2026-07-14)
+
+`PD-PROD-006` is currently `FAIL` and deliberately isolated from gameplay:
+
+- the production collector rejected its configuration because the bundled
+  collector no longer supports the deprecated `logging` exporter
+- a redacted connectivity probe showed the configured LGTM upstream was not
+  reachable from the Fly runtime
+- the `otel` Fly process group is scaled to zero and absent from
+  `fly.production.toml`
+- server export is disabled with `OTEL_SDK_DISABLED=true`; production browser
+  telemetry is also disabled by default
+- `/health` and `/ready` remain gameplay liveness/readiness signals and must not
+  fail solely because telemetry is unavailable
+
+Re-enable OTel only when all of these are directly proven:
+
+1. the collector configuration validates against the exact bundled binary
+2. Fly can reach an authenticated, centralized LGTM OTLP endpoint
+3. the receiver is private and the collector has passing health/restart checks
+4. a correlation-stable synthetic gameplay trace is queryable in LGTM
+5. the kill switch is removed during a controlled zero-active-match deployment,
+   followed by release-identity, health, readiness, and trace verification
+
+Containment makes the game playable; it does not make the whole-system
+operational claim true. `TASK-345.11` owns containment and `TASK-345.02` owns
+the eventual collector restoration.
+
 ## Verification
 
 Run the executable drift check with:

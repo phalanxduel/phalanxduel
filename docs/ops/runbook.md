@@ -14,10 +14,13 @@ prerequisite, health target, or rollback destination.
 ## 1. Health Monitoring
 
 ### 1.1 Automated Checks
-The system is monitored via Fly.io health checks plus OpenTelemetry signals
-forwarded through collector boundaries to the centralized LGTM stack.
+The production game is monitored by Fly.io liveness and readiness checks.
+OpenTelemetry export is temporarily disabled under the containment contract in
+`production-support-contract.md`; do not treat absent traces as gameplay
+failure or claim telemetry coverage until the documented restoration gates pass.
 *   **Lobby/API**: `GET /health` (Connectivity) and `GET /ready` (Database availability).
-*   **Performance**: Monitored via OpenTelemetry. Sub-20ms turn application is the p50 target.
+*   **Performance**: Sub-20ms turn application remains the p50 target; production
+    OTel evidence is unavailable while containment is active.
 
 ### 1.2 Manual Diagnostics
 Run the following to check the local/remote environment:

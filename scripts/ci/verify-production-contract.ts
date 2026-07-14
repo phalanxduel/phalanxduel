@@ -74,6 +74,14 @@ assert(
 );
 
 assert(flyProduction.includes(`app = "${PRODUCTION_APP}"`), 'Fly production app identity drifted');
+assert(
+  flyProduction.includes('OTEL_SDK_DISABLED = "true"'),
+  'Production must keep the OTel SDK disabled until the restoration contract is satisfied',
+);
+assert(
+  !/^otel\s*=/mu.test(flyProduction),
+  'Production must not declare an OTel process while the collector path is contained',
+);
 for (const healthPath of ['/health', '/ready']) {
   assert(
     flyProduction.includes(`path = "${healthPath}"`),
@@ -91,5 +99,5 @@ assert(
 );
 
 console.log(
-  `Production contract valid: ${REQUIRED_IDS.length} required subsystems, immutable image promotion, production-only deployment.`,
+  `Production contract valid: ${REQUIRED_IDS.length} required subsystems, immutable image promotion, production-only deployment, OTel contained.`,
 );
