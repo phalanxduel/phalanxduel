@@ -63,7 +63,8 @@ async function main() {
   await checkPendingMigrations();
   const app = await buildAdminApp();
   const port = parseInt(process.env.PHALANX_ADMIN_PORT ?? '3002', 10);
-  await app.listen({ port, host: '0.0.0.0' });
+  const host = process.env.HOST ?? '::';
+  await app.listen({ port, host });
   console.log(`Admin service listening on port ${port}`);
 }
 

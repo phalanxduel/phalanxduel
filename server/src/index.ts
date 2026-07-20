@@ -40,7 +40,7 @@ async function main(): Promise<void> {
 
   let app = await buildApp();
   const port = parseInt(process.env.PHALANX_SERVER_PORT ?? '3001', 10);
-  const host = process.env.HOST ?? '0.0.0.0';
+  const host = process.env.HOST ?? '::';
 
   await app.listen({ port, host });
   console.log(`Phalanx Duel server listening on http://${host}:${port}`);
@@ -96,7 +96,7 @@ async function main(): Promise<void> {
 
             app = await buildApp();
             const port = parseInt(process.env.PHALANX_SERVER_PORT ?? '3001', 10);
-            const host = process.env.HOST ?? '0.0.0.0';
+            const host = process.env.HOST ?? '::';
 
             await app.listen({ port, host });
             app.log.info(`Phalanx Duel server re-listening on http://${host}:${port}`);
