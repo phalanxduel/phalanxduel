@@ -64,6 +64,8 @@ describe('POST /admin-api/matches/:id/terminate', () => {
         }),
       }),
     );
+    const { db } = await import('../../src/server/db.js');
+    expect(db.execute).toHaveBeenCalledTimes(1);
     await app.close();
   });
 });

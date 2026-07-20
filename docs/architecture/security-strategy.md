@@ -70,9 +70,15 @@ This document defines the formal security strategy, threat model, and defensive 
 
 ### 2.6 Elevation of Privilege (Admin Access)
 
-* Threat: An attacker gains access to the `/admin` dashboard or sensitive debugging routes.
+* Threat: An attacker gains access to the dedicated operator dashboard or sensitive debugging routes.
 * Mitigation:
-  * **HTTP Basic Auth**: Protected by constant-time comparison (`timingSafeEqual`) and environment-configured credentials.
+  * **Two-step administrator authorization**: The dedicated service verifies a
+    game-issued JWT, then checks `users.is_admin` on every protected request.
+  * **Private mutation boundary**: Operator mutations reach the game server only
+    through `/internal/*` with a shared high-entropy bearer token and emit
+    durable audit records tied to the administrator user id.
+  * **Fail-closed production configuration**: JWT and internal-service secrets
+    have no production fallback values.
   * **Environment Gating**: Debugging routes and telemetry validation tools are
     disabled in production by default.
 * Status: **IMPLEMENTED**.

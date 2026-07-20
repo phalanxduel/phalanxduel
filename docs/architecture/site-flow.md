@@ -41,6 +41,8 @@ different ports:
 
 - Client (Vite): `http://127.0.0.1:5173`
 - Server (Fastify): `http://127.0.0.1:3001`
+- Admin API (Fastify): `http://127.0.0.1:3002`
+- Admin UI (Vite): `http://127.0.0.1:3003`
 - WebSocket server: `ws://127.0.0.1:3001`
 
 | Purpose | URL |
@@ -52,10 +54,12 @@ different ports:
 | Create match (REST) | `http://127.0.0.1:3001/matches` (POST) |
 | Completed matches list | `http://127.0.0.1:3001/matches/completed` |
 | Match event log | `http://127.0.0.1:3001/matches/:matchId/log` (content-negotiated: HTML / compact JSON / full JSON) |
-| Replay endpoint | `http://127.0.0.1:3001/matches/:matchId/replay` |
+| Public replay frames | `http://127.0.0.1:3001/api/matches/:matchId/replay?step=0` |
 | Swagger UI | `http://127.0.0.1:3001/docs` |
 | OpenAPI JSON | `http://127.0.0.1:3001/docs/json` |
-| Admin dashboard | `http://127.0.0.1:3001/admin` |
+| Admin dashboard | `http://127.0.0.1:3003/` |
+| Admin health/readiness | `http://127.0.0.1:3002/health`, `http://127.0.0.1:3002/ready` |
+| Admin replay validation | `http://127.0.0.1:3002/admin-api/matches/:matchId/replay` |
 | WebSocket endpoint | `ws://127.0.0.1:3001/ws` |
 | Register account | `http://127.0.0.1:3001/api/auth/register` (POST) |
 | Login | `http://127.0.0.1:3001/api/auth/login` (POST) |

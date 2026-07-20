@@ -1,80 +1,59 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import supertest from 'supertest';
-import { buildApp } from '../src/app';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { buildApp } from '../src/app.js';
 
-const VALID_CREDENTIALS = Buffer.from('phalanx:phalanx').toString('base64');
-const WRONG_CREDENTIALS = Buffer.from('admin:wrongpassword').toString('base64');
+const INTERNAL_TOKEN = 'test-token-abc';
 const UNKNOWN_MATCH_ID = '00000000-0000-0000-0000-000000000000';
 
-describe('GET /matches/:matchId/replay — Basic Auth', () => {
+describe('GET /internal/matches/:id/replay — private admin boundary', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;
-  let request: ReturnType<typeof supertest>;
 
   beforeAll(async () => {
+    process.env.ADMIN_INTERNAL_TOKEN = INTERNAL_TOKEN;
     app = await buildApp();
-    await app.ready();
-    request = supertest(app.server);
   });
 
   afterAll(async () => {
+    delete process.env.ADMIN_INTERNAL_TOKEN;
     await app.close();
   });
 
-  describe('given no Authorization header', () => {
-    it('should return 401 with UNAUTHORIZED code', async () => {
-      const response = await request.get(`/matches/${UNKNOWN_MATCH_ID}/replay`);
-
-      expect(response.status).toBe(401);
-      expect(response.body).toMatchObject({
-        error: 'Unauthorized',
-        code: 'UNAUTHORIZED',
-      });
+  it('rejects a missing bearer token', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: `/internal/matches/${UNKNOWN_MATCH_ID}/replay`,
     });
-
-    it('should include a WWW-Authenticate header', async () => {
-      const response = await request.get(`/matches/${UNKNOWN_MATCH_ID}/replay`);
-
-      expect(response.headers['www-authenticate']).toBe('Basic realm="Phalanx Duel Admin"');
-    });
+    expect(response.statusCode).toBe(401);
   });
 
-  describe('given wrong credentials', () => {
-    it('should return 401', async () => {
-      const response = await request
-        .get(`/matches/${UNKNOWN_MATCH_ID}/replay`)
-        .set('Authorization', `Basic ${WRONG_CREDENTIALS}`);
-
-      expect(response.status).toBe(401);
-      expect(response.body).toMatchObject({
-        error: 'Unauthorized',
-        code: 'UNAUTHORIZED',
-      });
+  it('rejects an invalid bearer token', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: `/internal/matches/${UNKNOWN_MATCH_ID}/replay`,
+      headers: { authorization: 'Bearer wrong-token' },
     });
+    expect(response.statusCode).toBe(401);
   });
 
-  describe('given a non-Basic Authorization scheme', () => {
-    it('should return 401', async () => {
-      const response = await request
-        .get(`/matches/${UNKNOWN_MATCH_ID}/replay`)
-        .set('Authorization', 'Bearer sometoken');
-
-      expect(response.status).toBe(401);
+  it('accepts the internal token and reaches match lookup', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: `/internal/matches/${UNKNOWN_MATCH_ID}/replay`,
+      headers: { authorization: `Bearer ${INTERNAL_TOKEN}` },
     });
+    expect(response.statusCode).toBe(404);
+    expect(response.json()).toMatchObject({ code: 'MATCH_NOT_FOUND' });
   });
+});
 
-  describe('given correct credentials', () => {
-    it('should pass auth and return 404 for unknown matchId', async () => {
-      // When auth passes, the handler proceeds to match lookup.
-      // An unknown matchId returns 404 — confirming auth was accepted.
-      const response = await request
-        .get(`/matches/${UNKNOWN_MATCH_ID}/replay`)
-        .set('Authorization', `Basic ${VALID_CREDENTIALS}`);
-
-      expect(response.status).toBe(404);
-      expect(response.body).toMatchObject({
-        error: 'Match not found',
-        code: 'MATCH_NOT_FOUND',
-      });
+describe('GET /matches/:matchId/replay — retired operator surface', () => {
+  it('returns 410 instead of accepting legacy Basic Auth', async () => {
+    const app = await buildApp();
+    const response = await app.inject({
+      method: 'GET',
+      url: `/matches/${UNKNOWN_MATCH_ID}/replay`,
     });
+    expect(response.statusCode).toBe(410);
+    expect(response.json()).toMatchObject({ code: 'ADMIN_SURFACE_RETIRED' });
+    await app.close();
   });
 });

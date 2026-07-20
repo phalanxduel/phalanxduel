@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { sql } from 'drizzle-orm';
 import { requireAdmin } from '../middleware/auth.js';
 import { db } from '../db.js';
+import { adminInternalToken, gameServerInternalUrl } from '../config.js';
 
 const MatchListQuery = z.object({
   status: z.enum(['active', 'completed', 'all']).default('all'),
@@ -109,8 +110,8 @@ export function registerMatchRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ error: 'Invalid body', code: 'VALIDATION_ERROR' });
     }
 
-    const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
-    const token = process.env.ADMIN_INTERNAL_TOKEN;
+    const gameServerUrl = gameServerInternalUrl();
+    const token = adminInternalToken();
     if (!token) {
       return reply
         .status(503)
@@ -153,8 +154,8 @@ export function registerMatchRoutes(fastify: FastifyInstance) {
       if (!admin) return;
 
       const { matchId } = request.params;
-      const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
-      const token = process.env.ADMIN_INTERNAL_TOKEN;
+      const gameServerUrl = gameServerInternalUrl();
+      const token = adminInternalToken();
 
       if (!token) {
         return reply
@@ -204,8 +205,8 @@ export function registerMatchRoutes(fastify: FastifyInstance) {
           .send({ error: 'Invalid target sequence number', code: 'VALIDATION_ERROR' });
       }
 
-      const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
-      const token = process.env.ADMIN_INTERNAL_TOKEN;
+      const gameServerUrl = gameServerInternalUrl();
+      const token = adminInternalToken();
 
       if (!token) {
         return reply
@@ -252,8 +253,8 @@ export function registerMatchRoutes(fastify: FastifyInstance) {
       const { commentId } = request.params;
       const { reason } = request.body;
 
-      const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
-      const token = process.env.ADMIN_INTERNAL_TOKEN;
+      const gameServerUrl = gameServerInternalUrl();
+      const token = adminInternalToken();
 
       const res = await fetch(`${gameServerUrl}/internal/comments/${commentId}/remove`, {
         method: 'POST',

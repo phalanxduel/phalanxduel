@@ -139,7 +139,7 @@ describe('Health Endpoints', () => {
       expect(paths).toContain('/health');
       expect(paths).toContain('/ready');
       expect(paths).toContain('/matches');
-      expect(paths).toContain('/matches/{matchId}/replay');
+      expect(paths).not.toContain('/matches/{matchId}/replay');
     });
   });
 

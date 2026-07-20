@@ -18,6 +18,8 @@ instructions.
 - [ ] `rtk ./bin/check` passes locally
 - [ ] required env/secrets are present and audited:
   - `rtk pnpm env:audit:production`
+- [ ] `phalanxduel-admin` has `DATABASE_URL`, the shared `JWT_SECRET`, and the
+      shared `ADMIN_INTERNAL_TOKEN`; the game app has the same internal token
 - [ ] schema/migration changes are understood and safe to promote
 - [ ] the candidate GHCR image was built from the approved Git SHA
 - [ ] test, adversarial-security, SDK, and image-build jobs are green
@@ -41,6 +43,8 @@ Production releases are gated by manual approval in GitHub Actions.
    ```bash
    flyctl deploy --app phalanxduel-production --config fly.production.toml \
      --local-only --image phalanxduel-production:latest
+   flyctl deploy --app phalanxduel-admin --config admin/fly.toml \
+     --local-only --image phalanxduel-admin:latest
    ```
 
 Manual repo-native path when needed:
@@ -54,7 +58,10 @@ Verify production:
 ```bash
 curl -s https://play.phalanxduel.com/health | jq .
 curl -s https://play.phalanxduel.com/ready | jq .
+curl -s https://phalanxduel-admin.fly.dev/health | jq .
+curl -s https://phalanxduel-admin.fly.dev/ready | jq .
 fly logs --app phalanxduel-production
+fly logs --app phalanxduel-admin
 ```
 
 Production checklist:
@@ -62,11 +69,16 @@ Production checklist:
 - [ ] `/health` returns `status: ok`
 - [ ] `/ready` returns `ready: true`
 - [ ] deployed version, build ID, and commit SHA match the approved release
+- [ ] admin `/health` and `/ready` pass with the same commit SHA
 - [ ] no immediate ERROR spike in logs; inspect telemetry only when the support
       contract says OTel is enabled
 - [ ] `/health` reports `observability.otel_active: false` while the temporary
       OTel containment is active, and Fly has no `otel` process group
-- [ ] admin and support-critical paths still work if touched
+- [ ] anonymous `GET /admin-api/matches` on the admin host returns `401`
+- [ ] a current administrator can log in and complete a harmless read
+- [ ] any explicitly approved mutation produces a matching durable audit row
+- [ ] legacy game-host `/admin` and `/admin/ab-tests` return `410`; `/api/admin/*`
+      is absent
 - [ ] every required subsystem in the Production Support Contract has current
       evidence; anything not tested is reported as `NOT_TESTED`
 - [ ] if live matches were active, reconnect/rejoin behavior was spot-checked

@@ -1,11 +1,24 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { db } from '../db.js';
 import { sql } from 'drizzle-orm';
+import { z } from 'zod';
 
 export interface AdminUser {
-  id: string;
-  gamertag: string;
-  suffix: number | null;
+  readonly id: string;
+  readonly gamertag: string;
+  readonly suffix: number | null;
+}
+
+const AdminUserSchema = z.object({
+  id: z.uuid(),
+  gamertag: z.string(),
+  suffix: z.number().int().nullable(),
+});
+
+export async function isAdminUser(userId: string): Promise<boolean> {
+  const rows = await db.execute(sql`SELECT is_admin FROM users WHERE id = ${userId} LIMIT 1`);
+  const row = rows[0] as { is_admin?: unknown } | undefined;
+  return row?.is_admin === true;
 }
 
 /**
@@ -20,15 +33,15 @@ export async function requireAdmin(
   let payload: AdminUser;
 
   try {
-    payload = request.server.jwt.verify(request.cookies.admin_token ?? '');
+    payload = AdminUserSchema.parse(
+      request.server.jwt.verify(request.cookies.admin_token ?? '') as unknown,
+    );
   } catch {
     void reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
     return null;
   }
 
-  const rows = await db.execute(sql`SELECT is_admin FROM users WHERE id = ${payload.id} LIMIT 1`);
-
-  if (!rows[0] || !(rows[0] as { is_admin: boolean }).is_admin) {
+  if (!(await isAdminUser(payload.id))) {
     void reply.status(403).send({ error: 'Forbidden — not an admin', code: 'FORBIDDEN' });
     return null;
   }

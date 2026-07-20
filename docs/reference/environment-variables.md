@@ -10,12 +10,12 @@ Duel runtime and observability workflow.
 | `APP_ENV` | Runtime | none | yes for deploys | Deployment environment label (`staging`, `production`) |
 | `NODE_ENV` | Runtime | `development` | yes | Node runtime mode |
 | `HOST` | Server | `0.0.0.0` | no | Bind address |
-| `PORT` / `PHALANX_SERVER_PORT` | Server | `3001` | no | HTTP listen port |
-| `DATABASE_URL` | Server | none | yes in staging/prod | Postgres connection string |
-| `JWT_SECRET` | Server | none | yes in production | Session signing key |
-| `PHALANX_ADMIN_USER` | Server/Admin | none | no | Admin basic-auth username |
-| `PHALANX_ADMIN_PASSWORD` | Server/Admin | none | no | Admin basic-auth password |
-| `ADMIN_INTERNAL_TOKEN` | Server/Admin | none | no | Shared internal auth token |
+| `PORT` / `PHALANX_SERVER_PORT` | Server | `3001` | no | Game-server HTTP listen port |
+| `PHALANX_ADMIN_PORT` | Admin | `3002` | no | Dedicated admin HTTP listen port |
+| `DATABASE_URL` | Server/Admin | none | yes in production | Postgres connection string |
+| `JWT_SECRET` | Server/Admin | none | yes in production | Shared session signing key |
+| `GAME_SERVER_INTERNAL_URL` | Admin | `http://127.0.0.1:3001` outside production | yes in production | Private game-server origin |
+| `ADMIN_INTERNAL_TOKEN` | Server/Admin | none | yes in production | Shared internal bearer token |
 | `OTEL_SDK_DISABLED` | Server/Admin | `false` | yes during production containment | Prevent OTel exporters from starting |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Server/Admin | `http://127.0.0.1:4318` | no | OTLP collector intake |
 | `OTEL_EXPORTER_OTLP_PROTOCOL` | Server/Admin | `http/protobuf` | no | OTLP transport protocol |
@@ -105,16 +105,20 @@ DATABASE_URL="<local-postgres-uri>"
 
 ### JWT_SECRET
 
-HS256 signing key for sessions and admin authentication. Production should fail
-fast if this is unset.
+HS256 signing key shared by the game and dedicated admin applications. The game
+issues the login token; the admin service verifies it and then checks
+`users.is_admin`. Both production services fail closed when this is unset.
 
-### PHALANX_ADMIN_USER / PHALANX_ADMIN_PASSWORD
+### GAME_SERVER_INTERNAL_URL
 
-Credentials for the admin surface.
+Private game-server origin used by the dedicated admin service. Production uses
+`http://phalanxduel-production.internal:3001`; the public game origin is not a
+server-to-server fallback.
 
 ### ADMIN_INTERNAL_TOKEN
 
-Shared token used for server-to-admin internal API calls.
+Shared bearer token used only for dedicated-admin-to-game-server calls under
+`/internal/*`. Configure the same high-entropy value on both Fly applications.
 
 ## OpenTelemetry and Collector Topology
 

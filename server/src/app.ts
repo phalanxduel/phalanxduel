@@ -1,4 +1,4 @@
-import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -41,9 +41,7 @@ import {
   TransitionTriggerSchema,
   ServerMessageSchema,
 } from '@phalanxduel/shared';
-import { computeStateHash } from '@phalanxduel/shared/hash';
 import type { ServerMessage, ClientMessage, GameOptions } from '@phalanxduel/shared';
-import { replayGame } from '@phalanxduel/engine';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { emitOtlpLog } from './instrument.js';
 import { toJsonSchema } from './utils/openapi.js';
@@ -66,9 +64,6 @@ import { registerMatchmakingRoutes } from './routes/matchmaking.js';
 import { MatchmakingQueueService } from './matchmaking-queue.js';
 import { registerSpectatorRoutes } from './routes/spectator.js';
 import { registerSocialRoutes } from './routes/social.js';
-import { registerAdminRoutes } from './routes/admin.js';
-import { renderAdminDashboard } from './adminDashboard.js';
-import { getAbTestsSnapshotFromEnv } from './abTests.js';
 import { traceWsMessage, traceHttpHandler, httpTraceContext } from './tracing.js';
 import {
   matchesActive,
@@ -141,66 +136,6 @@ function buildLoggerConfig(): FastifyLoggerConfig {
       ],
     },
   };
-}
-
-function resolveAdminCredentials(): { user: string; password: string } | null {
-  const configuredUser = process.env.PHALANX_ADMIN_USER;
-  const configuredPassword = process.env.PHALANX_ADMIN_PASSWORD;
-  if (configuredUser && configuredPassword) {
-    return { user: configuredUser, password: configuredPassword };
-  }
-
-  const env = process.env.NODE_ENV ?? 'development';
-  if (env === 'development' || env === 'test') {
-    return { user: 'phalanx', password: 'phalanx' };
-  }
-
-  return null;
-}
-
-/**
- * Verify HTTP Basic Auth credentials using timing-safe comparison.
- * In production-like environments, credentials must be explicitly configured.
- */
-function checkBasicAuth(authHeader: string | undefined): boolean {
-  if (!authHeader) return false;
-
-  const match = /^Basic\s+(.+)$/i.exec(authHeader);
-  if (!match) return false;
-
-  let decoded: string;
-  try {
-    const credentials = match[1];
-    if (!credentials) return false;
-    decoded = Buffer.from(credentials, 'base64').toString('utf8');
-  } catch {
-    return false;
-  }
-
-  const colonIndex = decoded.indexOf(':');
-  if (colonIndex === -1) return false;
-
-  const user = decoded.slice(0, colonIndex);
-  const password = decoded.slice(colonIndex + 1);
-
-  const creds = resolveAdminCredentials();
-  if (!creds) return false;
-  const expectedUser = creds.user;
-  const expectedPassword = creds.password;
-
-  // Pad to fixed length so timingSafeEqual doesn't throw on length mismatch.
-  const MAX_LEN = 256;
-  const userActual = Buffer.alloc(MAX_LEN);
-  const userExpected = Buffer.alloc(MAX_LEN);
-  userActual.write(user.slice(0, MAX_LEN), 'utf8');
-  userExpected.write(expectedUser.slice(0, MAX_LEN), 'utf8');
-
-  const passActual = Buffer.alloc(MAX_LEN);
-  const passExpected = Buffer.alloc(MAX_LEN);
-  passActual.write(password.slice(0, MAX_LEN), 'utf8');
-  passExpected.write(expectedPassword.slice(0, MAX_LEN), 'utf8');
-
-  return timingSafeEqual(userActual, userExpected) && timingSafeEqual(passActual, passExpected);
 }
 
 function resolveCreateMatchSeed(msg: { rngSeed?: number }): number | undefined {
@@ -359,10 +294,6 @@ export async function buildApp(options: BuildAppOptions = {}) {
             in: 'cookie',
             name: 'phalanx_refresh',
           },
-          basicAuth: {
-            type: 'http',
-            scheme: 'basic',
-          },
         },
       },
     },
@@ -454,7 +385,6 @@ export async function buildApp(options: BuildAppOptions = {}) {
   registerMatchmakingRoutes(app, matchManager);
   registerSpectatorRoutes(app, matchManager);
   registerSocialRoutes(app);
-  registerAdminRoutes(app, matchManager);
 
   // ── Static file serving (production: serve client/dist/) ─────────
   const clientDist = resolve(__dirname, '../../client/dist');
@@ -694,14 +624,15 @@ export async function buildApp(options: BuildAppOptions = {}) {
     },
   );
 
-  // ── GET /matches/:matchId/replay — replay and validate a match ──
+  // Retired operator route. Replay validation is available only through the
+  // dedicated admin service and the private /internal boundary.
   app.get<{ Params: { matchId: string } }>(
     '/matches/:matchId/replay',
     {
       schema: {
+        hide: true,
         tags: ['matches'],
         summary: 'Replay and validate a match from its action history',
-        security: [{ basicAuth: [] }],
         params: {
           type: 'object',
           properties: {
@@ -734,44 +665,30 @@ export async function buildApp(options: BuildAppOptions = {}) {
               code: { type: 'string' },
             },
           },
+          410: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' },
+              code: { type: 'string' },
+            },
+          },
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('replayMatch', httpTraceContext(request, reply), async () => {
-        if (!checkBasicAuth(request.headers.authorization)) {
-          void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"');
-          return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
-        }
-
-        const { matchId } = request.params;
-        const match = await matchManager.getMatch(matchId);
-        if (!match?.config) {
-          void reply.status(404);
-          return { error: 'Match not found', code: 'MATCH_NOT_FOUND' };
-        }
-
-        const result = replayGame(match.config, match.actionHistory, {
-          hashFn: computeStateHash,
-        });
-
-        return {
-          valid: result.valid,
-          actionCount: match.actionHistory.length,
-          finalStateHash: computeStateHash(result.finalState),
-          ...(result.error ? { error: result.error, failedAtIndex: result.failedAtIndex } : {}),
-        };
+    async (_request, reply) => {
+      return reply.status(410).send({
+        error: 'Operator replay validation moved to the dedicated admin service',
+        code: 'ADMIN_SURFACE_RETIRED',
       });
     },
   );
 
-  // ── GET /admin/ab-tests — Basic Auth JSON A/B config snapshot ────
+  // Retired operator route. A/B snapshots are available through the dedicated admin service.
   app.get(
     '/admin/ab-tests',
     {
       schema: {
         hide: true,
-        security: [{ basicAuth: [] }],
         response: {
           200: {
             type: 'object',
@@ -814,41 +731,37 @@ export async function buildApp(options: BuildAppOptions = {}) {
             },
             required: ['error', 'code'],
           },
+          410: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' },
+              code: { type: 'string' },
+            },
+            required: ['error', 'code'],
+          },
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('admin.abTests', httpTraceContext(request, reply), () => {
-        if (!checkBasicAuth(request.headers.authorization)) {
-          void reply.status(401).header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"');
-          return { error: 'Unauthorized', code: 'UNAUTHORIZED' };
-        }
-
-        return getAbTestsSnapshotFromEnv();
+    async (_request, reply) => {
+      return reply.status(410).send({
+        error: 'A/B test operations moved to the dedicated admin service',
+        code: 'ADMIN_SURFACE_RETIRED',
       });
     },
   );
 
-  // ── GET /admin — Basic Auth HTML admin dashboard ─────────────────
+  // Retired operator route. The game server no longer hosts an admin dashboard.
   app.get(
     '/admin',
     {
       schema: {
         hide: true,
-        security: [{ basicAuth: [] }],
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('admin.dashboard', httpTraceContext(request, reply), () => {
-        if (!checkBasicAuth(request.headers.authorization)) {
-          void reply
-            .status(401)
-            .header('WWW-Authenticate', 'Basic realm="Phalanx Duel Admin"')
-            .header('Content-Type', 'text/html');
-          return '<p>Unauthorized</p>';
-        }
-        void reply.header('Content-Type', 'text/html');
-        return renderAdminDashboard();
+    async (_request, reply) => {
+      return reply.status(410).send({
+        error: 'Operator dashboard moved to the dedicated admin service',
+        code: 'ADMIN_SURFACE_RETIRED',
       });
     },
   );

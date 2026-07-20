@@ -59,17 +59,7 @@
     │   │   │   │   │   └── xport (GET, HEAD)
     │   │   │   │   ├── account (DELETE)
     │   │   │   │   └── forgot-password (POST)
-    │   │   │   ├── chievements/stats (GET, HEAD)
-    │   │   │   └── dmin/
-    │   │   │       ├── players/search (GET, HEAD)
-    │   │   │       ├── stats/deep (GET, HEAD)
-    │   │   │       ├── db/insights (GET, HEAD)
-    │   │   │       └── matches/
-    │   │   │           ├── search (GET, HEAD)
-    │   │   │           └── :matchId
-    │   │   │               └── /
-    │   │   │                   ├── terminate (POST)
-    │   │   │                   └── rollback (POST)
+    │   │   │   └── chievements/stats (GET, HEAD)
     │   │   ├── ladder/
     │   │   │   └── :category (GET, HEAD)
     │   │   │       └── /
@@ -103,7 +93,10 @@
     │   │       └── :id
     │   │           └── /
     │   │               ├── terminate (POST)
-    │   │               └── rollback (POST)
+    │   │               └── r
+    │   │                   ├── eplay (GET, HEAD)
+    │   │                   └── ollback (POST)
+    │   ├── admin/ab-tests (GET, HEAD)
     │   ├── users/
     │   │   └── :id
     │   │       └── /

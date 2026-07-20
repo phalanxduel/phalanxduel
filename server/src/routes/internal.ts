@@ -2,11 +2,14 @@ import type { FastifyInstance } from 'fastify';
 import type { WebSocket } from 'ws';
 import { z } from 'zod';
 import { CreateMatchParamsPartialSchema, GameOptionsSchema } from '@phalanxduel/shared';
+import { computeStateHash } from '@phalanxduel/shared/hash';
+import { replayGame } from '@phalanxduel/engine';
 import { validateInternalToken } from '../middleware/internal-auth.js';
 import type { IMatchManager } from '../match-types.js';
 import { db } from '../db/index.js';
 import { playerRatings } from '../db/schema.js';
 import { and, eq } from 'drizzle-orm';
+import { getAbTestsSnapshotFromEnv } from '../abTests.js';
 
 const CreateMatchBodySchema = z.object({
   playerName: z.string().min(1).max(50),
@@ -129,6 +132,37 @@ export function registerInternalRoutes(fastify: FastifyInstance, matchManager: I
         .send({ error: 'Match not found or already resolved', code: 'NOT_FOUND' });
     }
     return reply.status(200).send({ terminated: true });
+  });
+
+  fastify.get<{ Params: unknown }>(
+    '/internal/matches/:id/replay',
+    { schema: { hide: true } },
+    async (request, reply) => {
+      if (!validateInternalToken(request, reply)) return;
+
+      const parsed = z.object({ id: z.uuid() }).safeParse(request.params);
+      if (!parsed.success) {
+        return reply.status(400).send({ error: 'Invalid params', code: 'VALIDATION_ERROR' });
+      }
+
+      const match = await matchManager.getMatch(parsed.data.id);
+      if (!match?.config) {
+        return reply.status(404).send({ error: 'Match not found', code: 'MATCH_NOT_FOUND' });
+      }
+
+      const result = replayGame(match.config, match.actionHistory, { hashFn: computeStateHash });
+      return reply.status(200).send({
+        valid: result.valid,
+        actionCount: match.actionHistory.length,
+        finalStateHash: computeStateHash(result.finalState),
+        ...(result.error ? { error: result.error, failedAtIndex: result.failedAtIndex } : {}),
+      });
+    },
+  );
+
+  fastify.get('/internal/admin/ab-tests', { schema: { hide: true } }, async (request, reply) => {
+    if (!validateInternalToken(request, reply)) return;
+    return reply.status(200).send(getAbTestsSnapshotFromEnv());
   });
 
   fastify.post<{ Params: unknown; Body: unknown }>(

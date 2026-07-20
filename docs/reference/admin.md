@@ -1,89 +1,109 @@
+---
+title: "Admin Operations"
+description: "Canonical dedicated-admin architecture, authorization boundary, audit semantics, and operator endpoints."
+status: active
+updated: "2026-07-20"
+audience: operator
+authoritative_source: "admin/, admin/fly.toml, server/src/routes/internal.ts"
+related:
+  - docs/ops/production-support-contract.md
+  - docs/architecture/feature-flags.md
+  - docs/reference/environment-variables.md
+---
+
 # Admin Operations
 
-This document defines operational behavior for authenticated admin routes and
-A/B experiment configuration.
+Phalanx Duel has one supported production operator architecture: the dedicated
+`phalanxduel-admin` Fly application at
+`https://phalanxduel-admin.fly.dev`. The game server does not host an operator
+dashboard or accept legacy admin Basic Auth.
 
-For the full runtime flag and experiment playbook, see
-[`docs/architecture/feature-flags.md`](docs/architecture/feature-flags.md).
+## Trust Boundary
 
-## Admin Authentication
-
-Admin routes (`/admin`, `/admin/ab-tests`, replay validation routes) use HTTP
-Basic Auth.
-
-Credential resolution order:
-
-1. `PHALANX_ADMIN_USER` + `PHALANX_ADMIN_PASSWORD` from environment.
-2. Fallback to `phalanx` / `phalanx` only when `NODE_ENV` is `development` or
-   `test`.
-3. In production-like environments, no fallback exists.
-
-## A/B Configuration Contract
-
-### Server source of truth
-
-A/B tests are configured via `PHALANX_AB_TESTS_JSON`.
-
-Expected shape: JSON array.
-
-```json
-[
-  {
-    "id": "lobby_framework",
-    "description": "Preact lobby rollout",
-    "variants": {
-      "control": 90,
-      "preact": 10
-    }
-  }
-]
+```mermaid
+flowchart LR
+  Operator["Authenticated operator"] -->|"HTTPS + admin_token cookie"| Admin["phalanxduel-admin"]
+  Admin -->|"JWT verification + users.is_admin"| Database[("PostgreSQL")]
+  Admin -->|"Private .internal URL + bearer token"| Game["phalanxduel-production"]
+  Admin -->|"actor, action, target, metadata"| Audit[("admin_audit_log")]
 ```
 
-`variants` may be either:
+The authorization sequence is:
 
-- object map (`{ "control": 90, "preact": 10 }`), or
-- array (`[{ "name": "control", "ratio": 90 }, ...]`).
+1. `POST /admin-api/auth/login` forwards credentials to the game server's
+   normal login endpoint.
+2. The admin service verifies the returned JWT with the shared `JWT_SECRET`.
+3. Before setting `admin_token`, the service confirms `users.is_admin = true`.
+4. Every protected request repeats the JWT verification and current database
+   administrator check, so revoked access does not remain authorized until
+   token expiry.
+5. State-changing game operations cross only the private Fly network and must
+   present `ADMIN_INTERNAL_TOKEN`.
 
-Validation rules:
+`JWT_SECRET`, `GAME_SERVER_INTERNAL_URL`, and `ADMIN_INTERNAL_TOKEN` have no
+production fallback. Missing configuration prevents the dedicated service from
+starting.
 
-- `id` must be non-empty.
-- `variants` must be non-empty.
-- ratios must be finite and non-negative.
-- duplicate `id` entries are ignored after first occurrence, with a warning.
-- total ratio is not forced to 100, but non-100 totals emit warnings.
+## Health and Release Identity
 
-### Admin visibility
+- `GET /health` is public liveness and returns only safe service, version,
+  build, commit, uptime, region, and timestamp fields.
+- `GET /ready` performs a bounded `SELECT 1`; it returns `503` when PostgreSQL
+  is unavailable.
+- Fly routes only the dedicated `admin` process and requires both probes to
+  pass. The required subsystem keeps one Machine running.
 
-`GET /admin/ab-tests` returns normalized tests + warnings:
+## Authenticated Reads
 
-```json
-{
-  "tests": [
-    {
-      "id": "lobby_framework",
-      "description": "Preact lobby rollout",
-      "variants": [
-        { "name": "control", "ratio": 90 },
-        { "name": "preact", "ratio": 10 }
-      ],
-      "totalRatio": 100
-    }
-  ],
-  "warnings": []
-}
-```
+Representative harmless reads include:
 
-`/admin` dashboard renders A/B status by fetching this endpoint.
+- `GET /admin-api/matches?limit=1`
+- `GET /admin-api/users?limit=1`
+- `GET /admin-api/system/ab-tests`
+- `GET /admin-api/matches/:matchId/replay`
 
-## Client Rollout Knob
+The last two are proxied through private bearer-authenticated game-server
+routes. Anonymous or malformed cookies receive `401`; authenticated users who
+are not current administrators receive `403`.
 
-Client-side lobby assignment supports this environment variable:
+## Mutations and Audit
 
-- `VITE_AB_LOBBY_PREACT_PERCENT` (0..100)
+Mutations require the same per-request administrator check. Match creation,
+termination, rollback, password reset, and administrator-role changes write
+`admin_audit_log` rows containing the actor id, action, optional target id, and
+structured metadata. Moderation operations pass the actor id to the game
+server's moderation service, which owns their audit semantics.
 
-Behavior:
+Audit writes occur only after the corresponding upstream mutation succeeds.
+An upstream authorization or operation failure is returned without recording a
+false successful action.
 
-- Bucketing is deterministic per visitor id.
-- `0` means all `control`.
-- `100` means all `preact`.
-- values outside range are clamped.
+## Retired Game-Server Routes
+
+The following historical routes return `410 ADMIN_SURFACE_RETIRED` and do not
+accept Basic Auth:
+
+- `GET https://play.phalanxduel.com/admin`
+- `GET https://play.phalanxduel.com/admin/ab-tests`
+- `GET https://play.phalanxduel.com/matches/:matchId/replay`
+
+Legacy `/api/admin/*` routes are not registered and return `404`. Operator
+automation must use the dedicated service; internal `/internal/*` routes are
+not operator-facing APIs.
+
+## Production Verification
+
+During a zero-active-match release window:
+
+1. Confirm the game and admin `/health` and `/ready` probes report the same
+   approved commit SHA.
+2. Confirm an anonymous admin API read returns `401`.
+3. Log in as a current administrator and perform a harmless read.
+4. Perform only an explicitly approved reversible mutation, then verify the
+   matching `admin_audit_log` row and actor.
+5. Confirm the three retired game-server routes return `410` and
+   `/api/admin/*` returns `404`.
+
+The production deployment, rollback, and whole-system certification rules are
+defined by the
+[Production Support Contract](../ops/production-support-contract.md).

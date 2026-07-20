@@ -1,13 +1,49 @@
 app = "phalanxduel-admin"
 primary_region = "ord"
+kill_signal = "SIGTERM"
+kill_timeout = "35s"
+
+[build]
+
+[processes]
+admin = "node admin/dist/server/index.js"
+
+[env]
+APP_ENV = "production"
+NODE_ENV = "production"
+PHALANX_ADMIN_PORT = "3002"
+GAME_SERVER_INTERNAL_URL = "http://phalanxduel-production.internal:3001"
+# Keep telemetry contained with the game service until TASK-345.02 restores the collector path.
+OTEL_SDK_DISABLED = "true"
 
 [http_service]
 internal_port = 3002
+processes = ["admin"]
 force_https = true
-auto_stop_machines = true
+auto_stop_machines = false
 auto_start_machines = true
-min_machines_running = 0
+min_machines_running = 1
+
+[http_service.concurrency]
+type = "requests"
+soft_limit = 25
+hard_limit = 50
+
+[[http_service.checks]]
+grace_period = "20s"
+interval = "30s"
+method = "GET"
+timeout = "5s"
+path = "/health"
+
+[[http_service.checks]]
+grace_period = "5s"
+interval = "20s"
+method = "GET"
+timeout = "2s"
+path = "/ready"
 
 [[vm]]
-size = "shared-cpu-1x"
-memory = "256mb"
+cpu_kind = "shared"
+cpus = 1
+memory_mb = 256

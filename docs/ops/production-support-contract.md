@@ -2,7 +2,7 @@
 title: "Production Support Contract"
 description: "Canonical inventory, ownership, health semantics, and release evidence for every supported Phalanx Duel production subsystem."
 status: active
-updated: "2026-07-14"
+updated: "2026-07-20"
 audience: operator
 authoritative_source: ".github/workflows/pipeline.yml, fly.production.toml"
 related:
@@ -39,7 +39,7 @@ not a release prerequisite, fallback, health target, or supported endpoint.
 | `PD-PROD-002` | Required | REST and WebSocket game server | `https://play.phalanxduel.com`, `wss://play.phalanxduel.com/ws` | Server | `/health` is live, OpenAPI loads, WebSocket upgrades, and a controlled match completes |
 | `PD-PROD-003` | Required | PostgreSQL persistence and event bus | Private `DATABASE_URL` | Server/Ops | `/ready` performs a bounded database query; match snapshot and event log persist |
 | `PD-PROD-004` | Required | Deterministic engine, replay, spectator, and reconnect | Game server APIs and WebSocket protocol | Engine/Server | CI trust gates pass; production synthetic evidence verifies fingerprint, replay, visibility, and rejoin semantics |
-| `PD-PROD-005` | Required | Operator admin surface | Authenticated production-private or protected path defined by the active admin architecture | Server/Admin | Anonymous access is rejected; an authenticated harmless read succeeds; mutations are audited |
+| `PD-PROD-005` | Required | Dedicated operator admin service | `https://phalanxduel-admin.fly.dev` with private calls to `phalanxduel-production.internal` | Admin/Ops | Both probes pass for the release SHA; anonymous access is rejected; an authenticated harmless read succeeds; mutations are audited |
 | `PD-PROD-006` | Required | OpenTelemetry collector and centralized LGTM path | Private OTLP collector boundary | Ops | Collector is reachable, export succeeds, and a correlated gameplay trace is queryable in LGTM |
 | `PD-PROD-007` | Required | Public MCP agent gateway | `https://phalanxduel-mcp-public.fly.dev/mcp` | MCP/Ops | Health succeeds and the public tool inventory contains no admin mutations |
 | `PD-PROD-008` | Required | Private MCP admin gateway | Fly private network or operator proxy only | MCP/Ops | No public route exists; missing or invalid bearer tokens are rejected; authorized read succeeds |
@@ -89,6 +89,22 @@ The canonical production path is:
 Production must not rebuild from source during promotion. Rollback selects a
 known-good image that remains compatible with live schema and persisted match
 state; rollback never rewinds the database.
+
+### Canonical admin architecture
+
+The dedicated `phalanxduel-admin` Fly application is the sole production
+operator surface. The production pipeline promotes the same tested GHCR image
+to the game and admin applications, using `fly.production.toml` and
+`admin/fly.toml` respectively. The admin service verifies game-issued JWTs,
+checks the current `users.is_admin` value per request, and reaches mutations
+only through private bearer-authenticated game-server routes. Successful
+mutations are durably attributed in `admin_audit_log`.
+
+The game Fly app declares only its `web` process. Its historical `/admin`,
+`/admin/ab-tests`, and operator replay paths are retired tombstones, and it
+does not register `/api/admin/*` routes. `JWT_SECRET`,
+`GAME_SERVER_INTERNAL_URL`, and `ADMIN_INTERNAL_TOKEN` have no production
+fallback values in the dedicated service.
 
 ## Current Remediation Boundary
 

@@ -5,6 +5,7 @@ import { randomBytes } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { requireAdmin } from '../middleware/auth.js';
 import { db } from '../db.js';
+import { adminInternalToken, gameServerInternalUrl } from '../config.js';
 
 export function registerUserRoutes(fastify: FastifyInstance) {
   // GET /admin-api/users — paginated user list with match counts
@@ -146,8 +147,14 @@ export function registerUserRoutes(fastify: FastifyInstance) {
       const { userId } = request.params;
       const { reason } = request.body;
 
-      const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
-      const token = process.env.ADMIN_INTERNAL_TOKEN;
+      const gameServerUrl = gameServerInternalUrl();
+      const token = adminInternalToken();
+
+      if (!token) {
+        return reply
+          .status(503)
+          .send({ error: 'Admin token not configured', code: 'NOT_CONFIGURED' });
+      }
 
       const res = await fetch(`${gameServerUrl}/internal/users/${userId}/disable`, {
         method: 'POST',
@@ -171,8 +178,14 @@ export function registerUserRoutes(fastify: FastifyInstance) {
 
       const { userId } = request.params;
 
-      const gameServerUrl = process.env.GAME_SERVER_INTERNAL_URL ?? 'http://127.0.0.1:3001';
-      const token = process.env.ADMIN_INTERNAL_TOKEN;
+      const gameServerUrl = gameServerInternalUrl();
+      const token = adminInternalToken();
+
+      if (!token) {
+        return reply
+          .status(503)
+          .send({ error: 'Admin token not configured', code: 'NOT_CONFIGURED' });
+      }
 
       const res = await fetch(`${gameServerUrl}/internal/users/${userId}/purge`, {
         method: 'POST',

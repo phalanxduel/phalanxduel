@@ -21,28 +21,39 @@ import { registerLoginRoute } from './routes/login.js';
 import { registerMatchRoutes } from './routes/matches.js';
 import { registerUserRoutes } from './routes/users.js';
 import { registerReportRoutes } from './routes/reports.js';
+import { registerHealthRoutes } from './routes/health.js';
+import { registerSystemRoutes } from './routes/system.js';
 import { checkPendingMigrations } from './check-migrations.js';
+import { adminJwtSecret, assertAdminProductionConfig } from './config.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export async function buildAdminApp() {
+  assertAdminProductionConfig();
   const app = Fastify({ logger: process.env.NODE_ENV !== 'test' });
 
   await app.register(fastifyCookie);
   await app.register(fastifyJwt, {
-    secret: process.env.JWT_SECRET ?? 'phalanx-dev-secret',
+    secret: adminJwtSecret(),
     cookie: { cookieName: 'admin_token', signed: false },
   });
 
+  registerHealthRoutes(app);
   registerLoginRoute(app);
   registerMatchRoutes(app);
   registerUserRoutes(app);
   registerReportRoutes(app);
+  registerSystemRoutes(app);
 
   const clientDist = resolve(__dirname, '../../dist/client');
   if (existsSync(clientDist)) {
     await app.register(fastifyStatic, { root: clientDist, prefix: '/' });
-    app.setNotFoundHandler((_req, reply) => void reply.sendFile('index.html'));
+    app.setNotFoundHandler((request, reply) => {
+      if (request.url.startsWith('/admin-api/')) {
+        return reply.status(404).send({ error: 'Not Found', code: 'NOT_FOUND' });
+      }
+      return reply.sendFile('index.html');
+    });
   }
 
   return app;

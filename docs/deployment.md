@@ -34,10 +34,12 @@ We use **Husky** and **lint-staged** to ensure that only quality code is committ
 ### Pre-Commit Hook
 - **Environment Check**: Rejects commits containing sensitive `.env` files (e.g., `.env.local`).
 - **Linting**: Runs `eslint`, `prettier`, and `markdownlint` only on files staged for commit.
-- **Project Gates**: Runs `rtk pnpm verify:full` which performs the full build, lint, typecheck, test, schema, docs, and formatting verification pass across the workspace.
+- **Project Gate**: Runs `rtk pnpm verify:quick` for build identity, lint,
+  typecheck, generated-doc, Markdown, and formatting checks.
 
 ### Pre-Push Hook
-- Performs a final `rtk pnpm verify:full` to guarantee that the branch is ready for the remote repository.
+- Runs `rtk pnpm verify:ci` as the CI-shaped local guard. Release operators
+  also run `rtk bin/dock pnpm verify:full` before pushing.
 
 ---
 
@@ -58,8 +60,8 @@ Once merged into `main`, the pipeline switches to **Artifact Production**.
 - A production Docker image is built using the canonical `Dockerfile`.
 - The image is pushed to **GitHub Container Registry (GHCR)**.
 - **Tagging**: Every build is tagged with the git SHA and `latest-main`.
-- This artifact is useful for scanning, inspection, and future deployment
-  workflows, but it is **not** the runtime artifact currently promoted to Fly.
+- The content-addressed artifact is the runtime artifact promoted to Fly; the
+  production job does not rebuild source.
 
 ### Runtime Deployment Path
 
@@ -67,7 +69,8 @@ Once merged into `main`, the pipeline switches to **Artifact Production**.
   image from the verified Git SHA.
 - A maintainer approves the production environment.
 - The workflow pulls and locally tags that tested image, then deploys it to
-  `phalanxduel-production` with `flyctl --local-only --image`.
+  `phalanxduel-production` and `phalanxduel-admin` with
+  `flyctl --local-only --image`.
 - Promotion and rollback behave like rolling app restarts. Active matches
   recover through persisted state and rejoin; clients may need to reconnect,
   and rollback does not rewind schema or persisted gameplay data.
@@ -90,6 +93,27 @@ the test, adversarial-security, SDK, and image-build jobs succeed.
 - **App**: `phalanxduel-production`
 - **Custom Domain**: `play.phalanxduel.com`
 - **Infrastructure URL**: `phalanxduel-production.fly.dev`
+- **Admin app**: `phalanxduel-admin`
+- **Protected admin URL**: `https://phalanxduel-admin.fly.dev`
+
+### Dedicated Admin Service
+
+`admin/fly.toml` runs `node admin/dist/server/index.js` as the only `admin`
+process. It stays independently healthy on port `3002`, while private game
+operations use `http://phalanxduel-production.internal:3001`.
+
+The admin app requires `DATABASE_URL`, `JWT_SECRET`, and
+`ADMIN_INTERNAL_TOKEN`; the JWT secret must match the game application and the
+internal token must be the same high-entropy value on both applications. Do not
+copy unrelated game-provider secrets into the admin app.
+
+The pipeline promotes the same immutable image to both apps. A release is not
+green when the game deploy succeeds but the required admin deploy or either
+admin health check fails.
+
+The emergency manual workflow also requires a content-addressed GHCR
+`repository@sha256:digest` input. It deploys that one image to both applications
+and cannot rebuild source.
 
 ---
 

@@ -307,43 +307,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  #   deploy-staging:
-  #     name: 'Deploy: Staging'
-  #     needs: [build]
-  #     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-  #     runs-on: ubuntu-24.04
-  #     environment:
-  #       name: staging
-  #       url: https://phalanxduel-staging.fly.dev
-  #     steps:
-  #       - name: Checkout
-  #         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-  #
-  #       - name: Setup Flyctl
-  #         uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # master
-  #
-  #       - name: Log in to GHCR
-  #         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
-  #         with:
-  #           registry: ghcr.io
-  #           username: ${{ github.actor }}
-  #           password: ${{ secrets.GITHUB_TOKEN }}
-  #
-  #       - name: Pull image from GHCR
-  #         run: |
-  #           docker pull "${{ needs.build.outputs.image_ref }}"
-  #           docker tag "${{ needs.build.outputs.image_ref }}" phalanxduel-staging:latest
-  #
-  #       - name: Deploy GHCR image to Fly.io staging
-  #         run: |
-  #           flyctl deploy \
-  #             --app phalanxduel-staging \
-  #             --config fly.staging.toml \
-  #             --local-only \
-  #             --image phalanxduel-staging:latest
-  #         env:
-  #           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
   promote-production:
     name: 'Promote: Production'
     needs: [build]
@@ -369,6 +332,7 @@ jobs:
         run: |
           docker pull "${{ needs.build.outputs.image_ref }}"
           docker tag "${{ needs.build.outputs.image_ref }}" phalanxduel-production:latest
+          docker tag "${{ needs.build.outputs.image_ref }}" phalanxduel-admin:latest
 
       - name: Promote tested GHCR image to Fly.io production
         run: |
@@ -377,5 +341,15 @@ jobs:
             --config fly.production.toml \
             --local-only \
             --image phalanxduel-production:latest
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Promote tested GHCR image to Fly.io admin
+        run: |
+          flyctl deploy \
+            --app phalanxduel-admin \
+            --config admin/fly.toml \
+            --local-only \
+            --image phalanxduel-admin:latest
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

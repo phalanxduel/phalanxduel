@@ -4,12 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: Git ref to deploy
+        description: Git ref containing the matching Fly configuration
         required: true
         default: main
+      image_ref:
+        description: Content-addressed GHCR image reference (repository@sha256:digest)
+        required: true
 
 permissions:
   contents: read
+  packages: read
 
 concurrency:
   group: manual-production-deploy
@@ -31,16 +35,36 @@ jobs:
       - name: Setup Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # master
 
-      - name: Deploy production from source
+      - name: Log in to GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull immutable release image
         run: |
-          commit_sha="$(git rev-parse HEAD)"
-          build_number="$(date -u +%Y%m%dT%H%M%SZ)"
+          docker pull "${{ inputs.image_ref }}"
+          docker tag "${{ inputs.image_ref }}" phalanxduel-production:manual
+          docker tag "${{ inputs.image_ref }}" phalanxduel-admin:manual
+
+      - name: Deploy game from immutable image
+        run: |
           flyctl deploy \
             --app phalanxduel-production \
             --config fly.production.toml \
-            --remote-only \
-            --build-arg "GIT_COMMIT_SHA=${commit_sha}" \
-            --build-arg "BUILD_NUMBER=${build_number}"
+            --local-only \
+            --image phalanxduel-production:manual
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Deploy admin from immutable image
+        run: |
+          flyctl deploy \
+            --app phalanxduel-admin \
+            --config admin/fly.toml \
+            --local-only \
+            --image phalanxduel-admin:manual
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
@@ -48,3 +72,5 @@ jobs:
         run: |
           curl -fsS https://play.phalanxduel.com/health
           curl -fsS https://play.phalanxduel.com/ready
+          curl -fsS https://phalanxduel-admin.fly.dev/health
+          curl -fsS https://phalanxduel-admin.fly.dev/ready

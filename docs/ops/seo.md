@@ -17,11 +17,12 @@ Canonical origin: `https://play.phalanxduel.com`. If deploying under a different
 
 ## Non-indexable
 
-- `/admin` — Auth-gated operational dashboard.
+- `/admin` — Retired game-server admin tombstone; the dedicated admin host is
+  separately protected and excluded from public discovery.
 - `/health` — Health probe endpoint.
 - `/api/defaults` — Machine-readable configuration endpoint.
 - `/matches` — Live match feed API.
-- `/matches/*` — Replay endpoint under `/matches/:matchId/replay`.
+- `/matches/*` — Match-log paths and the retired operator replay tombstone.
 - `/ws` — WebSocket endpoint.
 - `/docs` — Swagger UI (operational/developer surface).
 - `/docs/*` — Swagger/OpenAPI child routes (e.g. `/docs/json`).

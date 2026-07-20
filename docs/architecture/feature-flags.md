@@ -20,19 +20,16 @@ Canonical reference for runtime flags, experiment controls, and admin operations
 | Client | `VITE_PREACT_LOBBY` | release flag (`0` or `1`) | unset / off | Force-enable Preact lobby renderer. |
 | Client URL | `?preactLobby=1` | local override | absent / off | Ad-hoc enable Preact lobby for manual QA. |
 | Client | `VITE_AB_LOBBY_PREACT_PERCENT` | experiment control (`0..100`) | `0` | Percentage of users assigned to `preact` in `lobby_framework` experiment. |
-| Server | `PHALANX_AB_TESTS_JSON` | experiment catalog JSON | unset | Normalized and shown in `/admin` + `/admin/ab-tests`. |
+| Server | `PHALANX_AB_TESTS_JSON` | experiment catalog JSON | unset | Normalized and exposed to authenticated operators by the dedicated admin service. |
 | Server | `PHALANX_ENABLE_DEBUG_ERROR_ROUTE` | ops toggle (`'1'`) | off | Enables `/debug/error` outside dev/test. |
-| Server | `PHALANX_ADMIN_USER` / `PHALANX_ADMIN_PASSWORD` | admin credential config | fallback in dev/test only | Credentials for `/admin` and related protected routes. |
 
 ## Admin Authentication
 
-Admin routes (`/admin`, `/admin/ab-tests`, replay validation routes) use HTTP Basic Auth.
-
-Credential resolution order:
-
-1. `PHALANX_ADMIN_USER` + `PHALANX_ADMIN_PASSWORD` from environment.
-2. Fallback to `phalanx` / `phalanx` only when `NODE_ENV` is `development` or `test`.
-3. In production-like environments, no fallback exists.
+The canonical operator surface is the dedicated `phalanxduel-admin` service.
+It verifies the game-issued JWT from its `admin_token` cookie, then checks
+`users.is_admin` on every protected request. Mutations cross the private
+game-server boundary with `ADMIN_INTERNAL_TOKEN` and write durable audit rows.
+The game server does not accept legacy Basic Auth.
 
 ## Lobby Framework Decision Logic
 
@@ -73,7 +70,9 @@ Expected value: JSON array of experiment definitions.
 
 Validation: `id` must be non-empty, `variants` must be non-empty, ratios must be finite and non-negative. Duplicate ids are ignored after first (warning emitted). Non-100 totals emit warnings.
 
-`GET /admin/ab-tests` (basic auth) returns normalized tests + warnings. `/admin` dashboard fetches this endpoint.
+`GET /admin-api/system/ab-tests` on the dedicated admin service returns
+normalized tests and warnings to authenticated administrators. The admin
+service retrieves the snapshot through the private game-server boundary.
 
 ## Telemetry Events (lobby_framework)
 

@@ -274,9 +274,12 @@ describe('authoritative combat calculation provenance', () => {
     ];
     // Fixed repository-relative URL; no user-controlled filesystem input.
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    const registry = JSON.parse(
-      readFileSync(new URL('../../docs/gameplay/rule-evidence.json', import.meta.url), 'utf8'),
-    ) as { rules: Array<{ id: string }> };
+    const registryUrl = import.meta.url.includes('/.stryker-tmp/')
+      ? new URL('../../../../docs/gameplay/rule-evidence.json', import.meta.url)
+      : new URL('../../docs/gameplay/rule-evidence.json', import.meta.url);
+    const registry = JSON.parse(readFileSync(registryUrl, 'utf8')) as {
+      rules: Array<{ id: string }>;
+    };
     const registered = new Set(registry.rules.map((rule) => rule.id));
 
     expect(

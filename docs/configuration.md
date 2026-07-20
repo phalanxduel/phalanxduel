@@ -1,15 +1,19 @@
 # Configuration and Environment Management
 
-Phalanx Duel uses environment variables for runtime configuration and a custom DSL for managing secrets across local, staging, and production environments.
+Phalanx Duel uses environment variables for runtime configuration and a custom
+DSL for managing secrets across local and production environments. Staging is
+retired.
 
 ## Environment Variable Reference
 
 | Variable | Default | Purpose |
 | :--- | :--- | :--- |
-| `APP_ENV` | none | Deployment environment (`staging`, `production`) |
+| `APP_ENV` | none | Deployment environment (`production`) |
 | `NODE_ENV` | `development` | Node runtime mode |
-| `DATABASE_URL` | none | Postgres connection string (Required for server/admin) |
-| `JWT_SECRET` | none | Session signing key (Required in production) |
+| `DATABASE_URL` | none | Postgres connection string (required for server/admin) |
+| `JWT_SECRET` | none | Shared session signing key (required for server/admin in production) |
+| `GAME_SERVER_INTERNAL_URL` | local game server | Private game origin (required for admin in production) |
+| `ADMIN_INTERNAL_TOKEN` | none | Shared admin-to-game bearer token (required in production) |
 | `PHALANX_SERVER_PORT`| `3001` | HTTP listen port |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://127.0.0.1:4318` | OTLP collector intake |
 
@@ -30,10 +34,14 @@ We use `pnpm env:*` commands to push configuration to Fly.io and GitHub environm
 
 | Command | Purpose |
 | :--- | :--- |
-| `pnpm env:push:staging` | Push local staging secrets to remote |
-| `pnpm env:audit:staging` | Detect drift between local and remote secrets |
-| `pnpm env:bootstrap:staging` | Pull remote secrets into local DSL for review |
-| `pnpm env:rotate:staging` | Generate new random values for local secrets |
+| `pnpm env:push:production` | Push annotated production secrets to supported targets |
+| `pnpm env:audit:production` | Detect production secret-name drift |
+| `pnpm env:bootstrap:production` | Pull remote secret metadata into the local DSL for review |
+| `pnpm env:rotate:production` | Generate new random values for reviewed local secrets |
+
+The dedicated admin app receives only `DATABASE_URL`, `JWT_SECRET`, and
+`ADMIN_INTERNAL_TOKEN`; provision these explicitly rather than copying every
+game-service secret.
 
 ## Security Rules
 

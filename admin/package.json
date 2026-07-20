@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build && tsc --noEmit",
+    "build": "vite build && tsc --noEmit && tsc --project tsconfig.server.json",
     "dev": "concurrently \"bash ../bin/maint/with-dev-postgres.sh tsx watch src/server/index.ts\" \"vite\"",
     "start": "node dist/server/index.js",
     "test": "vitest run",

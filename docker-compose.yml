@@ -23,6 +23,7 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     environment:
+      CI: 'true'
       NODE_ENV: development
       APP_ENV: development
       DATABASE_URL: postgresql://phalanx_test:phx_test_local@host.docker.internal:5432/phalanxduel_test # secretlint-disable-line
@@ -32,6 +33,7 @@ services:
       PHALANX_API_PORT: 3001
       PHALANX_WS_URL: ws://host.docker.internal:3001/ws
       OTEL_EXPORTER_OTLP_ENDPOINT: http://host.docker.internal:4318
+      OTEL_SDK_DISABLED: 'true'
       OTEL_SERVICE_NAME: phx-automation
       OTEL_CONSOLE_LOGS_ENABLED: '1'
       DISPLAY: :0
