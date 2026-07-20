@@ -105,7 +105,7 @@ USER nodejs
 # Environment configuration
 ENV NODE_ENV=production
 ENV PORT=3001
-ENV HOST=0.0.0.0
+ENV HOST="::"
 
 # OTEL Configuration
 ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318
