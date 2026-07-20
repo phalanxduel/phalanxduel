@@ -11,6 +11,7 @@ const contract = read('docs/ops/production-support-contract.md');
 const deliveryPipeline = read('docs/system/delivery-pipeline.md');
 const pipeline = read('.github/workflows/pipeline.yml');
 const manualProduction = read('.github/workflows/manual-production-deploy.yml');
+const dockerfile = read('Dockerfile');
 const flyProduction = read('fly.production.toml');
 const flyAdmin = read('admin/fly.toml');
 const adminConfig = read('admin/src/server/config.ts');
@@ -104,6 +105,29 @@ assert(
 assert(
   pipeline.includes('--local-only'),
   'Production promotion must use the locally tagged tested image',
+);
+
+const patchCopyOffsets = [...dockerfile.matchAll(/^COPY patches\/ patches\/$/gmu)].map(
+  ({ index }) => index,
+);
+const dependencyInstallOffset = dockerfile.indexOf('pnpm install --frozen-lockfile');
+const productionDependenciesOffset = dockerfile.indexOf('FROM node:24-alpine AS prod-deps');
+const productionInstallOffset = dockerfile.indexOf(
+  'pnpm install --frozen-lockfile --prod --ignore-scripts --strict-peer-dependencies',
+);
+assert.equal(
+  patchCopyOffsets.length,
+  2,
+  'Production image must copy dependency patches into both install stages',
+);
+assert(
+  patchCopyOffsets[0] < dependencyInstallOffset,
+  'Production image must copy dependency patches before the build dependency install',
+);
+assert(
+  patchCopyOffsets[1] > productionDependenciesOffset &&
+    patchCopyOffsets[1] < productionInstallOffset,
+  'Production image must copy dependency patches before the production dependency install',
 );
 
 assert(flyProduction.includes(`app = "${PRODUCTION_APP}"`), 'Fly production app identity drifted');

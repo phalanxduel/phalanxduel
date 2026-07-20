@@ -14,6 +14,7 @@ COPY engine/package.json engine/
 COPY server/package.json server/
 COPY client/package.json client/
 COPY admin/package.json admin/
+COPY patches/ patches/
 
 # BuildKit cache mount: persists pnpm store across builds
 RUN --mount=type=cache,target=/root/.pnpm-store \
@@ -53,6 +54,7 @@ COPY engine/package.json engine/
 COPY server/package.json server/
 COPY client/package.json client/
 COPY admin/package.json admin/
+COPY patches/ patches/
 
 # Install ONLY production dependencies, ignoring scripts
 RUN --mount=type=cache,target=/root/.pnpm-store \
