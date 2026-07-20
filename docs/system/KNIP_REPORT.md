@@ -2,12 +2,13 @@
 
 # Knip report
 
-## Unused files (2)
+## Unused files (3)
 
-| Name                              | Location                          | Severity |
-| :-------------------------------- | :-------------------------------- | :------- |
-| server/tests/perf/engine.bench.ts | server/tests/perf/engine.bench.ts | error    |
-| server/tests/perf/api.bench.ts    | server/tests/perf/api.bench.ts    | error    |
+| Name                                   | Location                               | Severity |
+| :------------------------------------- | :------------------------------------- | :------- |
+| server/src/ops/reset-admin-password.ts | server/src/ops/reset-admin-password.ts | error    |
+| server/tests/perf/engine.bench.ts      | server/tests/perf/engine.bench.ts      | error    |
+| server/tests/perf/api.bench.ts         | server/tests/perf/api.bench.ts         | error    |
 
 ## Unused dependencies (1)
 

@@ -99,7 +99,8 @@ if (otelDisabled) {
       exporter: metricExporter,
       exportIntervalMillis: isProduction ? 60000 : 5000,
     }),
-    logRecordProcessor: new BatchLogRecordProcessor(logExporter),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logRecordProcessor: new BatchLogRecordProcessor(logExporter as any),
     instrumentations: [getNodeAutoInstrumentations()],
   });
 

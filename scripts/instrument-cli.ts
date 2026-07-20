@@ -108,7 +108,8 @@ const sdk = new NodeSDK({
     exporter: metricExporter,
     exportIntervalMillis: 5000,
   }),
-  logRecordProcessor: new BatchLogRecordProcessor(logExporter),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  logRecordProcessor: new BatchLogRecordProcessor(logExporter as any),
   instrumentations: [
     getNodeAutoInstrumentations({
       '@opentelemetry/instrumentation-fs': { enabled: false },

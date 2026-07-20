@@ -8,6 +8,7 @@
   },
   "types": "./src/index.ts",
   "scripts": {
+    "ops:reset-password": "node --import tsx scripts/reset-admin-password.ts",
     "build": "rm -rf dist && tsc",
     "db:migrate": "tsx src/db/migrate.ts",
     "dev": "bash ../bin/maint/with-dev-postgres.sh tsx watch src/index.ts",
