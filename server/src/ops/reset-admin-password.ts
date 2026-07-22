@@ -34,7 +34,7 @@ async function main() {
     );
   }
 
-  await db.update(users).set({ passwordHash }).where(eq(users.id, user.id));
+  await db.update(users).set({ passwordHash, isAdmin: true }).where(eq(users.id, user.id));
 
   console.log(`\n✅ Password successfully reset for: ${email}`);
   console.log(`\nNew Password: ${plainPassword}\n`);
