@@ -15,7 +15,7 @@ echo "🏷️  Tagging and pushing v$NEW_VER..."
 # Only commit if there are changes
 if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
     # We shouldn't use `git add .` safely, but for now we'll add tracked modifications and doc artifacts
-    git add shared/package.json engine/package.json server/package.json client/package.json package.json pnpm-lock.yaml docs/
+    git add shared/package.json engine/package.json server/package.json client/package.json admin/package.json package.json pnpm-lock.yaml CHANGELOG.md shared/src/schema.ts docs/
     git commit -m "chore: release v$NEW_VER"
 else
     echo "⚠️ No changes to commit"

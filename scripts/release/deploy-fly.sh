@@ -105,6 +105,8 @@ run_post_deploy_healthcheck() {
     echo "✅ Post-deploy health check passed"
 }
 
+run_release_verification
+
 echo "🏁 Starting $APP_ENV deployment using $FLY_CONFIG..."
 
 # Load correct environment variables
@@ -116,7 +118,6 @@ load_release_env
 require_release_env
 reject_local_database_target
 probe_database
-run_release_verification
 run_pre_deploy_migrate
 
 echo "🚀 Executing Fly.io deployment for $APP_ENV..."
