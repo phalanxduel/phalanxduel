@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.4.0] - 2026-07-13
+## [1.5.0] - 2026-07-22
 
 ### Added
 - **Advanced MCTS Bot Strategy**: Implemented Monte Carlo Tree Search (MCTS) for superior tactical play. The new bot uses heuristic state evaluation and deterministic search to achieve significantly higher win rates (>70% vs existing heuristic bots).
