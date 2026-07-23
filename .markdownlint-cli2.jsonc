@@ -30,5 +30,6 @@
     "examples/**",
     "playwright-report/**",
     "test-results/**",
+    "graphify-out/GRAPH_REPORT.md",
   ],
 }
