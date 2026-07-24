@@ -51,6 +51,21 @@ echo ""
 
 echo "#### ⚙️ Resource Usage"
 echo "- **Disk Space (Root)**: $(df -h . | awk 'NR==2 {print $4 " available (" $5 " used)"}')"
+if [ -d "artifacts" ]; then
+    ARTIFACTS_KB=$(du -sk artifacts 2>/dev/null | awk '{print $1}')
+    if [ -n "$ARTIFACTS_KB" ]; then
+        if [ "$ARTIFACTS_KB" -gt 1048576 ]; then
+            ARTIFACTS_DISP="$(awk -v kb="$ARTIFACTS_KB" 'BEGIN {printf "%.1fG", kb/1048576}')"
+        else
+            ARTIFACTS_DISP="$(awk -v kb="$ARTIFACTS_KB" 'BEGIN {printf "%.1fM", kb/1024}')"
+        fi
+        echo "- **Artifacts Directory Size**: $ARTIFACTS_DISP"
+        if [ "$ARTIFACTS_KB" -gt 2097152 ]; then
+            # shellcheck disable=SC2006
+            echo "  - ⚠️  *Artifacts size exceeds 2 GB. Consider running \`pnpm maint:clean-disk\`.*"
+        fi
+    fi
+fi
 echo "- **Memory**: $(sysctl -n hw.memsize | awk '{print $1/1024/1024/1024 " GB Total"}')"
 echo ""
 
