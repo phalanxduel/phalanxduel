@@ -1,9 +1,10 @@
 ---
 id: TASK-347
 title: PHX-SWIFT-001 - High-Fidelity Swift Card and Battlefield Renderer
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-07-25 00:33'
+updated_date: '2026-07-25 00:35'
 labels: []
 dependencies: []
 priority: high
