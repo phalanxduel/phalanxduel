@@ -5,7 +5,7 @@ status: Done
 assignee:
   - Codex
 created_date: '2026-07-25 01:14'
-updated_date: '2026-07-25 12:11'
+updated_date: '2026-07-25 15:48'
 labels:
   - swiftui
   - automation
@@ -84,4 +84,6 @@ Three real bugs surfaced and fixed while making the coordinator green in game-sw
 Full DoD verified 2026-07-25 on main repo: pnpm verify:quick (build/lint/typecheck/db-isolation/docs:artifacts) green, pnpm test:run:all all suites green, pnpm --filter @phalanxduel/shared schema:gen + scripts/ci/verify-schema.sh up to date, pnpm rules:check (FSM consistency, event log coverage 6/6 action types, rule evidence 71 rules, combat reference) green, pnpm qa:playthrough:verify 12/12 green. End-to-end coordinator verified via `pnpm qa:swiftui:proof`: match 3f3f094b, SwiftUI Thomas def. Bot (Random) 20->12/0 by lpDepletion, 9 turns, 33 actions (18 native), maximized-window screenshots confirm full board visibility.
 
 Follow-up noted, not in scope for this task: user observed the battlefield renders both players' rows stacked in the same orientation rather than facing each other (a 'dueling' game convention would mirror the opponent's row). This is pre-existing GameTableView layout, unrelated to the automation proof — worth a future design task if desired.
+
+Follow-up polish 2026-07-25 (user-requested, post-Done): the battlefield now visually mirrors the browser reference client's dueling convention — GameTableView renders the opponent's rows in reverse order so both players' front lines (row 0, used for attacking) meet at the shared boundary between their fields, matching client/src/game.tsx's PhxBattlefield rowOrder logic exactly (viewerIndex defaults to player 0 for spectators, consistent with the documented 'board renders from player-0's perspective' convention). Also replaced the automation.perform-next-action synthetic dispatch button with real board interaction: AutomationTests now taps the same hand-card and battlefield-slot elements a human player would (select a hand card then tap a deploy-target slot; tap an attacker slot then a target slot; tap a reinforce-eligible card; tap Send Pass), keyed off the accessibility states GameTableView already exposes from server-authoritative validActions. Added game.hand-scroll.<playerIndex> identifier so automation can swipe a player's hand into view (it is not lazily loaded, so off-screen cards exist but aren't hittable without scrolling). Fixed a real SwiftUI bug found along the way: nesting a ForEach inside another ForEach's closure directly under LazyVGrid does not reliably flatten — only rendered one row per player until replaced with a flat precomputed GridCell sequence. Verified via `pnpm qa:swiftui:proof`: both rows render for both players, automation completes a full match purely through real card/slot taps (match 96894c5b, 18 native actions/33 authoritative). Committed as game-swiftui b2eb4f0.
 <!-- SECTION:NOTES:END -->
