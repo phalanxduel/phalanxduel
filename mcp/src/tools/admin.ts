@@ -1,3 +1,6 @@
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import path from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import OpenAI from 'openai';
@@ -7,6 +10,8 @@ import { eq, lt, and, sql } from 'drizzle-orm';
 import type { GameState } from '@phalanxduel/shared';
 import { buildMatchSummary } from '../utils/matchSummary.js';
 import type { MatchOutcome } from '../utils/matchSummary.js';
+
+const execFileAsync = promisify(execFile);
 
 function envTag(): string {
   const host = (process.env.DATABASE_URL ?? '').replace(/.*@/, '').replace(/\/.*/, '');
@@ -291,6 +296,48 @@ export function registerAdminTools(server: McpServer): void {
               text: JSON.stringify({ query, results, count: results.length }, null, 2),
             },
           ],
+        };
+      } catch (err) {
+        return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };
+      }
+    },
+  );
+
+  server.registerTool(
+    'storage_hygiene',
+    {
+      description:
+        'Inspect repository disk space usage, artifacts storage footprint, cleanable test logs, and execute automated retention cleanup.',
+      inputSchema: {
+        action: z
+          .enum(['status', 'dry_run', 'clean'])
+          .default('status')
+          .describe(
+            'Action to perform: status (default), dry_run (scan cleanable files), clean (purge expired artifacts)',
+          ),
+        days: z
+          .number()
+          .int()
+          .min(1)
+          .default(7)
+          .describe('Retention threshold in days for cleanable artifacts (default: 7)'),
+      },
+    },
+    async ({ action, days }) => {
+      try {
+        const repoRoot = path.resolve(process.cwd(), '..');
+        const scriptPath = path.join(repoRoot, 'bin', 'maint', 'clean-disk.sh');
+
+        const flags: string[] = ['--days', String(days)];
+        if (action === 'dry_run' || action === 'status') {
+          flags.push('--dry-run');
+        } else if (action === 'clean') {
+          flags.push('--force');
+        }
+
+        const { stdout } = await execFileAsync('bash', [scriptPath, ...flags], { cwd: repoRoot });
+        return {
+          content: [{ type: 'text', text: stdout }],
         };
       } catch (err) {
         return { content: [{ type: 'text', text: `Error: ${String(err)}` }], isError: true };

@@ -60,6 +60,7 @@ examples and cross-environment comparison patterns.
 | Tool | What it does |
 | --- | --- |
 | `pipeline_status` | Match counts, embedding coverage, player activity — for env comparison |
+| `storage_hygiene` | Inspect disk usage, artifact storage footprint, cleanable test logs, and run retention cleanup |
 | `match_purge` | Delete bot/abandoned matches by age (dry-run by default) |
 | `bulk_embed` | Batch-embed all unembedded completed matches |
 | `user_search` | Find users by gamertag prefix (includes email, elo, verified status) |
