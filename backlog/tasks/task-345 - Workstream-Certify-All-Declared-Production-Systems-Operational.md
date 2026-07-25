@@ -1,11 +1,11 @@
 ---
 id: TASK-345
 title: 'Workstream: Certify All Declared Production Systems Operational'
-status: In Progress
+status: Done
 assignee:
   - codex
 created_date: '2026-07-14 00:16'
-updated_date: '2026-07-14 00:17'
+updated_date: '2026-07-22 14:36'
 labels:
   - production
   - operations
