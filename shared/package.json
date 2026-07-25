@@ -5,10 +5,12 @@
   "type": "module",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./hash": {
+      "types": "./dist/hash.d.ts",
       "import": "./dist/hash.js",
       "default": "./dist/hash.js"
     }
