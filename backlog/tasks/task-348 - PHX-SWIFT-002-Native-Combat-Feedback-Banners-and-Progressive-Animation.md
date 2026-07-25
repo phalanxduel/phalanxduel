@@ -1,9 +1,10 @@
 ---
 id: TASK-348
 title: PHX-SWIFT-002 - Native Combat Feedback Banners and Progressive Animation
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-07-25 00:33'
+updated_date: '2026-07-25 00:36'
 labels: []
 dependencies:
   - TASK-347
