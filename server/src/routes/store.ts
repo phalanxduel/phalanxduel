@@ -170,4 +170,138 @@ export const storeRoutes: FastifyPluginAsync = async (app) => {
       });
     }
   });
+
+  // POST /api/store/create-checkout-session — Create a Stripe Checkout Session
+  app.post<{
+    Body: {
+      userId: string;
+      productId: string;
+      successUrl?: string;
+      cancelUrl?: string;
+    };
+  }>('/store/create-checkout-session', async (request, reply) => {
+    const { userId, productId, successUrl, cancelUrl } = request.body || {};
+
+    if (!userId || !productId) {
+      return reply.status(400).send({
+        error: 'Missing required parameters (userId, productId)',
+        code: 'MISSING_PARAMS',
+      });
+    }
+
+    const product = DEFAULT_PRODUCTS.find((p) => p.id === productId || p.sku === productId) || {
+      id: productId,
+      sku: productId,
+      name: 'Phalanx Cosmetic Item',
+      priceCents: 499,
+    };
+
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+
+    if (!stripeSecretKey) {
+      // Local simulation mode when STRIPE_SECRET_KEY is not configured
+      const simulatedTx = `cs_test_${Date.now()}`;
+      return reply.send({
+        success: true,
+        mode: 'simulation',
+        url: successUrl ? `${successUrl}?session_id=${simulatedTx}` : `/?purchase=simulated`,
+        sessionId: simulatedTx,
+        message: 'Stripe simulation mode active (STRIPE_SECRET_KEY not set)',
+      });
+    }
+
+    try {
+      const body = new URLSearchParams({
+        'payment_method_types[]': 'card',
+        'line_items[0][price_data][currency]': 'usd',
+        'line_items[0][price_data][product_data][name]': product.name,
+        'line_items[0][price_data][unit_amount]': String(product.priceCents),
+        'line_items[0][quantity]': '1',
+        mode: 'payment',
+        'metadata[userId]': userId,
+        'metadata[productId]': product.sku,
+        success_url: successUrl || 'http://127.0.0.1:5173/?purchase=success',
+        cancel_url: cancelUrl || 'http://127.0.0.1:5173/?purchase=cancelled',
+      });
+
+      const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${stripeSecretKey}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString(),
+      });
+
+      const session = (await res.json()) as {
+        id?: string;
+        url?: string;
+        error?: { message: string };
+      };
+
+      if (!res.ok || session.error) {
+        return reply.status(500).send({
+          error: session.error?.message || 'Stripe API error',
+          code: 'STRIPE_ERROR',
+        });
+      }
+
+      return reply.send({
+        success: true,
+        mode: 'live',
+        sessionId: session.id,
+        url: session.url,
+      });
+    } catch (err) {
+      return reply.status(500).send({
+        error: (err as Error).message || 'Failed to create checkout session',
+        code: 'STRIPE_CHECKOUT_FAILED',
+      });
+    }
+  });
+
+  // POST /api/store/stripe-webhook — Handle Stripe payment events
+  app.post<{
+    Body: {
+      type?: string;
+      data?: {
+        object?: {
+          id?: string;
+          metadata?: {
+            userId?: string;
+            productId?: string;
+          };
+        };
+      };
+    };
+  }>('/store/stripe-webhook', async (request, reply) => {
+    const event = request.body || {};
+
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data?.object;
+      const userId = session?.metadata?.userId;
+      const productId = session?.metadata?.productId;
+      const transactionId = session?.id || `cs_${Date.now()}`;
+
+      if (userId && productId) {
+        if (db) {
+          try {
+            await db
+              .insert(userEntitlements)
+              .values({
+                userId,
+                productId,
+                transactionId,
+                platform: 'stripe',
+              })
+              .onConflictDoNothing();
+          } catch {
+            // Ignore duplicate webhook events
+          }
+        }
+      }
+    }
+
+    return reply.send({ received: true });
+  });
 };

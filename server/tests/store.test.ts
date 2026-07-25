@@ -60,4 +60,71 @@ describe('Cosmetic Store & Entitlements API', () => {
     expect(body.userId).toBe('00000000-0000-0000-0000-000000000001');
     expect(Array.isArray(body.entitlements)).toBe(true);
   });
+
+  it('POST /api/store/create-checkout-session returns simulation when STRIPE_SECRET_KEY is unset', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/store/create-checkout-session',
+      payload: {
+        userId: '00000000-0000-0000-0000-000000000001',
+        productId: 'com.phalanxduel.supporter_pass_v1',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.success).toBe(true);
+    expect(body.mode).toBe('simulation');
+    expect(body.sessionId).toMatch(/^cs_test_/);
+  });
+
+  it('POST /api/store/create-checkout-session rejects missing params', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/store/create-checkout-session',
+      payload: {},
+    });
+
+    expect(response.statusCode).toBe(400);
+    const body = JSON.parse(response.body);
+    expect(body.code).toBe('MISSING_PARAMS');
+  });
+
+  it('POST /api/store/stripe-webhook acknowledges checkout.session.completed', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/store/stripe-webhook',
+      payload: {
+        type: 'checkout.session.completed',
+        data: {
+          object: {
+            id: 'cs_test_webhook_' + Date.now(),
+            metadata: {
+              userId: '00000000-0000-0000-0000-000000000001',
+              productId: 'com.phalanxduel.supporter_pass_v1',
+            },
+          },
+        },
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.received).toBe(true);
+  });
+
+  it('POST /api/store/stripe-webhook acknowledges unknown event types', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/store/stripe-webhook',
+      payload: {
+        type: 'payment_intent.created',
+        data: { object: { id: 'pi_test' } },
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = JSON.parse(response.body);
+    expect(body.received).toBe(true);
+  });
 });

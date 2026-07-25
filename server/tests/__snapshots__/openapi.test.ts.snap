@@ -36523,6 +36523,15 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
         ],
       },
     },
+    "/api/store/create-checkout-session": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
     "/api/store/inventory": {
       "get": {
         "responses": {
@@ -36534,6 +36543,15 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
     },
     "/api/store/products": {
       "get": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
+    "/api/store/stripe-webhook": {
+      "post": {
         "responses": {
           "200": {
             "description": "Default Response",
