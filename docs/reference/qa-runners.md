@@ -73,6 +73,71 @@ pnpm qa:playthrough:ui [OPTIONS]
   `lifepointsText`, `finalLifepoints`) plus relative screenshot paths under
   `screenshots`, so a completed run can be summarized without scraping images.
 
+## `bin/qa/swiftui-proof.sh`
+
+One-command proof that the real native SwiftUI client (sibling `game-swiftui`
+checkout) can play a complete automated bot match through user-visible controls
+(TASK-360.01). The coordinator starts a wrapper-guarded local server on a
+uniquely owned port, runs only the `AutomationTests/testCompleteBotMatch`
+XCUITest via the `PhalanxDuelClientUIProof` scheme, extracts the retained
+evidence from the `.xcresult` bundle, validates the run manifest, and tears
+down only the processes it started.
+
+Requires a macOS host with Xcode; the app launches visibly (XCUITest is
+inherently headed).
+
+### Usage
+```bash
+pnpm qa:swiftui:proof                  # fast proof run
+pnpm qa:swiftui:proof:watch            # heads-up mode for human observation
+bash bin/qa/swiftui-proof.sh [OPTIONS]
+```
+
+### Options
+
+| Flag | Description | Default |
+| :--- | :--- | :--- |
+| `--watch` | Heads-up mode: keep the app frontmost, pace actions, hold game over | off |
+| `--lp N` | Starting lifepoints | `20` |
+| `--seed N` | Deterministic match seed | `2026072401` |
+| `--port N` | Server port (must be free; the proof owns it) | first free from `3121` |
+| `--timeout N` | Proof timeout in seconds | `300` |
+| `--action-delay-ms N` | Per-action pacing override | `0` (`500` with `--watch`) |
+| `--final-hold N` | Seconds to hold the game-over screen | `0` (`20` with `--watch`) |
+| `--run-dir PATH` | Artifact directory | `/private/tmp/phalanx-swiftui-proof-<timestamp>` |
+| `--swiftui-dir PATH` | `game-swiftui` checkout (also `$PHALANX_SWIFTUI_DIR`) | `../game-swiftui` |
+
+### Artifact contract
+
+Each run directory contains:
+
+- `config.json` — the exact `ProofConfiguration` handed to the XCUITest driver.
+- `server.log`, `xcodebuild.log`, `native-debug.log` — server, Xcode, and
+  in-app diagnostics (failure runs keep these for locating the blocked phase).
+- `proof.xcresult` — full Xcode result bundle, including the automatic screen
+  recording of the match (open in Xcode to watch).
+- `manifest.json` — structured run manifest (match ID, players, winner,
+  final lifepoints, victory type, turn/action counts, native action count,
+  seed, timestamps), extracted from the xcresult attachments.
+- `screenshots/*.png` — start, first deployment, first attack, and game over.
+
+The XCUITest runner cannot write into the run directory itself (sandboxed
+writes fail silently), so `bin/qa/verify-swiftui-proof.ts` extracts the
+manifest and screenshots from the xcresult attachments via
+`xcrun xcresulttool export attachments` and then validates the manifest:
+status `success`, a real match ID, two named players, a consistent winner,
+at least one native-driven deployment and attack,
+`actionCount >= nativeActionCount > 0`, and all referenced screenshots present.
+The command exits non-zero if the match did not complete or the evidence is
+incomplete.
+
+Note: `bot-random`'s action selection is not covered by `--seed` (only card
+shuffling is), so match length and outcome vary between runs, including
+occasional draws (`repetitionDraw`, `noProgressDraw`, `turnLimitDraw`). A draw
+is a legitimate complete-match terminal state and passes validation with a
+null `winnerIndex`/`winnerName`; only genuinely inconsistent evidence (e.g. a
+decisive `winnerName` that matches neither rendered player) fails the run.
+
 ## `bin/qa/ladder-season.ts`
 
 This runner performs an offline deterministic ladder exercise. It creates a

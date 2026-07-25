@@ -54,6 +54,23 @@ rtk pnpm qa:design-catalog --label current
 ```
 See [AI Design Collaboration Workflow](./tutorials/ai-design-collaboration.md) for more details.
 
+### 3.6 Native SwiftUI Bot-Match Proof (macOS)
+A one-command headed XCUITest lane that drives the real native SwiftUI client
+(from the sibling `game-swiftui` checkout) through a complete bot match against
+a freshly started local server, then extracts and validates the evidence
+retained in the `.xcresult` bundle.
+
+```bash
+# Fast proof run
+rtk pnpm qa:swiftui:proof
+
+# Watchable heads-up run: app stays visible, actions paced, game over held
+rtk pnpm qa:swiftui:proof:watch
+```
+
+See [QA Simulation Runners](./reference/qa-runners.md#binqaswiftui-proofsh) for
+options and the artifact contract.
+
 ### 4. Adversarial Security Tests
 Tests that attempt to bypass server authority or inject illegal states. These run against a real Postgres instance in CI.
 

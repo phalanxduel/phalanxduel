@@ -108,6 +108,8 @@
     "qa:replay:verify": "tsx bin/qa/replay-verify.ts",
     "qa:setup": "bin/qa/bootstrap.zsh",
     "qa:swarm:staging": "tsx bin/qa/simulate-headless.ts --base-url https://phalanxduel-staging.fly.dev --p1 bot-heuristic --p2 bot-heuristic --batch 10 --quick-start",
+    "qa:swiftui:proof": "bash bin/qa/swiftui-proof.sh",
+    "qa:swiftui:proof:watch": "bash bin/qa/swiftui-proof.sh --watch",
     "release:prepare": "bash scripts/release/release-prepare.sh",
     "release:tag": "bash scripts/release/release-tag.sh",
     "schema:check": "bash scripts/ci/verify-schema.sh",
