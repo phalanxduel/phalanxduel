@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - Codex
 created_date: '2026-07-25 01:14'
-updated_date: '2026-07-25 01:48'
+updated_date: '2026-07-25 02:45'
 labels:
   - swiftui
   - automation
@@ -28,10 +28,10 @@ Create durable proof that the real native SwiftUI application, connected to a li
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Automation launches the native SwiftUI application, connects it to a live local server, starts or joins a bot match, and reaches the terminal game-over state without manual input.
-- [ ] #2 Automation performs the legal player actions needed across deployment and combat through the native app's user-facing automation surface.
-- [ ] #3 Each successful run writes a structured manifest containing at least match ID, player identities, winner, final score or life-point state, turn count, action count, seed when available, and timestamps.
-- [ ] #4 Each run retains user-visible evidence covering match start, gameplay, and game over, and failure runs retain diagnostics sufficient to locate the blocked phase.
+- [x] #1 Automation launches the native SwiftUI application, connects it to a live local server, starts or joins a bot match, and reaches the terminal game-over state without manual input.
+- [x] #2 Automation performs the legal player actions needed across deployment and combat through the native app's user-facing automation surface.
+- [x] #3 Each successful run writes a structured manifest containing at least match ID, player identities, winner, final score or life-point state, turn count, action count, seed when available, and timestamps.
+- [x] #4 Each run retains user-visible evidence covering match start, gameplay, and game over, and failure runs retain diagnostics sufficient to locate the blocked phase.
 - [ ] #5 A documented one-command entrypoint reproduces the proof on a supported macOS development host.
 - [ ] #6 The one-command proof has an on-demand heads-up mode that keeps the real SwiftUI app visible, visibly paces user-facing actions, and holds the terminal state long enough for a human to watch the full sequence.
 <!-- AC:END -->
@@ -70,4 +70,10 @@ Primary gaps/risks: current UI test stops before authoritative state; bot creati
 User explicitly expanded the proof contract on 2026-07-24: the automation must be watchable on demand, visually headed, and show the full sequence rather than only producing background artifacts. The XCUITest driver and coordinator will expose a paced heads-up mode and retain visual evidence.
 
 User explicitly requested that native Apple Intelligence carry appropriate review load. The installed `apfel` v1.8.4 reports its on-device Apple Foundation Model available; focused reviews will cover Swift correctness, accessibility/XCUITest brittleness, concurrency, and proof-integrity risks, with compiler/analyzer/live execution remaining authoritative.
+
+Session handoff 2026-07-24 (Codex ran out of budget mid-task; Claude continued): the headed XCUITest bot-match proof now PASSES. Two blockers were fixed after Codex's last run: (1) the Automation Proof Driver section lived inside the scrollable List and was rendered at negative Y (offscreen), so automation.perform-next-action was never hittable — moved to a pinned safeAreaInset HUD above the list; (2) the view-level .accessibilityIdentifier("game.session") was applied after the safeAreaInset and stamped over every HUD child's identifier — reordered so the HUD keeps its own identifiers. Committed in game-swiftui as 3a5a98f.
+
+Evidence (retained in .xcresult attachments; direct file writes from the UITest runner to the run dir silently fail and need the coordinator to extract from xcresult): LP3 smoke run /private/tmp/phalanx-swiftui-smoke-20260724-2140 — match e3fe2fcf, SwiftUI Thomas def. Bot (Random) 3→0 LP, lpDepletion, 17 actions (9 native). LP20 full run /private/tmp/phalanx-swiftui-proof-20260724-lp20 — 10/10 tests passed (9 contract + 1 UI proof); match 7037e135, SwiftUI Thomas def. Bot (Random) 20→0, lpDepletion, 7 turns, 29 actions (13 native), ~3 min headed at 500 ms cadence with screenshots (start/first-deploy/first-attack/game-over) plus full screen recording.
+
+Remaining for AC #5/#6 and DoD: build the main-repo QA coordinator + one-command entrypoint (start wrapper-guarded server on a unique port, run only the proof test, extract attachments from .xcresult since the runner cannot write the run dir directly, validate manifest, clean up owned processes), expose the documented watch command/heads-up flag, write operator docs, then run the full main-repo DoD checks. Server for manual reruns: env PHALANX_SERVER_PORT=3101 HOST=127.0.0.1 bash bin/maint/with-tooling-postgres.sh pnpm --filter @phalanxduel/server exec tsx src/index.ts. Proof command: xcodebuild test -project PhalanxDuelClient.xcodeproj -scheme PhalanxDuelClientUIProof -destination platform=macOS PHALANX_QA_CONFIG_FILE=<config.json>.
 <!-- SECTION:NOTES:END -->
