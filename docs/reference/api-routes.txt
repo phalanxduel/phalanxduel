@@ -23,7 +23,9 @@
     │   │   │   │   └── ore/
     │   │   │   │       ├── products (GET, HEAD)
     │   │   │   │       ├── verify-purchase (POST)
-    │   │   │   │       └── inventory (GET, HEAD)
+    │   │   │   │       ├── inventory (GET, HEAD)
+    │   │   │   │       ├── create-checkout-session (POST)
+    │   │   │   │       └── stripe-webhook (POST)
     │   │   │   └── pectator/matches (GET, HEAD)
     │   │   ├── matches/
     │   │   │   ├── history (GET, HEAD)

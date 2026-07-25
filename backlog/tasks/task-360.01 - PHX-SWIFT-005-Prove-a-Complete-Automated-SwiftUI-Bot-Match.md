@@ -1,0 +1,73 @@
+---
+id: TASK-360.01
+title: PHX-SWIFT-005 - Prove a Complete Automated SwiftUI Bot Match
+status: In Progress
+assignee:
+  - Codex
+created_date: '2026-07-25 01:14'
+updated_date: '2026-07-25 01:48'
+labels:
+  - swiftui
+  - automation
+  - playability
+dependencies: []
+documentation:
+  - docs/testing.md
+  - docs/reference/qa-runners.md
+parent_task_id: TASK-360
+priority: high
+type: task
+ordinal: 226800
+---
+
+## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
+Create durable proof that the real native SwiftUI application, connected to a live local Phalanx Duel server, can be automatically operated through a complete player-versus-bot match. The proof must exercise user-visible gameplay rather than only compiling views or invoking the session model headlessly.
+<!-- SECTION:DESCRIPTION:END -->
+
+## Acceptance Criteria
+<!-- AC:BEGIN -->
+- [ ] #1 Automation launches the native SwiftUI application, connects it to a live local server, starts or joins a bot match, and reaches the terminal game-over state without manual input.
+- [ ] #2 Automation performs the legal player actions needed across deployment and combat through the native app's user-facing automation surface.
+- [ ] #3 Each successful run writes a structured manifest containing at least match ID, player identities, winner, final score or life-point state, turn count, action count, seed when available, and timestamps.
+- [ ] #4 Each run retains user-visible evidence covering match start, gameplay, and game over, and failure runs retain diagnostics sufficient to locate the blocked phase.
+- [ ] #5 A documented one-command entrypoint reproduces the proof on a supported macOS development host.
+- [ ] #6 The one-command proof has an on-demand heads-up mode that keeps the real SwiftUI app visible, visibly paces user-facing actions, and holds the terminal state long enough for a human to watch the full sequence.
+<!-- AC:END -->
+
+## Definition of Done
+<!-- DOD:BEGIN -->
+- [ ] #1 Code builds without errors (pnpm build)
+- [ ] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [ ] #3 All unit and integration tests pass (pnpm test:run:all)
+- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
+<!-- DOD:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Repair the native live-contract seam needed for a real bot match: send protocol-required reliable IDs on WebSocket creation, handle ACK and application ping/pong frames, consume the server-projected `TurnViewModel.validActions`, and add a `SessionStore` bot-create path without changing engine/server gameplay semantics.
+2. Add a user-visible bot-match control and stable accessibility identifiers for connection, match, phase, turn ownership, authoritative legal actions, players/life points, and terminal outcome. Drive gameplay from server-projected valid actions rather than client-invented legality.
+3. Extend the macOS XCUITest target with a complete bot-match driver that launches the real app against a supplied local server, performs deployment/attack/reinforcement or pass actions through visible controls, reaches game over, captures start/gameplay/terminal screenshots, and always emits a structured manifest or failure diagnostics. Add explicit, clearly labeled automation hooks and a heads-up mode that activates the app on the primary display, exposes server-authoritative actions as visible controls, paces every interaction, and holds game over for observation.
+4. Add a main-repo QA coordinator and package command that starts a uniquely ported server through `bin/maint/with-tooling-postgres.sh`, runs only the native proof test, extracts retained attachments from `.xcresult`, validates the manifest, retains server/Xcode/app logs, and cleans up only its owned processes. Expose a documented watch command/flag for an on-demand visible run.
+5. Document the one-command lane and artifact contract. Use the installed on-device Apple Intelligence (`apfel`) for focused Swift/accessibility/XCUITest review, validating any findings with native tooling. Run native unit/build checks, the live heads-up proof, Xcode-specific formatting/static-analysis/validation checks, targeted main-repo checks, `pnpm qa:playthrough:verify`, and the unified repo check before finalization.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Started 2026-07-24. Research current native app flow, local server orchestration, browser QA artifact conventions, and supported XCUITest capabilities before recording the implementation plan.
+
+Pre-implementation playability gate passed: `rtk pnpm qa:playthrough:verify` completed 12/12 deterministic matrix runs with zero warnings/errors on 2026-07-24. UI work may proceed once the researched implementation plan is recorded.
+
+L2 context brief: reviewed `game-swiftui` instructions, Xcode topology, SessionStore, REST/WS clients, message/state models, ServerConnectView, GameSessionView, GameTableView, unit/UI tests, plus main-repo shared schemas, MatchManager WebSocket flow, projection/valid-action logic, and browser QA manifest patterns. Closest analogs are `bin/qa/simulate-headless.ts` for artifact/failure structure and its server-backed browser action loop for phase-aware legal input.
+
+Primary gaps/risks: current UI test stops before authoritative state; bot creation is unreachable and its encoded frame lacks required `msgId`; ACKs become protocol errors; no app-level pong risks disconnect after 65 seconds; gameplay elements have no stable identifiers; local Swift legality diverges from authoritative attack rules; current native target is macOS-only; Xcode UI automation needs host GUI/cache access. Baseline native build and 12/12 playability matrix both pass.
+
+User explicitly expanded the proof contract on 2026-07-24: the automation must be watchable on demand, visually headed, and show the full sequence rather than only producing background artifacts. The XCUITest driver and coordinator will expose a paced heads-up mode and retain visual evidence.
+
+User explicitly requested that native Apple Intelligence carry appropriate review load. The installed `apfel` v1.8.4 reports its on-device Apple Foundation Model available; focused reviews will cover Swift correctness, accessibility/XCUITest brittleness, concurrency, and proof-integrity risks, with compiler/analyzer/live execution remaining authoritative.
+<!-- SECTION:NOTES:END -->
