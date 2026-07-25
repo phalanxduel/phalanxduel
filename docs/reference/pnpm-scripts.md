@@ -282,6 +282,9 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `infra:otel:console` | `bash bin/maint/run-otel-console.sh` |
 | `lint` | `bash scripts/ci/lint.sh code` |
 | `lint:fix` | `ESLINT_SKIP_PROJECT_SERVICE=1 eslint . --fix` |
+| `maint:clean-disk` | `bash bin/maint/clean-disk.sh` |
+| `maint:clean-disk:dry` | `bash bin/maint/clean-disk.sh --dry-run` |
+| `maint:clean-disk:full` | `bash bin/maint/clean-disk.sh --full` |
 | `lint:md` | `markdownlint-cli2 "**/*.md" --config .markdownlint-cli2.jsonc` |
 | `lint:tools` | `bash scripts/ci/lint.sh tools` |
 | `lint:typed` | `bash scripts/ci/lint.sh typed` |

@@ -186,3 +186,9 @@ and remote deployment instructions.
 1.  Run `rtk pnpm verify:quick`.
 2.  Run `rtk pnpm qa:playthrough:verify` for gameplay changes.
 3.  Update documentation if you changed behavior or added a new feature.
+
+### Storage & Disk Maintenance
+- `rtk pnpm maint:clean-disk:dry`: Preview cleanable test artifacts (>7 days) and log files safely.
+- `rtk pnpm maint:clean-disk`: Purge expired test run artifacts and transient root deployment logs.
+- `rtk pnpm maint:clean-disk:full`: Complete reclamation including machine-wide Docker system prune and global pnpm store prune.
+- `rtk pnpm diagnostics`: Check system environment and detect if artifact storage exceeds 2 GB.
