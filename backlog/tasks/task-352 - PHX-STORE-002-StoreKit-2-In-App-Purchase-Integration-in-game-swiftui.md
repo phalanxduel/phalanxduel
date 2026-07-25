@@ -1,9 +1,10 @@
 ---
 id: TASK-352
 title: PHX-STORE-002 - StoreKit 2 In-App Purchase Integration in game-swiftui
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-07-25 00:39'
+updated_date: '2026-07-25 00:47'
 labels: []
 dependencies:
   - TASK-351

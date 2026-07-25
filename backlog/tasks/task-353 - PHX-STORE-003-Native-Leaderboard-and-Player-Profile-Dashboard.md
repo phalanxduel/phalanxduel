@@ -1,9 +1,10 @@
 ---
 id: TASK-353
 title: PHX-STORE-003 - Native Leaderboard and Player Profile Dashboard
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-07-25 00:39'
+updated_date: '2026-07-25 00:47'
 labels: []
 dependencies:
   - TASK-352
