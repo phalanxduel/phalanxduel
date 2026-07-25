@@ -36523,6 +36523,33 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
         ],
       },
     },
+    "/api/store/inventory": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
+    "/api/store/products": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
+    "/api/store/verify-purchase": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
     "/api/users/{targetUserId}/follow": {
       "delete": {
         "parameters": [

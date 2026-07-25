@@ -64,6 +64,7 @@ import { registerMatchmakingRoutes } from './routes/matchmaking.js';
 import { MatchmakingQueueService } from './matchmaking-queue.js';
 import { registerSpectatorRoutes } from './routes/spectator.js';
 import { registerSocialRoutes } from './routes/social.js';
+import { storeRoutes } from './routes/store.js';
 import { traceWsMessage, traceHttpHandler, httpTraceContext } from './tracing.js';
 import {
   matchesActive,
@@ -385,6 +386,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
   registerMatchmakingRoutes(app, matchManager);
   registerSpectatorRoutes(app, matchManager);
   registerSocialRoutes(app);
+  await app.register(storeRoutes, { prefix: '/api' });
 
   // ── Static file serving (production: serve client/dist/) ─────────
   const clientDist = resolve(__dirname, '../../client/dist');

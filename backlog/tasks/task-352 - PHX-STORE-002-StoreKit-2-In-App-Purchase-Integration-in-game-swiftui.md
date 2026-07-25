@@ -1,22 +1,21 @@
 ---
-id: TASK-350
-title: PHX-SWIFT-004 - TestFlight and App Store Deployment Packaging
-status: Done
+id: TASK-352
+title: PHX-STORE-002 - StoreKit 2 In-App Purchase Integration in game-swiftui
+status: To Do
 assignee: []
-created_date: '2026-07-25 00:33'
-updated_date: '2026-07-25 00:38'
+created_date: '2026-07-25 00:39'
 labels: []
 dependencies:
-  - TASK-349
+  - TASK-351
 priority: high
-ordinal: 215800
+ordinal: 217800
 ---
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Add AppIcon asset catalogs, launch screen generation, and AppStore.xcconfig
-- [ ] #2 Configure PrivacyInfo.xcprivacy manifest
-- [ ] #3 xcodebuild archive creates valid .xcarchive bundle
+- [ ] #1 Implement StoreManager.swift using StoreKit 2 Product and Transaction APIs
+- [ ] #2 Add native StoreView for purchasing Supporter Passes and card backs
+- [ ] #3 Sync entitlement receipts with server purchase verification
 <!-- AC:END -->
 
 ## Definition of Done

@@ -1,22 +1,22 @@
 ---
-id: TASK-350
-title: PHX-SWIFT-004 - TestFlight and App Store Deployment Packaging
+id: TASK-351
+title: PHX-STORE-001 - Server Cosmetic Inventory and Store Entitlement Schema
 status: Done
 assignee: []
-created_date: '2026-07-25 00:33'
-updated_date: '2026-07-25 00:38'
+created_date: '2026-07-25 00:38'
+updated_date: '2026-07-25 00:45'
 labels: []
 dependencies:
-  - TASK-349
+  - TASK-350
 priority: high
-ordinal: 215800
+ordinal: 216800
 ---
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Add AppIcon asset catalogs, launch screen generation, and AppStore.xcconfig
-- [ ] #2 Configure PrivacyInfo.xcprivacy manifest
-- [ ] #3 xcodebuild archive creates valid .xcarchive bundle
+- [ ] #1 Add cosmetics database table and Drizzle schema
+- [ ] #2 Expose GET /api/store/products and POST /api/store/verify-purchase endpoints
+- [ ] #3 Server tests under with-test-postgres.sh pass cleanly
 <!-- AC:END -->
 
 ## Definition of Done

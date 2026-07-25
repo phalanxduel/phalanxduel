@@ -406,3 +406,33 @@ export const seasonArchives = pgTable(
     uniqueIndex('season_archives_user_cat_idx').on(table.seasonId, table.userId, table.category),
   ],
 );
+
+export const cosmeticProducts = pgTable('cosmetic_products', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sku: text('sku').unique().notNull(),
+  name: text('name').notNull(),
+  description: text('description'),
+  category: text('category', {
+    enum: ['card_skin', 'board_theme', 'supporter_pass', 'victory_banner'],
+  }).notNull(),
+  priceCents: integer('price_cents').notNull(),
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const userEntitlements = pgTable(
+  'user_entitlements',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .references(() => users.id)
+      .notNull(),
+    productId: uuid('product_id')
+      .references(() => cosmeticProducts.id)
+      .notNull(),
+    transactionId: text('transaction_id').unique().notNull(),
+    platform: text('platform', { enum: ['ios', 'mac', 'web', 'stripe', 'test'] }).notNull(),
+    grantedAt: timestamp('granted_at').defaultNow().notNull(),
+  },
+  (table) => [uniqueIndex('user_entitlements_user_prod_idx').on(table.userId, table.productId)],
+);

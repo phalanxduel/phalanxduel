@@ -1,22 +1,21 @@
 ---
-id: TASK-350
-title: PHX-SWIFT-004 - TestFlight and App Store Deployment Packaging
-status: Done
+id: TASK-353
+title: PHX-STORE-003 - Native Leaderboard and Player Profile Dashboard
+status: To Do
 assignee: []
-created_date: '2026-07-25 00:33'
-updated_date: '2026-07-25 00:38'
+created_date: '2026-07-25 00:39'
 labels: []
 dependencies:
-  - TASK-349
+  - TASK-352
 priority: high
-ordinal: 215800
+ordinal: 218800
 ---
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Add AppIcon asset catalogs, launch screen generation, and AppStore.xcconfig
-- [ ] #2 Configure PrivacyInfo.xcprivacy manifest
-- [ ] #3 xcodebuild archive creates valid .xcarchive bundle
+- [ ] #1 Implement LeaderboardView.swift connecting to GET /api/ladder
+- [ ] #2 Implement ProfileView.swift showing ELO history, win rate, and active cosmetics
+- [ ] #3 xcodebuild compiles cleanly for macOS and iOS
 <!-- AC:END -->
 
 ## Definition of Done

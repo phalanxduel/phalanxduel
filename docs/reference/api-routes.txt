@@ -15,10 +15,15 @@
     ├── a
     │   ├── pi/
     │   │   ├── s
-    │   │   │   ├── tats (GET, HEAD)
-    │   │   │   │   └── /
-    │   │   │   │       └── :userId
-    │   │   │   │           └── /history (GET, HEAD)
+    │   │   │   ├── t
+    │   │   │   │   ├── ats (GET, HEAD)
+    │   │   │   │   │   └── /
+    │   │   │   │   │       └── :userId
+    │   │   │   │   │           └── /history (GET, HEAD)
+    │   │   │   │   └── ore/
+    │   │   │   │       ├── products (GET, HEAD)
+    │   │   │   │       ├── verify-purchase (POST)
+    │   │   │   │       └── inventory (GET, HEAD)
     │   │   │   └── pectator/matches (GET, HEAD)
     │   │   ├── matches/
     │   │   │   ├── history (GET, HEAD)
