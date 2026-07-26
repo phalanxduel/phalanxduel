@@ -24,6 +24,12 @@ import (
 
 const defaultBaseURL = "http://127.0.0.1:3001"
 
+// clientVersion and compatibleSchemaMajor are bumped together with each
+// clients/go/duel-cli/vX.Y.Z release tag. See
+// docs/client-server-compatibility.md for the compatibility policy.
+const clientVersion = "0.1.0"
+const compatibleSchemaMajor = 1
+
 var autoMode = flag.Bool("auto", false, "Automatically pick a random action")
 
 var uuidPattern = regexp.MustCompile(`[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}`)
@@ -538,6 +544,49 @@ func runGameplayLoop(
 	log.Fatalf("❌ WebSocket session ended before the game completed for %s", playerName)
 }
 
+// checkSchemaCompatibility exits the process on a wire-format major-version
+// mismatch, since the typed SDK's decoding is only guaranteed to work within
+// the major version it was generated against. See
+// docs/client-server-compatibility.md.
+func checkSchemaCompatibility(serverSchemaVersion string) {
+	serverMajor, ok := majorVersion(serverSchemaVersion)
+	if !ok {
+		return
+	}
+
+	if serverMajor == compatibleSchemaMajor {
+		return
+	}
+
+	if os.Getenv("PHALANX_ALLOW_VERSION_MISMATCH") == "1" {
+		fmt.Printf(
+			"⚠️  Wire-format mismatch: server=%s (major %d), duel-cli v%s built for major %d. Continuing because PHALANX_ALLOW_VERSION_MISMATCH=1.\n",
+			serverSchemaVersion, serverMajor, clientVersion, compatibleSchemaMajor,
+		)
+		return
+	}
+
+	log.Fatalf(
+		"❌ duel-cli v%s (wire major %d) is incompatible with this server (schemaVersion %s, major %d).\n"+
+			"   Upgrade: brew upgrade duel-cli\n"+
+			"        or: go install github.com/phalanxduel/phalanxduel/clients/go/duel-cli@latest\n"+
+			"   To proceed anyway (local dev only): PHALANX_ALLOW_VERSION_MISMATCH=1",
+		clientVersion, compatibleSchemaMajor, serverSchemaVersion, serverMajor,
+	)
+}
+
+func majorVersion(v string) (int, bool) {
+	parts := strings.SplitN(v, ".", 2)
+	if len(parts) == 0 {
+		return 0, false
+	}
+	major, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, false
+	}
+	return major, true
+}
+
 func main() {
 	flag.Parse()
 
@@ -575,10 +624,12 @@ func main() {
 	if resp.HasMeta() && resp.Meta.HasVersions() {
 		versions := resp.Meta.Versions
 		fmt.Printf(
-			"🧭 Version semantics: wire=%s, rules=%s\n",
+			"🧭 Version semantics: wire=%s, rules=%s (duel-cli v%s)\n",
 			versions.GetSchemaVersion(),
 			versions.GetSpecVersion(),
+			clientVersion,
 		)
+		checkSchemaCompatibility(versions.GetSchemaVersion())
 	}
 	if resp.HasMeta() && resp.Meta.HasConstraints() {
 		c := resp.Meta.Constraints
