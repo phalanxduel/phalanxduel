@@ -183,11 +183,12 @@ func websocketOrigin(baseURL string) string {
 func buildPlayLink(baseURL string, matchID string) string {
 	parsed, err := url.Parse(baseURL)
 	if err != nil {
-		return fmt.Sprintf("%s/?match=%s", strings.TrimRight(baseURL, "/"), matchID)
+		return fmt.Sprintf("%s/?action=join&match=%s", strings.TrimRight(baseURL, "/"), matchID)
 	}
 
 	parsed.Path = "/"
 	query := parsed.Query()
+	query.Set("action", "join")
 	query.Set("match", matchID)
 	parsed.RawQuery = query.Encode()
 	return parsed.String()

@@ -57,7 +57,7 @@ func TestBuildPlayLink(t *testing.T) {
 	t.Parallel()
 
 	got := buildPlayLink("http://127.0.0.1:3001/api", "123e4567-e89b-12d3-a456-426614174000")
-	want := "http://127.0.0.1:3001/?match=123e4567-e89b-12d3-a456-426614174000"
+	want := "http://127.0.0.1:3001/?action=join&match=123e4567-e89b-12d3-a456-426614174000"
 	if got != want {
 		t.Fatalf("buildPlayLink() = %q, want %q", got, want)
 	}
