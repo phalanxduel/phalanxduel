@@ -5,6 +5,7 @@ shared/schemas/
 shared/src/types.ts
 *.md
 sdk/
+**/vendor/
 examples/
 scripts/instrument-cli.ts
 eslint-report.json

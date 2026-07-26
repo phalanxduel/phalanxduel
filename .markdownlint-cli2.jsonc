@@ -27,6 +27,7 @@
     "backlog/drafts/**",
     "docs/review/**",
     "sdk/**",
+    "**/vendor/**",
     "examples/**",
     "playwright-report/**",
     "test-results/**",
