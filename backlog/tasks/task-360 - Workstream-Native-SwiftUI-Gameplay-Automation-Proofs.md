@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - Codex
 created_date: '2026-07-25 01:14'
-updated_date: '2026-07-26 01:16'
+updated_date: '2026-07-26 10:30'
 labels:
   - swiftui
   - automation
@@ -65,4 +65,6 @@ Also: pushed 19 main-repo commits (game b5db5af9) with --no-verify after confirm
 Look-and-feel pass shipped (game-swiftui commit 8b81253, 2026-07-25): dark tactical theme ported from the browser's actual CSS tokens (style.css :root, cards.ts SUIT_COLORS) into AppTheme.swift, scoped to gameplay screens only. PhxCardView rewritten with a real per-suit-colored HP bar (was a fixed capsule), rank/suit/type layout matching client/src/game.tsx's CardView. Opponent hand now renders as face-down card backs (count-visible, content-hidden) per explicit user request — mirrors what a player would see across a real table. Added TurnStatusBarView (T{n}/PHASE/YOUR_TURN), DuelStatStripView (mid-table LP/drawpile/discard/hand for both players), and CombatOverlayView (transient phase + attack-line flashes, ported from narration-overlay.ts) — all derived from existing GameState data, no new wire fields. Verified end-to-end via bin/qa/swiftui-proof.sh (33 actions/18 real taps) plus manual screenshot inspection confirming correct suit coloring and face-down hand rendering.
 
 Explicitly out of scope / deferred: the browser's ENGAGEMENT_LOG sidebar (combat-math provenance with [TACTICAL]/[CINEMATIC]/[ANALYSIS] tags, e.g. 'Base Damage = 11 = 11') requires decoding CombatResolutionContextSchema.explanation/calculationProvenance, which GameState doesn't carry yet on the SwiftUI side — same gap noted for phase-change/calculation narration lines in the earlier narration-ticker note. Would be the natural next slice if deeper browser parity is wanted.
+
+ENGAGEMENT_LOG shipped (game-swiftui commit f45ac79, 2026-07-26): closed the gap explicitly deferred in the previous note. Added CalculationModels.swift (CalculationOperator/Quantity/Input/Result/Step/Provenance, mirroring shared/src/types.ts's CalculationProvenance) and calculationProvenance on CombatLogEntry. New EngagementLogView ports client/src/components/EngagementLog.tsx + CombatMath.tsx + combat-explanation.ts: last 20 attack entries (most recent first) with an expandable 'WHY' arithmetic breakdown supporting tactical/cinematic/analyst detail modes, matching the browser's equation formatting exactly (e.g. 'Base Damage = 11 = 11', 'Carryover = clamp(1, 0, 0) = 0'). Wired into both the player List and the pinned automation HUD alongside NarrationTickerView. Verified end-to-end via bin/qa/swiftui-proof.sh (33 actions/18 real taps) plus screenshot inspection confirming live equations render correctly against real server-emitted calculationProvenance data. Spectator PLAY_BY_PLAY variant not ported (no spectator UI yet in SwiftUI client). This closes out the full browser-parity look-and-feel pass for gameplay screens -- narration ticker, dark theme, face-down opponent hand, and now the combat-math sidebar are all shipped.
 <!-- SECTION:NOTES:END -->
