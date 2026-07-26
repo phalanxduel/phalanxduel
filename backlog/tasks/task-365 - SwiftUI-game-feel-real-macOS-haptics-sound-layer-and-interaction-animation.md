@@ -1,9 +1,10 @@
 ---
 id: TASK-365
 title: 'SwiftUI game feel: real macOS haptics, sound layer, and interaction animation'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-07-26 11:31'
+updated_date: '2026-07-26 21:01'
 labels:
   - swiftui
   - ux
@@ -38,11 +39,11 @@ Sequenced before TASK-362 (accessibility)/TASK-363 (Dynamic Type) since the user
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 #1 HapticAndAudioEngine gets a real macOS implementation via NSHapticFeedbackManager (e.g. .generic/.alignment/.levelChange performers matched to select/deploy/attack/victory/defeat), verified by manually triggering each action on a trackpad-equipped Mac
-- [ ] #2 #2 A minimal real audio-playback layer is wired (AVAudioPlayer or NSSound) with system-sound-backed placeholders for select/deploy/attack/victory/defeat, with clearly documented hook points for swapping in bespoke SFX later
-- [ ] #3 #3 Card selection gets a spring/scale pop; deploying a card animates into its slot rather than snapping; HP bar changes tween rather than jump-cutting; taking damage gets a brief shake or flash on the affected card
-- [ ] #4 #4 All new and existing animations (including CombatOverlayView's existing flash) read @Environment(\.accessibilityReduceMotion) and skip/shorten when enabled
-- [ ] #5 #5 bin/qa/swiftui-proof.sh passes end-to-end after the interaction-layer changes (automation identifiers and tap behavior unchanged)
+- [x] #1 #1 HapticAndAudioEngine gets a real macOS implementation via NSHapticFeedbackManager (e.g. .generic/.alignment/.levelChange performers matched to select/deploy/attack/victory/defeat), verified by manually triggering each action on a trackpad-equipped Mac
+- [x] #2 #2 A minimal real audio-playback layer is wired (AVAudioPlayer or NSSound) with system-sound-backed placeholders for select/deploy/attack/victory/defeat, with clearly documented hook points for swapping in bespoke SFX later
+- [x] #3 #3 Card selection gets a spring/scale pop; deploying a card animates into its slot rather than snapping; HP bar changes tween rather than jump-cutting; taking damage gets a brief shake or flash on the affected card
+- [x] #4 #4 All new and existing animations (including CombatOverlayView's existing flash) read @Environment(\.accessibilityReduceMotion) and skip/shorten when enabled
+- [x] #5 #5 bin/qa/swiftui-proof.sh passes end-to-end after the interaction-layer changes (automation identifiers and tap behavior unchanged)
 <!-- AC:END -->
 
 ## Definition of Done
@@ -54,3 +55,9 @@ Sequenced before TASK-362 (accessibility)/TASK-363 (Dynamic Type) since the user
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Implemented in game-swiftui commit c15e3eb: NSHapticFeedbackManager-backed macOS haptics (.generic/.alignment/.levelChange), NSSound-backed placeholder audio layer, spring scale-pop on card selection, spring deploy-into-slot transition, tweened HP bar, hand-rolled damage shake, victory/defeat haptics wired to match outcome. All new and existing animations gate on @Environment(\.accessibilityReduceMotion). bin/qa/swiftui-proof.sh re-verified passing end-to-end after these changes (commit aa564d2 fixed an unrelated automation regression found during that verification — see TASK-366 notes).
+<!-- SECTION:FINAL_SUMMARY:END -->

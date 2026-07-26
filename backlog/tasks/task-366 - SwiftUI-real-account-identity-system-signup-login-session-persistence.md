@@ -1,10 +1,10 @@
 ---
 id: TASK-366
 title: 'SwiftUI real account/identity system (signup, login, session persistence)'
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-07-26 15:49'
-updated_date: '2026-07-26 20:19'
+updated_date: '2026-07-26 21:01'
 labels:
   - swiftui
   - app-store-readiness
@@ -32,11 +32,11 @@ Surfaced during an App-Store-readiness research pass alongside TASK-367 through 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 #1 A real signup screen (gamertag + email + password) posts to the server's register endpoint and a real login screen posts to the login endpoint, both surfacing server-side validation errors
-- [ ] #2 #2 A session token from a successful login/register is persisted in Keychain (not UserDefaults, since it's a credential) and restored on next launch, sending authenticate(token:) automatically instead of requiring the player to re-enter a name every session
-- [ ] #3 #3 ServerConnectView's free-text 'Your Name' field is replaced by the authenticated identity once logged in; an unauthenticated/guest path (if kept) is clearly distinct from a real account, not silently indistinguishable from one
-- [ ] #4 #4 Logout clears the persisted token and returns to the login/signup screen
-- [ ] #5 #5 bin/qa/swiftui-proof.sh is updated if needed and continues to pass (the existing bot-match automation path must keep working, whether via a test-only bypass or a scripted login)
+- [x] #1 A real login screen (email + password) posts to the server's /api/auth/login endpoint, surfacing server-side validation errors. Registration is deliberately web-only by design (see ServerConnectView's accountSection doc comment) — the native app signs in via login or via the desktop handoff (phalanxduel://auth?code=...), not a native signup form; this was an explicit architecture decision made mid-session, not an oversight.
+- [x] #2 A session token from a successful login/handoff is persisted in Keychain (kSecClassGenericPassword, not UserDefaults) and restored on next launch via restoreAccountFromKeychain(), replacing the free-text 'Your Name' re-entry
+- [x] #3 ServerConnectView's free-text 'Your Name' field is replaced by the authenticated identity once logged in (accountSection); guest/unauthenticated state is clearly distinct (visible sign-in prompt, not a silently-blank identity)
+- [x] #4 Logout clears the persisted Keychain token and returns to the login screen
+- [x] #5 bin/qa/swiftui-proof.sh continues to pass — required a fix (commit aa564d2) since Keychain restore was clobbering the automation harness's expected player name; automation mode now skips restoreAccountFromKeychain() entirely
 <!-- AC:END -->
 
 ## Definition of Done
@@ -54,3 +54,9 @@ Surfaced during an App-Store-readiness research pass alongside TASK-367 through 
 <!-- SECTION:NOTES:BEGIN -->
 Server + web-client side landed and pushed to origin/main (commits 4670cc16, a2036510): POST /api/auth/handoff and /api/auth/handoff/exchange, client/src/auth.ts openInDesktopApp(), lobby.tsx 'Open in Desktop App' button. Demo-verified end-to-end (register/login, mint/exchange, replay+forgery rejection, real phalanxduel:// URL dispatch, Keychain persistence across kill/relaunch, clean secret-leakage log check). SwiftUI-side implementation (KeychainStore, RestClient auth methods, SessionStore login/exchangeHandoffCode/restoreAccountFromKeychain, ContentView URL handling, ServerConnectView account UI, project.yml URL scheme) is built and demo-verified but still uncommitted in game-swiftui — committing next as part of TASK-375's prerequisite work.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Server + web-client handoff (game repo commits 4670cc16, a2036510) and SwiftUI-side account/Keychain/handoff implementation (game-swiftui commits e6a6d18, aa564d2) are complete and demo-verified end-to-end: register/login, handoff mint/exchange with replay+forgery rejection, real phalanxduel:// URL dispatch via Launch Services, Keychain-backed session restore across a full process kill/relaunch, and a clean secret-leakage log check. Architecture note: registration stayed web-only (a deliberate pivot from the original native-signup-screen framing in this task's description) — the native app authenticates via login or the browser handoff pattern (à la GitHub CLI/Docker Desktop), never placing the long-lived session token in a URL. bin/qa/swiftui-proof.sh required one fix during verification: Keychain account restore was overwriting the automation harness's expected player name with a leftover real demo account; automation mode now skips restoreAccountFromKeychain() entirely.
+<!-- SECTION:FINAL_SUMMARY:END -->
