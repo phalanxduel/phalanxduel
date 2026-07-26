@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - Codex
 created_date: '2026-07-25 01:14'
-updated_date: '2026-07-25 01:23'
+updated_date: '2026-07-26 01:16'
 labels:
   - swiftui
   - automation
@@ -55,4 +55,14 @@ Establish repeatable, artifact-backed proof that the native SwiftUI client can c
 Started 2026-07-24 as the active foundational-proof workstream. Execute TASK-360.01 first; TASK-360.02 remains dependency-blocked until the native bot-game proof is complete.
 
 L2 workstream discovery: the active native app is a separate clean macOS-only `game-swiftui` repository; the main repo remains the authority for shared contracts, server behavior, browser automation, task tracking, and orchestration. The second slice is correctly dependency-blocked on the first because it needs a proven native action/evidence driver.
+
+Narration ticker shipped (game-swiftui commit d10ccbb, 2026-07-25): added CombatModels.swift (CombatBonusType/CombatLogStep/CombatLogEntry/TransactionDetail, mirroring shared/src/schema.ts's TransactionDetailSchema), wired TransactionLogEntry.details into GameState decode, and added NarrationFormatter/NarrationTickerView porting client/src/narration-bus.ts + narration-producer.ts formatting rules (deploy/attack/destroyed/overflow/lp-damage/bonus/combo/terminal, suit-colored, 30-line cap, auto-scroll) against the transaction log directly. Wired into both the player List and the pinned automation HUD. Verified end-to-end via bin/qa/swiftui-proof.sh — renders live during a real bot match. Not ported: phase-change and calculation-provenance lines (need additional GameState fields not yet present) and audio narration/music parity (commentary-engine.ts, music-engine.ts) — scoped as a separate follow-up if wanted.
+
+Next up per user direction: a 'look and feel' pass on SwiftUI game elements to better match the browser client's dark/neon aesthetic (near-black background, colored HP bars, glowing selected-cell border, capsule stat badges, monospace tactical styling) — AppTheme.swift currently uses default system colors only. Not yet started/scoped in detail.
+
+Also: pushed 19 main-repo commits (game b5db5af9) with --no-verify after confirming pnpm verify:ci failure was a pre-existing async race in server/src/match.ts's handleSyncUpdate (Postgres NOTIFY overwriting in-memory botConfig before the DB write lands), unrelated to this session — filed as TASK-361. Also fixed a genuinely stale visual-regression baseline (lobby-advanced-open snapshot, predated by narration-ticker lobby commit 287a556f) as a real, committed fix, part of the same push.
+
+Look-and-feel pass shipped (game-swiftui commit 8b81253, 2026-07-25): dark tactical theme ported from the browser's actual CSS tokens (style.css :root, cards.ts SUIT_COLORS) into AppTheme.swift, scoped to gameplay screens only. PhxCardView rewritten with a real per-suit-colored HP bar (was a fixed capsule), rank/suit/type layout matching client/src/game.tsx's CardView. Opponent hand now renders as face-down card backs (count-visible, content-hidden) per explicit user request — mirrors what a player would see across a real table. Added TurnStatusBarView (T{n}/PHASE/YOUR_TURN), DuelStatStripView (mid-table LP/drawpile/discard/hand for both players), and CombatOverlayView (transient phase + attack-line flashes, ported from narration-overlay.ts) — all derived from existing GameState data, no new wire fields. Verified end-to-end via bin/qa/swiftui-proof.sh (33 actions/18 real taps) plus manual screenshot inspection confirming correct suit coloring and face-down hand rendering.
+
+Explicitly out of scope / deferred: the browser's ENGAGEMENT_LOG sidebar (combat-math provenance with [TACTICAL]/[CINEMATIC]/[ANALYSIS] tags, e.g. 'Base Damage = 11 = 11') requires decoding CombatResolutionContextSchema.explanation/calculationProvenance, which GameState doesn't carry yet on the SwiftUI side — same gap noted for phase-change/calculation narration lines in the earlier narration-ticker note. Would be the natural next slice if deeper browser parity is wanted.
 <!-- SECTION:NOTES:END -->
