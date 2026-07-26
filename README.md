@@ -64,6 +64,24 @@ The **[Documentation Wiki](docs/README.md)** is the central entry point for all 
 
 See **[Architecture Principles](docs/architecture/principles.md)** for design decisions and constraints.
 
+## 💛 Support This Project
+
+Phalanx Duel is built and run out of pocket — hosting on [Fly.io](https://fly.io) and
+[Neon](https://neon.tech), plus the AI tooling (Claude, Codex, Gemini/Antigravity) used to
+build and maintain it. None of that is free, and none of it is required reading before you
+play — the game costs nothing and the source is open under GPL-3.0.
+
+Think of this less as a donation ask and more as busking: I'm building this in the open
+because I enjoy it, not because anyone owes me anything. If you've played a match, poked
+around the engine, or just like that this exists, a coin in the case genuinely helps cover
+the bills and is always appreciated — never expected.
+
+- [GitHub Sponsors](https://github.com/sponsors/just3ws)
+- [Buy Me a Coffee](https://buymeacoffee.com/just3ws)
+
+The effort behind this is verifiable, not just claimed — every commit across this repo and
+its siblings under [phalanxduel](https://github.com/phalanxduel) is public history.
+
 ## ⚖️ License
 
 Licensed under [GPL-3.0-or-later](LICENSE).
