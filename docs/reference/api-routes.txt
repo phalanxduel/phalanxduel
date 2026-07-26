@@ -65,7 +65,9 @@
     │   │   │   │   │   ├── mail (PATCH)
     │   │   │   │   │   └── xport (GET, HEAD)
     │   │   │   │   ├── account (DELETE)
-    │   │   │   │   └── forgot-password (POST)
+    │   │   │   │   ├── forgot-password (POST)
+    │   │   │   │   └── handoff (POST)
+    │   │   │   │       └── /exchange (POST)
     │   │   │   └── chievements/stats (GET, HEAD)
     │   │   ├── ladder/
     │   │   │   └── :category (GET, HEAD)
