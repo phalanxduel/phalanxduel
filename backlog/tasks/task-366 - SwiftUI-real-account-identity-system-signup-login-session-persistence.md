@@ -1,9 +1,10 @@
 ---
 id: TASK-366
 title: 'SwiftUI real account/identity system (signup, login, session persistence)'
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-07-26 15:49'
+updated_date: '2026-07-26 20:19'
 labels:
   - swiftui
   - app-store-readiness
@@ -47,3 +48,9 @@ Surfaced during an App-Store-readiness research pass alongside TASK-367 through 
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Server + web-client side landed and pushed to origin/main (commits 4670cc16, a2036510): POST /api/auth/handoff and /api/auth/handoff/exchange, client/src/auth.ts openInDesktopApp(), lobby.tsx 'Open in Desktop App' button. Demo-verified end-to-end (register/login, mint/exchange, replay+forgery rejection, real phalanxduel:// URL dispatch, Keychain persistence across kill/relaunch, clean secret-leakage log check). SwiftUI-side implementation (KeychainStore, RestClient auth methods, SessionStore login/exchangeHandoffCode/restoreAccountFromKeychain, ContentView URL handling, ServerConnectView account UI, project.yml URL scheme) is built and demo-verified but still uncommitted in game-swiftui — committing next as part of TASK-375's prerequisite work.
+<!-- SECTION:NOTES:END -->
