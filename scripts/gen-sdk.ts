@@ -13,7 +13,7 @@ import {
   TypeScriptFileGenerator,
 } from '@asyncapi/modelina';
 import { Parser } from '@asyncapi/parser';
-import { readFile, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { copyFile, readFile, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,6 +23,8 @@ const OPENAPI_SPEC = join(ROOT_DIR, 'docs/api/openapi.json');
 const ASYNCAPI_SPEC = join(ROOT_DIR, 'docs/api/asyncapi.yaml');
 
 const SDK_GO_DIR = join(ROOT_DIR, 'sdk/go');
+const DUEL_CLI_DIR = join(ROOT_DIR, 'clients/go/duel-cli');
+const DUEL_CLI_SDK_DIR = join(DUEL_CLI_DIR, 'internal/phalanxapi');
 const SDK_TS_DIR = join(ROOT_DIR, 'sdk/ts');
 const SDK_GO_WS_DIR = join(SDK_GO_DIR, 'ws');
 const SDK_TS_WS_DIR = join(SDK_TS_DIR, 'ws');
@@ -297,6 +299,24 @@ async function postProcessGoSdk() {
   );
 }
 
+async function syncDuelCliSdk() {
+  // sdk/go is generated and gitignored, so it can never be tagged as an
+  // independently fetchable Go module — and `go install pkg@version`
+  // rejects a dependency module (as opposed to the main module) whose
+  // go.mod carries a `replace` directive, which is what a cross-module
+  // reference to ../../../sdk/go would require. duel-cli instead embeds
+  // a synced copy of the root-level REST client package directly.
+  await rm(DUEL_CLI_SDK_DIR, { recursive: true, force: true });
+  await mkdir(DUEL_CLI_SDK_DIR, { recursive: true });
+
+  const entries = await readdir(SDK_GO_DIR, { withFileTypes: true });
+  await Promise.all(
+    entries
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.go'))
+      .map((entry) => copyFile(join(SDK_GO_DIR, entry.name), join(DUEL_CLI_SDK_DIR, entry.name))),
+  );
+}
+
 async function main() {
   try {
     await mkdir(SDK_GO_DIR, { recursive: true });
@@ -334,6 +354,17 @@ async function main() {
     } catch (e) {
       console.warn(
         '⚠️ Go mod tidy warning (non-fatal):',
+        e instanceof Error ? e.message : String(e),
+      );
+    }
+
+    console.log('📎 Syncing duel-cli embedded SDK copy...');
+    await syncDuelCliSdk();
+    try {
+      await execa('go', ['mod', 'tidy'], { cwd: DUEL_CLI_DIR });
+    } catch (e) {
+      console.warn(
+        '⚠️ duel-cli go mod tidy warning (non-fatal):',
         e instanceof Error ? e.message : String(e),
       );
     }

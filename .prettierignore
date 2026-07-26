@@ -5,7 +5,7 @@ shared/schemas/
 shared/src/types.ts
 *.md
 sdk/
-**/vendor/
+clients/go/duel-cli/internal/phalanxapi/
 examples/
 scripts/instrument-cli.ts
 eslint-report.json

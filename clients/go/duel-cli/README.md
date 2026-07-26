@@ -34,9 +34,13 @@ go install github.com/phalanxduel/phalanxduel/clients/go/duel-cli@latest
 
 Both build from the same tagged release
 (`clients/go/duel-cli/vX.Y.Z`). The `go install` path works because this
-module vendors its `sdk/go` dependency — `sdk/` itself stays generated and
-gitignored across the rest of the repo, so vendoring is what makes this
-module fetchable standalone.
+module embeds a synced copy of the generated `sdk/go` REST client at
+`internal/phalanxapi` instead of depending on `sdk/go` as a separate module.
+`sdk/` itself stays generated and gitignored across the rest of the repo and
+can't be tagged as an independently fetchable module — and even if it could,
+`go install pkg@version` rejects any dependency module whose `go.mod`
+contains a `replace` directive. `internal/phalanxapi` is kept in sync
+automatically by `pnpm sdk:gen`.
 
 On connect, the CLI checks the server's reported wire-format version
 (`schemaVersion` from `/api/defaults`) against the version it was built for

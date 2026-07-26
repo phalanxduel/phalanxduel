@@ -13,7 +13,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CLI_DIR="$ROOT_DIR/clients/go/duel-cli"
 
 echo "==> Checking Go client formatting..."
-UNFORMATTED="$(cd "$CLI_DIR" && find . -name vendor -prune -o -name '*.go' -print0 | xargs -0 gofmt -l)"
+UNFORMATTED="$(cd "$CLI_DIR" && find . -path './internal/phalanxapi' -prune -o -name '*.go' -print0 | xargs -0 gofmt -l)"
 if [[ -n "$UNFORMATTED" ]]; then
   echo "Go files require formatting:" >&2
   echo "$UNFORMATTED" >&2
