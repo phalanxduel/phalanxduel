@@ -19,7 +19,34 @@ The CLI currently supports:
 4.  **Automation**: An `-auto` mode for random action selection.
 5.  **Reliable Transport**: Implements the same reconnect, ACK, pending replay, and session-rejoin behavior as the canonical browser client.
 
-## Prerequisites
+## Installing (alpha)
+
+Two supported ways to get a runnable binary without cloning the repo:
+
+```bash
+# Homebrew (macOS)
+brew tap phalanxduel/tap
+brew install duel-cli
+
+# go install (any platform with a Go toolchain)
+go install github.com/phalanxduel/phalanxduel/clients/go/duel-cli@latest
+```
+
+Both build from the same tagged release
+(`clients/go/duel-cli/vX.Y.Z`). The `go install` path works because this
+module vendors its `sdk/go` dependency — `sdk/` itself stays generated and
+gitignored across the rest of the repo, so vendoring is what makes this
+module fetchable standalone.
+
+On connect, the CLI checks the server's reported wire-format version
+(`schemaVersion` from `/api/defaults`) against the version it was built for
+and refuses to proceed on a major mismatch, printing the exact upgrade
+command. See
+[`docs/architecture/versioning.md`](https://github.com/phalanxduel/phalanxduel/blob/main/docs/architecture/versioning.md)
+for the compatibility policy this enforces. Override for local
+cross-branch development: `PHALANX_ALLOW_VERSION_MISMATCH=1`.
+
+## Prerequisites (building from source)
 
 - Go `1.24.x`
 - A running Phalanx Duel server on `http://127.0.0.1:3001` (or a remote URL)
