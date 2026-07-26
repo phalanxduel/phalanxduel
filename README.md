@@ -66,10 +66,15 @@ See **[Architecture Principles](docs/architecture/principles.md)** for design de
 
 ## 💛 Support This Project
 
-Phalanx Duel is built and run out of pocket — hosting on [Fly.io](https://fly.io) and
-[Neon](https://neon.tech), plus the AI tooling (Claude, Codex, Gemini/Antigravity) used to
-build and maintain it. None of that is free, and none of it is required reading before you
-play — the game costs nothing and the source is open under GPL-3.0.
+Phalanx Duel is built and run out of pocket — server hosting on [Fly.io](https://fly.io),
+the database on [Neon](https://neon.tech), DNS on [DNSimple](https://dnsimple.com), email on
+[Migadu](https://migadu.com), and the AI tooling (Claude, Codex, Gemini/Antigravity) used to
+build and maintain it. [Stripe](https://stripe.com) handles payments and
+[GoatCounter](https://goatcounter.com) handles privacy-friendly analytics. Those are the
+real, verifiable line items; the exact totals move around month to month, so I'm not going
+to pretend to quote a precise number — this is just what it actually costs to keep the
+lights on. None of that is required reading before you play, though — the game costs
+nothing and the source is open under GPL-3.0.
 
 Think of this less as a donation ask and more as busking: I'm building this in the open
 because I enjoy it, not because anyone owes me anything. If you've played a match, poked
