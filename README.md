@@ -89,4 +89,4 @@ its siblings under [phalanxduel](https://github.com/phalanxduel) is public histo
 
 ## ⚖️ License
 
-Licensed under [GPL-3.0-or-later](LICENSE).
+Licensed under [AGPL-3.0-or-later](LICENSE).
