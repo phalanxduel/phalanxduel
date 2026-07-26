@@ -25,6 +25,21 @@ export async function logout(): Promise<void> {
   }
 }
 
+/// Hands off the current web session to the native desktop app via a
+/// short-lived, single-use code exchanged for a real session token — the
+/// long-lived session token itself is never placed in the phalanxduel://
+/// URL. See server/src/routes/auth.ts's /api/auth/handoff(/exchange).
+export async function openInDesktopApp(): Promise<void> {
+  const res = await fetch('/api/auth/handoff', {
+    method: 'POST',
+    credentials: 'include',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
+  if (!res.ok) return;
+  const data = (await res.json()) as { code: string };
+  window.location.href = `phalanxduel://auth?code=${encodeURIComponent(data.code)}`;
+}
+
 export async function restoreSession(): Promise<void> {
   try {
     const res = await fetch('/api/auth/me', { credentials: 'include' });

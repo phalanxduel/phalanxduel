@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
 import { db } from '../db/index.js';
 import { users } from '../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
@@ -1191,6 +1192,146 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
           return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
         }
       });
+    },
+  );
+
+  // In-memory single-instance store for desktop-app handoff codes: short-lived
+  // (60s), single-use, deleted on consumption. A DB-backed table mirroring
+  // passwordResetTokens (hashed code, expiresAt, usedAt) is the correct
+  // upgrade if this server ever runs as more than one instance.
+  const handoffCodes = new Map<string, { userId: string; expiresAt: number }>();
+  const HANDOFF_CODE_TTL_MS = 60_000;
+
+  function purgeExpiredHandoffCodes() {
+    const now = Date.now();
+    for (const [code, entry] of handoffCodes) {
+      if (entry.expiresAt <= now) handoffCodes.delete(code);
+    }
+  }
+
+  const HandoffExchangeSchema = z.object({ code: z.string().min(1) });
+
+  fastify.post(
+    '/api/auth/handoff',
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'Mint a short-lived, single-use code for desktop-app sign-in handoff',
+        description:
+          'Called by an already-authenticated web session before redirecting to the ' +
+          'phalanxduel:// desktop app URL scheme. The code is exchanged (once, within ' +
+          '60 seconds) for a real session token via /api/auth/handoff/exchange — the ' +
+          'session token itself is never placed in a URL.',
+        security: [{ bearerAuth: [] }, { cookieAuth: [] }],
+        response: {
+          200: toJsonSchema(z.object({ code: z.string() })),
+          401: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return await traceHttpHandler('auth.handoff', httpTraceContext(request, reply), async () => {
+        try {
+          let token = request.headers.authorization?.replace('Bearer ', '');
+          token ??= request.cookies.phalanx_refresh;
+          if (!token) {
+            return await reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+          }
+
+          const payload = fastify.jwt.verify<{ id: string }>(token);
+          purgeExpiredHandoffCodes();
+
+          const code = crypto.randomBytes(24).toString('base64url');
+          handoffCodes.set(code, {
+            userId: payload.id,
+            expiresAt: Date.now() + HANDOFF_CODE_TTL_MS,
+          });
+
+          return { code };
+        } catch {
+          return await reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+        }
+      });
+    },
+  );
+
+  fastify.post(
+    '/api/auth/handoff/exchange',
+    {
+      schema: {
+        tags: ['auth'],
+        summary: 'Exchange a handoff code for a real session token',
+        body: toJsonSchema(HandoffExchangeSchema),
+        response: {
+          200: toJsonSchema(AuthResponseSchema),
+          400: toJsonSchema(ErrorResponseSchema),
+          401: toJsonSchema(ErrorResponseSchema),
+          404: toJsonSchema(ErrorResponseSchema),
+          503: toJsonSchema(ErrorResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      return await traceHttpHandler(
+        'auth.handoff.exchange',
+        httpTraceContext(request, reply),
+        async () => {
+          const result = HandoffExchangeSchema.safeParse(request.body);
+          if (!result.success) {
+            return await reply.status(400).send({ error: 'Invalid input', code: 'INVALID_INPUT' });
+          }
+
+          purgeExpiredHandoffCodes();
+          const entry = handoffCodes.get(result.data.code);
+          if (!entry || entry.expiresAt <= Date.now()) {
+            return await reply
+              .status(401)
+              .send({ error: 'Handoff code is invalid or expired', code: 'INVALID_HANDOFF_CODE' });
+          }
+          handoffCodes.delete(result.data.code);
+
+          const database = db;
+          if (!database)
+            return await reply
+              .status(503)
+              .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
+
+          const [user] = await traceDbQuery(
+            'db.users.select_by_id',
+            {
+              operation: 'SELECT',
+              table: 'users',
+            },
+            () => database.select().from(users).where(eq(users.id, entry.userId)).limit(1),
+          );
+          if (!user)
+            return await reply
+              .status(404)
+              .send({ error: 'User not found', code: 'USER_NOT_FOUND' });
+
+          const token = fastify.jwt.sign({
+            id: user.id,
+            gamertag: user.gamertag,
+            suffix: user.suffix,
+            stamp: user.securityStamp,
+          });
+
+          return {
+            token,
+            user: {
+              id: user.id,
+              gamertag: user.gamertag,
+              suffix: user.suffix,
+              email: user.email,
+              elo: user.elo,
+              emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
+              emailNotifications: user.emailNotifications,
+              reminderNotifications: user.reminderNotifications,
+              marketingConsentAt: user.marketingConsentAt?.toISOString() ?? null,
+            },
+          };
+        },
+      );
     },
   );
 }

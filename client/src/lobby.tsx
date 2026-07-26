@@ -33,7 +33,7 @@ import { Leaderboard } from './components/Leaderboard';
 import { AuthPanel } from './components/AuthPanel';
 import { SettingsPanel } from './components/SettingsPanel';
 import { ResetPasswordPanel } from './components/ResetPasswordPanel';
-import { getToken, logout, restoreSession } from './auth';
+import { getToken, logout, openInDesktopApp, restoreSession } from './auth';
 import { MatchHistory } from './components/MatchHistory';
 import { WaitingApp } from './waiting';
 import { getQuickMatchOperativeId } from './ux-derivations';
@@ -86,6 +86,16 @@ function UserBar({ state, onFocusId }: { state: AppState; onFocusId: () => void 
           </span>
         </div>
         <div class="phx-user-actions">
+          <button
+            class="btn btn-secondary btn-tiny"
+            data-testid="open-desktop-app-btn"
+            onClick={() => {
+              void openInDesktopApp();
+            }}
+            title="Sign the native macOS app into this account"
+          >
+            🖥️ OPEN_IN_DESKTOP_APP
+          </button>
           <a
             class="btn btn-secondary btn-tiny"
             href="?screen=settings"
