@@ -126,3 +126,14 @@ From the repo root, validate the Go client with:
 ```bash
 rtk pnpm go:clients:check
 ```
+
+## Cutting a Release
+
+Push a tag matching `clients/go/duel-cli/vX.Y.Z` and
+[`.github/workflows/release-duel-cli.yml`](../../../.github/workflows/release-duel-cli.yml)
+does the rest: builds/tests/format-checks, generates release notes from
+conventional-commit messages touching this directory since the previous
+matching tag, creates the GitHub release, and bumps
+[`phalanxduel/homebrew-tap`](https://github.com/phalanxduel/homebrew-tap)'s
+`Formula/duel-cli.rb` `url`/`sha256` automatically. No manual `gh release
+create` or hand-computed checksums needed.

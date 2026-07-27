@@ -1,9 +1,10 @@
 ---
 id: TASK-377
 title: 'Release automation: tag-to-release pipeline + changelog-from-commits'
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-07-26 19:55'
+updated_date: '2026-07-27 01:23'
 labels:
   - release
   - automation

@@ -1,0 +1,95 @@
+name: Release duel-cli
+
+on:
+  push:
+    tags:
+      - 'clients/go/duel-cli/v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-duel-cli-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build, release, and bump tap
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
+        with:
+          go-version: '1.24.0'
+          cache-dependency-path: clients/go/duel-cli/go.sum
+
+      - name: Build, test, and format-check duel-cli
+        run: bash scripts/ci/check-go-clients.sh
+
+      - name: Resolve version and previous tag
+        id: vars
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#clients/go/duel-cli/}"
+          PREV_TAG="$(git describe --tags --abbrev=0 --match 'clients/go/duel-cli/v*' "${TAG}^" 2>/dev/null || true)"
+          {
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+            echo "prev_tag=$PREV_TAG"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate release notes
+        run: |
+          bash scripts/release/generate-notes.sh \
+            "${{ steps.vars.outputs.prev_tag }}" \
+            "${{ steps.vars.outputs.tag }}" \
+            clients/go/duel-cli > /tmp/notes.md
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.vars.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --title "duel-cli ${{ steps.vars.outputs.version }} (alpha)" \
+            --notes-file /tmp/notes.md
+
+      - name: Compute source tarball checksum
+        id: tarball
+        run: |
+          URL="https://github.com/${{ github.repository }}/archive/refs/tags/${{ steps.vars.outputs.tag }}.tar.gz"
+          SHA="$(curl -sL "$URL" | shasum -a 256 | awk '{print $1}')"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: phalanxduel/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_PAT }}
+          path: homebrew-tap
+
+      - name: Bump Formula/duel-cli.rb
+        run: |
+          sed -i \
+            -e "s|^  url \".*\"\$|  url \"${{ steps.tarball.outputs.url }}\"|" \
+            -e "s|^  sha256 \".*\"\$|  sha256 \"${{ steps.tarball.outputs.sha256 }}\"|" \
+            homebrew-tap/Formula/duel-cli.rb
+
+      - name: Commit and push tap update
+        working-directory: homebrew-tap
+        run: |
+          if git diff --quiet; then
+            echo "No formula changes to commit"
+            exit 0
+          fi
+          git config user.name "phalanxduel-release-bot"
+          git config user.email "noreply@phalanxduel.com"
+          git add Formula/duel-cli.rb
+          git commit -m "chore: bump duel-cli to ${{ steps.vars.outputs.version }}"
+          git push origin main

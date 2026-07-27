@@ -1,9 +1,10 @@
 ---
 id: TASK-375
 title: 'Alpha distribution: SwiftUI client build/sign/zip + GitHub release'
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-07-26 19:55'
+updated_date: '2026-07-26 22:36'
 labels:
   - release
   - swiftui
@@ -36,10 +37,10 @@ Depends on the version-compatibility work already done (SessionStore decodes _me
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 phalanxduel/game-swiftui exists on GitHub (public) with full history pushed
-- [ ] #2 bin/archive-app.sh produces a clean, launchable .app zip
-- [ ] #3 v0.1.0-alpha.1 tag and GitHub release exist with the zip attached
-- [ ] #4 MARKETING_VERSION and BootView's displayed version agree and are sourced from one place
+- [x] #1 phalanxduel/game-swiftui exists on GitHub (public) with full history pushed
+- [x] #2 bin/archive-app.sh produces a clean, launchable .app zip
+- [x] #3 v0.1.0-alpha.1 tag and GitHub release exist with the zip attached
+- [x] #4 MARKETING_VERSION and BootView's displayed version agree and are sourced from one place
 <!-- AC:END -->
 
 ## Definition of Done
@@ -51,3 +52,15 @@ Depends on the version-compatibility work already done (SessionStore decodes _me
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Completed earlier this session (before the duel-cli install-path debugging). phalanxduel/game-swiftui created as a public repo with full history pushed. bin/archive-app.sh rewritten to a real archive/sign/zip pipeline (xcodebuild Release + ENABLE_DEBUG_DYLIB=NO, ad-hoc codesign, ditto zip) and verified end-to-end: extracted the built zip fresh, stripped quarantine the same way the planned Homebrew cask postflight will, confirmed the ad-hoc signature, launched the actual compiled binary (confirmed via process list, not a debug-dylib stub), confirmed clean exit.
+
+MARKETING_VERSION set to 0.1.0-alpha.1 in project.yml; BootView.swift now reads the version from Bundle.main.infoDictionary["CFBundleShortVersionString"] instead of a second hardcoded literal, so the two can't drift.
+
+Tagged v0.1.0-alpha.1 and created the GitHub release with the zip attached, plus a new README covering install (brew cask or manual zip), sign-in flow, and building from source.
+
+Release: https://github.com/phalanxduel/game-swiftui/releases/tag/v0.1.0-alpha.1
+<!-- SECTION:FINAL_SUMMARY:END -->
