@@ -27,7 +27,7 @@ const defaultBaseURL = "http://127.0.0.1:3001"
 // clientVersion and compatibleSchemaMajor are bumped together with each
 // clients/go/duel-cli/vX.Y.Z release tag. See docs/architecture/versioning.md
 // for the SCHEMA_VERSION compatibility policy this check enforces.
-const clientVersion = "0.1.0"
+const clientVersion = "0.1.3"
 const compatibleSchemaMajor = 1
 
 var autoMode = flag.Bool("auto", false, "Automatically pick a random action")
