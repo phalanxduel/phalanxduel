@@ -36,6 +36,7 @@ artifacts/
 .artifacts/
 tmp/
 playwright-report/
+test-results/
 
 # Build info & Cache
 *.tsbuildinfo
