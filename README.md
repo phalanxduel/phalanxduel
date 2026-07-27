@@ -74,7 +74,7 @@ build and maintain it. [Stripe](https://stripe.com) handles payments and
 real, verifiable line items; the exact totals move around month to month, so I'm not going
 to pretend to quote a precise number — this is just what it actually costs to keep the
 lights on. None of that is required reading before you play, though — the game costs
-nothing and the source is open under GPL-3.0.
+nothing and the source is open under [AGPL-3.0-or-later](LICENSE).
 
 Think of this less as a donation ask and more as busking: I'm building this in the open
 because I enjoy it, not because anyone owes me anything. If you've played a match, poked
