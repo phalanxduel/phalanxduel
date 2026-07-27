@@ -78,7 +78,8 @@ different ports:
 ```mermaid
 graph TD
     Start((Startup)) --> LobbyStandard[Lobby: Standard]
-    Start -->|?match=| LobbyJoinLink[Lobby: Join Link]
+    Start -->|?match=, authenticated owner| RejoinAttempt[Auto rejoinMatch]
+    Start -->|?match=, no session| JoinAttempt[Auto joinMatch]
     Start -->|?watch=| LobbyWatch[Lobby: Watch Connecting]
     Start -->|Saved Session| GamePlayer[Game: Player]
 
@@ -87,8 +88,10 @@ graph TD
     LobbyStandard -->|Watch Match| GameSpectator[Game: Spectator]
     LobbyStandard -->|Join Queue| LobbyStandard
 
-    LobbyJoinLink -->|Accept| GamePlayer
-    LobbyJoinLink -->|Cancel| LobbyStandard
+    RejoinAttempt -->|matchJoined| GamePlayer
+    RejoinAttempt -->|matchError| LobbyStandard
+    JoinAttempt -->|matchJoined| GamePlayer
+    JoinAttempt -->|matchError| LobbyStandard
 
     LobbyWatch -->|WS Connect| GameSpectator
     LobbyWatch -->|Cancel| LobbyStandard
@@ -109,7 +112,7 @@ graph TD
 | Screen ID | Render Path | Entry Conditions | Exit Paths | Discoverability |
 | --- | --- | --- | --- | --- |
 | `lobby.standard` | `renderLobby` | `state.screen = lobby` and no `match/watch` URL params | create, join, watch, or URL param changes on reload | Primary |
-| `lobby.join-link` | `renderJoinViaLink` | `state.screen = lobby` and `?match=` present | accept join, or "Start your own match instead" | Link-only |
+| `lobby.join-link` | inline deep-link dispatcher inside `renderLobby` (`client/src/lobby.tsx`, no separate screen component) | `state.screen = lobby` and a bare `?match=` present with no `action` param | authenticated owner of that match: auto `rejoinMatch` with their real user id; anyone else (no session): auto `joinMatch` — never sends `rejoinMatch` with a placeholder id, since the server requires a real UUID there | Link-only |
 | `lobby.watch-connecting` | `renderWatchConnecting` | `state.screen = lobby` and `?watch=` present | auto `watchMatch` on WS open, or cancel | Link-only |
 | `waiting` | `renderWaiting` | WS `matchCreated` | receives `gameState` -> game | Primary (host path) |
 | `game.player` | `renderGame` | `state.screen = game` and `isSpectator = false` | repeated gameState updates, eventually gameOver | Primary |

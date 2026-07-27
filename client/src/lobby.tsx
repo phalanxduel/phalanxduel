@@ -2688,14 +2688,31 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           queueLobbyAction('INITIALIZING_SPECTATOR_LINK…', () => {
             getConnection()?.send({ type: 'watchMatch', matchId });
           });
-        } else if (matchId && !action) {
-          // If a matchId/match is provided without a specific action, we attempt to rejoin it
+        } else if (matchId && !action && state.user) {
+          // An authenticated user with a bare matchId link is resuming a session
+          // they already hold (e.g. the "resume active match" button's own href).
+          const userId = state.user.id;
           queueLobbyAction('RESUMING_OPERATION…', () => {
             startActionTimeout();
             getConnection()?.send({
               type: 'rejoinMatch',
               matchId,
-              playerId: state.user?.id ?? 'guest',
+              playerId: userId,
+            });
+          });
+        } else if (matchId && !action) {
+          // An unauthenticated visitor has no session to resume, so a bare matchId
+          // link can only mean "join this match" — never send rejoinMatch with a
+          // fake playerId here, since RejoinMatchMessage requires a real UUID and
+          // 'guest' fails schema validation server-side (VALIDATION_ERROR).
+          const currentId = getLobbyOperativeId(state);
+          const joinName = currentId ?? getQuickMatchOperativeId(currentId);
+          queueLobbyAction('JOINING_MATCH…', () => {
+            startActionTimeout();
+            getConnection()?.send({
+              type: 'joinMatch',
+              matchId,
+              playerName: joinName,
             });
           });
         }

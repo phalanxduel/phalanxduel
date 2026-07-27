@@ -351,6 +351,58 @@ describe('lobby module', () => {
       );
     });
 
+    it('unauthenticated user opening a bare ?match= link sends joinMatch, not rejoinMatch', async () => {
+      const send = vi.fn();
+      setConnection({ send } as never);
+      window.history.pushState({}, '', '/?match=99999999-9999-9999-9999-999999999999');
+
+      const { renderLobby } = await import('../src/lobby');
+      renderLobby(container, makeState({ user: null }));
+      await waitForLobbyEffects();
+
+      expect(send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'joinMatch',
+          matchId: '99999999-9999-9999-9999-999999999999',
+        }),
+      );
+      expect(send).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'rejoinMatch' }));
+    });
+
+    it('authenticated user opening a bare ?match= link still sends rejoinMatch with their real id', async () => {
+      const send = vi.fn();
+      setConnection({ send } as never);
+      window.history.pushState({}, '', '/?match=99999999-9999-9999-9999-999999999999');
+
+      const { renderLobby } = await import('../src/lobby');
+      renderLobby(
+        container,
+        makeState({
+          user: {
+            id: 'user-1',
+            gamertag: 'Alice',
+            suffix: 1,
+            email: 'alice@example.com',
+            elo: 1000,
+            emailNotifications: true,
+            reminderNotifications: true,
+          },
+        }),
+      );
+      for (let i = 0; i < 30 && send.mock.calls.length === 0; i += 1) {
+        await waitForLobbyEffects();
+      }
+
+      expect(send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'rejoinMatch',
+          matchId: '99999999-9999-9999-9999-999999999999',
+          playerId: 'user-1',
+        }),
+      );
+      expect(send).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'joinMatch' }));
+    });
+
     it('past games panel is conditional based on isOpen', async () => {
       const { renderLobby } = await import('../src/lobby');
       renderLobby(container, makeState());
