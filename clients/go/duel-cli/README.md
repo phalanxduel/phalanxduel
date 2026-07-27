@@ -1,7 +1,7 @@
 # Go Duel CLI
 
 This directory contains an interactive Go CLI client that uses the generated
-SDK in [`/sdk/go`](https://github.com/phalanxduel/phalanxduel/tree/main/sdk/go) and plays
+SDK in `/sdk/go` (generated locally by [`scripts/gen-sdk.ts`](https://github.com/phalanxduel/phalanxduel/blob/main/scripts/gen-sdk.ts); not tracked in git) and plays
 against the live Phalanx Duel server over WebSockets.
 
 The CLI currently supports:
@@ -26,6 +26,7 @@ Two supported ways to get a runnable binary without cloning the repo:
 ```bash
 # Homebrew (macOS)
 brew tap phalanxduel/tap
+brew trust phalanxduel/tap  # required once — Homebrew blocks unrecognized taps by default
 brew install duel-cli
 
 # go install (any platform with a Go toolchain)
@@ -101,7 +102,7 @@ Usage of duel-cli:
 
 The Go duel CLI is a first-class runnable client in the reference architecture.
 
-- **REST SDK**: Uses the generated Go SDK from [`/sdk/go`](https://github.com/phalanxduel/phalanxduel/tree/main/sdk/go).
+- **REST SDK**: Uses the generated Go SDK from `/sdk/go` (generated locally by [`scripts/gen-sdk.ts`](https://github.com/phalanxduel/phalanxduel/blob/main/scripts/gen-sdk.ts); not tracked in git).
 - **Transport**: Hand-wired reliable WebSocket implementation in `ws_client.go`.
 - **Logic**: derived from `main.go`, mapping the server's `viewModel` to the TUI.
 
