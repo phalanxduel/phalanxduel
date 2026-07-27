@@ -138,3 +138,12 @@ matching tag, creates the GitHub release, and bumps
 [`phalanxduel/homebrew-tap`](https://github.com/phalanxduel/homebrew-tap)'s
 `Formula/duel-cli.rb` `url`/`sha256` automatically. No manual `gh release
 create` or hand-computed checksums needed.
+
+**One-time setup:** the tap-bump step pushes to a separate repo, so it needs a
+`HOMEBREW_TAP_PAT` repo secret — a fine-grained PAT scoped to `Contents: write`
+on `phalanxduel/homebrew-tap` only (GitHub → Settings → Developer settings →
+Personal access tokens → Fine-grained tokens; no `gh` CLI command creates
+these). Set it as a repo secret named `HOMEBREW_TAP_PAT` here **and** in
+`phalanxduel/game-swiftui` (`gh secret set HOMEBREW_TAP_PAT --repo <repo>`).
+Without it, the workflow still builds/tests/releases fine and fails cleanly
+at the final tap-bump step with a credentials error.
