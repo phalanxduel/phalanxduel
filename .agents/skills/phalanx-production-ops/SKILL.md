@@ -30,12 +30,14 @@ rtk curl -s https://play.phalanxduel.com/ready
 ```
 
 Then inspect logs, workflow state, or telemetry based on the failing surface.
-For local readiness, prefer:
+For local readiness and storage health, prefer:
 
 ```bash
 rtk pnpm verify:quick
+rtk pnpm diagnostics
 rtk ./bin/check
 ```
+
 
 ## Deployment Semantics
 

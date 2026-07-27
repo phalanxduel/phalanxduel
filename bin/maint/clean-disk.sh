@@ -72,46 +72,81 @@ fi
 
 # 2. Identify root log files & temporary backups
 LOG_FILES=$(find "$REPO_ROOT" -maxdepth 1 -name "deploy-staging-*.log" -o -name "*.log" 2>/dev/null || true)
-BACKUP_DIRS=""
-if [ -d "$REPO_ROOT/backups" ]; then BACKUP_DIRS="$BACKUP_DIRS $REPO_ROOT/backups"; fi
-if [ -d "$REPO_ROOT/.kin" ]; then BACKUP_DIRS="$BACKUP_DIRS $REPO_ROOT/.kin"; fi
-
-# Calculate age cutoff in seconds
-CUTOFF_SEC=$(( DAYS * 86400 ))
-NOW_SEC=$(date +%s)
 
 echo ""
 echo "🔍 Scanning for cleanable items older than $DAYS days..."
 
-CLEANABLE_FILES=()
+CLEANABLE_COUNT=0
 CLEANABLE_BYTES=0
 
-# Scan artifacts subdirectories for old run directories/files
-if [ -d "$ARTIFACTS_DIR" ]; then
-  while IFS= read -r item; do
-    if [ -z "$item" ]; then continue; fi
-    # Get last modified time
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-      MTIME=$(stat -f "%m" "$item" 2>/dev/null || echo "$NOW_SEC")
-      SIZE=$(stat -f "%z" "$item" 2>/dev/null || echo 0)
-    else
-      MTIME=$(stat -c "%Y" "$item" 2>/dev/null || echo "$NOW_SEC")
-      SIZE=$(stat -c "%s" "$item" 2>/dev/null || echo 0)
-    fi
-    AGE=$(( NOW_SEC - MTIME ))
-    if [ "$AGE" -gt "$CUTOFF_SEC" ]; then
-      CLEANABLE_FILES+=("$item")
-      CLEANABLE_BYTES=$(( CLEANABLE_BYTES + SIZE ))
-    fi
-  done < <(find "$ARTIFACTS_DIR" -mindepth 2 -maxdepth 4 \( -type d -o -type f \) 2>/dev/null)
-fi
+eval "$(python3 -c "
+import os, time, re, sys
+from datetime import datetime, timedelta
 
-# Add root logs
-for log in $LOG_FILES; do
-  if [ -f "$log" ]; then
-    CLEANABLE_FILES+=("$log")
-  fi
-done
+repo_root = '$REPO_ROOT'
+days = $DAYS
+now = datetime.now()
+purge_cutoff = now - timedelta(days=days)
+
+def get_date(name, path):
+    match = re.search(r'(\d{4})-(\d{2})-(\d{2})', name)
+    if match:
+        try: return datetime.strptime(match.group(0), '%Y-%m-%d')
+        except ValueError: pass
+    match = re.search(r'(\d{13})', name)
+    if match:
+        ts = int(match.group(1)) / 1000.0
+        return datetime.fromtimestamp(ts)
+    try:
+        return datetime.fromtimestamp(os.path.getmtime(path))
+    except OSError:
+        return now
+
+count = 0
+total_bytes = 0
+
+art_dir = os.path.join(repo_root, 'artifacts')
+if os.path.exists(art_dir):
+    for entry in os.listdir(art_dir):
+        if entry.startswith('.'): continue
+        p = os.path.join(art_dir, entry)
+        if os.path.isdir(p):
+            for sub in os.listdir(p):
+                if sub.startswith('.'): continue
+                sub_p = os.path.join(p, sub)
+                dt = get_date(sub, sub_p)
+                if dt < purge_cutoff:
+                    count += 1
+                    if os.path.isdir(sub_p):
+                        for r, d, f in os.walk(sub_p):
+                            for fname in f:
+                                try: total_bytes += os.path.getsize(os.path.join(r, fname))
+                                except OSError: pass
+                    else:
+                        try: total_bytes += os.path.getsize(sub_p)
+                        except OSError: pass
+
+for extra in ['backups', 'logs']:
+    ext_dir = os.path.join(repo_root, extra)
+    if os.path.exists(ext_dir):
+        for sub in os.listdir(ext_dir):
+            if sub.startswith('.'): continue
+            sub_p = os.path.join(ext_dir, sub)
+            dt = get_date(sub, sub_p)
+            if dt < purge_cutoff:
+                count += 1
+                if os.path.isdir(sub_p):
+                    for r, d, f in os.walk(sub_p):
+                        for fname in f:
+                            try: total_bytes += os.path.getsize(os.path.join(r, fname))
+                            except OSError: pass
+                else:
+                    try: total_bytes += os.path.getsize(sub_p)
+                    except OSError: pass
+
+print(f'CLEANABLE_COUNT={count}')
+print(f'CLEANABLE_BYTES={total_bytes}')
+")"
 
 # Convert bytes to human readable
 HUMAN_CLEANABLE=$(awk -v bytes="$CLEANABLE_BYTES" 'BEGIN {
@@ -121,13 +156,13 @@ HUMAN_CLEANABLE=$(awk -v bytes="$CLEANABLE_BYTES" 'BEGIN {
   else printf "%d B", bytes;
 }')
 
-echo "Found ${#CLEANABLE_FILES[@]} item(s) to clean (~$HUMAN_CLEANABLE)."
+echo "Found $CLEANABLE_COUNT item(s) to clean (~$HUMAN_CLEANABLE)."
 
 if [ "$DRY_RUN" = "true" ]; then
   echo ""
   echo "📋 [DRY-RUN] Summary of actions that would be performed:"
   echo "  - Consolidate & compress artifacts: python3 bin/maint/consolidate_artifacts.py --purge-days $DAYS"
-  echo "  - Purge ${#CLEANABLE_FILES[@]} old artifact/log items older than $DAYS days (~$HUMAN_CLEANABLE)"
+  echo "  - Purge $CLEANABLE_COUNT old artifact/backup/log items older than $DAYS days (~$HUMAN_CLEANABLE)"
   if [ -n "$LOG_FILES" ]; then
     echo "  - Remove root log files: $LOG_FILES"
   fi
@@ -141,7 +176,7 @@ if [ "$DRY_RUN" = "true" ]; then
 fi
 
 # Execute cleanup
-if [ "$FORCE" != "true" ] && [ ${#CLEANABLE_FILES[@]} -gt 0 ]; then
+if [ "$FORCE" != "true" ] && [ "$CLEANABLE_COUNT" -gt 0 ]; then
   read -p "Proceed with deleting cleanable items? [y/N] " -n 1 -r
   echo ""
   if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -157,7 +192,27 @@ if [ -f "$REPO_ROOT/bin/maint/consolidate_artifacts.py" ]; then
   python3 "$REPO_ROOT/bin/maint/consolidate_artifacts.py" --purge-days "$DAYS" || true
 fi
 
-# 2. Remove identified root log files
+# 2. Clean old backups & logs older than DAYS
+python3 -c "
+import os, time, re
+from datetime import datetime, timedelta
+
+repo_root = '$REPO_ROOT'
+purge_cutoff = datetime.now() - timedelta(days=$DAYS)
+
+for extra in ['backups']:
+    ext_dir = os.path.join(repo_root, extra)
+    if os.path.exists(ext_dir):
+        for sub in os.listdir(ext_dir):
+            if sub.startswith('.'): continue
+            sub_p = os.path.join(ext_dir, sub)
+            mtime = os.path.getmtime(sub_p)
+            if datetime.fromtimestamp(mtime) < purge_cutoff:
+                print(f'  Removing old backup: {extra}/{sub}')
+                os.remove(sub_p)
+" 2>/dev/null || true
+
+# 3. Remove identified root log files
 for log in $LOG_FILES; do
   if [ -f "$log" ]; then
     echo "  Removing log file: $log"

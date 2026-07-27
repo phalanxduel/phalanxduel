@@ -66,6 +66,20 @@ if [ -d "artifacts" ]; then
         fi
     fi
 fi
+
+for extra_dir in "backups" "logs"; do
+    if [ -d "$extra_dir" ]; then
+        EXTRA_KB=$(du -sk "$extra_dir" 2>/dev/null | awk '{print $1}')
+        if [ -n "$EXTRA_KB" ] && [ "$EXTRA_KB" -gt 1024 ]; then
+            if [ "$EXTRA_KB" -gt 1048576 ]; then
+                EXTRA_DISP="$(awk -v kb="$EXTRA_KB" 'BEGIN {printf "%.1fG", kb/1048576}')"
+            else
+                EXTRA_DISP="$(awk -v kb="$EXTRA_KB" 'BEGIN {printf "%.1fM", kb/1024}')"
+            fi
+            echo "- **${extra_dir^} Directory Size**: $EXTRA_DISP"
+        fi
+    fi
+done
 echo "- **Memory**: $(sysctl -n hw.memsize | awk '{print $1/1024/1024/1024 " GB Total"}')"
 echo ""
 

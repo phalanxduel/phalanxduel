@@ -58,6 +58,19 @@ If the browser lane cannot complete the match, treat that as a gameplay
 automation failure and fix it before relying on screenshots or downstream
 artifacts.
 
+## Disk Hygiene
+
+Repeated playthrough runs generate large trace and screenshot directories under `artifacts/playthrough*`.
+After completing bulk playthroughs or matrix runs:
+
+```bash
+# Check cleanable artifacts
+rtk pnpm maint:clean-disk:dry
+
+# Clean expired runs (>7 days)
+rtk pnpm maint:clean-disk
+```
+
 ## Completion Gate
 
 Before declaring the reference lane healthy, run:
@@ -71,3 +84,4 @@ For TypeScript runner changes, also run:
 ```bash
 rtk pnpm -r --stream typecheck
 ```
+

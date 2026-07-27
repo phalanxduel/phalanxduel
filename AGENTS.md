@@ -297,6 +297,13 @@ act push -j build-test    # Run a specific job
 ```
 The project includes an `.actrc` for consistent local simulation.
 
+### 5. Disk Space & Storage Maintenance
+Prevent storage exhaustion from test artifacts, playthrough dumps, and log files:
+- Run `rtk pnpm diagnostics` to check storage usage.
+- Run `rtk pnpm maint:clean-disk:dry` to preview cleanable items.
+- Run `rtk pnpm maint:clean-disk` after heavy QA/playthrough runs to consolidate and purge expired assets (>7 days).
+- Run `rtk pnpm maint:clean-disk:full` for full reclamation (Docker system prune + pnpm store prune).
+
 ## 🏗️ Repository Architecture
 
 | File | Tool | Purpose |

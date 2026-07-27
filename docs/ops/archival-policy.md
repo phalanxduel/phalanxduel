@@ -53,7 +53,13 @@ historical home.
 ### 3. `docs/history/`
 Intentional narrative history that remains useful as published project context.
 
-### 4. Git history
+### 4. `artifacts/` (Test & QA Asset Storage)
+Transient test run outputs, playthrough logs, visual regression captures, and screenshots are subject to automated storage maintenance via `pnpm maint:clean-disk`:
+- **Consolidation**: Runs older than 72 hours are consolidated into `artifacts/<name>/YYYY/MM/DD` and compressed into `.tar.gz` archives.
+- **Purge Threshold**: Ephemeral test artifacts and stale `.sql` database dumps older than the retention threshold (default: 7 days) are purged.
+- **Diagnostics Alert**: Automated diagnostics (`pnpm diagnostics`) warn whenever total artifact storage exceeds 2 GB.
+
+### 5. Git history
 The default location for deleted transient artifacts, old prompts, AI report
 dumps, and one-off execution summaries.
 

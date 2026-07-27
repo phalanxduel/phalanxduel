@@ -188,7 +188,8 @@ and remote deployment instructions.
 3.  Update documentation if you changed behavior or added a new feature.
 
 ### Storage & Disk Maintenance
-- `rtk pnpm maint:clean-disk:dry`: Preview cleanable test artifacts (>7 days) and log files safely.
-- `rtk pnpm maint:clean-disk`: Purge expired test run artifacts and transient root deployment logs.
-- `rtk pnpm maint:clean-disk:full`: Complete reclamation including machine-wide Docker system prune and global pnpm store prune.
-- `rtk pnpm diagnostics`: Check system environment and detect if artifact storage exceeds 2 GB.
+- `rtk pnpm maint:clean-disk:dry`: Fast preview of cleanable test artifacts, SQL dumps, and log files.
+- `rtk pnpm maint:clean-disk`: Consolidate runs older than 72h into `.tar.gz`, purge expired artifacts (>7 days), purge old database backups, and remove root deployment logs.
+- `rtk bash bin/maint/clean-disk.sh --days N`: Run cleanup with custom retention period (e.g. `--days 1` or `--days 3`).
+- `rtk pnpm maint:clean-disk:full`: Complete reclamation including machine-wide Docker system prune and global `pnpm` store prune.
+- `rtk pnpm diagnostics`: Check system environment, disk usage, and receive alerts when artifact storage exceeds 2 GB.
