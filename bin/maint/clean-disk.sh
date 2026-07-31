@@ -194,13 +194,13 @@ fi
 
 # 2. Clean old backups & logs older than DAYS
 python3 -c "
-import os, time, re
+import os, shutil, time, re
 from datetime import datetime, timedelta
 
 repo_root = '$REPO_ROOT'
 purge_cutoff = datetime.now() - timedelta(days=$DAYS)
 
-for extra in ['backups']:
+for extra in ['backups', 'logs']:
     ext_dir = os.path.join(repo_root, extra)
     if os.path.exists(ext_dir):
         for sub in os.listdir(ext_dir):
@@ -208,8 +208,11 @@ for extra in ['backups']:
             sub_p = os.path.join(ext_dir, sub)
             mtime = os.path.getmtime(sub_p)
             if datetime.fromtimestamp(mtime) < purge_cutoff:
-                print(f'  Removing old backup: {extra}/{sub}')
-                os.remove(sub_p)
+                print(f'  Removing old item: {extra}/{sub}')
+                if os.path.isdir(sub_p):
+                    shutil.rmtree(sub_p)
+                else:
+                    os.remove(sub_p)
 " 2>/dev/null || true
 
 # 3. Remove identified root log files
