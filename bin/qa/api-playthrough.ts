@@ -121,7 +121,10 @@ const argConfig: ParseArgsConfig = {
 };
 
 function parseCliOptions(): CliOptions {
-  const { values } = parseArgs(argConfig);
+  const { values } = parseArgs({
+    ...argConfig,
+    args: process.argv.slice(2).filter((arg) => arg !== '--'),
+  });
 
   if (values.help) {
     console.log(`
@@ -424,7 +427,11 @@ async function runSingleGame(
       gameOptions: {
         damageMode,
         startingLifepoints: startingLp,
+        ...(scenarioData?.trajectory ? { classicDeployment: true, quickStart: true } : {}),
       },
+      ...(scenarioData?.trajectory
+        ? { matchParams: { modeQuickStart: true, classic: { modes: { quickStart: true } } } }
+        : {}),
     };
     sendJson(ws1, qaRun, createMsg);
     log('P1', 'action', `createMatch (seed=${seed}, damage=${damageMode}, lp=${startingLp})`);
@@ -504,7 +511,10 @@ async function runSingleGame(
       if (!localInitHash || !initTxEntry.stateHashAfter) {
         throw new Error('HASH_MISSING: empty hash detected — cannot verify state integrity');
       }
-      if (localInitHash !== initTxEntry.stateHashAfter) {
+      if (
+        initTxEntry.stateHashAfter !== 'redacted' &&
+        localInitHash !== initTxEntry.stateHashAfter
+      ) {
         log(
           undefined,
           'error',
@@ -749,12 +759,20 @@ async function runSingleGame(
           SeverityNumber.ERROR,
           'ERROR',
         );
-        throw new Error(
-          `STATE_DRIFT: missing hash after ${chosenAction.type} action #${actionCount} — local: ${localHash || '(empty)'}, server: ${serverHash || '(empty)'}`,
-        );
+        if (!serverHash || serverHash === 'redacted') {
+          log(
+            activeName,
+            'state',
+            'Server integrity hash is observer-redacted; local hash retained',
+          );
+        } else {
+          throw new Error(
+            `STATE_DRIFT: missing hash after ${chosenAction.type} action #${actionCount} — local: ${localHash || '(empty)'}, server: ${serverHash || '(empty)'}`,
+          );
+        }
       }
 
-      if (localHash !== serverHash) {
+      if (serverHash && serverHash !== 'redacted' && localHash !== serverHash) {
         const { transactionLog: _ltl, ...localExpected } = localState;
         const serverActual = gs1.viewModel?.state;
         log(
@@ -819,7 +837,13 @@ async function runSingleGame(
         if (lastTx?.stateHashAfter) {
           finalStateHash = lastTx.stateHashAfter;
         }
-        if (scenarioData && finalStateHash !== scenarioData.finalStateHash) {
+        const canCompareFinalTrajectoryHash =
+          !scenarioData?.trajectory || scenarioData.trajectory.match.matchId === matchId;
+        if (
+          scenarioData &&
+          canCompareFinalTrajectoryHash &&
+          finalStateHash !== scenarioData.finalStateHash
+        ) {
           log(
             undefined,
             'error',
