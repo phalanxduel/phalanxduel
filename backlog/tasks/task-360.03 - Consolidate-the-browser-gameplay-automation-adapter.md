@@ -1,9 +1,11 @@
 ---
 id: TASK-360.03
 title: Consolidate the browser gameplay automation adapter
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-08-04 22:40'
+updated_date: '2026-08-30 21:44'
 labels:
   - browser
   - automation
@@ -45,3 +47,19 @@ Replace duplicated selector, phase, action, wait, and terminal-state logic with 
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Inventory simulate-ui, visual regression, and cross-client browser action loops.
+2. Extract a semantic browser-player adapter for authoritative phase, valid actions, controls, and terminal readiness.
+3. Migrate the smallest browser runner surface and preserve canonical evidence output.
+4. Exercise deployment strategies and mixed manual/quick deployment through the real UI.
+5. Run playability, browser, visual, and full repository verification gates.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-08-30 started after TASK-343.14 completion. Mandatory pnpm qa:playthrough:verify passed 12/12 scenarios with zero anomalies; browser adapter work is unblocked.
+<!-- SECTION:NOTES:END -->

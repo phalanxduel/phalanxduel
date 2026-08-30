@@ -1,7 +1,72 @@
-import type { Page, Locator } from '@playwright/test';
+import type { Page } from '@playwright/test';
+
+export type BrowserPhase =
+  | 'StartTurn'
+  | 'DeploymentPhase'
+  | 'AttackPhase'
+  | 'AttackResolution'
+  | 'CleanupPhase'
+  | 'ReinforcementPhase'
+  | 'DrawPhase'
+  | 'EndTurn'
+  | 'gameOver'
+  | 'unknown';
+
+export type QuickDeployStrategy = 'defensive' | 'aggressive' | 'random';
 
 export class GameAutomator {
   constructor(private page: Page) {}
+
+  async readPhase(): Promise<BrowserPhase> {
+    if (
+      await this.page
+        .locator('[data-testid="game-over"]')
+        .isVisible()
+        .catch(() => false)
+    ) {
+      return 'gameOver';
+    }
+    const phase = await this.page
+      .locator('[data-testid="phase-indicator"]')
+      .getAttribute('data-phase')
+      .catch(() => null);
+    return (
+      phase &&
+      [
+        'StartTurn',
+        'DeploymentPhase',
+        'AttackPhase',
+        'AttackResolution',
+        'CleanupPhase',
+        'ReinforcementPhase',
+        'DrawPhase',
+        'EndTurn',
+        'gameOver',
+      ].includes(phase)
+        ? phase
+        : 'unknown'
+    ) as BrowserPhase;
+  }
+
+  async waitForPhase(expected: BrowserPhase | BrowserPhase[], timeout = 15_000): Promise<void> {
+    const phases = Array.isArray(expected) ? expected : [expected];
+    await this.page.waitForFunction(
+      (allowed) => {
+        const gameOver = document.querySelector('[data-testid="game-over"]');
+        if (allowed.includes('gameOver') && gameOver) return true;
+        const phase = document
+          .querySelector('[data-testid="phase-indicator"]')
+          ?.getAttribute('data-phase');
+        return phase ? allowed.includes(phase) : false;
+      },
+      phases,
+      { timeout },
+    );
+  }
+
+  async waitForTerminal(timeout = 15_000): Promise<void> {
+    await this.page.waitForSelector('[data-testid="game-over"]', { state: 'visible', timeout });
+  }
 
   async isLoggedIn(): Promise<boolean> {
     const disconnectBtn = this.page
@@ -150,5 +215,29 @@ export class GameAutomator {
       `[data-component="CardView"][data-owner="p1"][data-col="${col}"][data-state="targetable"]`,
     );
     await this.page.click('[data-component="ActionPromptView"][data-action="reinforce"]');
+  }
+
+  async quickDeploy(strategy: QuickDeployStrategy): Promise<void> {
+    const control = this.page.locator(`[data-testid="quick-deploy-${strategy}"]`);
+    await control.waitFor({ state: 'visible', timeout: 10_000 });
+    await control.click();
+  }
+
+  async pass(): Promise<void> {
+    const button = this.page.locator('[data-testid="combat-pass-btn"]');
+    await button.waitFor({ state: 'visible', timeout: 10_000 });
+    await button.click();
+  }
+
+  async skipReinforcement(): Promise<void> {
+    const button = this.page.locator('[data-testid="combat-skip-reinforce-btn"]');
+    await button.waitFor({ state: 'visible', timeout: 10_000 });
+    await button.click();
+  }
+
+  async forfeit(): Promise<void> {
+    const button = this.page.locator('[data-testid="combat-forfeit-btn"]');
+    await button.waitFor({ state: 'visible', timeout: 10_000 });
+    await button.click({ force: true });
   }
 }

@@ -895,7 +895,7 @@ async function maybeClickForfeit(page: Page, name: string): Promise<boolean> {
   if (!(await forfeitBtn.isVisible().catch(() => false))) return false;
 
   console.log(`[${name}] FORFEIT triggered (chance=${OPTIONS.forfeitChance}).`);
-  await forfeitBtn.click({ force: true });
+  await new GameAutomator(page).forfeit();
   return true;
 }
 
@@ -1362,6 +1362,7 @@ async function takeAction(
   persona: BotPersona = 'stuck-in-middle',
 ): Promise<string> {
   try {
+    const bot = new GameAutomator(page);
     const phaseText = await page.textContent('[data-testid="phase-indicator"]');
     console.log(`[${name}] (${persona}) ${phaseText}`);
 
@@ -1425,8 +1426,14 @@ async function takeAction(
         }
       }
 
-      if (await clickCommandButton(page, 'combat-skip-reinforce-btn', 'SKIP')) {
-        return 'reinforce skipped (button clicked)';
+      if (
+        await page
+          .locator('[data-testid="combat-skip-reinforce-btn"]')
+          .isVisible()
+          .catch(() => false)
+      ) {
+        await bot.skipReinforcement();
+        return 'reinforce skipped (semantic button clicked)';
       }
 
       return 'reinforce skipped (no button found)';
@@ -1445,8 +1452,16 @@ async function takeAction(
 
     if (count <= 0) {
       console.log(`[${name}] PASSING turn.`);
-      const passed = await clickCommandButton(page, 'combat-pass-btn', 'PASS');
-      return passed ? 'pass' : 'pass failed (button not found)';
+      if (
+        await page
+          .locator('[data-testid="combat-pass-btn"]')
+          .isVisible()
+          .catch(() => false)
+      ) {
+        await bot.pass();
+        return 'pass';
+      }
+      return 'pass failed (button not found)';
     }
 
     const order = Array.from({ length: count }, (_, i) => i);
@@ -1505,8 +1520,16 @@ async function takeAction(
     }
 
     console.log(`[${name}] No legal direct front-row attacks found; passing.`);
-    const passed = await clickCommandButton(page, 'combat-pass-btn', 'PASS');
-    return passed ? 'pass (no legal direct attacks)' : 'pass failed (no legal direct attacks)';
+    if (
+      await page
+        .locator('[data-testid="combat-pass-btn"]')
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await bot.pass();
+      return 'pass (no legal direct attacks)';
+    }
+    return 'pass failed (no legal direct attacks)';
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (/closed/i.test(message)) {
