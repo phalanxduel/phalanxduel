@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-08-04 22:40'
-updated_date: '2026-08-30 21:59'
+updated_date: '2026-08-30 22:51'
 labels:
   - browser
   - automation
@@ -70,4 +70,8 @@ Remaining TASK-360.03 work: migrate deploy/attack selection fully into the adapt
 Browser validation found and fixed two real transition defects: qaQuickStart now sends classic.modes.quickStart parity required by strict server validation; PvB setup selects the bot before private match creation instead of waiting on a stale lobby. Terminal handling now waits for the semantic game-over-result after the game-over shell appears, preventing outcome reads during presentation latency. Client suite 237/237 and lint:tools pass. Browser evidence: local guest-pvb created and played against bot with match ed74e1f1-c04a-4e52-9a2e-0cad3922fede, trace d0428622d83fd3f5fcb3e2d945035d48; run reached live attack/reinforce turns. A low-LP terminal surfaced a remaining issue: the browser harness can loop on a visible forfeit command without receiving a terminal transition, and clipboard-copy NotAllowedError is noisy in headless mode. Keep task open for command idempotency/terminal assertion and quick-deploy strategy coverage.
 
 Commit 4c2ce47 adds --quick-deploy-strategy defensive|aggressive|random to simulate-ui and routes the selected player-visible control through GameAutomator.quickDeploy. lint:tools and CLI help verification pass. Next browser gate should run one non-quick-start game per strategy plus a mixed manual/quick flow; task remains In Progress until those runs and visual/cross-client reuse are proven.
+
+2026-08-30 visual gate: elevated local Chromium capture against healthy local server passed 3/3. The game-initial-board snapshot was intentionally regenerated to include the current semantic quick-deploy command console; lobby and component checks passed unchanged. Temporary no-webserver Playwright config was removed.
+
+2026-08-30 strategy evidence: elevated browser run created match b6fe42d3-d9dc-4361-9a8d-30067b8073cc and successfully submitted quickDeploy strategy=defensive through the semantic UI control. After server advancement the runner stalled while the browser continued heartbeat ACK/ping traffic and never reached the next action; bounded run was stopped. Treat this as a transition/readiness defect to diagnose before claiming the three-strategy matrix.
 <!-- SECTION:NOTES:END -->
