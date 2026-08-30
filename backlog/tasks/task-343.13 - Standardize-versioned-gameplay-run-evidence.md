@@ -1,9 +1,11 @@
 ---
 id: TASK-343.13
 title: Standardize versioned gameplay run evidence
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-08-04 22:39'
+updated_date: '2026-08-30 14:12'
 labels:
   - assurance
   - qa
@@ -46,3 +48,23 @@ Replace incompatible QA runner manifests and permissive evidence readers with on
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Inventory every active QA producer and reader, classify their current manifests, and select one versioned evidence contract that preserves public redaction boundaries.
+2. Define a shared schema/validator for runner identity, scenario/seed, adapters, correlation IDs, ordered actions/events, phases, hashes, outcome, assertions, and artifact references.
+3. Adapt the engine, API/WebSocket, and browser producers to emit the contract without duplicating hidden state or credentials; retain compatibility readers for historical artifacts.
+4. Make evidence consumers fail closed for missing, malformed, skipped, or internally inconsistent proof, and add replay/transaction references plus offline integrity checks.
+5. Document canonical producers, retention, compatibility, and public-sharing rules; verify with package tests, schema generation, docs artifacts, rules/playability gates, and representative Panoramic View reports.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-08-30 @codex: TASK-383 is complete and its evidence tooling is now the starting point. Initial discovery shows multiple producer-specific RunManifest shapes (`simulate-headless`, `api-playthrough`, `verify-swiftui-proof`, replay/API readers) plus the newer Panoramic View capture. Next step is to converge these at a shared versioned evidence boundary without leaking hidden state.
+
+2026-08-30 implementation slice: added shared RunEvidenceSchema with versioned runner/scenario/adapters/correlation/actions/events/phases/integrity/outcome/assertions/artifacts/viewer-policy fields and fail-closed count/redaction checks. Added legacy manifest canonicalizer, `qa:evidence:verify`, Panoramic View emission of `run-evidence.json`, public `run-evidence.schema.json`, schema tests, and QA-runner documentation.
+
+Verification: shared typecheck passes; shared tests 160/160; tooling lint passes; MarkdownLint passes; schema generation succeeds (7 public schemas, 78 generated types); retained presentation capture validates and writes run-evidence.json; docs generation succeeds but freshness remains pending commit of this slice.
+<!-- SECTION:NOTES:END -->

@@ -1,11 +1,11 @@
 ---
 id: TASK-383
 title: Add player-selectable quick-deploy strategies
-status: Verification
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-08-04 00:47'
-updated_date: '2026-08-30 14:03'
+updated_date: '2026-08-30 14:05'
 labels: []
 dependencies: []
 documentation:
@@ -17,6 +17,7 @@ modified_files:
   - shared/src/types.ts
   - shared/src/achievements-metadata.ts
   - shared/tests/schema.test.ts
+  - shared/schemas/README.md
   - shared/schemas/client-messages.schema.json
   - shared/schemas/game-state.schema.json
   - shared/schemas/server-messages.schema.json
@@ -30,35 +31,44 @@ modified_files:
   - engine/tests/quick-deploy-strategies.test.ts
   - engine/tests/state-machine.test.ts
   - scripts/ci/verify-event-log.ts
+  - server/package.json
+  - server/migrations/0006_dual_loop_cosmetics.sql
   - server/src/achievements/detector.ts
   - server/src/achievements/detectors.ts
   - server/src/achievements/index.ts
+  - server/src/cosmetics.ts
   - server/tests/achievements.test.ts
+  - server/tests/cosmetics.test.ts
   - server/tests/match.test.ts
   - server/tests/__snapshots__/openapi.test.ts.snap
-  - server/package.json
+  - client/src/commentary-engine.ts
+  - client/src/cosmetics.ts
   - client/src/game.tsx
+  - client/src/lobby.tsx
+  - client/src/state.ts
   - client/src/style.css
   - client/src/components/AchievementViews.tsx
   - client/src/components/HowToPlayDialog.tsx
   - client/src/components/MatchDetailsDialog.tsx
+  - client/src/components/SettingsPanel.tsx
   - client/src/help.ts
-  - client/src/lobby.tsx
   - client/tests/game.test.ts
+  - client/tests/settings-panel.test.ts
+  - client/tests/state.test.ts
+  - mcp/src/tools/gameplay.ts
+  - mcp/src/tools/gameplay.test.ts
+  - mcp/README.md
   - docs/gameplay/rules.md
   - docs/testing.md
   - docs/api/asyncapi.yaml
   - docs/api/openapi.json
-  - mcp/src/tools/gameplay.ts
-  - mcp/src/tools/gameplay.test.ts
-  - mcp/README.md
   - docs/agents/agentic-gameplay.md
   - docs/reference/glossary.md
+  - docs/reference/pnpm-scripts.md
+  - docs/observability/gameplay-panoramic-view.md
   - bin/qa/simulate-headless.ts
   - bin/qa/panoramic-view.ts
   - bin/qa/attach-o2.ts
-  - docs/observability/gameplay-panoramic-view.md
-  - docs/reference/pnpm-scripts.md
   - package.json
 priority: high
 type: feature
@@ -87,8 +97,8 @@ Let players bypass manual Deployment Phase setup by choosing a deployment style 
 - [x] #1 Code builds without errors (pnpm build)
 - [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
 - [x] #3 All unit and integration tests pass (pnpm test:run:all)
-- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
-- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
 
@@ -164,3 +174,9 @@ Verification correction (2026-08-30): the earlier aggregate signal was caused by
 
 2026-08-30 hook correction: the added runner-stability item was a new ordered-list block and now intentionally restarts at `1.` to satisfy MarkdownLint MD029.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Implemented and verified player-selectable Defensive, Aggressive, and Random quick deploy across the shared contract, deterministic engine, server-authoritative replay/event surfaces, achievement detection, browser client, MCP action seam, generated SDK/schema artifacts, and canonical gameplay documentation. Added O2-attached Panoramic View/scenario evidence and stabilized the database-backed server test runner with file parallelism disabled. Aggregate workspace tests pass: shared 158/158, engine 422/422, server 398/398 plus migrations 4/4, client 237/237, admin 15/15, MCP 8/8. Schema and documentation freshness checks pass after integration commit baf157e2.
+<!-- SECTION:FINAL_SUMMARY:END -->

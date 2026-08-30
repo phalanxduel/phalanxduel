@@ -96,6 +96,7 @@
     "qa:capture:gif": "tsx bin/qa/capture-gameplay-gif.ts",
     "qa:panoramic": "tsx bin/qa/panoramic-view.ts",
     "qa:o2:attach": "tsx bin/qa/attach-o2.ts",
+    "qa:evidence:verify": "tsx bin/qa/verify-run-evidence.ts",
     "qa:api:load-test": "tsx bin/qa/api-playthrough.ts --concurrency 10 --batch 10 --max-turns 60 --damage-modes classic,cumulative --starting-lps 5,20",
     "qa:matrix": "bash scripts/ci/qa-matrix.sh full",
     "qa:playthrough": "tsx bin/qa/simulate-headless.ts",

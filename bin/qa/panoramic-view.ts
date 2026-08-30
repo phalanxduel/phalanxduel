@@ -4,6 +4,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
+import { canonicalizeLegacyRun } from './run-evidence.ts';
 
 interface Manifest {
   seed?: number;
@@ -256,6 +257,8 @@ async function main(): Promise<void> {
   } catch {
     // O2 attachment is optional; the report preserves this as an explicit unknown.
   }
+  const evidence = canonicalizeLegacyRun(manifest, events, 'replay_frames.json');
+  await writeFile(join(runDir, 'run-evidence.json'), `${JSON.stringify(evidence, null, 2)}\n`);
   await writeFile(outputPath, html(manifest, normalize(events, manifest, replay), replay));
   await writeFile(
     join(resolve(outputPath, '..'), 'scenario-report.md'),

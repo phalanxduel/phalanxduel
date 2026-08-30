@@ -7,6 +7,8 @@ Do not edit them by hand — run `pnpm --filter @phalanxduel/shared schema:gen` 
 
 ## Schemas
 
+- `run-evidence.schema.json` — versioned, redaction-safe QA run evidence.
+
 | File | Zod Source | Description |
 |------|-----------|-------------|
 | `server-messages.schema.json` | `ServerMessageSchema` | All server → client WebSocket messages (discriminated union) |

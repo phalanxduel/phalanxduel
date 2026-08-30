@@ -67,6 +67,11 @@ import type {
   ResolutionModifierSchema,
   ResolutionOutcomeSchema,
   RulesSpecVersionSchema,
+  RunEvidenceActionSchema,
+  RunEvidenceArtifactSchema,
+  RunEvidenceAssertionSchema,
+  RunEvidenceEventSchema,
+  RunEvidenceSchema,
   ServerMessageSchema,
   SpectatorMatchSummarySchema,
   StateTransitionSchema,
@@ -142,6 +147,11 @@ export type ResolutionCue = z.infer<typeof ResolutionCueSchema>;
 export type ResolutionModifier = z.infer<typeof ResolutionModifierSchema>;
 export type ResolutionOutcome = z.infer<typeof ResolutionOutcomeSchema>;
 export type RulesSpecVersion = z.infer<typeof RulesSpecVersionSchema>;
+export type RunEvidenceAction = z.infer<typeof RunEvidenceActionSchema>;
+export type RunEvidenceArtifact = z.infer<typeof RunEvidenceArtifactSchema>;
+export type RunEvidenceAssertion = z.infer<typeof RunEvidenceAssertionSchema>;
+export type RunEvidenceEvent = z.infer<typeof RunEvidenceEventSchema>;
+export type RunEvidence = z.infer<typeof RunEvidenceSchema>;
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
 export type SpectatorMatchSummary = z.infer<typeof SpectatorMatchSummarySchema>;
 export type StateTransition = z.infer<typeof StateTransitionSchema>;

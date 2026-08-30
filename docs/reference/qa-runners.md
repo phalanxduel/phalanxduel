@@ -73,6 +73,26 @@ pnpm qa:playthrough:ui [OPTIONS]
   `lifepointsText`, `finalLifepoints`) plus relative screenshot paths under
   `screenshots`, so a completed run can be summarized without scraping images.
 
+## Versioned run evidence
+
+All supported runner manifests can be normalized into the shared
+`phalanx-duel.run-evidence` v1 contract. The normalized record carries runner
+and release identity, scenario inputs, adapter/transport, QA and match
+correlation, ordered actions/events, phases, integrity counts and replay
+reference, assertions, artifact references, outcome, and an explicit
+redaction policy. Hidden state, private player data, credentials, and absolute
+paths are rejected by the validator.
+
+```bash
+pnpm qa:evidence:verify -- --run <capture-directory>
+```
+
+This writes `run-evidence.json` beside the historical `manifest.json`. The
+validator accepts legacy engine/API/browser/SwiftUI-shaped manifests at this
+boundary, but consumers should use the normalized record. A successful run
+cannot contain skipped or failed assertions, and action/event counts must
+match the ordered records.
+
 ## `bin/qa/swiftui-proof.sh`
 
 One-command proof that the real native SwiftUI client (sibling `game-swiftui`
