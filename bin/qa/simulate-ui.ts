@@ -16,6 +16,7 @@ import {
   type BotIdentity,
   type BotPersona,
 } from './bot-swarm.js';
+import type { QuickDeployStrategy } from './game-automator.js';
 
 type UiScenario = 'guest-pvp' | 'auth-pvp' | 'guest-pvb' | 'auth-pvb';
 type BotOpponent = 'bot-random' | 'bot-heuristic';
@@ -113,6 +114,7 @@ interface CliOptions {
   seed: number | null;
   internalToken: string | null;
   quickStart: boolean;
+  quickDeployStrategy: QuickDeployStrategy | null;
 }
 
 interface BotAccountRecord extends BotIdentity {
@@ -341,6 +343,8 @@ OPTIONS
     --quick-start
         Skip the DeploymentPhase by setting modeQuickStart=true on match creation.
         Passes ?qaQuickStart=1 to the client URL; production matches are unaffected.
+    --quick-deploy-strategy defensive|aggressive|random
+        Use the selected player-visible quick-deploy control whenever deployment is available.
     --help
 `);
 }
@@ -390,6 +394,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     seed: parseSeed(process.env.QA_UI_SEED),
     internalToken: process.env.ADMIN_INTERNAL_TOKEN || process.env.INTERNAL_TOKEN || null,
     quickStart: process.env.QA_QUICK_START === 'true',
+    quickDeployStrategy: null,
   };
   let persistentTournamentPlayersExplicit = process.env.PERSISTENT_TOURNAMENT_PLAYERS !== undefined;
 
@@ -463,6 +468,11 @@ function parseArgs(argv: string[]): CliOptions | null {
     }
     if (arg === '--internal-token' && next) options.internalToken = next;
     if (arg === '--quick-start') options.quickStart = true;
+    if (arg === '--quick-deploy-strategy' && next) {
+      if (next === 'defensive' || next === 'aggressive' || next === 'random') {
+        options.quickDeployStrategy = next;
+      }
+    }
   }
 
   if (!options.telemetryExplicit) {
@@ -1369,6 +1379,16 @@ async function takeAction(
     const phaseLower = phaseText?.toLowerCase() ?? '';
 
     if (phaseLower.includes('deployment') || phaseLower.includes('deploy')) {
+      if (OPTIONS.quickDeployStrategy) {
+        const quickControl = page.locator(
+          `[data-testid="quick-deploy-${OPTIONS.quickDeployStrategy}"]`,
+        );
+        if (await quickControl.isVisible().catch(() => false)) {
+          await bot.quickDeploy(OPTIONS.quickDeployStrategy);
+          return `quickDeploy strategy=${OPTIONS.quickDeployStrategy}`;
+        }
+      }
+
       const handCards = page.locator(
         '[data-component="CardView"][data-location="hand"][data-state="selectable"]',
       );
