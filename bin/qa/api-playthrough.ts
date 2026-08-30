@@ -430,7 +430,15 @@ async function runSingleGame(
         ...(scenarioData?.trajectory ? { classicDeployment: true, quickStart: true } : {}),
       },
       ...(scenarioData?.trajectory
-        ? { matchParams: { modeQuickStart: true, classic: { modes: { quickStart: true } } } }
+        ? {
+            matchParams: {
+              modeQuickStart: true,
+              modeDamagePersistence: damageMode,
+              classic: {
+                modes: { quickStart: true, damagePersistence: damageMode },
+              },
+            },
+          }
         : {}),
     };
     sendJson(ws1, qaRun, createMsg);
@@ -574,6 +582,30 @@ async function runSingleGame(
         activeValidActions = p2ValidActions;
       }
 
+      // A canonical trajectory is an executable contract. Check the state at
+      // the exact boundary before binding card identities or sending anything
+      // to the adapter; otherwise a drift is misreported as an illegal action
+      // several steps after the actual divergence.
+      const expectedBeforeAction = scenarioData?.expectedCheckpoints?.[actionCount];
+      if (scenarioData?.trajectory && expectedBeforeAction) {
+        const actualTurn = vm1?.state?.turnNumber ?? vm1?.postState?.turnNumber;
+        const actualPhase = vm1?.state?.phase ?? vm1?.postState?.phase;
+        if (
+          actualPhase !== expectedBeforeAction.phase ||
+          actualTurn !== expectedBeforeAction.turnNumber
+        ) {
+          throw new Error(
+            `TRAJECTORY_DRIFT: pre-action checkpoint ${actionCount} phase/turn mismatch (expected=${expectedBeforeAction.phase}/${expectedBeforeAction.turnNumber} actual=${actualPhase}/${actualTurn})`,
+          );
+        }
+        const expectedAction = scenarioData.actions[actionCount];
+        if (expectedAction && expectedAction.playerIndex !== activeIndex) {
+          throw new Error(
+            `TRAJECTORY_DRIFT: pre-action checkpoint ${actionCount} player mismatch (expected=${expectedAction.playerIndex} actual=${activeIndex})`,
+          );
+        }
+      }
+
       const activeWs = playerWs[activeIndex]!;
       const activeName = playerNames[activeIndex]!;
 
@@ -613,6 +645,25 @@ async function runSingleGame(
       // Throttle slightly to avoid hitting the server's 50 msgs/sec WebSocket rate limit
       await new Promise((resolve) => setTimeout(resolve, 25));
 
+      // Install observers before dispatch for both transports. REST actions
+      // broadcast the resulting gameState asynchronously just like WS actions.
+      const nextVm1Promise = waitForMessage(
+        ws1,
+        (m) =>
+          m.type === 'actionError' ||
+          m.type === 'matchError' ||
+          m.type === 'auth_error' ||
+          (m.type === 'gameState' && m.result?.action?.type !== 'system:init'),
+      );
+      const nextVm2Promise = waitForMessage(
+        ws2,
+        (m) =>
+          m.type === 'actionError' ||
+          m.type === 'matchError' ||
+          m.type === 'auth_error' ||
+          (m.type === 'gameState' && m.result?.action?.type !== 'system:init'),
+      );
+
       // Send action over the selected adapter. WebSockets remain connected in
       // REST mode so both player projections can still provide checkpoints.
       if (opts.transport === 'rest') {
@@ -647,23 +698,6 @@ async function runSingleGame(
 
       // 5b. Wait for updated gameState on both clients
       // If either receives an actionError, we want to reject immediately rather than hanging on Promise.all
-      const nextVm1Promise = waitForMessage(
-        ws1,
-        (m) =>
-          m.type === 'actionError' ||
-          m.type === 'matchError' ||
-          m.type === 'auth_error' ||
-          (m.type === 'gameState' && m.result?.action?.type !== 'system:init'),
-      );
-      const nextVm2Promise = waitForMessage(
-        ws2,
-        (m) =>
-          m.type === 'actionError' ||
-          m.type === 'matchError' ||
-          m.type === 'auth_error' ||
-          (m.type === 'gameState' && m.result?.action?.type !== 'system:init'),
-      );
-
       const raceError = Promise.race([
         nextVm1Promise.then((m) =>
           m.type === 'actionError' || m.type === 'matchError' || m.type === 'auth_error'
