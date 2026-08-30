@@ -1377,7 +1377,10 @@ async function takeAction(
       if (count > 0) {
         const idx = 0;
         await clickGameElement(handCards.nth(idx));
-        await page.waitForTimeout(500); // Wait for "pick up"
+        await page.waitForSelector(
+          '[data-component="CardView"][data-owner="p1"][data-state="targetable"]',
+          { timeout: 5_000 },
+        );
 
         const frontRowTargets = page.locator(
           '[data-component="CardView"][data-owner="p1"][data-row="0"][data-state="targetable"]',
@@ -1412,7 +1415,10 @@ async function takeAction(
       if (count > 0) {
         const idx = randomInt(count);
         await clickGameElement(handCards.nth(idx));
-        await page.waitForTimeout(500); // Wait for "pick up"
+        await page.waitForSelector(
+          '[data-component="CardView"][data-owner="p1"][data-state="targetable"]',
+          { timeout: 5_000 },
+        );
 
         // Now click a valid reinforcement cell (may be multiple rows in same column)
         const targetCols = page.locator(
@@ -1478,7 +1484,12 @@ async function takeAction(
       const attacker = attackers.nth(idx);
       await clickGameElement(attacker);
 
-      await page.waitForTimeout(200);
+      await page
+        .waitForSelector(
+          '[data-component="CardView"][data-owner="p1"][data-row="0"][data-state="selected"]',
+          { timeout: 5_000 },
+        )
+        .catch(() => {});
       const selectedAttacker = page
         .locator(
           '[data-component="CardView"][data-owner="p1"][data-row="0"][data-state="selected"]',
@@ -1497,10 +1508,13 @@ async function takeAction(
       const col = Number(colMatch[1]);
       console.log(`[${name}] Selected front-row attacker in column ${col}`);
 
-      await page.waitForTimeout(400);
       const directTarget = page.locator(
         `[data-component="CardView"][data-owner="p2"][data-row="0"][data-col="${col}"][data-state="targetable"]`,
       );
+      await directTarget
+        .first()
+        .waitFor({ state: 'visible', timeout: 5_000 })
+        .catch(() => {});
       const directTargetCount = await directTarget.count();
       const target =
         directTargetCount > 0
