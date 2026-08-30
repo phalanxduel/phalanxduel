@@ -93,6 +93,12 @@ boundary, but consumers should use the normalized record. A successful run
 cannot contain skipped or failed assertions, and action/event counts must
 match the ordered records.
 
+The producers also emit the sidecar directly: headless browser and bot-vs-bot
+runs write `run-evidence.json` in each capture directory, API batches write
+`game-N.run-evidence.json` beside each `game-N.json`, and SwiftUI proof export
+writes it beside the extracted proof manifest. Historical manifests remain
+available for backwards-compatible readers.
+
 ## `bin/qa/swiftui-proof.sh`
 
 One-command proof that the real native SwiftUI client (sibling `game-swiftui`

@@ -1,4 +1,6 @@
 import { RunEvidenceSchema, type CanonicalRunEvidence } from '../../shared/src/run-evidence.ts';
+import { writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 type LegacyManifest = {
   tool?: string;
@@ -9,6 +11,7 @@ type LegacyManifest = {
   startAt?: string;
   endAt?: string;
   durationMs?: number;
+  actionCount?: number;
   baseUrl?: string;
   damageMode?: string;
   startingLifepoints?: number;
@@ -102,4 +105,15 @@ export function canonicalizeLegacyRun(
     },
   };
   return RunEvidenceSchema.parse(canonical);
+}
+
+export async function writeCanonicalRunEvidence(
+  runDir: string,
+  manifest: LegacyManifest,
+  events: LegacyEvent[] = [],
+  replayArtifact = 'replay_frames.json',
+): Promise<CanonicalRunEvidence> {
+  const evidence = canonicalizeLegacyRun(manifest, events, replayArtifact);
+  await writeFile(join(runDir, 'run-evidence.json'), `${JSON.stringify(evidence, null, 2)}\n`);
+  return evidence;
 }

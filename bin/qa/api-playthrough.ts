@@ -28,6 +28,7 @@ import type { GameConfig } from '../../engine/src/index.ts';
 import { computeStateHash } from '../../shared/src/hash.ts';
 import { loadScenario, type GameScenario } from './scenario';
 import { beginQaRun, type QaRun } from './telemetry.js';
+import { canonicalizeLegacyRun } from './run-evidence.ts';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -73,6 +74,7 @@ interface RunManifest {
   outcomeText: string | null;
   phases: string[];
   finalStateHash: string | null;
+  events?: RunEvent[];
 }
 
 interface RunEvent {
@@ -778,6 +780,7 @@ async function runSingleGame(
       outcomeText,
       phases: [...phasesVisited],
       finalStateHash,
+      events,
     };
     qaRun.finish({
       status: manifest.status,
@@ -819,6 +822,7 @@ async function runSingleGame(
       outcomeText: null,
       phases: [...phasesVisited],
       finalStateHash: null,
+      events,
     };
     qaRun.finish({
       status: manifest.status,
@@ -922,6 +926,10 @@ async function main(): Promise<void> {
             );
           }
           await writeFile(join(runDir, `game-${total}.json`), JSON.stringify(manifest, null, 2));
+          await writeFile(
+            join(runDir, `game-${total}.run-evidence.json`),
+            `${JSON.stringify(canonicalizeLegacyRun(manifest, manifest.events ?? []), null, 2)}\n`,
+          );
         } else {
           failures++;
           console.log(`  ❌ Game ${total}: uncaught: ${String(settled.reason)}`);
@@ -959,6 +967,10 @@ async function main(): Promise<void> {
 
       const manifestPath = join(runDir, `game-${total}.json`);
       await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+      await writeFile(
+        join(runDir, `game-${total}.run-evidence.json`),
+        `${JSON.stringify(canonicalizeLegacyRun(manifest, manifest.events ?? []), null, 2)}\n`,
+      );
 
       if (runUntilFailure && manifest.status === 'failure') {
         console.log(`\n  ⛔ Stopping after failure in game ${total}`);

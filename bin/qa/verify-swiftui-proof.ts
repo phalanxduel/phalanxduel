@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
-import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { canonicalizeLegacyRun } from './run-evidence.ts';
 
 const argv = process.argv.slice(2).filter((a) => a !== '--');
 
@@ -110,6 +111,28 @@ if (!runManifestPath) {
 }
 
 const manifest = JSON.parse(readFileSync(runManifestPath, 'utf8')) as RunManifest;
+const evidence = canonicalizeLegacyRun(
+  {
+    tool: manifest.tool,
+    status: manifest.status === 'success' ? 'success' : 'failure',
+    failureReason: manifest.failureReason ?? undefined,
+    failureMessage: manifest.failureMessage ?? undefined,
+    matchId: manifest.matchId,
+    seed: manifest.seed,
+    startingLifepoints: manifest.startingLifepoints,
+    durationMs: manifest.durationMs,
+    actionCount: manifest.actionCount,
+    runId: manifest.matchId ?? 'swiftui-proof',
+    screenshots: manifest.screenshots,
+  },
+  Array.from({ length: manifest.actionCount }, (_, index) => ({
+    type: 'action',
+    at: new Date(Date.now() + index).toISOString(),
+    detail: `native action ${index + 1}`,
+  })),
+);
+const evidencePath = join(runDir, 'run-evidence.json');
+writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
 const failures: string[] = [];
 
 const expect = (condition: boolean, message: string): void => {

@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { SeverityNumber } from '@opentelemetry/api-logs';
 import { beginQaRun } from './telemetry.js';
 import { loadScenario, type GameScenario } from './scenario.js';
+import { writeCanonicalRunEvidence } from './run-evidence.ts';
 
 type ScreenshotMode = 'turn' | 'action' | 'phase';
 type FailureReason = 'timeout' | 'stalled' | 'selector_error' | 'runtime_error';
@@ -926,6 +927,7 @@ async function runOne(
     matchId: boundMatchId,
   };
   await writeFile(join(runDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  await writeCanonicalRunEvidence(runDir, manifest, events);
   qaRun.finish({
     status: manifest.status,
     durationMs: manifest.durationMs,
@@ -1147,6 +1149,7 @@ async function runBotVsBot(
   };
   await writeFile(join(runDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   await writeFile(join(runDir, 'replay_frames.json'), `${JSON.stringify(replayFrames, null, 2)}\n`);
+  await writeCanonicalRunEvidence(runDir, manifest, events);
   qaRun.finish({
     status: manifest.status,
     durationMs: manifest.durationMs,
