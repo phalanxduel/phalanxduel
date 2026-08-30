@@ -24,6 +24,7 @@ type DeploymentPolicy = 'manual' | 'defensive' | 'aggressive' | 'random';
 interface MatrixCase {
   name: string;
   damageMode: 'classic' | 'cumulative';
+  specVersion?: '1.0' | '2.0' | '3.0';
   policies: [DeploymentPolicy, DeploymentPolicy];
   terminalAction?: 'pass' | 'forfeit';
 }
@@ -53,6 +54,13 @@ const CASES: MatrixCase[] = [
     damageMode: 'classic',
     policies: ['defensive', 'aggressive'],
     terminalAction: 'pass',
+  },
+  {
+    name: 'historical-v1-compatibility',
+    damageMode: 'cumulative',
+    specVersion: '1.0',
+    policies: ['manual', 'manual'],
+    terminalAction: 'forfeit',
   },
 ];
 
@@ -104,6 +112,7 @@ function buildTrajectory(testCase: MatrixCase, index: number): GameplayTrajector
       classicDeployment: true,
       quickStart: false,
     },
+    ...(testCase.specVersion ? { matchParams: { specVersion: testCase.specVersion } } : {}),
   });
   state = applyAction(
     state,
@@ -186,6 +195,7 @@ function buildTrajectory(testCase: MatrixCase, index: number): GameplayTrajector
       matchId,
       drawTimestamp: TIMESTAMP,
       seed: 7000 + index,
+      ...(testCase.specVersion ? { specVersion: testCase.specVersion } : {}),
       damageMode: testCase.damageMode,
       startingLifepoints: testCase.terminalAction ? 20 : 5,
       players,

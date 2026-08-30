@@ -55,4 +55,12 @@ describe('GameplayTrajectorySchema', () => {
       }),
     ).toThrow();
   });
+
+  it('accepts an explicit historical rules version for compatibility replay', () => {
+    const trajectory = GameplayTrajectorySchema.parse({
+      ...base,
+      match: { ...base.match, specVersion: '1.0' },
+    });
+    expect(trajectory.match.specVersion).toBe('1.0');
+  });
 });

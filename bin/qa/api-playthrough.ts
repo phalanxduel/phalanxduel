@@ -434,6 +434,9 @@ async function runSingleGame(
             matchParams: {
               modeQuickStart: true,
               modeDamagePersistence: damageMode,
+              ...(scenarioData.trajectory.match.specVersion
+                ? { specVersion: scenarioData.trajectory.match.specVersion }
+                : {}),
               classic: {
                 modes: { quickStart: true, damagePersistence: damageMode },
               },

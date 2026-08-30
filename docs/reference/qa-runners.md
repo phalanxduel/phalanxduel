@@ -107,6 +107,12 @@ deployment, mixed deployment policies, and explicit pass/forfeit terminals.
 The matrix is an engine contract check; use the recorded trajectory commands
 above when proving a fixture across live adapters.
 
+Trajectory `match.specVersion` is optional for v1 trajectories so historical
+rules versions can be replayed without changing current player-selected quick
+deployment. The matrix includes a `1.0` compatibility fixture; compatibility
+trajectories are verified through the pure replay path and remain isolated from
+the live adapter bootstrap contract.
+
 ## Versioned run evidence
 
 All supported runner manifests can be normalized into the shared

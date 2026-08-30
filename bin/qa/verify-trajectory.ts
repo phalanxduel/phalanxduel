@@ -38,6 +38,9 @@ async function main(): Promise<void> {
     ],
     rngSeed: trajectory.match.seed,
     drawTimestamp: trajectory.match.drawTimestamp,
+    ...(trajectory.match.specVersion
+      ? { matchParams: { specVersion: trajectory.match.specVersion } }
+      : {}),
     gameOptions: {
       damageMode: trajectory.match.damageMode,
       startingLifepoints: trajectory.match.startingLifepoints,

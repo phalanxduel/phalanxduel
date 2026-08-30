@@ -2029,6 +2029,7 @@ export const GameplayTrajectorySchema = z
       matchId: z.string().min(1),
       drawTimestamp: z.iso.datetime(),
       seed: z.number().int(),
+      specVersion: RulesSpecVersionSchema.optional(),
       damageMode: DamageModeSchema,
       startingLifepoints: z.number().int().min(1),
       players: z.array(z.object({ id: z.string().min(1), name: z.string().min(1) })).length(2),
