@@ -68,6 +68,13 @@ export class GameAutomator {
     await this.page.waitForSelector('[data-testid="game-over"]', { state: 'visible', timeout });
   }
 
+  async waitForOutcome(timeout = 15_000): Promise<void> {
+    await this.page.waitForSelector('[data-testid="game-over-result"]', {
+      state: 'visible',
+      timeout,
+    });
+  }
+
   async isLoggedIn(): Promise<boolean> {
     const disconnectBtn = this.page
       .locator(
@@ -135,7 +142,11 @@ export class GameAutomator {
     await submitBtn.click();
   }
 
-  async createLobbyMatch(startingLp?: number, mode?: 'cumulative' | 'classic'): Promise<void> {
+  async createLobbyMatch(
+    startingLp?: number,
+    mode?: 'cumulative' | 'classic',
+    botOpponent?: 'bot-random' | 'bot-heuristic',
+  ): Promise<void> {
     await this.page.waitForSelector('[data-component="LobbyView"]');
     const advancedToggle = this.page.locator('[data-testid="advanced-options-toggle"]');
     if (await advancedToggle.isVisible().catch(() => false)) {
@@ -153,6 +164,10 @@ export class GameAutomator {
         await lpInput.fill(startingLp.toString());
         await lpInput.dispatchEvent('change');
       }
+    }
+    if (botOpponent) {
+      await this.selectBotOpponent(botOpponent);
+      return;
     }
     await this.page.click('[data-component="LobbyView"] [data-action="create-match"]');
   }

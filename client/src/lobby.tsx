@@ -925,7 +925,10 @@ function useLobbyMatchActions(args: {
         matchParams: {
           ...buildMatchParams(selectedRows, selectedColumns, state.damageMode),
           ...(new URLSearchParams(window.location.search).get('qaQuickStart') === '1'
-            ? { modeQuickStart: true }
+            ? {
+                modeQuickStart: true,
+                classic: { modes: { quickStart: true } },
+              }
             : {}),
         },
         rngSeed: seedFromUrl(),

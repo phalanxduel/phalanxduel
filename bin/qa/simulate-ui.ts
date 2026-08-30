@@ -1097,6 +1097,7 @@ async function logoutPlayer(page: Page, gameRunId: string, name: string): Promis
 async function configureMatchOptions(
   page: Page,
   operativeId: string,
+  botOpponent?: BotOpponent,
 ): Promise<{
   mode: 'cumulative' | 'classic';
   startingLifepoints: number;
@@ -1112,7 +1113,7 @@ async function configureMatchOptions(
   const startingLifepoints = Math.max(1, Math.min(500, Math.trunc(requestedStartingLp)));
 
   const bot = new GameAutomator(page);
-  await bot.createLobbyMatch(startingLifepoints, selectedMode);
+  await bot.createLobbyMatch(startingLifepoints, selectedMode, botOpponent);
 
   return { mode: selectedMode, startingLifepoints };
 }
@@ -1150,11 +1151,10 @@ async function createAndJoinMatch(
   const { mode: selectedMode, startingLifepoints } = await configureMatchOptions(
     creator.page,
     creator.operativeId,
+    OPTIONS.scenario.endsWith('pvb') ? OPTIONS.botOpponent : undefined,
   );
 
   if (OPTIONS.scenario.endsWith('pvb')) {
-    const bot = new GameAutomator(creator.page);
-    await bot.selectBotOpponent(OPTIONS.botOpponent);
     await creator.page.waitForSelector('[data-testid="game-layout"], [data-testid="game-over"]', {
       timeout: 15_000,
     });
@@ -1631,6 +1631,10 @@ async function runSingleGame(
       await Promise.all([
         ...(p1Over ? [assertTerminalPresentation(p1.page, p1.name)] : []),
         ...(p2Over && p2 ? [assertTerminalPresentation(p2.page, p2.name)] : []),
+      ]);
+      await Promise.all([
+        ...(p1Over ? [new GameAutomator(p1.page).waitForOutcome()] : []),
+        ...(p2Over && p2 ? [new GameAutomator(p2.page).waitForOutcome()] : []),
       ]);
       return determineOutcome(p1, p2, setup.matchKind);
     }
