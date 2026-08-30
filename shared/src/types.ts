@@ -43,6 +43,7 @@ import type {
   GameViewModelMessageSchema,
   GameViewModelSchema,
   GameViewStateSchema,
+  GameplayTrajectorySchema,
   GridPositionSchema,
   LivenessStateSchema,
   MatchConfigClassicSchema,
@@ -76,6 +77,7 @@ import type {
   SpectatorMatchSummarySchema,
   StateTransitionSchema,
   SuitSchema,
+  TrajectoryCheckpointSchema,
   TransactionDetailSchema,
   TransactionLogEntrySchema,
   TransitionTriggerSchema,
@@ -123,6 +125,7 @@ export type GameState = z.infer<typeof GameStateSchema>;
 export type GameViewModelMessage = z.infer<typeof GameViewModelMessageSchema>;
 export type GameViewModel = z.infer<typeof GameViewModelSchema>;
 export type GameViewState = z.infer<typeof GameViewStateSchema>;
+export type GameplayTrajectory = z.infer<typeof GameplayTrajectorySchema>;
 export type GridPosition = z.infer<typeof GridPositionSchema>;
 export type LivenessState = z.infer<typeof LivenessStateSchema>;
 export type MatchConfigClassic = z.infer<typeof MatchConfigClassicSchema>;
@@ -156,6 +159,7 @@ export type ServerMessage = z.infer<typeof ServerMessageSchema>;
 export type SpectatorMatchSummary = z.infer<typeof SpectatorMatchSummarySchema>;
 export type StateTransition = z.infer<typeof StateTransitionSchema>;
 export type Suit = z.infer<typeof SuitSchema>;
+export type TrajectoryCheckpoint = z.infer<typeof TrajectoryCheckpointSchema>;
 export type TransactionDetail = z.infer<typeof TransactionDetailSchema>;
 export type TransactionLogEntry = z.infer<typeof TransactionLogEntrySchema>;
 export type TransitionTrigger = z.infer<typeof TransitionTriggerSchema>;

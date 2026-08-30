@@ -73,6 +73,20 @@ pnpm qa:playthrough:ui [OPTIONS]
   `lifepointsText`, `finalLifepoints`) plus relative screenshot paths under
   `screenshots`, so a completed run can be summarized without scraping images.
 
+## Canonical trajectories
+
+Generate a trajectory from a deterministic scenario and verify it offline:
+
+```bash
+pnpm qa:trajectory:record -- --scenario <scenario.json> --out <trajectory.json>
+pnpm qa:trajectory:verify -- --trajectory <trajectory.json>
+```
+
+The verifier replays the exact action payloads through the engine and fails on
+state-hash, observer-projection, phase/turn, event, terminal-state, or schema
+drift. The trajectory is the input that network adapters should consume; it
+does not permit a runner to silently choose a replacement bot strategy.
+
 ## Versioned run evidence
 
 All supported runner manifests can be normalized into the shared

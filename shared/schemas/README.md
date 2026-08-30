@@ -8,6 +8,7 @@ Do not edit them by hand — run `pnpm --filter @phalanxduel/shared schema:gen` 
 ## Schemas
 
 - `run-evidence.schema.json` — versioned, redaction-safe QA run evidence.
+- `gameplay-trajectory.schema.json` — validated deterministic action sequence and per-action checkpoints.
 
 | File | Zod Source | Description |
 |------|-----------|-------------|

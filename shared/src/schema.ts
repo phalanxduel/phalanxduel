@@ -1999,3 +1999,70 @@ export const MatchHistoryPageSchema = z.object({
 });
 
 export * from './run-evidence.js';
+
+// --- 13. Deterministic gameplay trajectories ---
+
+const TrajectoryHashSchema = z.string().regex(/^[a-f0-9]{64}$/i);
+const TrajectoryStrategySchema = z.enum([
+  'manual',
+  'random',
+  'heuristic',
+  'mcts',
+  'defensive',
+  'aggressive',
+]);
+
+export const TrajectoryCheckpointSchema = z.object({
+  actionIndex: z.number().int().min(0),
+  stateHash: TrajectoryHashSchema,
+  observerStateHash: TrajectoryHashSchema.optional(),
+  phase: GamePhaseSchema,
+  turnNumber: z.number().int().min(0),
+  eventTypes: z.array(z.string().min(1)),
+});
+
+export const GameplayTrajectorySchema = z
+  .object({
+    kind: z.literal('phalanx-duel.trajectory'),
+    version: z.literal(1),
+    match: z.object({
+      matchId: z.string().min(1),
+      drawTimestamp: z.iso.datetime(),
+      seed: z.number().int(),
+      damageMode: DamageModeSchema,
+      startingLifepoints: z.number().int().min(1),
+      players: z.array(z.object({ id: z.string().min(1), name: z.string().min(1) })).length(2),
+    }),
+    strategies: z.tuple([TrajectoryStrategySchema, TrajectoryStrategySchema]),
+    actions: z.array(ActionSchema),
+    checkpoints: z.array(TrajectoryCheckpointSchema),
+    terminalStateHash: TrajectoryHashSchema,
+  })
+  .superRefine((trajectory, ctx) => {
+    if (trajectory.checkpoints.length !== trajectory.actions.length + 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['checkpoints'],
+        message: 'Trajectory requires one initial checkpoint plus one per action',
+      });
+    }
+
+    trajectory.checkpoints.forEach((checkpoint, index) => {
+      if (checkpoint.actionIndex !== index) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['checkpoints', index, 'actionIndex'],
+          message: `Checkpoint actionIndex must be ${index}`,
+        });
+      }
+    });
+
+    const lastCheckpoint = trajectory.checkpoints.at(-1);
+    if (lastCheckpoint && lastCheckpoint.stateHash !== trajectory.terminalStateHash) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['terminalStateHash'],
+        message: 'Terminal hash must match the final checkpoint state hash',
+      });
+    }
+  });

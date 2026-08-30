@@ -23,6 +23,7 @@ const PUBLIC_SCHEMAS: Record<string, string> = {
   PhalanxEventSchema: 'event',
   MatchEventLogSchema: 'match-event-log',
   RunEvidenceSchema: 'run-evidence',
+  GameplayTrajectorySchema: 'gameplay-trajectory',
 };
 
 async function main(): Promise<void> {

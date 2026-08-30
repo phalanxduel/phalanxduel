@@ -1,9 +1,11 @@
 ---
 id: TASK-343.14
 title: Execute canonical gameplay trajectories across adapters
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@codex'
 created_date: '2026-08-04 22:39'
+updated_date: '2026-08-30 14:20'
 labels:
   - assurance
   - qa
@@ -46,3 +48,19 @@ Make one deterministic gameplay trajectory the shared behavioral input for engin
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Inventory existing scenario/trajectory fixtures, replay readers, and adapter entrypoints; identify the smallest shared trajectory contract.
+2. Define validated trajectory schema and checkpoint model with hidden-state/redaction boundaries.
+3. Adapt pure-engine, WebSocket, and REST fallback runners to execute one canonical trajectory.
+4. Add fixture coverage for deployment strategies, mixed actions, damage modes, terminal outcomes, and compatibility replay.
+5. Add fail-closed drift/leakage checks, contributor commands, and run the full verification gates.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-08-30 started after TASK-343.13 completion. Initial focus is repository-native trajectory/scenario tooling and adapter parity; no UI changes are planned.
+<!-- SECTION:NOTES:END -->
