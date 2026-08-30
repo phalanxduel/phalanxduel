@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-08-04 22:40'
-updated_date: '2026-08-30 22:56'
+updated_date: '2026-08-30 23:46'
 labels:
   - browser
   - automation
@@ -16,6 +16,16 @@ documentation:
   - docs/testing.md
   - docs/reference/qa-runners.md
   - docs/adr/ADR-017-authoritative-view-model-projection.md
+modified_files:
+  - client/src/uuid.ts
+  - client/src/instrument.ts
+  - client/src/connection.ts
+  - client/src/lobby.tsx
+  - shared/src/reliable-channel.ts
+  - >-
+    qa/visual-regression/tests/visual.spec.ts-snapshots/game-initial-board-chromium-linux.png
+  - >-
+    qa/visual-regression/tests/visual.spec.ts-snapshots/lobby-advanced-open-chromium-linux.png
 parent_task_id: TASK-360
 priority: high
 type: task
@@ -76,4 +86,8 @@ Commit 4c2ce47 adds --quick-deploy-strategy defensive|aggressive|random to simul
 2026-08-30 strategy evidence: elevated browser run created match b6fe42d3-d9dc-4361-9a8d-30067b8073cc and successfully submitted quickDeploy strategy=defensive through the semantic UI control. After server advancement the runner stalled while the browser continued heartbeat ACK/ping traffic and never reached the next action; bounded run was stopped. Treat this as a transition/readiness defect to diagnose before claiming the three-strategy matrix.
 
 2026-08-30 adapter fix: replaced simulate-ui turn ownership checks based on styling class .status-my-turn with GameAutomator.isMyTurn(), reading semantic [data-testid=turn-indicator] text YOUR_TURN. lint:tools and direct client tsc pass. Browser rerun still stalls after quickDeploy while awaiting the PvB bot transition; keep diagnosis open.
+
+Linux visual baseline investigation found the host-IP harness could not complete because insecure LAN origins lacked crypto.randomUUID; the client had duplicated UUID generation in instrumentation, transport, lobby, and shared reliable-channel code.
+
+Added insecure-origin-safe UUID fallback and regenerated Linux baselines using the repo-provided Playwright container. LAN-backed Linux harness now passes all 3 visual scenarios, including game-board capture. Local visual gate also passes 3/3.
 <!-- SECTION:NOTES:END -->

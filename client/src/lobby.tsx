@@ -27,6 +27,7 @@ import {
 import type { AppState, BaseState, ScreenState } from './state.js';
 import { AchievementDetailView, AllAchievementsView } from './components/AchievementViews.js';
 import { CinematicBackground } from './components/CinematicBackground.js';
+import { createClientUuid } from './uuid';
 
 import { HealthBadge } from './components/HealthBadge.js';
 import { Leaderboard } from './components/Leaderboard';
@@ -3167,9 +3168,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                       disabled={actionControlsDisabled}
                       onClick={() => {
                         if (state.queueStatus === 'searching') {
-                          getConnection()?.send({ type: 'leaveQueue', msgId: crypto.randomUUID() });
+                          getConnection()?.send({ type: 'leaveQueue', msgId: createClientUuid() });
                         } else {
-                          getConnection()?.send({ type: 'joinQueue', msgId: crypto.randomUUID() });
+                          getConnection()?.send({ type: 'joinQueue', msgId: createClientUuid() });
                         }
                       }}
                     >

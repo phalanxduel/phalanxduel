@@ -12,6 +12,7 @@ import {
 } from '@opentelemetry/api';
 import { getToken } from './auth';
 import { getSavedSession } from './state';
+import { createClientUuid } from './uuid';
 
 export interface Connection {
   send(message: OutboundClientMessage): void;
@@ -363,7 +364,7 @@ export function createConnection(
     heartbeatInterval = setInterval(() => {
       sendTransportMessage({
         type: 'ping',
-        msgId: crypto.randomUUID(),
+        msgId: createClientUuid(),
         timestamp: new Date().toISOString(),
         telemetry: {
           originService: currentOriginService(),
@@ -397,7 +398,7 @@ export function createConnection(
 
   function connect() {
     updateState('CONNECTING');
-    socketSessionId = crypto.randomUUID();
+    socketSessionId = createClientUuid();
     const currentSessionContext = ensureSessionSpan();
     ws = new WebSocket(url);
 
@@ -418,7 +419,7 @@ export function createConnection(
         const data = JSON.parse(event.data as string) as ServerMessage;
 
         if ('msgId' in data && typeof data.msgId === 'string' && data.type !== 'ack') {
-          sendTransportMessage({ type: 'ack', ackedMsgId: data.msgId, msgId: crypto.randomUUID() });
+          sendTransportMessage({ type: 'ack', ackedMsgId: data.msgId, msgId: createClientUuid() });
         }
 
         if (data.type === 'ack') {
@@ -432,7 +433,7 @@ export function createConnection(
           const replyTo = typeof data.msgId === 'string' ? data.msgId : undefined;
           sendTransportMessage({
             type: 'pong',
-            msgId: crypto.randomUUID(),
+            msgId: createClientUuid(),
             timestamp: new Date().toISOString(),
             replyTo,
           });

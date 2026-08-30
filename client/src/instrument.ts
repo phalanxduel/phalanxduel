@@ -17,6 +17,7 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
+import { createClientUuid } from './uuid';
 
 const urlParams = new URLSearchParams(window.location.search);
 const isLocalHost =
@@ -33,7 +34,7 @@ const telemetryDisabled =
 // In development, we point to the host-based collector.
 const OTEL_BASE_URL = urlParams.get('otelBaseUrl')?.trim() || 'http://127.0.0.1:4318';
 const deploymentEnvironment = import.meta.env.MODE || 'development';
-const serviceInstanceId = `browser:${window.location.host}:${crypto.randomUUID()}`;
+const serviceInstanceId = `browser:${window.location.host}:${createClientUuid()}`;
 
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: 'phx-client',
