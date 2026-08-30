@@ -80,6 +80,7 @@ Generate a trajectory from a deterministic scenario and verify it offline:
 ```bash
 pnpm qa:trajectory:record -- --scenario <scenario.json> --out <trajectory.json>
 pnpm qa:trajectory:verify -- --trajectory <trajectory.json>
+pnpm qa:trajectory:matrix
 ```
 
 The verifier replays the exact action payloads through the engine and fails on
@@ -99,6 +100,12 @@ pnpm qa:api:run -- --transport rest --scenario <trajectory.json> --base-url ws:/
 REST mode uses WebSocket only for match bootstrap and observer updates; action
 submission goes through the HTTP `/api/matches/:id/action` route. Its evidence
 sidecar records `transport: http`.
+
+`qa:trajectory:matrix` validates the built-in deterministic fixture set. It
+covers both damage modes, manual deployment, defensive/aggressive/random quick
+deployment, mixed deployment policies, and explicit pass/forfeit terminals.
+The matrix is an engine contract check; use the recorded trajectory commands
+above when proving a fixture across live adapters.
 
 ## Versioned run evidence
 

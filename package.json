@@ -98,6 +98,7 @@
     "qa:o2:attach": "tsx bin/qa/attach-o2.ts",
     "qa:evidence:verify": "tsx bin/qa/verify-run-evidence.ts",
     "qa:trajectory:record": "tsx bin/qa/record-trajectory.ts",
+    "qa:trajectory:matrix": "tsx bin/qa/trajectory-matrix.ts",
     "qa:trajectory:verify": "tsx bin/qa/verify-trajectory.ts",
     "qa:api:load-test": "tsx bin/qa/api-playthrough.ts --concurrency 10 --batch 10 --max-turns 60 --damage-modes classic,cumulative --starting-lps 5,20",
     "qa:matrix": "bash scripts/ci/qa-matrix.sh full",
