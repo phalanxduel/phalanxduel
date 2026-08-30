@@ -36,9 +36,11 @@ import { canonicalizeLegacyRun } from './run-evidence.ts';
 
 type DamageMode = 'classic' | 'cumulative';
 type BotStrategy = 'random' | 'heuristic';
+type Transport = 'websocket' | 'rest';
 
 interface CliOptions {
   baseUrl: string;
+  transport: Transport;
   seed?: number;
   batch: number;
   concurrency: number;
@@ -63,6 +65,7 @@ interface RunManifest {
   endAt: string;
   durationMs: number;
   baseUrl: string;
+  transport: Transport;
   damageMode: DamageMode;
   startingLifepoints: number;
   strategy: BotStrategy;
@@ -97,6 +100,7 @@ const tracer = trace.getTracer('phx-qa-api-playthrough');
 const argConfig: ParseArgsConfig = {
   options: {
     'base-url': { type: 'string' },
+    transport: { type: 'string', default: 'websocket' },
     seed: { type: 'string' },
     batch: { type: 'string', default: '1' },
     concurrency: { type: 'string', default: '1' },
@@ -125,6 +129,7 @@ api-playthrough - Run API-only game playthroughs via WebSocket
 
 Options:
   --base-url <url>       WebSocket URL (default: ws://127.0.0.1:3001/ws)
+  --transport <type>     Action transport: websocket or rest (default: websocket)
   --seed <number>        Fixed RNG seed for reproducibility
   --batch <n>            Number of games to run (default: 1)
   --concurrency <n>      Max games to run in parallel (default: 1, serial)
@@ -150,9 +155,14 @@ Options:
     process.env.PHALANX_API_URL ||
     'ws://127.0.0.1:3001/ws';
   const baseUrlArg = (values['base-url'] as string) ?? defaultBaseUrl;
+  const transport = (values.transport as Transport) ?? 'websocket';
+  if (transport !== 'websocket' && transport !== 'rest') {
+    throw new Error(`Unsupported transport: ${transport}`);
+  }
 
   return {
     baseUrl: baseUrlArg,
+    transport,
     seed: values.seed ? Number(values.seed) : undefined,
     batch: Number(values.batch ?? '1'),
     concurrency: Math.max(1, Number(values.concurrency ?? '1')),
@@ -278,6 +288,36 @@ function drainMessages(ws: WebSocket, durationMs = 200): Promise<ServerMsg[]> {
       resolve(msgs);
     }, durationMs);
   });
+}
+
+function cardReferenceSuffix(cardId: string): string {
+  const match = cardId.match(/::(\d+)::(\d+)$/);
+  return match ? match[0] : cardId;
+}
+
+function bindTrajectoryAction(action: any, viewerModel: any): { action: any; bound: boolean } {
+  if (action.type !== 'deploy' && action.type !== 'reinforce') return { action, bound: false };
+  const state = viewerModel?.state ?? viewerModel?.postState;
+  const player = state?.players?.[action.playerIndex];
+  const cards = [...(player?.hand ?? []), ...(player?.battlefield ?? [])].filter(Boolean);
+  const expectedSuffix = cardReferenceSuffix(String(action.cardId));
+  const liveCard = cards.find(
+    (card: any) => cardReferenceSuffix(String(card.card?.id ?? card.id)) === expectedSuffix,
+  );
+  if (!liveCard) {
+    throw new Error(
+      `TRAJECTORY_BINDING_FAILED: card reference ${String(action.cardId)} is not visible in the live player state`,
+    );
+  }
+  const liveCardId = liveCard.card?.id ?? liveCard.id;
+  return { action: { ...action, cardId: liveCardId }, bound: liveCardId !== action.cardId };
+}
+
+function httpBaseUrl(wsUrl: string): string {
+  const parsed = new URL(wsUrl);
+  parsed.protocol = parsed.protocol === 'wss:' ? 'https:' : 'http:';
+  parsed.pathname = parsed.pathname.replace(/\/ws$/u, '');
+  return parsed.toString().replace(/\/$/u, '');
 }
 
 // ---------------------------------------------------------------------------
@@ -546,6 +586,16 @@ async function runSingleGame(
         throw new Error(`API_GAP: No valid actions for ${activeName} in phase ${currentPhase}`);
       }
 
+      let identityBound = false;
+      if (scenarioData?.trajectory) {
+        const binding = bindTrajectoryAction(chosenAction, activeIndex === 0 ? vm1 : vm2);
+        chosenAction = binding.action;
+        identityBound = binding.bound;
+        if (identityBound) {
+          log(activeName, 'state', 'Bound trajectory card reference to live match identity');
+        }
+      }
+
       // Preserve canonical trajectory timestamps; generated scenarios retain
       // the historical live-run behavior of using a current timestamp.
       if (!scenarioData?.trajectory) chosenAction.timestamp = new Date().toISOString();
@@ -553,8 +603,23 @@ async function runSingleGame(
       // Throttle slightly to avoid hitting the server's 50 msgs/sec WebSocket rate limit
       await new Promise((resolve) => setTimeout(resolve, 25));
 
-      // Send action
-      sendJson(activeWs, qaRun, { type: 'action', matchId, action: chosenAction });
+      // Send action over the selected adapter. WebSockets remain connected in
+      // REST mode so both player projections can still provide checkpoints.
+      if (opts.transport === 'rest') {
+        const response = await fetch(`${httpBaseUrl(opts.baseUrl)}/api/matches/${matchId}/action`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-phalanx-player-id': playerIds[activeIndex]!,
+          },
+          body: JSON.stringify(chosenAction),
+        });
+        if (!response.ok) {
+          throw new Error(`REST_ACTION_ERROR: ${response.status} ${await response.text()}`);
+        }
+      } else {
+        sendJson(activeWs, qaRun, { type: 'action', matchId, action: chosenAction });
+      }
       actionCount++;
       const actionSummary =
         chosenAction.type === 'deploy'
@@ -660,7 +725,13 @@ async function runSingleGame(
       const serverHash = serverTxEntry?.stateHashAfter ?? '';
 
       const expectedCheckpoint = scenarioData?.expectedCheckpoints?.[actionCount];
-      if (expectedCheckpoint && serverHash !== expectedCheckpoint.stateHash) {
+      const canCompareTrajectoryHash =
+        !scenarioData?.trajectory || scenarioData.trajectory.match.matchId === matchId;
+      if (
+        expectedCheckpoint &&
+        canCompareTrajectoryHash &&
+        serverHash !== expectedCheckpoint.stateHash
+      ) {
         throw new Error(
           `TRAJECTORY_DRIFT: server hash mismatch at action ${actionCount} (expected=${expectedCheckpoint.stateHash.slice(0, 12)} server=${serverHash.slice(0, 12)})`,
         );
@@ -777,6 +848,7 @@ async function runSingleGame(
       endAt,
       durationMs: Date.now() - startMs,
       baseUrl: opts.baseUrl,
+      transport: opts.transport,
       damageMode,
       startingLifepoints: startingLp,
       strategy: opts.strategy,
@@ -819,6 +891,7 @@ async function runSingleGame(
       endAt: new Date().toISOString(),
       durationMs: Date.now() - startMs,
       baseUrl: opts.baseUrl,
+      transport: opts.transport,
       damageMode,
       startingLifepoints: startingLp,
       strategy: opts.strategy,

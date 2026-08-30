@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-08-04 22:39'
-updated_date: '2026-08-30 14:43'
+updated_date: '2026-08-30 15:03'
 labels:
   - assurance
   - qa
@@ -18,6 +18,10 @@ documentation:
   - docs/adr/ADR-005-deterministic-replay-hash-compatibility.md
   - docs/adr/ADR-017-authoritative-view-model-projection.md
 modified_files:
+  - bin/qa/scenario.ts
+  - bin/qa/api-playthrough.ts
+  - docs/reference/qa-runners.md
+  - package.json
   - shared/src/schema.ts
   - shared/src/types.ts
   - shared/schemas/gameplay-trajectory.schema.json
@@ -26,8 +30,6 @@ modified_files:
   - shared/tests/trajectory.test.ts
   - bin/qa/record-trajectory.ts
   - bin/qa/verify-trajectory.ts
-  - package.json
-  - docs/reference/qa-runners.md
 parent_task_id: TASK-343
 priority: high
 type: task
@@ -80,4 +82,12 @@ Make one deterministic gameplay trajectory the shared behavioral input for engin
 Added qa:trajectory:record and qa:trajectory:verify. Offline deterministic fixture recorded 42 actions and 43 checkpoints from scenario-42; terminal hash matched scenario finalStateHash exactly. Verification catches schema, state, observer, event, phase/turn, and terminal drift.
 
 Commit 35415717 passed the full verify:quick hook. Network WebSocket and REST-fallback adapter execution remains the next slice.
+
+2026-08-30 adapter slice: loadScenarioOrTrajectory now accepts canonical trajectory files while preserving historical scenario compatibility. api-playthrough preserves trajectory timestamps and compares each live WebSocket transaction stateHashAfter against the expected checkpoint.
+
+CLI smoke check passed for api-playthrough --help; schema check and Markdown lint passed; commit 1e252c1 passed the repository verify:quick hook.
+
+Remaining next slice: add a REST-fallback trajectory executor using the existing /api/matches/:id/action flow, then expand fixture matrix and compatibility/drift failure tests.
+
+2026-08-30 discovery finding: pure trajectories currently contain deterministic card IDs embedding fixture match/player IDs. Live adapters generate new match/player IDs, so raw card payload and full-state hash comparison would falsely report drift. REST/WS execution must add explicit identity binding (preserve card turn/draw reference while rebinding live match/player identity), then compare normalized action intent and adapter-visible checkpoints; do not silently rewrite without recording the binding.
 <!-- SECTION:NOTES:END -->

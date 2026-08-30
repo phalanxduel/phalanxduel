@@ -13,6 +13,7 @@ type LegacyManifest = {
   durationMs?: number;
   actionCount?: number;
   baseUrl?: string;
+  transport?: 'websocket' | 'rest';
   damageMode?: string;
   startingLifepoints?: number;
   status?: 'success' | 'failure' | 'skipped';
@@ -57,7 +58,11 @@ export function canonicalizeLegacyRun(
         : manifest.tool?.includes('api')
           ? 'api'
           : 'browser',
-      transport: manifest.tool?.includes('swiftui') ? 'native-ui' : 'websocket',
+      transport: manifest.tool?.includes('swiftui')
+        ? 'native-ui'
+        : manifest.transport === 'rest'
+          ? 'http'
+          : 'websocket',
     },
     correlation: {
       qaRunId: manifest.qaRunId ?? manifest.runId,

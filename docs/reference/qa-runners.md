@@ -93,7 +93,12 @@ each server transaction hash with the recorded checkpoint:
 
 ```bash
 pnpm qa:api:run -- --scenario <trajectory.json> --base-url ws://127.0.0.1:3001/ws
+pnpm qa:api:run -- --transport rest --scenario <trajectory.json> --base-url ws://127.0.0.1:3001/ws
 ```
+
+REST mode uses WebSocket only for match bootstrap and observer updates; action
+submission goes through the HTTP `/api/matches/:id/action` route. Its evidence
+sidecar records `transport: http`.
 
 ## Versioned run evidence
 
