@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - Codex
 created_date: '2026-07-31 03:56'
-updated_date: '2026-07-31 04:16'
+updated_date: '2026-08-30 14:14'
 labels:
   - client
   - cosmetics
@@ -16,6 +16,31 @@ documentation:
   - docs/testing.md
   - docs/reference/qa-runners.md
   - docs/system/UI_COMPONENT_TAXONOMY.md
+modified_files:
+  - client/tests/settings-panel.test.ts
+  - client/src/cosmetics.ts
+  - client/src/components/SettingsPanel.tsx
+  - client/src/game.tsx
+  - client/src/state.ts
+  - client/src/style.css
+  - server/migrations/0006_dual_loop_cosmetics.sql
+  - server/src/cosmetics.ts
+  - server/src/db/schema.ts
+  - server/src/db/match-repo.ts
+  - server/src/routes/store.ts
+  - server/src/routes/matches.ts
+  - server/src/match-types.ts
+  - server/src/match.ts
+  - server/src/utils/projection.ts
+  - server/src/utils/viewer-projection.ts
+  - server/tests/cosmetics.test.ts
+  - server/tests/store.test.ts
+  - server/tests/match.test.ts
+  - server/tests/viewer-projection.test.ts
+  - shared/src/schema.ts
+  - shared/src/types.ts
+  - shared/schemas/game-state.schema.json
+  - shared/schemas/server-messages.schema.json
 priority: medium
 type: feature
 ordinal: 249800
@@ -53,6 +78,12 @@ Create an original unlockable card-back and card-theme cosmetic inspired by micr
 <!-- SECTION:PLAN:BEGIN -->
 1. Establish the original Dual Loop visual language and reusable cosmetic registry. 2. Use the existing entitlement system to award the card set after an authenticated player's first completed match. 3. Persist a validated equipped card-skin selection on the user account. 4. Project both players' public cosmetic identifiers beside, but outside, deterministic GameState. 5. Render the owner's theme on public battlefield cards and their hidden opponent-hand backs without exposing card identity. 6. Add settings UX, protocol/server/client tests, deterministic captures, and documentation. 7. Run the playability gate and full repository verification.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-08-30 verification follow-up: client cosmetic loadout behavior is correct; full aggregate exposed timing flake in settings-panel.test.ts due fixed 25ms sleep. Replaced it with condition-based `vi.waitFor`; focused client suite now passes 27 files / 237 tests.
+<!-- SECTION:NOTES:END -->
 
 ## Comments
 

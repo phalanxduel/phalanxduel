@@ -45,7 +45,13 @@ describe('SettingsPanel cosmetic loadout', () => {
     );
 
     render(h(SettingsPanel, { state: settingsState(), onClose: () => {} }), container);
-    await new Promise((resolve) => setTimeout(resolve, 25));
+    await vi.waitFor(() => {
+      expect(
+        container
+          .querySelector('.cosmetic-loadout-card[data-card-theme="dual-loop"]')
+          ?.getAttribute('data-state'),
+      ).toBe('equipped');
+    });
 
     const dualLoop = container.querySelector('.cosmetic-loadout-card[data-card-theme="dual-loop"]');
     expect(dualLoop?.getAttribute('data-state')).toBe('equipped');
@@ -67,7 +73,13 @@ describe('SettingsPanel cosmetic loadout', () => {
     );
 
     render(h(SettingsPanel, { state: settingsState(), onClose: () => {} }), container);
-    await new Promise((resolve) => setTimeout(resolve, 25));
+    await vi.waitFor(() => {
+      expect(
+        container
+          .querySelector('.cosmetic-loadout-card[data-card-theme="dual-loop"]')
+          ?.getAttribute('data-state'),
+      ).toBe('locked');
+    });
 
     const dualLoop = container.querySelector('.cosmetic-loadout-card[data-card-theme="dual-loop"]');
     expect(dualLoop?.getAttribute('data-state')).toBe('locked');
