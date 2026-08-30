@@ -720,6 +720,44 @@
           "maximum": 9007199254740991,
           "description": "Current turn number. Starts at 0 (deployment) and increments each full turn cycle."
         },
+        "quickDeployStrategies": {
+          "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+          "type": "array",
+          "prefixItems": [
+            {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "defensive",
+                    "aggressive",
+                    "random"
+                  ],
+                  "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "defensive",
+                    "aggressive",
+                    "random"
+                  ],
+                  "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ]
+        },
         "gameOptions": {
           "description": "Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.",
           "type": "object",
@@ -959,6 +997,55 @@
                     ],
                     "additionalProperties": false,
                     "description": "Deploy a card from hand. Valid during DeploymentPhase. Each player must alternate deploying cards until the battlefield is full according to match parameters."
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "quickDeploy"
+                      },
+                      "playerIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Index of the player (0 or 1)."
+                      },
+                      "strategy": {
+                        "type": "string",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random"
+                        ],
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+                      },
+                      "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                      },
+                      "msgId": {
+                        "description": "Reliable transport message identifier for ACK/replay.",
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "expectedSequenceNumber": {
+                        "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "playerIndex",
+                      "strategy",
+                      "timestamp"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually."
                   },
                   {
                     "type": "object",
@@ -1653,11 +1740,146 @@
                           }
                         ],
                         "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit)."
+                      },
+                      "quickDeployments": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "playerIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "strategy": {
+                              "type": "string",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random"
+                              ],
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+                            },
+                            "cardId": {
+                              "type": "string"
+                            },
+                            "column": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 11
+                            },
+                            "gridIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "playerIndex",
+                            "strategy",
+                            "cardId",
+                            "column",
+                            "gridIndex"
+                          ],
+                          "additionalProperties": false
+                        }
                       }
                     },
                     "required": [
                       "type",
                       "gridIndex",
+                      "phaseAfter"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "quickDeploy"
+                      },
+                      "strategy": {
+                        "type": "string",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random"
+                        ],
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+                      },
+                      "deployments": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "playerIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "strategy": {
+                              "type": "string",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random"
+                              ],
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+                            },
+                            "cardId": {
+                              "type": "string"
+                            },
+                            "column": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 11
+                            },
+                            "gridIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "playerIndex",
+                            "strategy",
+                            "cardId",
+                            "column",
+                            "gridIndex"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "phaseAfter": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "StartTurn",
+                              "DeploymentPhase",
+                              "AttackPhase",
+                              "AttackResolution",
+                              "CleanupPhase",
+                              "ReinforcementPhase",
+                              "DrawPhase",
+                              "EndTurn"
+                            ],
+                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases."
+                          },
+                          {
+                            "type": "string",
+                            "const": "gameOver"
+                          }
+                        ],
+                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit)."
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "strategy",
+                      "deployments",
                       "phaseAfter"
                     ],
                     "additionalProperties": false
@@ -3486,6 +3708,44 @@
           "maximum": 9007199254740991,
           "description": "Current turn number. Starts at 0 (deployment) and increments each full turn cycle."
         },
+        "quickDeployStrategies": {
+          "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+          "type": "array",
+          "prefixItems": [
+            {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "defensive",
+                    "aggressive",
+                    "random"
+                  ],
+                  "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "defensive",
+                    "aggressive",
+                    "random"
+                  ],
+                  "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ]
+        },
         "gameOptions": {
           "description": "Runtime compatibility inputs applied at match creation. These fields are transport-facing and do not supersede the canonical match params contract.",
           "type": "object",
@@ -3725,6 +3985,55 @@
                     ],
                     "additionalProperties": false,
                     "description": "Deploy a card from hand. Valid during DeploymentPhase. Each player must alternate deploying cards until the battlefield is full according to match parameters."
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "quickDeploy"
+                      },
+                      "playerIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Index of the player (0 or 1)."
+                      },
+                      "strategy": {
+                        "type": "string",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random"
+                        ],
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+                      },
+                      "timestamp": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                      },
+                      "msgId": {
+                        "description": "Reliable transport message identifier for ACK/replay.",
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "expectedSequenceNumber": {
+                        "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "playerIndex",
+                      "strategy",
+                      "timestamp"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually."
                   },
                   {
                     "type": "object",
@@ -4419,11 +4728,146 @@
                           }
                         ],
                         "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit)."
+                      },
+                      "quickDeployments": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "playerIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "strategy": {
+                              "type": "string",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random"
+                              ],
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+                            },
+                            "cardId": {
+                              "type": "string"
+                            },
+                            "column": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 11
+                            },
+                            "gridIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "playerIndex",
+                            "strategy",
+                            "cardId",
+                            "column",
+                            "gridIndex"
+                          ],
+                          "additionalProperties": false
+                        }
                       }
                     },
                     "required": [
                       "type",
                       "gridIndex",
+                      "phaseAfter"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "quickDeploy"
+                      },
+                      "strategy": {
+                        "type": "string",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random"
+                        ],
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+                      },
+                      "deployments": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "playerIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "strategy": {
+                              "type": "string",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random"
+                              ],
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+                            },
+                            "cardId": {
+                              "type": "string"
+                            },
+                            "column": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 11
+                            },
+                            "gridIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "playerIndex",
+                            "strategy",
+                            "cardId",
+                            "column",
+                            "gridIndex"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "phaseAfter": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "StartTurn",
+                              "DeploymentPhase",
+                              "AttackPhase",
+                              "AttackResolution",
+                              "CleanupPhase",
+                              "ReinforcementPhase",
+                              "DrawPhase",
+                              "EndTurn"
+                            ],
+                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases."
+                          },
+                          {
+                            "type": "string",
+                            "const": "gameOver"
+                          }
+                        ],
+                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit)."
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "strategy",
+                      "deployments",
                       "phaseAfter"
                     ],
                     "additionalProperties": false
@@ -5596,6 +6040,55 @@
           ],
           "additionalProperties": false,
           "description": "Deploy a card from hand. Valid during DeploymentPhase. Each player must alternate deploying cards until the battlefield is full according to match parameters."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "quickDeploy"
+            },
+            "playerIndex": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Index of the player (0 or 1)."
+            },
+            "strategy": {
+              "type": "string",
+              "enum": [
+                "defensive",
+                "aggressive",
+                "random"
+              ],
+              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns."
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+            },
+            "msgId": {
+              "description": "Reliable transport message identifier for ACK/replay.",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "expectedSequenceNumber": {
+              "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "type",
+            "playerIndex",
+            "strategy",
+            "timestamp"
+          ],
+          "additionalProperties": false,
+          "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually."
         },
         {
           "type": "object",

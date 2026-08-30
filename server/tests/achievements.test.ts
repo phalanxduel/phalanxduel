@@ -6,6 +6,7 @@ import {
   deuceCoupDetector,
   tripleThreatDetector,
   deadMansHandDetector,
+  randomDeploymentDetector,
 } from '../src/achievements/detectors.js';
 import type { DetectorContext } from '../src/achievements/detector.js';
 
@@ -281,5 +282,44 @@ describe('deadMansHandDetector', () => {
     });
     const results = deadMansHandDetector(makeCtx({ finalState: state }));
     expect(results).toHaveLength(0);
+  });
+});
+
+describe('randomDeploymentDetector', () => {
+  it('awards the player who completes a match after choosing Random quick deploy', () => {
+    const entry = {
+      sequenceNumber: 1,
+      action: {
+        type: 'quickDeploy',
+        playerIndex: 1,
+        strategy: 'random',
+        timestamp: '2026-01-01T00:00:00.000Z',
+      },
+      stateHashBefore: 'a',
+      stateHashAfter: 'b',
+      timestamp: '2026-01-01T00:00:00.000Z',
+      details: {
+        type: 'quickDeploy',
+        strategy: 'random',
+        deployments: [
+          {
+            playerIndex: 1,
+            strategy: 'random',
+            cardId: 'random-card',
+            column: 0,
+            gridIndex: 0,
+          },
+        ],
+        phaseAfter: 'DeploymentPhase',
+      },
+    } as unknown as TransactionLogEntry;
+
+    expect(randomDeploymentDetector(makeCtx({ transactionLog: [entry] }))).toEqual([
+      { type: 'RANDOM_DEPLOYMENT', playerIndex: 1 },
+    ]);
+  });
+
+  it('does not award manual, Defensive, or Aggressive deployment', () => {
+    expect(randomDeploymentDetector(makeCtx())).toEqual([]);
   });
 });

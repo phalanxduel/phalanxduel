@@ -22,6 +22,9 @@ Supports two deployment modes:
 
 | Tool | What it does |
 | --- | --- |
+| `user_register` | Register a user account through the game server |
+| `user_login` | Authenticate a user and return a JWT |
+| `match_lobby` | List publicly joinable matches |
 | `match_list` | List recent completed matches with pagination |
 | `match_get` | Fetch a match by ID with full state and outcome |
 | `leaderboard` | Top players by ELO for pvp/sp-random/sp-heuristic/sp-mcts |
@@ -47,7 +50,9 @@ recommendations, and observe the outcome — all without leaving Claude Code.
 | Tool | What it does |
 | --- | --- |
 | `match_create` | Create a match as the agent user; `opponent` accepts all 8 tier names (`scout`…`champion`) or legacy aliases (`bot-random`, `bot-heuristic`, `bot-mcts`); returns `matchId`, `playerId`, and initial `GameState` |
-| `action_submit` | Rejoin a match and submit one action; returns the post-action `GameState` |
+| `match_join` | Join an open match; returns `matchId`, `playerId`, and current `GameState` |
+| `match_get_state` | Rejoin without taking a seat and return the latest state |
+| `action_submit` | Rejoin a match and submit one canonical player action—including `quickDeploy`; returns the post-action `GameState` |
 
 The full loop: `match_create` → (`engine_valid_actions` → `engine_bot_recommend` →
 `action_submit`) × N turns → `match_analyze`.
@@ -217,7 +222,7 @@ mcp/
       data.ts          — DB read tools (matches, leaderboard, embeddings list)
       analysis.ts      — match_analyze: llama or Anthropic, no DB at module load
       embeddings.ts    — match_embed, match_find_similar: requires DB + OpenAI
-      gameplay.ts      — match_create, action_submit: WS bridge to game server
+      gameplay.ts      — match_create, match_join, match_get_state, action_submit: WS bridge to game server
       admin.ts         — pipeline_status, match_purge, bulk_embed, user_search
     utils/
       matchSummary.ts  — shared match summary builder (used by analysis + admin)

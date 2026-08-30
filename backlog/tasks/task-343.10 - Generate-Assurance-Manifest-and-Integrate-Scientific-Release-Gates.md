@@ -4,7 +4,7 @@ title: Generate Assurance Manifest and Integrate Scientific Release Gates
 status: To Do
 assignee: []
 created_date: '2026-07-13 14:00'
-updated_date: '2026-07-13 14:00'
+updated_date: '2026-08-04 22:40'
 labels:
   - assurance
   - ci
@@ -17,6 +17,7 @@ dependencies:
   - TASK-343.07
   - TASK-343.08
   - TASK-343.09
+  - TASK-343.14
 documentation:
   - docs/gameplay/rules.md
   - docs/reference/test-constitution.md
@@ -52,3 +53,13 @@ Consolidate formal exhaustive property statistical replay information-integrity 
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: @codex
+created: 2026-08-04 22:40
+---
+Automation audit sequencing: canonical run evidence and cross-adapter trajectories must exist before the assurance manifest can truthfully aggregate them.
+---
+<!-- COMMENTS:END -->

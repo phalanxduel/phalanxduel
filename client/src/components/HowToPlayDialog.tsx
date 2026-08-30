@@ -46,7 +46,9 @@ export function HowToPlayDialog({ onClose }: HowToPlayDialogProps) {
             <p class="intel-text" style="font-size: 1rem; line-height: 1.5;">
               Each operative must deploy exactly one unit per turn until their 2x4 grid is filled.
               The <strong>FRONT ROW</strong> acts as the vanguard for attacking and defense. The{' '}
-              <strong>BACK ROW</strong> provides tactical reserve and reinforcement.
+              <strong>BACK ROW</strong> provides tactical reserve and reinforcement. To skip manual
+              setup, choose Defensive, Aggressive, or Random quick deploy; the engine will make your
+              remaining alternating placements from the same 12-card opening hand.
             </p>
             <div style="display: flex; justify-content: center; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
               <div style="width: 40px; height: 60px; border: 1px dashed var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: var(--neon-blue);">

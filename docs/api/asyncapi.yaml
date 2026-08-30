@@ -26,6 +26,7 @@ info:
     State-machine constraints:
 
     - `deploy` is only valid during `DeploymentPhase`.
+    - `quickDeploy` is only valid during `DeploymentPhase` and automates only the choosing player's remaining alternating placements.
     - `attack` and `pass` are only valid during `AttackPhase`.
     - `reinforce` is only valid during `ReinforcementPhase`.
     - `forfeit` is valid in any phase.

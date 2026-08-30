@@ -31,7 +31,7 @@ For UI/UX design collaboration, use the `phalanx-ui-design-capture` skill to gen
 | **Public** | Nothing — connect to the public endpoint | Engine + read-only data + all resources |
 | **Analysis** | `ANALYSIS_PROVIDER=llama` (local) or `ANTHROPIC_API_KEY` | `match_analyze` |
 | **Embeddings** | `DATABASE_URL` + `OPENAI_API_KEY` | `match_embed`, `match_find_similar` |
-| **Gameplay** | `GAME_SERVER_URL` + `AGENT_TOKEN` | `match_create`, `action_submit` |
+| **Gameplay** | `GAME_SERVER_URL` + `AGENT_TOKEN` | `match_create`, `match_join`, `match_get_state`, `action_submit` |
 | **Admin** | `DATABASE_URL` + `TOOL_PROFILE=admin` | `pipeline_status`, `match_purge`, `bulk_embed`, `user_search` |
 
 ## Connect by Tool
@@ -283,4 +283,4 @@ accurate game documentation without any game-specific code on the content side.
 
 See [`docs/development.md`](../development.md) for the full local stack.
 See [`docs/agents/agentic-gameplay.md`](agentic-gameplay.md) for the autonomous
-play workflow (`match_create` → `action_submit` loop).
+play workflow (`match_create`/`match_join` → `match_get_state` → `action_submit` loop).

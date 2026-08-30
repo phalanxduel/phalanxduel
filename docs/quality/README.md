@@ -151,7 +151,7 @@ To add a new property: append an `it('...', () => fc.assert(...))` call to `engi
 ```sh
 pnpm verify:contracts      # structural contract check
 pnpm schema:check          # freshness check (JSON schema matches Zod source)
-pnpm schema:gen            # regenerate shared/schemas/ and shared/src/types.ts
+pnpm --filter @phalanxduel/shared schema:gen  # regenerate shared/schemas/ and shared/src/types.ts
 ```
 
 **Known gap:** 6 types (`joinQueue`, `leaveQueue`, `queueJoined`, `queueLeft`, `queueMatchFound`, `forceReload`) exist in the JSON schemas but are not yet documented in `docs/api/asyncapi.yaml`. Advisory warning only.

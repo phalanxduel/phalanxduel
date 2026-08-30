@@ -5,9 +5,11 @@ import type {
   ServerMessage,
   DamageMode,
   PhalanxTurnResult,
+  MatchCosmetics,
 } from '@phalanxduel/shared';
 import { isGameOver } from '@phalanxduel/shared';
 import { generateTacticalCallsign } from './name-generator';
+import { DEFAULT_MATCH_COSMETICS } from './cosmetics';
 
 export type Screen =
   | 'lobby'
@@ -66,6 +68,7 @@ export interface BaseState {
   themePhx: boolean;
   queueStatus: 'idle' | 'searching';
   qaRunId: string | null;
+  playerCosmetics: MatchCosmetics;
 }
 
 export type ScreenState =
@@ -291,6 +294,7 @@ let state: InternalState = {
   achievementType:
     typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('type') : null,
   queueStatus: 'idle',
+  playerCosmetics: DEFAULT_MATCH_COSMETICS,
   qaRunId:
     typeof window !== 'undefined'
       ? new URLSearchParams(window.location.search).get('qaRunId')
@@ -503,6 +507,7 @@ function handleGameStateMessage(message: Extract<ServerMessage, { type: 'gameSta
     selectedDeployCard: null,
     error: null,
     spectatorCount: message.spectatorCount ?? 0,
+    playerCosmetics: message.viewModel?.cosmetics ?? DEFAULT_MATCH_COSMETICS,
   });
 }
 
@@ -747,6 +752,7 @@ export function resetToLobby(): void {
     spectatorCount: 0,
     showHelp: false,
     validActions: [],
+    playerCosmetics: DEFAULT_MATCH_COSMETICS,
   });
 }
 

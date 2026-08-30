@@ -33,6 +33,12 @@ import { MatchAnalysisService } from './analysis.js';
 import { shadowVerifyOnComplete } from './match-integrity.js';
 import type { IEventBus, MatchUpdatedEvent } from './event-bus.js';
 import { MatchConnectionTracker } from './connection-tracker.js';
+import {
+  awardDualLoopForCompletedMatch,
+  DEFAULT_CARD_SKIN_ID,
+  getEquippedCardSkin,
+  getMatchCosmetics,
+} from './cosmetics.js';
 
 import {
   MatchError,
@@ -173,6 +179,7 @@ export class LocalMatchManager implements IMatchManager {
     gameOptions?: GameOptions;
     rngSeed?: number;
     userId?: string;
+    cardSkinId?: PlayerConnection['cardSkinId'];
     matchParams: MatchParameters;
     isAutomated?: boolean;
   }): MatchInstance {
@@ -189,6 +196,7 @@ export class LocalMatchManager implements IMatchManager {
       gameOptions,
       rngSeed,
       userId,
+      cardSkinId,
       matchParams,
       isAutomated,
     } = args;
@@ -211,6 +219,7 @@ export class LocalMatchManager implements IMatchManager {
           playerName,
           playerIndex: 0,
           userId,
+          cardSkinId: cardSkinId ?? DEFAULT_CARD_SKIN_ID,
           disconnectedAt: undefined,
         },
         null,
@@ -471,6 +480,7 @@ export class LocalMatchManager implements IMatchManager {
     const matchId = randomUUID();
     const playerId = randomUUID();
     const playerIndex = 0;
+    const cardSkinId = await getEquippedCardSkin(userId);
     const match = this.createMatchRecord({
       matchId,
       playerId,
@@ -480,6 +490,7 @@ export class LocalMatchManager implements IMatchManager {
       gameOptions,
       rngSeed,
       userId,
+      cardSkinId,
       matchParams: resolvedMatchParams,
       isAutomated,
     });
@@ -495,6 +506,7 @@ export class LocalMatchManager implements IMatchManager {
               ? 'Bot (Heuristic)'
               : 'Bot (Random)',
         playerIndex: 1,
+        cardSkinId: DEFAULT_CARD_SKIN_ID,
         disconnectedAt: undefined,
       };
       match.players[1] = botPlayer;
@@ -849,6 +861,7 @@ export class LocalMatchManager implements IMatchManager {
 
     const playerId = randomUUID();
     const playerIndex = match.players[0] === null ? 0 : 1;
+    const cardSkinId = await getEquippedCardSkin(userId);
 
     if (match.visibility === 'public_open') {
       await this.claimPublicOpenSeat(matchId, playerIndex, playerName, userId);
@@ -859,6 +872,7 @@ export class LocalMatchManager implements IMatchManager {
       playerName,
       playerIndex,
       userId,
+      cardSkinId,
       disconnectedAt: undefined,
     };
 
@@ -1341,6 +1355,10 @@ export class LocalMatchManager implements IMatchManager {
         finalState: match.state,
         playerUserIds: [match.players[0]?.userId ?? null, match.players[1]?.userId ?? null],
       });
+      await awardDualLoopForCompletedMatch([
+        match.players[0]?.userId ?? null,
+        match.players[1]?.userId ?? null,
+      ]);
 
       await this.analysisService.analyzeMatch(match);
     }
@@ -1465,6 +1483,7 @@ export class LocalMatchManager implements IMatchManager {
             postState: match.state,
             action: lastAction,
             events,
+            cosmetics: getMatchCosmetics(match),
           },
           player.playerIndex,
         );
@@ -1499,6 +1518,7 @@ export class LocalMatchManager implements IMatchManager {
           postState: spectatorFrame.postState,
           action: spectatorFrame.action,
           events: spectatorFrame.events,
+          cosmetics: getMatchCosmetics(match),
         },
         null,
       );

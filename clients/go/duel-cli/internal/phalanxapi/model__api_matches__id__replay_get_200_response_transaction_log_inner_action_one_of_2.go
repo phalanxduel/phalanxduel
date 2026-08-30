@@ -20,11 +20,15 @@ import (
 // checks if the ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2 type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2{}
 
-// ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2 Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.
+// ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2 Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column.
 type ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2 struct {
 	Type string `json:"type"`
 	// Index of the player (0 or 1).
 	PlayerIndex int32 `json:"playerIndex"`
+	// Column index containing the attacking card. Must have a non-null card at rank 0.
+	AttackingColumn int32 `json:"attackingColumn"`
+	// Target column index on the opponent board.
+	DefendingColumn int32 `json:"defendingColumn"`
 	Timestamp time.Time `json:"timestamp" validate:"regexp=^(?:(?:\\\\d\\\\d[2468][048]|\\\\d\\\\d[13579][26]|\\\\d\\\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\\\d|30)|(?:02)-(?:0[1-9]|1\\\\d|2[0-8])))T(?:(?:[01]\\\\d|2[0-3]):[0-5]\\\\d(?::[0-5]\\\\d(?:\\\\.\\\\d+)?)?(?:Z))$"`
 	// Reliable transport message identifier for ACK/replay.
 	MsgId *string `json:"msgId,omitempty" validate:"regexp=^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"`
@@ -38,10 +42,12 @@ type _ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2 ApiMatches
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2(type_ string, playerIndex int32, timestamp time.Time) *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2 {
+func NewApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2(type_ string, playerIndex int32, attackingColumn int32, defendingColumn int32, timestamp time.Time) *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2 {
 	this := ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2{}
 	this.Type = type_
 	this.PlayerIndex = playerIndex
+	this.AttackingColumn = attackingColumn
+	this.DefendingColumn = defendingColumn
 	this.Timestamp = timestamp
 	return &this
 }
@@ -100,6 +106,54 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2) GetPla
 // SetPlayerIndex sets field value
 func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2) SetPlayerIndex(v int32) {
 	o.PlayerIndex = v
+}
+
+// GetAttackingColumn returns the AttackingColumn field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2) GetAttackingColumn() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.AttackingColumn
+}
+
+// GetAttackingColumnOk returns a tuple with the AttackingColumn field value
+// and a boolean to check if the value has been set.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2) GetAttackingColumnOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.AttackingColumn, true
+}
+
+// SetAttackingColumn sets field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2) SetAttackingColumn(v int32) {
+	o.AttackingColumn = v
+}
+
+// GetDefendingColumn returns the DefendingColumn field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2) GetDefendingColumn() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.DefendingColumn
+}
+
+// GetDefendingColumnOk returns a tuple with the DefendingColumn field value
+// and a boolean to check if the value has been set.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2) GetDefendingColumnOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.DefendingColumn, true
+}
+
+// SetDefendingColumn sets field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2) SetDefendingColumn(v int32) {
+	o.DefendingColumn = v
 }
 
 // GetTimestamp returns the Timestamp field value
@@ -202,6 +256,8 @@ func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2) ToMap()
 	toSerialize := map[string]interface{}{}
 	toSerialize["type"] = o.Type
 	toSerialize["playerIndex"] = o.PlayerIndex
+	toSerialize["attackingColumn"] = o.AttackingColumn
+	toSerialize["defendingColumn"] = o.DefendingColumn
 	toSerialize["timestamp"] = o.Timestamp
 	if !IsNil(o.MsgId) {
 		toSerialize["msgId"] = o.MsgId
@@ -219,6 +275,8 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf2) Unmars
 	requiredProperties := []string{
 		"type",
 		"playerIndex",
+		"attackingColumn",
+		"defendingColumn",
 		"timestamp",
 	}
 

@@ -72,7 +72,8 @@ sets player 2's strategy.
 
 ```text
 Input:
-  opponent   'bot-random' | 'bot-heuristic' | 'bot-mcts'  (default: 'bot-heuristic')
+  opponent   'human' | 'scout' | 'grunt' | 'soldier' | 'veteran' | 'destroyer' | 'sentinel' | 'blitz' | 'champion'
+             | 'bot-random' | 'bot-heuristic' | 'bot-mcts' (default: 'grunt')
   seed       number  (optional — for reproducible matches)
 
 Output:
@@ -95,7 +96,7 @@ the action is applied.
 ```text
 Input:
   matchId    UUID
-  action     ActionSchema  (type, playerIndex, timestamp, + type-specific fields)
+  action     PlayerActionSchema  (type, playerIndex, timestamp, + type-specific fields)
 
 Output:
   state      GameState (post-action)
@@ -104,7 +105,16 @@ Output:
 
 The tool opens a WebSocket, sends the action with a unique `msgId` for
 reliable delivery, waits for the matching ack, and closes. Each call is
-independent and stateless.
+independent and stateless. The player-only schema accepts `deploy`,
+`quickDeploy`, `attack`, `pass`, `reinforce`, and `forfeit`; internal
+`system:init` actions cannot be submitted through MCP.
+
+### `match_join` and `match_get_state`
+
+`match_join` joins an open human match and returns the agent's `playerId` and
+current state. `match_get_state` uses an existing `playerId` to rejoin without
+occupying a new seat and returns the latest state. Both require the same
+`GAME_SERVER_URL` and `AGENT_TOKEN` configuration as `action_submit`.
 
 ## Workflows
 
@@ -176,7 +186,7 @@ No `action_submit` needed — pure observation uses only engine tools.
   history or MCP logs.
 - The agent account is subject to all normal game server auth, rate limiting,
   and match rules. There is no privileged bypass.
-- `match_create` and `action_submit` are admin-profile tools only
+- `match_create`, `match_join`, `match_get_state`, and `action_submit` are admin-profile tools only
   (`TOOL_PROFILE=admin`). They are never available on the public endpoint.
 - Each WebSocket connection is short-lived (single action then closed).
   No persistent connection state is held between tool calls.

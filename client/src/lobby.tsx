@@ -1011,6 +1011,11 @@ const ACHIEVEMENT_META: Record<string, { emoji: string; title: string; desc: str
     title: "Dead Man's Hand",
     desc: 'Hold Aces & Eights in your back rank.',
   },
+  RANDOM_DEPLOYMENT: {
+    emoji: '🎲',
+    title: 'Trust the Shuffle',
+    desc: 'Complete a match after choosing Random quick deploy.',
+  },
 };
 
 const ALL_ACHIEVEMENT_TYPES = Object.keys(ACHIEVEMENT_META);

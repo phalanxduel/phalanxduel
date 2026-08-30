@@ -1,7 +1,27 @@
-import type { FastifyPluginAsync } from 'fastify';
+import type { FastifyInstance, FastifyPluginAsync, FastifyRequest } from 'fastify';
+import { CardSkinIdSchema } from '@phalanxduel/shared';
 import { db } from '../db/index.js';
 import { cosmeticProducts, userEntitlements } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+import {
+  DUAL_LOOP_CARD_SKIN_ID,
+  DUAL_LOOP_PRODUCT_ID,
+  DUAL_LOOP_PRODUCT_SKU,
+  equipCardSkin,
+  getEquippedCardSkin,
+  userOwnsCardSkin,
+} from '../cosmetics.js';
+
+function resolveAuthenticatedUserId(app: FastifyInstance, request: FastifyRequest): string | null {
+  try {
+    let token = request.headers.authorization?.replace('Bearer ', '');
+    token ??= request.cookies.phalanx_refresh;
+    if (!token) return null;
+    return app.jwt.verify<{ id: string }>(token).id;
+  } catch {
+    return null;
+  }
+}
 
 export const storeRoutes: FastifyPluginAsync = async (app) => {
   const DEFAULT_PRODUCTS = [
@@ -24,6 +44,16 @@ export const storeRoutes: FastifyPluginAsync = async (app) => {
       priceCents: 299,
       active: true,
     },
+    {
+      id: DUAL_LOOP_PRODUCT_ID,
+      sku: DUAL_LOOP_PRODUCT_SKU,
+      name: 'Dual Loop',
+      description:
+        'An original microtonal loop card back and face treatment, earned after completing your first match.',
+      category: 'card_skin',
+      priceCents: 0,
+      active: true,
+    },
   ];
 
   // GET /api/store/products — Catalog of active cosmetic items & supporter passes
@@ -40,10 +70,17 @@ export const storeRoutes: FastifyPluginAsync = async (app) => {
         .select()
         .from(cosmeticProducts)
         .where(eq(cosmeticProducts.active, true));
+      const catalog = new Map(DEFAULT_PRODUCTS.map((product) => [product.sku, product]));
+      for (const product of products) {
+        catalog.set(product.sku, {
+          ...product,
+          description: product.description ?? '',
+        });
+      }
 
       return reply.send({
         success: true,
-        products: products.length > 0 ? products : DEFAULT_PRODUCTS,
+        products: [...catalog.values()],
       });
     } catch {
       return reply.send({
@@ -68,6 +105,12 @@ export const storeRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(400).send({
         error: 'Missing required purchase verification parameters',
         code: 'INVALID_PURCHASE_PARAMS',
+      });
+    }
+    if (productId === DUAL_LOOP_PRODUCT_ID || productId === DUAL_LOOP_PRODUCT_SKU) {
+      return reply.status(400).send({
+        error: 'Dual Loop is earned by completing a match',
+        code: 'EARNED_COSMETIC',
       });
     }
 
@@ -171,6 +214,71 @@ export const storeRoutes: FastifyPluginAsync = async (app) => {
     }
   });
 
+  // GET /api/store/loadout — Authenticated cosmetic ownership and equipment state
+  app.get('/store/loadout', async (request, reply) => {
+    const userId = resolveAuthenticatedUserId(app, request);
+    if (!userId) {
+      return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+    }
+
+    const equippedCardSkinId = await getEquippedCardSkin(userId);
+    if (!db) {
+      return reply.send({
+        success: true,
+        equippedCardSkinId,
+        ownedCardSkinIds: ['default'],
+      });
+    }
+
+    const ownedProducts = await db
+      .select({ sku: cosmeticProducts.sku })
+      .from(userEntitlements)
+      .innerJoin(cosmeticProducts, eq(userEntitlements.productId, cosmeticProducts.id))
+      .where(eq(userEntitlements.userId, userId));
+    const ownsDualLoop = ownedProducts.some((product) => product.sku === DUAL_LOOP_PRODUCT_SKU);
+
+    return reply.send({
+      success: true,
+      equippedCardSkinId,
+      ownedCardSkinIds: ownsDualLoop ? ['default', DUAL_LOOP_CARD_SKIN_ID] : ['default'],
+    });
+  });
+
+  // POST /api/store/equip — Equip an owned card skin
+  app.post<{
+    Body: { cardSkinId?: unknown };
+  }>('/store/equip', async (request, reply) => {
+    const userId = resolveAuthenticatedUserId(app, request);
+    if (!userId) {
+      return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
+    }
+
+    const parsed = CardSkinIdSchema.safeParse(request.body?.cardSkinId);
+    if (!parsed.success) {
+      return reply.status(400).send({ error: 'Unknown card skin', code: 'UNKNOWN_CARD_SKIN' });
+    }
+    if (!(await userOwnsCardSkin(userId, parsed.data))) {
+      return reply
+        .status(403)
+        .send({ error: 'Card skin is not unlocked', code: 'COSMETIC_NOT_OWNED' });
+    }
+
+    try {
+      const equipped = await equipCardSkin(userId, parsed.data);
+      if (!equipped) {
+        return reply.status(404).send({ error: 'User not found', code: 'USER_NOT_FOUND' });
+      }
+      return reply.send({
+        success: true,
+        equippedCardSkinId: parsed.data,
+      });
+    } catch {
+      return reply
+        .status(503)
+        .send({ error: 'Database not available', code: 'DATABASE_UNAVAILABLE' });
+    }
+  });
+
   // POST /api/store/create-checkout-session — Create a Stripe Checkout Session
   app.post<{
     Body: {
@@ -195,6 +303,12 @@ export const storeRoutes: FastifyPluginAsync = async (app) => {
       name: 'Phalanx Cosmetic Item',
       priceCents: 499,
     };
+    if (product.sku === DUAL_LOOP_PRODUCT_SKU) {
+      return reply.status(400).send({
+        error: 'Dual Loop is earned by completing a match',
+        code: 'EARNED_COSMETIC',
+      });
+    }
 
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
@@ -283,7 +397,12 @@ export const storeRoutes: FastifyPluginAsync = async (app) => {
       const productId = session?.metadata?.productId;
       const transactionId = session?.id || `cs_${Date.now()}`;
 
-      if (userId && productId) {
+      if (
+        userId &&
+        productId &&
+        productId !== DUAL_LOOP_PRODUCT_ID &&
+        productId !== DUAL_LOOP_PRODUCT_SKU
+      ) {
         if (db) {
           try {
             await db

@@ -43,6 +43,7 @@ export const users = pgTable(
     isDisabled: boolean('is_disabled').default(false).notNull(),
     disabledReason: text('disabled_reason'),
     disabledAt: timestamp('disabled_at'),
+    equippedCardSkin: text('equipped_card_skin').default('default').notNull(),
   },
   (table) => [uniqueIndex('gamertag_unique_idx').on(table.gamertagNormalized, table.suffix)],
 );
@@ -66,6 +67,8 @@ export const matches = pgTable(
     // For now, these might be guest names if not authenticated
     player1Name: text('player_1_name'),
     player2Name: text('player_2_name'),
+    player1CardSkin: text('player_1_card_skin').default('default').notNull(),
+    player2CardSkin: text('player_2_card_skin').default('default').notNull(),
     botStrategy: text('bot_strategy', { enum: ['random', 'heuristic', 'mcts'] }),
     isAutomated: boolean('is_automated').notNull().default(false),
 
@@ -425,13 +428,15 @@ export const userEntitlements = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id')
-      .references(() => users.id)
+      .references(() => users.id, { onDelete: 'cascade' })
       .notNull(),
     productId: uuid('product_id')
       .references(() => cosmeticProducts.id)
       .notNull(),
     transactionId: text('transaction_id').unique().notNull(),
-    platform: text('platform', { enum: ['ios', 'mac', 'web', 'stripe', 'test'] }).notNull(),
+    platform: text('platform', {
+      enum: ['ios', 'mac', 'web', 'stripe', 'test', 'achievement'],
+    }).notNull(),
     grantedAt: timestamp('granted_at').defaultNow().notNull(),
   },
   (table) => [uniqueIndex('user_entitlements_user_prod_idx').on(table.userId, table.productId)],

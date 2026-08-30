@@ -118,6 +118,25 @@ async function navigateToScreen(page: Page, screen: string): Promise<void> {
   await dismissModals(page);
 }
 
+async function applyCardThemeForVisualCapture(
+  page: Page,
+  owner: 'opponent' | 'player',
+  cardTheme: 'default' | 'dual-loop',
+): Promise<void> {
+  await page.evaluate(
+    ({ owner, cardTheme }) => {
+      const selectors =
+        owner === 'opponent'
+          ? ['[data-testid^="opponent-hand-card-"]', '[data-testid^="opponent-cell-"][data-id]']
+          : ['[data-testid^="hand-card-"]', '[data-testid^="player-cell-"][data-id]'];
+      for (const card of document.querySelectorAll(selectors.join(','))) {
+        card.setAttribute('data-card-theme', cardTheme);
+      }
+    },
+    { owner, cardTheme },
+  );
+}
+
 // --- Screen Capture Groups ---
 
 async function captureLobbyScreens(
@@ -223,6 +242,8 @@ async function captureGameplayScreens(
   let phase = await getPhase();
   if (phase === 'DeploymentPhase') {
     results.push(await snap(page, outDir, 'game-deploy', 'initial', vpTag));
+    await applyCardThemeForVisualCapture(page, 'opponent', 'dual-loop');
+    results.push(await snap(page, outDir, 'game-cosmetic', 'dual-loop-opponent-hand', vpTag));
 
     // Deploy one card to show selection state
     const card = page.locator('[data-testid="hand-card-0"]');
@@ -252,6 +273,8 @@ async function captureGameplayScreens(
 
     // Capture post-deployment (battlefield filled)
     results.push(await snap(page, outDir, 'game-deploy', 'filled', vpTag));
+    await applyCardThemeForVisualCapture(page, 'opponent', 'dual-loop');
+    results.push(await snap(page, outDir, 'game-cosmetic', 'dual-loop-public-cards', vpTag));
   }
 
   // Wait for attack phase and play through capturing each distinct phase

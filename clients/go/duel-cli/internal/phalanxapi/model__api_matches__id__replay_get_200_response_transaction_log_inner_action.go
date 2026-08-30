@@ -24,6 +24,7 @@ type ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction struct {
 	ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3 *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3
 	ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf4 *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf4
 	ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5 *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5
+	ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6 *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6
 }
 
 // ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOfAsApiMatchesIdReplayGet200ResponseTransactionLogInnerAction is a convenience function that returns ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf wrapped in ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction
@@ -65,6 +66,13 @@ func ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf4AsApiMatches
 func ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5AsApiMatchesIdReplayGet200ResponseTransactionLogInnerAction(v *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction {
 	return ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction{
 		ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5: v,
+	}
+}
+
+// ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6AsApiMatchesIdReplayGet200ResponseTransactionLogInnerAction is a convenience function that returns ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6 wrapped in ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction
+func ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6AsApiMatchesIdReplayGet200ResponseTransactionLogInnerAction(v *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6) ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction {
+	return ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction{
+		ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6: v,
 	}
 }
 
@@ -175,6 +183,23 @@ func (dst *ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction) UnmarshalJ
 		dst.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5 = nil
 	}
 
+	// try to unmarshal data into ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6
+	err = newStrictDecoder(data).Decode(&dst.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6)
+	if err == nil {
+		jsonApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6, _ := json.Marshal(dst.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6)
+		if string(jsonApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6) == "{}" { // empty struct
+			dst.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6 = nil
+		} else {
+			if err = validator.Validate(dst.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6); err != nil {
+				dst.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6 = nil
+			} else {
+				match++
+			}
+		}
+	} else {
+		dst.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6 = nil
+	}
+
 	if match > 1 { // more than 1 match
 		// reset to nil
 		dst.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf = nil
@@ -183,6 +208,7 @@ func (dst *ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction) UnmarshalJ
 		dst.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3 = nil
 		dst.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf4 = nil
 		dst.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5 = nil
+		dst.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6 = nil
 
 		return fmt.Errorf("data matches more than one schema in oneOf(ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction)")
 	} else if match == 1 {
@@ -218,6 +244,10 @@ func (src ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction) MarshalJSON
 		return json.Marshal(&src.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5)
 	}
 
+	if src.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6 != nil {
+		return json.Marshal(&src.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6)
+	}
+
 	return nil, nil // no data in oneOf schemas
 }
 
@@ -250,6 +280,10 @@ func (obj *ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction) GetActualI
 		return obj.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5
 	}
 
+	if obj.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6 != nil {
+		return obj.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6
+	}
+
 	// all schemas are nil
 	return nil
 }
@@ -278,6 +312,10 @@ func (obj ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction) GetActualIn
 
 	if obj.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5 != nil {
 		return *obj.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5
+	}
+
+	if obj.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6 != nil {
+		return *obj.ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6
 	}
 
 	// all schemas are nil

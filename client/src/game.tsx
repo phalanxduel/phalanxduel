@@ -9,6 +9,8 @@ import type {
   Action,
   GamePhase,
   CalculationProvenance,
+  CardSkinId,
+  QuickDeployStrategy,
 } from '@phalanxduel/shared';
 import type { AppState, BaseState, ScreenState } from './state';
 import {
@@ -38,6 +40,7 @@ import {
 import { projectCalculationProvenance, simulateAttack } from '@phalanxduel/engine';
 import type { AttackPreviewVerdict } from '@phalanxduel/engine';
 import { PRESENTATION_TIMING } from './presentation-timing';
+import { normalizeCardSkinId } from './cosmetics';
 
 type GameScreenState = BaseState & Extract<ScreenState, { screen: 'game' }>;
 
@@ -85,6 +88,8 @@ function describePlayByPlay(entry: TransactionLogEntry, gs: GameState): string {
       const column = (entry.details.gridIndex % gs.params.columns) + 1;
       return `${actor} deployed to column ${column}`;
     }
+    case 'quickDeploy':
+      return `${actor} selected ${entry.details.strategy} quick deploy (${entry.details.deployments.length} placements)`;
     case 'attack': {
       const combat = entry.details.combat;
       const lpDamage =
@@ -164,6 +169,8 @@ function PhxCard(props: {
   attackPreviewProvenance?: CalculationProvenance;
   columnHighlight?: 'attacker' | 'target' | 'reinforce' | 'resolution';
   variant: 'battlefield' | 'hand';
+  cardSkinId?: CardSkinId;
+  hidden?: boolean;
   owner?: 'p1' | 'p2';
   row?: number;
   col?: number;
@@ -171,6 +178,7 @@ function PhxCard(props: {
 }) {
   const { bCard, card, variant, isReinforceCol, isValidTarget, columnHighlight, onClick } = props;
   const actualCard = bCard?.card ?? card;
+  const cardSkinId = normalizeCardSkinId(props.cardSkinId);
 
   const dataState = props.isSelected
     ? 'selected'
@@ -179,6 +187,24 @@ function PhxCard(props: {
       : props.isPlayable || props.isReinforcePlayable || props.isAttackPlayable
         ? 'selectable'
         : 'idle';
+
+  if (props.hidden) {
+    return (
+      <div
+        class="phx-card hand-card phx-card-back"
+        data-component="CardView"
+        data-location="opponent-hand"
+        data-state="hidden"
+        data-owner={props.owner}
+        data-testid={props.testId}
+        data-card-variant="back"
+        data-card-theme={cardSkinId}
+        aria-hidden="true"
+      >
+        <div class="phx-card-back-art" />
+      </div>
+    );
+  }
 
   if (!actualCard) {
     const emptyDataState = isValidTarget ? 'targetable' : 'empty';
@@ -232,6 +258,7 @@ function PhxCard(props: {
       data-card-variant={variant}
       data-card-intensity={getCardIntensity(actualCard)}
       data-card-suit={actualCard.suit}
+      data-card-theme={cardSkinId}
       data-qa-attackable={props.isAttackPlayable ? 'true' : undefined}
       data-action-preview={props.attackPreview ?? undefined}
       onClick={onClick}
@@ -354,6 +381,7 @@ function BattlefieldCell({
   playerIdx,
   isOpponent,
   columnHighlight,
+  cardSkinId,
 }: {
   row: number;
   col: number;
@@ -363,6 +391,7 @@ function BattlefieldCell({
   state: GameScreenState;
   playerIdx: number;
   isOpponent: boolean;
+  cardSkinId: CardSkinId;
   columnHighlight?: 'attacker' | 'target' | 'reinforce' | 'resolution';
 }) {
   const pos = { row, col };
@@ -468,6 +497,7 @@ function BattlefieldCell({
       attackPreviewProvenance={attackPreview.provenance}
       columnHighlight={columnHighlight}
       variant="battlefield"
+      cardSkinId={cardSkinId}
       owner={isOpponent ? 'p2' : 'p1'}
       row={row}
       col={col}
@@ -491,6 +521,7 @@ function PhxBattlefield({
   if (!battlefield) return null;
 
   const { rows, columns } = gs.params;
+  const cardSkinId = normalizeCardSkinId(state.playerCosmetics?.[playerIdx]?.cardSkinId);
   const rowOrder = isOpponent
     ? Array.from({ length: rows }, (_, i) => rows - 1 - i)
     : Array.from({ length: rows }, (_, i) => i);
@@ -516,6 +547,7 @@ function PhxBattlefield({
             state={state}
             playerIdx={playerIdx}
             isOpponent={isOpponent}
+            cardSkinId={cardSkinId}
             columnHighlight={getBattlefieldColumnHighlight({
               col,
               playerIdx,
@@ -526,6 +558,66 @@ function PhxBattlefield({
           />
         )),
       )}
+    </div>
+  );
+}
+
+const QUICK_DEPLOY_COPY: Record<QuickDeployStrategy, { label: string; description: string }> = {
+  defensive: {
+    label: 'DEFENSIVE',
+    description: 'Keep stronger cards behind a guarded front rank.',
+  },
+  aggressive: {
+    label: 'AGGRESSIVE',
+    description: 'Put your strongest cards on the front rank.',
+  },
+  random: {
+    label: 'RANDOM',
+    description: 'Use a replay-safe shuffled formation and earn 25 achievement points.',
+  },
+};
+
+function QuickDeployControls({
+  state,
+  actions,
+}: {
+  state: GameScreenState;
+  actions: Extract<Action, { type: 'quickDeploy' }>[];
+}) {
+  if (actions.length === 0) return null;
+
+  return (
+    <div
+      class="phx-quick-deploy"
+      data-component="ActionPromptView"
+      data-testid="quick-deploy-controls"
+      aria-label="Quick deploy strategies"
+    >
+      <div class="phx-quick-deploy-heading">
+        <strong>QUICK_DEPLOY</strong>
+        <span>Automate your remaining alternating placements</span>
+      </div>
+      <div class="phx-quick-deploy-actions">
+        {actions.map((action) => {
+          const copy = QUICK_DEPLOY_COPY[action.strategy];
+          return (
+            <button
+              key={action.strategy}
+              class="btn btn-secondary phx-quick-deploy-btn"
+              data-testid={`quick-deploy-${action.strategy}`}
+              data-action={`quick-deploy-${action.strategy}`}
+              title={copy.description}
+              aria-label={`${copy.label} quick deploy. ${copy.description}`}
+              onClick={() => {
+                sendAction(state, { ...action, timestamp: new Date().toISOString() });
+              }}
+            >
+              <strong>{copy.label}</strong>
+              <span>{copy.description}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -547,6 +639,9 @@ function PhxInfoBar({
     state.validActions.some((a) => a.type === 'pass') && (!isReinforce || !hasReinforceActions);
   const canCancel = Boolean(state.selectedAttacker ?? state.selectedDeployCard);
   const canForfeit = !state.isSpectator && state.validActions.some((a) => a.type === 'forfeit');
+  const quickDeployActions = state.validActions.filter(
+    (action): action is Extract<Action, { type: 'quickDeploy' }> => action.type === 'quickDeploy',
+  );
 
   const hasActions = canPass || canCancel || canForfeit;
 
@@ -563,6 +658,7 @@ function PhxInfoBar({
         <div class="phx-hud-bottom-main">
           {!state.isSpectator && (
             <div class="phx-hand-container" data-testid="hand-container">
+              <QuickDeployControls state={state} actions={quickDeployActions} />
               <div class="phx-hand" data-testid="hand">
                 {gs.players[myIdx]?.hand.map((card, i) => (
                   <PhxCard
@@ -577,6 +673,7 @@ function PhxInfoBar({
                       (a) => a.type === 'reinforce' && a.cardId === card.id,
                     )}
                     variant="hand"
+                    cardSkinId={state.playerCosmetics?.[myIdx]?.cardSkinId}
                     owner="p1"
                     row={0}
                     col={i}
@@ -905,7 +1002,37 @@ function GhostCardOverlay({ gs, state }: { gs: GameState; state: GameScreenState
         top: `${pos.y}px`,
       }}
     >
-      <PhxCard card={ghostCard} bCard={ghostBCard} variant="hand" />
+      <PhxCard
+        card={ghostCard}
+        bCard={ghostBCard}
+        variant="hand"
+        cardSkinId={state.playerCosmetics?.[myIdx]?.cardSkinId}
+      />
+    </div>
+  );
+}
+
+function OpponentHand({ count, cardSkinId }: { count: number; cardSkinId: CardSkinId }) {
+  if (count <= 0) return null;
+
+  return (
+    <div
+      class="phx-opponent-hand"
+      data-component="OpponentHandView"
+      data-testid="opponent-hand"
+      data-hand-count={count}
+      aria-label={`Opponent hand: ${count} cards`}
+    >
+      {Array.from({ length: count }, (_, index) => (
+        <PhxCard
+          key={index}
+          hidden
+          variant="hand"
+          cardSkinId={cardSkinId}
+          owner="p2"
+          testId={`opponent-hand-card-${index}`}
+        />
+      ))}
     </div>
   );
 }
@@ -927,6 +1054,8 @@ function GameApp({ state }: { state: AppState }) {
     : isMyTurn
       ? 'YOUR_TURN'
       : 'OPPONENT_THINKING...';
+  const opponentHandCount = gs.players[oppIdx]?.handCount ?? gs.players[oppIdx]?.hand.length ?? 0;
+  const opponentCardSkinId = normalizeCardSkinId(state.playerCosmetics?.[oppIdx]?.cardSkinId);
 
   return (
     <div
@@ -985,6 +1114,7 @@ function GameApp({ state }: { state: AppState }) {
       <div class="phx-main-content">
         <section class="phx-opponent-zone">
           <div class="phx-zone-label">{gs.players[oppIdx]?.player.name ?? 'OPPONENT'}</div>
+          <OpponentHand count={opponentHandCount} cardSkinId={opponentCardSkinId} />
           <PhxBattlefield gs={gs} playerIdx={oppIdx} state={state} isOpponent={true} />
         </section>
 

@@ -4,6 +4,7 @@ title: PHX-SWIFT-006 - Prove Browser-versus-SwiftUI Automated 1v1
 status: To Do
 assignee: []
 created_date: '2026-07-25 01:14'
+updated_date: '2026-08-04 22:40'
 labels:
   - swiftui
   - browser
@@ -11,6 +12,7 @@ labels:
   - playability
 dependencies:
   - TASK-360.01
+  - TASK-360.03
 documentation:
   - docs/testing.md
   - docs/reference/qa-runners.md
@@ -44,3 +46,13 @@ Create durable interoperability proof that the browser reference client and the 
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: @codex
+created: 2026-08-04 22:40
+---
+Automation audit sequencing: reuse the consolidated semantic browser adapter and canonical evidence contract for the browser-versus-SwiftUI proof.
+---
+<!-- COMMENTS:END -->

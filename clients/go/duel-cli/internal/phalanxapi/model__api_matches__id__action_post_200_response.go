@@ -28,6 +28,7 @@ type ApiMatchesIdActionPost200Response struct {
 	Action ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction `json:"action"`
 	Events []MatchesIdLogGet200ResponseOneOfEventsInner `json:"events,omitempty"`
 	ValidActions []ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction `json:"validActions"`
+	Cosmetics []string `json:"cosmetics,omitempty"`
 }
 
 type _ApiMatchesIdActionPost200Response ApiMatchesIdActionPost200Response
@@ -233,6 +234,38 @@ func (o *ApiMatchesIdActionPost200Response) SetValidActions(v []ApiMatchesIdRepl
 	o.ValidActions = v
 }
 
+// GetCosmetics returns the Cosmetics field value if set, zero value otherwise.
+func (o *ApiMatchesIdActionPost200Response) GetCosmetics() []string {
+	if o == nil || IsNil(o.Cosmetics) {
+		var ret []string
+		return ret
+	}
+	return o.Cosmetics
+}
+
+// GetCosmeticsOk returns a tuple with the Cosmetics field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ApiMatchesIdActionPost200Response) GetCosmeticsOk() ([]string, bool) {
+	if o == nil || IsNil(o.Cosmetics) {
+		return nil, false
+	}
+	return o.Cosmetics, true
+}
+
+// HasCosmetics returns a boolean if a field has been set.
+func (o *ApiMatchesIdActionPost200Response) HasCosmetics() bool {
+	if o != nil && !IsNil(o.Cosmetics) {
+		return true
+	}
+
+	return false
+}
+
+// SetCosmetics gets a reference to the given []string and assigns it to the Cosmetics field.
+func (o *ApiMatchesIdActionPost200Response) SetCosmetics(v []string) {
+	o.Cosmetics = v
+}
+
 func (o ApiMatchesIdActionPost200Response) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -252,6 +285,9 @@ func (o ApiMatchesIdActionPost200Response) ToMap() (map[string]interface{}, erro
 		toSerialize["events"] = o.Events
 	}
 	toSerialize["validActions"] = o.ValidActions
+	if !IsNil(o.Cosmetics) {
+		toSerialize["cosmetics"] = o.Cosmetics
+	}
 	return toSerialize, nil
 }
 

@@ -177,6 +177,37 @@ describe('LocalMatchManager', () => {
       expect(updatedMsg.result.postState.players[1]!.handCount).toBe(11);
     });
 
+    it('accepts quick deploy as a server-authoritative action and broadcasts its placement', async () => {
+      const socket1 = mockSocket();
+      const socket2 = mockSocket();
+
+      const { matchId } = await manager.createMatch('Player 1', socket1);
+      const { playerId: p2Id } = await manager.joinMatch(matchId, 'Player 2', socket2);
+      manager.broadcastMatchState(matchId);
+      await vi.waitFor(() => {
+        expect(lastMessage(socket2)?.type).toBe('gameState');
+      });
+
+      await manager.handleAction(matchId, p2Id, {
+        type: 'quickDeploy',
+        playerIndex: 1,
+        strategy: 'defensive',
+        timestamp: new Date().toISOString(),
+      });
+
+      const ownerView = lastMessage(socket2) as Extract<ServerMessage, { type: 'gameState' }>;
+      const opponentView = lastMessage(socket1) as Extract<ServerMessage, { type: 'gameState' }>;
+      expect(ownerView.result.action).toMatchObject({
+        type: 'quickDeploy',
+        strategy: 'defensive',
+      });
+      expect(ownerView.result.postState.players[1]!.handCount).toBe(11);
+      expect(ownerView.result.postState.quickDeployStrategies).toEqual([null, 'defensive']);
+      expect(opponentView.result.postState.players[1]!.hand).toEqual([]);
+      expect(opponentView.result.postState.players[1]!.battlefield.filter(Boolean)).toHaveLength(1);
+      expect(ownerView.result.events?.some((event) => event.name === 'game.deploy')).toBe(true);
+    });
+
     it('should retain internal turnHash while suppressing hidden-state commitments live', async () => {
       const socket1 = mockSocket();
       const socket2 = mockSocket();

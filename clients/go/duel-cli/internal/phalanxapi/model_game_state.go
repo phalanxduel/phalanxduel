@@ -34,6 +34,8 @@ type GameState struct {
 	Phase string `json:"phase"`
 	// Current turn number. Starts at 0 (deployment) and increments each full turn cycle.
 	TurnNumber int32 `json:"turnNumber"`
+	// Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.
+	QuickDeployStrategies []string `json:"quickDeployStrategies,omitempty"`
 	GameOptions *ApiMatchesIdReplayGet200ResponseGameOptions `json:"gameOptions,omitempty"`
 	Reinforcement *ApiMatchesIdReplayGet200ResponseReinforcement `json:"reinforcement,omitempty"`
 	PassState *ApiMatchesIdReplayGet200ResponsePassState `json:"passState,omitempty"`
@@ -235,6 +237,38 @@ func (o *GameState) GetTurnNumberOk() (*int32, bool) {
 // SetTurnNumber sets field value
 func (o *GameState) SetTurnNumber(v int32) {
 	o.TurnNumber = v
+}
+
+// GetQuickDeployStrategies returns the QuickDeployStrategies field value if set, zero value otherwise.
+func (o *GameState) GetQuickDeployStrategies() []string {
+	if o == nil || IsNil(o.QuickDeployStrategies) {
+		var ret []string
+		return ret
+	}
+	return o.QuickDeployStrategies
+}
+
+// GetQuickDeployStrategiesOk returns a tuple with the QuickDeployStrategies field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *GameState) GetQuickDeployStrategiesOk() ([]string, bool) {
+	if o == nil || IsNil(o.QuickDeployStrategies) {
+		return nil, false
+	}
+	return o.QuickDeployStrategies, true
+}
+
+// HasQuickDeployStrategies returns a boolean if a field has been set.
+func (o *GameState) HasQuickDeployStrategies() bool {
+	if o != nil && !IsNil(o.QuickDeployStrategies) {
+		return true
+	}
+
+	return false
+}
+
+// SetQuickDeployStrategies gets a reference to the given []string and assigns it to the QuickDeployStrategies field.
+func (o *GameState) SetQuickDeployStrategies(v []string) {
+	o.QuickDeployStrategies = v
 }
 
 // GetGameOptions returns the GameOptions field value if set, zero value otherwise.
@@ -456,6 +490,9 @@ func (o GameState) ToMap() (map[string]interface{}, error) {
 	toSerialize["activePlayerIndex"] = o.ActivePlayerIndex
 	toSerialize["phase"] = o.Phase
 	toSerialize["turnNumber"] = o.TurnNumber
+	if !IsNil(o.QuickDeployStrategies) {
+		toSerialize["quickDeployStrategies"] = o.QuickDeployStrategies
+	}
 	if !IsNil(o.GameOptions) {
 		toSerialize["gameOptions"] = o.GameOptions
 	}

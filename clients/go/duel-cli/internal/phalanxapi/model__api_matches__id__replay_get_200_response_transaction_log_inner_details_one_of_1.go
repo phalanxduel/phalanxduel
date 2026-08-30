@@ -22,10 +22,11 @@ var _ MappedNullable = &ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetai
 // ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1 struct for ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1
 type ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1 struct {
 	Type string `json:"type"`
-	Combat ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1Combat `json:"combat"`
-	ReinforcementTriggered bool `json:"reinforcementTriggered"`
-	VictoryTriggered bool `json:"victoryTriggered"`
-	Resolution *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1Resolution `json:"resolution,omitempty"`
+	// Server-authoritative strategy used to automate a player's remaining deployment turns.
+	Strategy string `json:"strategy"`
+	Deployments []ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOfQuickDeploymentsInner `json:"deployments"`
+	// Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).
+	PhaseAfter string `json:"phaseAfter"`
 }
 
 type _ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1 ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1
@@ -34,12 +35,12 @@ type _ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1 ApiMatche
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1(type_ string, combat ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1Combat, reinforcementTriggered bool, victoryTriggered bool) *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1 {
+func NewApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1(type_ string, strategy string, deployments []ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOfQuickDeploymentsInner, phaseAfter string) *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1 {
 	this := ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1{}
 	this.Type = type_
-	this.Combat = combat
-	this.ReinforcementTriggered = reinforcementTriggered
-	this.VictoryTriggered = victoryTriggered
+	this.Strategy = strategy
+	this.Deployments = deployments
+	this.PhaseAfter = phaseAfter
 	return &this
 }
 
@@ -75,108 +76,76 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) SetTy
 	o.Type = v
 }
 
-// GetCombat returns the Combat field value
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetCombat() ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1Combat {
+// GetStrategy returns the Strategy field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetStrategy() string {
 	if o == nil {
-		var ret ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1Combat
+		var ret string
 		return ret
 	}
 
-	return o.Combat
+	return o.Strategy
 }
 
-// GetCombatOk returns a tuple with the Combat field value
+// GetStrategyOk returns a tuple with the Strategy field value
 // and a boolean to check if the value has been set.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetCombatOk() (*ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1Combat, bool) {
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetStrategyOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Combat, true
+	return &o.Strategy, true
 }
 
-// SetCombat sets field value
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) SetCombat(v ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1Combat) {
-	o.Combat = v
+// SetStrategy sets field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) SetStrategy(v string) {
+	o.Strategy = v
 }
 
-// GetReinforcementTriggered returns the ReinforcementTriggered field value
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetReinforcementTriggered() bool {
+// GetDeployments returns the Deployments field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetDeployments() []ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOfQuickDeploymentsInner {
 	if o == nil {
-		var ret bool
+		var ret []ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOfQuickDeploymentsInner
 		return ret
 	}
 
-	return o.ReinforcementTriggered
+	return o.Deployments
 }
 
-// GetReinforcementTriggeredOk returns a tuple with the ReinforcementTriggered field value
+// GetDeploymentsOk returns a tuple with the Deployments field value
 // and a boolean to check if the value has been set.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetReinforcementTriggeredOk() (*bool, bool) {
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetDeploymentsOk() ([]ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOfQuickDeploymentsInner, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.ReinforcementTriggered, true
+	return o.Deployments, true
 }
 
-// SetReinforcementTriggered sets field value
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) SetReinforcementTriggered(v bool) {
-	o.ReinforcementTriggered = v
+// SetDeployments sets field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) SetDeployments(v []ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOfQuickDeploymentsInner) {
+	o.Deployments = v
 }
 
-// GetVictoryTriggered returns the VictoryTriggered field value
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetVictoryTriggered() bool {
+// GetPhaseAfter returns the PhaseAfter field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetPhaseAfter() string {
 	if o == nil {
-		var ret bool
+		var ret string
 		return ret
 	}
 
-	return o.VictoryTriggered
+	return o.PhaseAfter
 }
 
-// GetVictoryTriggeredOk returns a tuple with the VictoryTriggered field value
+// GetPhaseAfterOk returns a tuple with the PhaseAfter field value
 // and a boolean to check if the value has been set.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetVictoryTriggeredOk() (*bool, bool) {
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetPhaseAfterOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.VictoryTriggered, true
+	return &o.PhaseAfter, true
 }
 
-// SetVictoryTriggered sets field value
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) SetVictoryTriggered(v bool) {
-	o.VictoryTriggered = v
-}
-
-// GetResolution returns the Resolution field value if set, zero value otherwise.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetResolution() ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1Resolution {
-	if o == nil || IsNil(o.Resolution) {
-		var ret ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1Resolution
-		return ret
-	}
-	return *o.Resolution
-}
-
-// GetResolutionOk returns a tuple with the Resolution field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) GetResolutionOk() (*ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1Resolution, bool) {
-	if o == nil || IsNil(o.Resolution) {
-		return nil, false
-	}
-	return o.Resolution, true
-}
-
-// HasResolution returns a boolean if a field has been set.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) HasResolution() bool {
-	if o != nil && !IsNil(o.Resolution) {
-		return true
-	}
-
-	return false
-}
-
-// SetResolution gets a reference to the given ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1Resolution and assigns it to the Resolution field.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) SetResolution(v ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1Resolution) {
-	o.Resolution = &v
+// SetPhaseAfter sets field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) SetPhaseAfter(v string) {
+	o.PhaseAfter = v
 }
 
 func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) MarshalJSON() ([]byte, error) {
@@ -190,12 +159,9 @@ func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) Marsha
 func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["type"] = o.Type
-	toSerialize["combat"] = o.Combat
-	toSerialize["reinforcementTriggered"] = o.ReinforcementTriggered
-	toSerialize["victoryTriggered"] = o.VictoryTriggered
-	if !IsNil(o.Resolution) {
-		toSerialize["resolution"] = o.Resolution
-	}
+	toSerialize["strategy"] = o.Strategy
+	toSerialize["deployments"] = o.Deployments
+	toSerialize["phaseAfter"] = o.PhaseAfter
 	return toSerialize, nil
 }
 
@@ -205,9 +171,9 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf1) Unmar
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"type",
-		"combat",
-		"reinforcementTriggered",
-		"victoryTriggered",
+		"strategy",
+		"deployments",
+		"phaseAfter",
 	}
 
 	allProperties := make(map[string]interface{})

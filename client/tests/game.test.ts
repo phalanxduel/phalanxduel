@@ -2,12 +2,19 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { GameState, Action, TransactionLogEntry } from '@phalanxduel/shared';
 import type { AppState } from '../src/state';
 
+const { sendMock } = vi.hoisted(() => ({ sendMock: vi.fn() }));
+
 vi.mock('../src/state', () => ({
   getState: vi.fn(() => ({ showHelp: false, serverHealth: null })),
   selectAttacker: vi.fn(),
   selectDeployCard: vi.fn(),
   clearSelection: vi.fn(),
   toggleHelp: vi.fn(),
+  startActionTimeout: vi.fn(),
+}));
+
+vi.mock('../src/app-connection', () => ({
+  getConnection: vi.fn(() => ({ send: sendMock })),
 }));
 
 vi.mock('../src/renderer', async (importOriginal) => {
@@ -90,6 +97,7 @@ function makeGameState(overrides?: {
       { type: 'pass', playerIndex: 0, timestamp: '' } as Action,
       { type: 'forfeit', playerIndex: 0, timestamp: '' } as Action,
     ],
+    playerCosmetics: [{ cardSkinId: 'default' }, { cardSkinId: 'default' }],
   } as AppState;
 }
 
@@ -98,6 +106,7 @@ describe('renderGame', () => {
 
   beforeEach(() => {
     container = document.createElement('div');
+    sendMock.mockClear();
   });
 
   it('renders game layout with data-testid="game-layout"', async () => {
@@ -200,6 +209,38 @@ describe('renderGame', () => {
     expect(battlefields.length).toBe(2);
   });
 
+  it("renders the opponent's equipped back without exposing hidden card identities", async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState();
+    state.playerCosmetics = [{ cardSkinId: 'default' }, { cardSkinId: 'dual-loop' }];
+    state.gameState!.players[1]!.hand = [];
+    state.gameState!.players[1]!.handCount = 3;
+    state.gameState!.players[1]!.battlefield[0] = {
+      card: { id: 'public-card', face: '7', suit: 'hearts', value: 7, type: 'number' },
+      position: { row: 0, col: 0 },
+      currentHp: 7,
+      faceDown: false,
+    };
+
+    renderGame(container, state);
+
+    const hiddenCards = container.querySelectorAll('[data-testid^="opponent-hand-card-"]');
+    expect(hiddenCards).toHaveLength(3);
+    expect(
+      Array.from(hiddenCards).every(
+        (card) =>
+          card.getAttribute('data-card-theme') === 'dual-loop' &&
+          card.getAttribute('data-state') === 'hidden' &&
+          card.getAttribute('data-id') === null,
+      ),
+    ).toBe(true);
+    expect(
+      container
+        .querySelector('[data-testid="opponent-cell-r0-c0"]')
+        ?.getAttribute('data-card-theme'),
+    ).toBe('dual-loop');
+  });
+
   it('returns early if no gameState (container stays empty)', async () => {
     const { renderGame } = await import('../src/game');
     const state = makeGameState();
@@ -260,6 +301,41 @@ describe('renderGame', () => {
 
     const phase = container.querySelector('[data-testid="phase-indicator"]');
     expect(phase?.textContent).toBe('DEPLOYMENT');
+  });
+
+  it('offers accessible quick deploy strategies and submits the selected intent', async () => {
+    const { renderGame } = await import('../src/game');
+    const state = makeGameState({ phase: 'DeploymentPhase', activePlayerIndex: 0 });
+    state.validActions = [
+      { type: 'quickDeploy', playerIndex: 0, strategy: 'defensive', timestamp: '' },
+      { type: 'quickDeploy', playerIndex: 0, strategy: 'aggressive', timestamp: '' },
+      { type: 'quickDeploy', playerIndex: 0, strategy: 'random', timestamp: '' },
+    ] as Action[];
+
+    renderGame(container, state);
+
+    const controls = container.querySelector('[data-testid="quick-deploy-controls"]');
+    expect(controls?.getAttribute('data-component')).toBe('ActionPromptView');
+    expect(
+      container.querySelector('[data-testid="quick-deploy-defensive"]')?.textContent,
+    ).toContain('DEFENSIVE');
+    const random = container.querySelector<HTMLButtonElement>(
+      '[data-testid="quick-deploy-random"]',
+    );
+    expect(random?.getAttribute('aria-label')).toContain('25 achievement points');
+
+    random?.click();
+
+    expect(sendMock).toHaveBeenCalledWith({
+      type: 'action',
+      matchId: 'match-1',
+      action: expect.objectContaining({
+        type: 'quickDeploy',
+        playerIndex: 0,
+        strategy: 'random',
+        timestamp: expect.any(String),
+      }),
+    });
   });
 
   it('sets data-qa-attackable="true" and attack-playable on front-row cell when attack action valid', async () => {

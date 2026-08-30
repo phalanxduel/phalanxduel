@@ -62,7 +62,7 @@ async function main() {
     }
     console.log(`Git:      ${guide.git.branch} @ ${guide.git.commit}`);
     console.log(`Intel:    ${guide.intelligence.capabilities} tools available`);
-    console.log(`\nRun \x1b[36mphx capabilities\x1b[0m for tool details.`);
+    console.log(`\nRun \x1b[36mpnpm exec tsx scripts/phx/capabilities.ts\x1b[0m for tool details.`);
   }
 }
 

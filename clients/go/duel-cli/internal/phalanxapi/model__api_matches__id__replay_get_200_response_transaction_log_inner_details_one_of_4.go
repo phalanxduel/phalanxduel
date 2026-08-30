@@ -22,7 +22,10 @@ var _ MappedNullable = &ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetai
 // ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4 struct for ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4
 type ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4 struct {
 	Type string `json:"type"`
-	WinnerIndex int32 `json:"winnerIndex"`
+	Column int32 `json:"column"`
+	GridIndex int32 `json:"gridIndex"`
+	CardsDrawn int32 `json:"cardsDrawn"`
+	ReinforcementComplete bool `json:"reinforcementComplete"`
 }
 
 type _ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4 ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4
@@ -31,10 +34,13 @@ type _ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4 ApiMatche
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4(type_ string, winnerIndex int32) *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4 {
+func NewApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4(type_ string, column int32, gridIndex int32, cardsDrawn int32, reinforcementComplete bool) *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4 {
 	this := ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4{}
 	this.Type = type_
-	this.WinnerIndex = winnerIndex
+	this.Column = column
+	this.GridIndex = gridIndex
+	this.CardsDrawn = cardsDrawn
+	this.ReinforcementComplete = reinforcementComplete
 	return &this
 }
 
@@ -70,28 +76,100 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) SetTy
 	o.Type = v
 }
 
-// GetWinnerIndex returns the WinnerIndex field value
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) GetWinnerIndex() int32 {
+// GetColumn returns the Column field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) GetColumn() int32 {
 	if o == nil {
 		var ret int32
 		return ret
 	}
 
-	return o.WinnerIndex
+	return o.Column
 }
 
-// GetWinnerIndexOk returns a tuple with the WinnerIndex field value
+// GetColumnOk returns a tuple with the Column field value
 // and a boolean to check if the value has been set.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) GetWinnerIndexOk() (*int32, bool) {
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) GetColumnOk() (*int32, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.WinnerIndex, true
+	return &o.Column, true
 }
 
-// SetWinnerIndex sets field value
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) SetWinnerIndex(v int32) {
-	o.WinnerIndex = v
+// SetColumn sets field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) SetColumn(v int32) {
+	o.Column = v
+}
+
+// GetGridIndex returns the GridIndex field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) GetGridIndex() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.GridIndex
+}
+
+// GetGridIndexOk returns a tuple with the GridIndex field value
+// and a boolean to check if the value has been set.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) GetGridIndexOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.GridIndex, true
+}
+
+// SetGridIndex sets field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) SetGridIndex(v int32) {
+	o.GridIndex = v
+}
+
+// GetCardsDrawn returns the CardsDrawn field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) GetCardsDrawn() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.CardsDrawn
+}
+
+// GetCardsDrawnOk returns a tuple with the CardsDrawn field value
+// and a boolean to check if the value has been set.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) GetCardsDrawnOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.CardsDrawn, true
+}
+
+// SetCardsDrawn sets field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) SetCardsDrawn(v int32) {
+	o.CardsDrawn = v
+}
+
+// GetReinforcementComplete returns the ReinforcementComplete field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) GetReinforcementComplete() bool {
+	if o == nil {
+		var ret bool
+		return ret
+	}
+
+	return o.ReinforcementComplete
+}
+
+// GetReinforcementCompleteOk returns a tuple with the ReinforcementComplete field value
+// and a boolean to check if the value has been set.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) GetReinforcementCompleteOk() (*bool, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.ReinforcementComplete, true
+}
+
+// SetReinforcementComplete sets field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) SetReinforcementComplete(v bool) {
+	o.ReinforcementComplete = v
 }
 
 func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) MarshalJSON() ([]byte, error) {
@@ -105,7 +183,10 @@ func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) Marsha
 func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["type"] = o.Type
-	toSerialize["winnerIndex"] = o.WinnerIndex
+	toSerialize["column"] = o.Column
+	toSerialize["gridIndex"] = o.GridIndex
+	toSerialize["cardsDrawn"] = o.CardsDrawn
+	toSerialize["reinforcementComplete"] = o.ReinforcementComplete
 	return toSerialize, nil
 }
 
@@ -115,7 +196,10 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf4) Unmar
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"type",
-		"winnerIndex",
+		"column",
+		"gridIndex",
+		"cardsDrawn",
+		"reinforcementComplete",
 	}
 
 	allProperties := make(map[string]interface{})

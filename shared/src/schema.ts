@@ -145,6 +145,10 @@ export const TransitionTriggerSchema = z
   .enum([
     'deploy',
     'deploy:complete',
+    'quickDeploy',
+    'quickDeploy:complete',
+    'deploy:auto',
+    'deploy:auto:complete',
     'attack',
     'attack:reinforcement',
     'attack:victory',
@@ -158,7 +162,7 @@ export const TransitionTriggerSchema = z
     'system:init',
   ])
   .describe(
-    'State machine trigger that causes a phase transition. Player triggers: deploy, attack, pass, reinforce, forfeit. System triggers: deploy:complete, attack:reinforcement, attack:victory, reinforce:complete, system:advance, system:victory, system:init.',
+    'State machine trigger that causes a phase transition. Player triggers: deploy, quickDeploy, attack, pass, reinforce, forfeit. System triggers include automatic/complete deployment, attack, reinforcement, draw, victory, advance, and init transitions.',
   );
 
 export const StateTransitionSchema = z.object({
@@ -809,13 +813,19 @@ export function normalizeCreateMatchParams(
 
 /**
  * Phalanx DSL (Section 20.1)
- * Examples: "D:0:cardID", "A:0:3", "P", "R:cardID", "F"
+ * Examples: "D:0:cardID", "Q:defensive", "A:0:3", "P", "R:cardID", "F"
  */
 export const ActionDSLSchema = z
   .string()
-  .regex(/^(D:\d+:[\w:]+|A:\d+:\d+|P|R:[\w:]+|F)$/)
+  .regex(/^(D:\d+:[\w:]+|Q:(defensive|aggressive|random)|A:\d+:\d+|P|R:[\w:]+|F)$/)
   .describe(
-    'Phalanx Action DSL. Format: D:col:cardId (Deploy), A:atkCol:defCol (Attack), P (Pass), R:cardId (Reinforce), F (Forfeit).',
+    'Phalanx Action DSL. Format: D:col:cardId (Deploy), Q:strategy (Quick Deploy), A:atkCol:defCol (Attack), P (Pass), R:cardId (Reinforce), F (Forfeit).',
+  );
+
+export const QuickDeployStrategySchema = z
+  .enum(['defensive', 'aggressive', 'random'])
+  .describe(
+    "Server-authoritative strategy used to automate a player's remaining deployment turns.",
   );
 
 const ActionTransportFieldsSchema = z.object({
@@ -847,75 +857,99 @@ const SystemInitConfigSchema = z.object({
 });
 
 /**
- * Standard Action Schema
+ * Player-submittable action variants. Internal actions are added separately to
+ * ActionSchema so transport adapters can accept the canonical player contract
+ * without exposing system:init.
+ */
+const PlayerActionVariants = [
+  z
+    .object({
+      type: z.literal('deploy'),
+      playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
+      column: z.number().int().min(0).max(11).describe('Battlefield column index (0-11).'),
+      cardId: z.string().describe('ID of the card to deploy from hand.'),
+      timestamp: z.iso.datetime(),
+      ...ActionTransportFieldsSchema.shape,
+    })
+    .describe(
+      'Deploy a card from hand. Valid during DeploymentPhase. Each player must alternate deploying cards until the battlefield is full according to match parameters.',
+    ),
+  z
+    .object({
+      type: z.literal('quickDeploy'),
+      playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
+      strategy: QuickDeployStrategySchema,
+      timestamp: z.iso.datetime(),
+      ...ActionTransportFieldsSchema.shape,
+    })
+    .describe(
+      'Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.',
+    ),
+  z
+    .object({
+      type: z.literal('attack'),
+      playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
+      attackingColumn: z
+        .number()
+        .int()
+        .min(0)
+        .max(11)
+        .describe(
+          'Column index containing the attacking card. Must have a non-null card at rank 0.',
+        ),
+      defendingColumn: z
+        .number()
+        .int()
+        .min(0)
+        .max(11)
+        .describe('Target column index on the opponent board.'),
+      timestamp: z.iso.datetime(),
+      ...ActionTransportFieldsSchema.shape,
+    })
+    .describe(
+      'Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column.',
+    ),
+  z
+    .object({
+      type: z.literal('pass'),
+      playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
+      timestamp: z.iso.datetime(),
+      ...ActionTransportFieldsSchema.shape,
+    })
+    .describe(
+      'Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.',
+    ),
+  z
+    .object({
+      type: z.literal('reinforce'),
+      playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
+      cardId: z.string().describe('ID of the card to deploy from hand.'),
+      timestamp: z.iso.datetime(),
+      ...ActionTransportFieldsSchema.shape,
+    })
+    .describe(
+      'Reinforce a column after cleanup. Valid during ReinforcementPhase. Cards are deployed to the back-most empty rank of the column.',
+    ),
+  z
+    .object({
+      type: z.literal('forfeit'),
+      playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
+      timestamp: z.iso.datetime(),
+      ...ActionTransportFieldsSchema.shape,
+    })
+    .describe('Immediately forfeit the match. Valid in any phase.'),
+] as const;
+
+export const PlayerActionSchema = z
+  .discriminatedUnion('type', PlayerActionVariants)
+  .describe('Canonical action payload that a player or player-controlled agent may submit.');
+
+/**
+ * Standard Action Schema, including internal engine actions.
  */
 export const ActionSchema = z
   .discriminatedUnion('type', [
-    z
-      .object({
-        type: z.literal('deploy'),
-        playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
-        column: z.number().int().min(0).max(11).describe('Battlefield column index (0-11).'),
-        cardId: z.string().describe('ID of the card to deploy from hand.'),
-        timestamp: z.iso.datetime(),
-        ...ActionTransportFieldsSchema.shape,
-      })
-      .describe(
-        'Deploy a card from hand. Valid during DeploymentPhase. Each player must alternate deploying cards until the battlefield is full according to match parameters.',
-      ),
-    z
-      .object({
-        type: z.literal('attack'),
-        playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
-        attackingColumn: z
-          .number()
-          .int()
-          .min(0)
-          .max(11)
-          .describe(
-            'Column index containing the attacking card. Must have a non-null card at rank 0.',
-          ),
-        defendingColumn: z
-          .number()
-          .int()
-          .min(0)
-          .max(11)
-          .describe('Target column index on the opponent board.'),
-        timestamp: z.iso.datetime(),
-        ...ActionTransportFieldsSchema.shape,
-      })
-      .describe(
-        'Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column.',
-      ),
-    z
-      .object({
-        type: z.literal('pass'),
-        playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
-        timestamp: z.iso.datetime(),
-        ...ActionTransportFieldsSchema.shape,
-      })
-      .describe(
-        'Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.',
-      ),
-    z
-      .object({
-        type: z.literal('reinforce'),
-        playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
-        cardId: z.string().describe('ID of the card to deploy from hand.'),
-        timestamp: z.iso.datetime(),
-        ...ActionTransportFieldsSchema.shape,
-      })
-      .describe(
-        'Reinforce a column after cleanup. Valid during ReinforcementPhase. Cards are deployed to the back-most empty rank of the column.',
-      ),
-    z
-      .object({
-        type: z.literal('forfeit'),
-        playerIndex: z.number().int().min(0).max(1).describe('Index of the player (0 or 1).'),
-        timestamp: z.iso.datetime(),
-        ...ActionTransportFieldsSchema.shape,
-      })
-      .describe('Immediately forfeit the match. Valid in any phase.'),
+    ...PlayerActionVariants,
     z
       .object({
         type: z.literal('system:init'),
@@ -1169,10 +1203,25 @@ export const CombatResolutionContextSchema = z.object({
   calculationProvenance: CalculationProvenanceSchema.optional(),
 });
 
+export const QuickDeployPlacementSchema = z.object({
+  playerIndex: z.number().int().min(0).max(1),
+  strategy: QuickDeployStrategySchema,
+  cardId: z.string(),
+  column: z.number().int().min(0).max(11),
+  gridIndex: z.number().int().min(0),
+});
+
 export const TransactionDetailSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('deploy'),
     gridIndex: z.number().int(),
+    phaseAfter: GamePhaseSchema,
+    quickDeployments: z.array(QuickDeployPlacementSchema).optional(),
+  }),
+  z.object({
+    type: z.literal('quickDeploy'),
+    strategy: QuickDeployStrategySchema,
+    deployments: z.array(QuickDeployPlacementSchema).min(1),
     phaseAfter: GamePhaseSchema,
   }),
   z.object({
@@ -1264,6 +1313,13 @@ export const GameStateSchema = z
       .min(0)
       .describe(
         'Current turn number. Starts at 0 (deployment) and increments each full turn cycle.',
+      ),
+
+    quickDeployStrategies: z
+      .tuple([QuickDeployStrategySchema.nullable(), QuickDeployStrategySchema.nullable()])
+      .optional()
+      .describe(
+        'Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.',
       ),
 
     // Optional Context
@@ -1414,10 +1470,19 @@ export const PhalanxTurnResultSchema = z.object({
 /**
  * Redacted View Model for a specific player or spectator.
  */
+export const CardSkinIdSchema = z.enum(['default', 'dual-loop']);
+
+export const PlayerCosmeticsSchema = z.object({
+  cardSkinId: CardSkinIdSchema,
+});
+
+export const MatchCosmeticsSchema = z.tuple([PlayerCosmeticsSchema, PlayerCosmeticsSchema]);
+
 export const GameViewModelSchema = z.object({
   state: GameStateSchema,
   viewerIndex: z.number().int().min(0).max(1).nullable(),
   validActions: z.array(ActionSchema),
+  cosmetics: MatchCosmeticsSchema.optional(),
 });
 
 /**
@@ -1431,6 +1496,7 @@ export const TurnViewModelSchema = z.object({
   action: ActionSchema,
   events: z.array(PhalanxEventSchema).optional(),
   validActions: z.array(ActionSchema),
+  cosmetics: MatchCosmeticsSchema.optional(),
 });
 
 /**
@@ -1877,6 +1943,7 @@ export const AchievementTypeSchema = z
     'FLAWLESS_VICTORY',
     'BLITZKRIEG',
     'OVERKILL',
+    'RANDOM_DEPLOYMENT',
   ])
   .describe('Achievement type identifier. Each type is awarded at most once per player.');
 

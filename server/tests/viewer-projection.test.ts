@@ -28,7 +28,20 @@ function buildState(overrides: Partial<GameState> = {}): GameState {
 function buildMatch(state: GameState): MatchInstance {
   return {
     matchId: MATCH_ID,
-    players: [null, null],
+    players: [
+      {
+        playerId: PLAYER_IDS[0],
+        playerName: 'Alice',
+        playerIndex: 0,
+        cardSkinId: 'dual-loop',
+      },
+      {
+        playerId: PLAYER_IDS[1],
+        playerName: 'Bob',
+        playerIndex: 1,
+        cardSkinId: 'default',
+      },
+    ],
     spectators: [],
     state,
     config: null,
@@ -49,6 +62,7 @@ describe('projectForViewer', () => {
     expect(result.postState.players[1]!.hand).toHaveLength(0);
     expect(result.postState.players[1]!.drawpile).toHaveLength(0);
     expect(result.postState.players[1]!.handCount).toBeGreaterThan(0);
+    expect(result.cosmetics).toEqual([{ cardSkinId: 'dual-loop' }, { cardSkinId: 'default' }]);
     expect(result.viewerIndex).toBe(0);
   });
 
@@ -68,7 +82,14 @@ describe('projectForViewer', () => {
     expect(result.postState.players[1]!.hand).toHaveLength(0);
     expect(result.postState.players[0]!.handCount).toBeGreaterThan(0);
     expect(result.postState.players[1]!.handCount).toBeGreaterThan(0);
+    expect(result.cosmetics?.[0].cardSkinId).toBe('dual-loop');
     expect(result.viewerIndex).toBeNull();
+  });
+
+  it('falls back to default for an unknown persisted cosmetic ID', () => {
+    const match = buildMatch(buildState());
+    match.players[0]!.cardSkinId = 'future-skin' as never;
+    expect(projectForViewer(match, 1).cosmetics?.[0].cardSkinId).toBe('default');
   });
 
   it('never exposes internal liveness position witnesses', () => {

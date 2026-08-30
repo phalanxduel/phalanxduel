@@ -243,6 +243,63 @@ describe('STATE_MACHINE implementation coverage', () => {
     );
     track(quickStartState);
 
+    // Quick-deploy intent and automatic alternating continuation.
+    let quickDeployState = createInitialState({
+      matchId: '00000000-0000-0000-0000-000000000383',
+      players: [
+        { id: 'p1', name: 'A' },
+        { id: 'p2', name: 'B' },
+      ],
+      rngSeed: 383,
+    });
+    quickDeployState = applyAction(
+      quickDeployState,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
+    quickDeployState = applyAction(quickDeployState, {
+      type: 'quickDeploy',
+      playerIndex: quickDeployState.activePlayerIndex,
+      strategy: 'defensive',
+      timestamp: MOCK_TIMESTAMP,
+    });
+    track(quickDeployState);
+    quickDeployState = applyAction(quickDeployState, {
+      type: 'quickDeploy',
+      playerIndex: quickDeployState.activePlayerIndex,
+      strategy: 'aggressive',
+      timestamp: MOCK_TIMESTAMP,
+    });
+    track(quickDeployState);
+
+    // A quick-deploy choice can itself fill the final open slot.
+    let quickCompleteState = createInitialState({
+      matchId: '00000000-0000-0000-0000-000000000384',
+      players: [
+        { id: 'p1', name: 'A' },
+        { id: 'p2', name: 'B' },
+      ],
+      rngSeed: 384,
+    });
+    quickCompleteState = applyAction(
+      quickCompleteState,
+      { type: 'system:init', timestamp: MOCK_TIMESTAMP },
+      { allowSystemInit: true },
+    );
+    quickCompleteState.players[0].battlefield = Array.from({ length: 8 }, (_, index) =>
+      makeBfCard('clubs', 3, '3', index % 4),
+    ) as Battlefield;
+    quickCompleteState.players[1].battlefield = Array.from({ length: 8 }, (_, index) =>
+      index === 7 ? null : makeBfCard('hearts', 4, '4', index % 4),
+    ) as Battlefield;
+    quickCompleteState = applyAction(quickCompleteState, {
+      type: 'quickDeploy',
+      playerIndex: quickCompleteState.activePlayerIndex,
+      strategy: 'random',
+      timestamp: MOCK_TIMESTAMP,
+    });
+    track(quickCompleteState);
+
     // 2. Deployment
     const rows = state.params.rows;
     const cols = state.params.columns;

@@ -5,6 +5,7 @@ export interface AchievementMetadata {
   name: string;
   description: string;
   category: 'combat' | 'collection' | 'milestone' | 'special';
+  points?: number;
   rarity?: number; // percentage 0-100
 }
 
@@ -138,5 +139,12 @@ export const ACHIEVEMENT_METADATA: Record<AchievementType, AchievementMetadata> 
     description:
       "Deliver a final blow that exceeds the opponent's remaining life points by 5 or more.",
     category: 'combat',
+  },
+  RANDOM_DEPLOYMENT: {
+    type: 'RANDOM_DEPLOYMENT',
+    name: 'Trust the Shuffle',
+    description: 'Complete a match after choosing Random quick deploy.',
+    category: 'special',
+    points: 25,
   },
 };

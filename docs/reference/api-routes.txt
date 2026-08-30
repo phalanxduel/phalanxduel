@@ -24,6 +24,8 @@
     │   │   │   │       ├── products (GET, HEAD)
     │   │   │   │       ├── verify-purchase (POST)
     │   │   │   │       ├── inventory (GET, HEAD)
+    │   │   │   │       ├── loadout (GET, HEAD)
+    │   │   │   │       ├── equip (POST)
     │   │   │   │       ├── create-checkout-session (POST)
     │   │   │   │       └── stripe-webhook (POST)
     │   │   │   └── pectator/matches (GET, HEAD)

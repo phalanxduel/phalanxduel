@@ -28,6 +28,7 @@ type TurnViewModel struct {
 	Action ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction `json:"action"`
 	Events []MatchesIdLogGet200ResponseOneOfEventsInner `json:"events,omitempty"`
 	ValidActions []ApiMatchesIdReplayGet200ResponseTransactionLogInnerAction `json:"validActions"`
+	Cosmetics []string `json:"cosmetics,omitempty"`
 }
 
 type _TurnViewModel TurnViewModel
@@ -233,6 +234,38 @@ func (o *TurnViewModel) SetValidActions(v []ApiMatchesIdReplayGet200ResponseTran
 	o.ValidActions = v
 }
 
+// GetCosmetics returns the Cosmetics field value if set, zero value otherwise.
+func (o *TurnViewModel) GetCosmetics() []string {
+	if o == nil || IsNil(o.Cosmetics) {
+		var ret []string
+		return ret
+	}
+	return o.Cosmetics
+}
+
+// GetCosmeticsOk returns a tuple with the Cosmetics field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *TurnViewModel) GetCosmeticsOk() ([]string, bool) {
+	if o == nil || IsNil(o.Cosmetics) {
+		return nil, false
+	}
+	return o.Cosmetics, true
+}
+
+// HasCosmetics returns a boolean if a field has been set.
+func (o *TurnViewModel) HasCosmetics() bool {
+	if o != nil && !IsNil(o.Cosmetics) {
+		return true
+	}
+
+	return false
+}
+
+// SetCosmetics gets a reference to the given []string and assigns it to the Cosmetics field.
+func (o *TurnViewModel) SetCosmetics(v []string) {
+	o.Cosmetics = v
+}
+
 func (o TurnViewModel) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -252,6 +285,9 @@ func (o TurnViewModel) ToMap() (map[string]interface{}, error) {
 		toSerialize["events"] = o.Events
 	}
 	toSerialize["validActions"] = o.ValidActions
+	if !IsNil(o.Cosmetics) {
+		toSerialize["cosmetics"] = o.Cosmetics
+	}
 	return toSerialize, nil
 }
 

@@ -20,13 +20,11 @@ import (
 // checks if the ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3 type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3{}
 
-// ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3 Reinforce a column after cleanup. Valid during ReinforcementPhase. Cards are deployed to the back-most empty rank of the column.
+// ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3 Pass the current turn. Valid during AttackPhase. Excessive consecutive or total passes will result in a forfeit.
 type ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3 struct {
 	Type string `json:"type"`
 	// Index of the player (0 or 1).
 	PlayerIndex int32 `json:"playerIndex"`
-	// ID of the card to deploy from hand.
-	CardId string `json:"cardId"`
 	Timestamp time.Time `json:"timestamp" validate:"regexp=^(?:(?:\\\\d\\\\d[2468][048]|\\\\d\\\\d[13579][26]|\\\\d\\\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\\\d|30)|(?:02)-(?:0[1-9]|1\\\\d|2[0-8])))T(?:(?:[01]\\\\d|2[0-3]):[0-5]\\\\d(?::[0-5]\\\\d(?:\\\\.\\\\d+)?)?(?:Z))$"`
 	// Reliable transport message identifier for ACK/replay.
 	MsgId *string `json:"msgId,omitempty" validate:"regexp=^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"`
@@ -40,11 +38,10 @@ type _ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3 ApiMatches
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3(type_ string, playerIndex int32, cardId string, timestamp time.Time) *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3 {
+func NewApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3(type_ string, playerIndex int32, timestamp time.Time) *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3 {
 	this := ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3{}
 	this.Type = type_
 	this.PlayerIndex = playerIndex
-	this.CardId = cardId
 	this.Timestamp = timestamp
 	return &this
 }
@@ -103,30 +100,6 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3) GetPla
 // SetPlayerIndex sets field value
 func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3) SetPlayerIndex(v int32) {
 	o.PlayerIndex = v
-}
-
-// GetCardId returns the CardId field value
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3) GetCardId() string {
-	if o == nil {
-		var ret string
-		return ret
-	}
-
-	return o.CardId
-}
-
-// GetCardIdOk returns a tuple with the CardId field value
-// and a boolean to check if the value has been set.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3) GetCardIdOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.CardId, true
-}
-
-// SetCardId sets field value
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3) SetCardId(v string) {
-	o.CardId = v
 }
 
 // GetTimestamp returns the Timestamp field value
@@ -229,7 +202,6 @@ func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3) ToMap()
 	toSerialize := map[string]interface{}{}
 	toSerialize["type"] = o.Type
 	toSerialize["playerIndex"] = o.PlayerIndex
-	toSerialize["cardId"] = o.CardId
 	toSerialize["timestamp"] = o.Timestamp
 	if !IsNil(o.MsgId) {
 		toSerialize["msgId"] = o.MsgId
@@ -247,7 +219,6 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf3) Unmars
 	requiredProperties := []string{
 		"type",
 		"playerIndex",
-		"cardId",
 		"timestamp",
 	}
 

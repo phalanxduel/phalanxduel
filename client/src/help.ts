@@ -12,7 +12,7 @@ export const HELP_CONTENT: Record<string, { title: string; body: string }> = {
   },
   hand: {
     title: 'Your Hand',
-    body: 'Cards available to play. During deployment, you place cards to fill your columns. During reinforcement, you add one card to a specific column to increase its health.',
+    body: 'Cards available to play. During deployment, place cards manually or choose Defensive, Aggressive, or Random quick deploy to automate your remaining alternating placements. During reinforcement, you add one card to a specific column to increase its health.',
   },
   stats: {
     title: 'Tactical Stats',

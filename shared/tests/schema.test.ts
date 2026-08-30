@@ -6,6 +6,8 @@ import {
   BattlefieldSchema,
   GamePhaseSchema,
   ActionSchema,
+  PlayerActionSchema,
+  ActionDSLSchema,
   MatchParametersSchema,
   CreateMatchParamsPartialSchema,
   ClientMessageSchema,
@@ -15,7 +17,11 @@ import {
   normalizeCreateMatchParams,
   GameStateSchema,
   DEFAULT_MATCH_PARAMS,
+  CardSkinIdSchema,
+  MatchCosmeticsSchema,
+  AchievementTypeSchema,
 } from '../src/schema';
+import { ACHIEVEMENT_METADATA } from '../src/achievements-metadata';
 
 describe('Shared schemas', () => {
   describe('SCHEMA_VERSION', () => {
@@ -37,6 +43,20 @@ describe('Shared schemas', () => {
       };
       const result = CardSchema.safeParse(input);
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe('card cosmetics', () => {
+    it('accepts the stable cosmetic registry and rejects unknown identifiers', () => {
+      expect(CardSkinIdSchema.parse('default')).toBe('default');
+      expect(CardSkinIdSchema.parse('dual-loop')).toBe('dual-loop');
+      expect(CardSkinIdSchema.safeParse('unreleased-skin').success).toBe(false);
+    });
+
+    it('projects exactly one public card-skin identifier per player', () => {
+      expect(
+        MatchCosmeticsSchema.parse([{ cardSkinId: 'dual-loop' }, { cardSkinId: 'default' }]),
+      ).toEqual([{ cardSkinId: 'dual-loop' }, { cardSkinId: 'default' }]);
     });
   });
 
@@ -91,6 +111,51 @@ describe('Shared schemas', () => {
         timestamp: '2026-01-01T00:00:00.000Z',
       };
       expect(ActionSchema.safeParse(action).success).toBe(true);
+    });
+
+    it('parses quick deploy strategies and rejects unknown strategies', () => {
+      const action = {
+        type: 'quickDeploy',
+        playerIndex: 1,
+        strategy: 'defensive',
+        timestamp: '2026-01-01T00:00:00.000Z',
+      };
+      expect(ActionSchema.safeParse(action).success).toBe(true);
+      expect(ActionSchema.safeParse({ ...action, strategy: 'reckless' }).success).toBe(false);
+      expect(ActionDSLSchema.safeParse('Q:random').success).toBe(true);
+    });
+
+    it('defines every player-submittable action without exposing system:init', () => {
+      const timestamp = '2026-01-01T00:00:00.000Z';
+      const playerActions = [
+        { type: 'deploy', playerIndex: 0, column: 0, cardId: 'card-1', timestamp },
+        { type: 'quickDeploy', playerIndex: 0, strategy: 'random', timestamp },
+        {
+          type: 'attack',
+          playerIndex: 0,
+          attackingColumn: 0,
+          defendingColumn: 1,
+          timestamp,
+        },
+        { type: 'pass', playerIndex: 0, timestamp },
+        { type: 'reinforce', playerIndex: 0, cardId: 'card-2', timestamp },
+        { type: 'forfeit', playerIndex: 0, timestamp },
+      ];
+
+      for (const action of playerActions) {
+        expect(PlayerActionSchema.safeParse(action).success, action.type).toBe(true);
+      }
+
+      const systemInit = { type: 'system:init', timestamp };
+      expect(PlayerActionSchema.safeParse(systemInit).success).toBe(false);
+      expect(ActionSchema.safeParse(systemInit).success).toBe(true);
+    });
+  });
+
+  describe('quick deploy achievement', () => {
+    it('publishes the Random completion achievement and its points', () => {
+      expect(AchievementTypeSchema.safeParse('RANDOM_DEPLOYMENT').success).toBe(true);
+      expect(ACHIEVEMENT_METADATA.RANDOM_DEPLOYMENT.points).toBe(25);
     });
   });
 

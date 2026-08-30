@@ -3,10 +3,12 @@
  * Licensed under the GNU Affero General Public License v3.0.
  */
 
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
+import type { CardSkinId } from '@phalanxduel/shared';
 import type { AppState } from '../state';
 import { setUser } from '../state';
 import { getToken, logout } from '../auth';
+import { CARD_SKINS, normalizeCardSkinId } from '../cosmetics';
 
 interface SettingsPanelProps {
   state: AppState;
@@ -22,6 +24,67 @@ export function SettingsPanel({ state, onClose }: SettingsPanelProps) {
   const [flash, setFlash] = useState<string | null>(null);
   const [showPurgeConfirm, setShowPurgeConfirm] = useState(false);
   const [purgePassword, setPurgePassword] = useState('');
+  const [ownedCardSkinIds, setOwnedCardSkinIds] = useState<CardSkinId[]>(['default']);
+  const [equippedCardSkinId, setEquippedCardSkinId] = useState<CardSkinId>('default');
+  const [cosmeticsLoading, setCosmeticsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadCosmetics = async () => {
+      try {
+        const token = getToken();
+        const response = await fetch('/api/store/loadout', {
+          credentials: 'include',
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!response.ok) throw new Error('Loadout unavailable');
+        const payload = (await response.json()) as {
+          equippedCardSkinId?: unknown;
+          ownedCardSkinIds?: unknown[];
+        };
+        if (cancelled) return;
+        const owned = (payload.ownedCardSkinIds ?? []).map(normalizeCardSkinId);
+        setOwnedCardSkinIds([...new Set<CardSkinId>(['default', ...owned])]);
+        setEquippedCardSkinId(normalizeCardSkinId(payload.equippedCardSkinId));
+      } catch {
+        if (!cancelled) setError('COSMETIC_LINK_OFFLINE: Loadout not synchronized.');
+      } finally {
+        if (!cancelled) setCosmeticsLoading(false);
+      }
+    };
+
+    void loadCosmetics();
+    return () => {
+      cancelled = true;
+    };
+  }, [user.id]);
+
+  const equipSkin = async (cardSkinId: CardSkinId) => {
+    setSaving(true);
+    setError(null);
+    try {
+      const token = getToken();
+      const response = await fetch('/api/store/equip', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ cardSkinId }),
+      });
+      if (!response.ok) throw new Error('Equip failed');
+      setEquippedCardSkinId(cardSkinId);
+      setFlash('CARD_THEME_EQUIPPED');
+      setTimeout(() => {
+        setFlash(null);
+      }, 3000);
+    } catch {
+      setError('COMM_FAILURE: Card theme not synchronized.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const updatePreference = async (key: string, value: boolean) => {
     setSaving(true);
@@ -230,6 +293,52 @@ export function SettingsPanel({ state, onClose }: SettingsPanelProps) {
             >
               {user.marketingConsentAt ? 'AUTHORIZED' : 'DE-AUTHORIZED'}
             </button>
+          </div>
+        </div>
+
+        <div class="settings-group cosmetic-loadout-group">
+          <h3 class="settings-label">CARD_SIGNAL_LOADOUT</h3>
+          <p class="settings-desc">
+            Your opponent sees your equipped card back in your hand and your theme on deployed
+            cards.
+          </p>
+          <div
+            class="cosmetic-loadout-grid"
+            data-component="CosmeticLoadoutView"
+            data-state={cosmeticsLoading ? 'loading' : 'ready'}
+          >
+            {CARD_SKINS.map((skin) => {
+              const isOwned = ownedCardSkinIds.includes(skin.id);
+              const isEquipped = equippedCardSkinId === skin.id;
+              return (
+                <article
+                  key={skin.id}
+                  class={`cosmetic-loadout-card ${isEquipped ? 'is-equipped' : ''} ${
+                    isOwned ? 'is-owned' : 'is-locked'
+                  }`}
+                  data-card-theme={skin.id}
+                  data-state={isEquipped ? 'equipped' : isOwned ? 'owned' : 'locked'}
+                >
+                  <div class="cosmetic-card-back" aria-hidden="true">
+                    <div class="cosmetic-card-back-art" />
+                  </div>
+                  <div class="cosmetic-loadout-copy">
+                    <strong>{skin.name}</strong>
+                    <span>{skin.description}</span>
+                    <small>{isOwned ? 'UNLOCKED' : `LOCKED · ${skin.unlock}`}</small>
+                  </div>
+                  <button
+                    class={`phx-btn ${isEquipped ? 'secondary' : 'primary'}`}
+                    disabled={saving || cosmeticsLoading || !isOwned || isEquipped}
+                    onClick={() => {
+                      void equipSkin(skin.id);
+                    }}
+                  >
+                    {isEquipped ? 'EQUIPPED' : isOwned ? 'EQUIP' : 'LOCKED'}
+                  </button>
+                </article>
+              );
+            })}
           </div>
         </div>
 

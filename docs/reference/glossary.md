@@ -21,7 +21,7 @@ The canonical rule-authoritative configuration object defined in RULES.md §3. T
 ## Technical & Rule Terms
 
 ### Action
-A discrete command sent by a player to the game engine (e.g., Attack, Deploy, Pass). The five player actions are: `deploy`, `attack`, `pass`, `reinforce`, and `forfeit`. Each action is only valid in specific **Phases** of the turn lifecycle.
+A discrete command sent by a player to the game engine (e.g., Attack, Deploy, Pass). The six player actions are: `deploy`, `quickDeploy`, `attack`, `pass`, `reinforce`, and `forfeit`. Each action is only valid in specific **Phases** of the turn lifecycle. The internal `system:init` action is part of the broader replay contract but is not player-submittable.
 
 ### Attack Phase
 The phase of a turn where the active player declares and resolves an attack.

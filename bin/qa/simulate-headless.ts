@@ -63,6 +63,8 @@ interface RunManifest {
   p1: PlayerType;
   p2: PlayerType;
   viewerIndex: number | null;
+  qaRunId?: string;
+  matchId?: string;
 }
 
 interface PlaythroughScenario {
@@ -427,6 +429,8 @@ async function runOne(
     headed: opts.headed,
     scenarioPath: scenario.scenarioPath,
   });
+  const qaRunId = qaRun.runId;
+  let boundMatchId: string | undefined;
 
   const events: RunEvent[] = [];
   const logEvent = async (e: RunEvent) => {
@@ -576,6 +580,7 @@ async function runOne(
       if (!matchId) {
         throw new Error('match id not found on waiting screen');
       }
+      boundMatchId = matchId;
       qaRun.bindMatch(matchId);
 
       await pageB.goto(opts.baseUrl);
@@ -622,6 +627,24 @@ async function runOne(
         .catch(() => null);
       const turn = parseTurn(turnText);
       const phase = parsePhase(phaseText);
+
+      // A terminal phase can arrive before the game-over panel becomes
+      // visible. Treat it as a completed run and never ask the action loop to
+      // find a playable control in a terminated board.
+      if (/TERMINATED|GAMEOVER/i.test(phase)) {
+        await observerPage
+          .locator('[data-testid="game-over-result"]')
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .catch(() => {});
+        const outcome = await readBrowserOutcome(observerPage);
+        outcomeText = outcome.outcomeText;
+        winnerName = outcome.winnerName;
+        victorySummaryText = outcome.victorySummaryText;
+        lifepointsText = outcome.lifepointsText;
+        finalLifepoints = outcome.finalLifepoints;
+        await screenshot('game-over', observerPage);
+        break;
+      }
 
       if (turn > opts.maxTurns) {
         failureReason = 'timeout';
@@ -690,7 +713,7 @@ async function runOne(
       let retryCount = 0;
       const maxRetries = opts.maxActionRetries || 6;
 
-      while (!success && retryCount < 10) {
+      while (!success && retryCount < maxRetries) {
         // 1. Check for UI Error Banners (Action Rejection or Disconnect)
         const errorBanner = await activePage.$('.error-banner');
         if (errorBanner) {
@@ -899,6 +922,8 @@ async function runOne(
     screenshotMode: opts.screenshotMode,
     p1: scenario.p1,
     p2: scenario.p2,
+    qaRunId,
+    matchId: boundMatchId,
   };
   await writeFile(join(runDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   qaRun.finish({
@@ -952,6 +977,7 @@ async function runBotVsBot(
     p2: scenario.p2,
     scenarioPath: scenario.scenarioPath,
   });
+  const qaRunId = qaRun.runId;
   qaRun.bindMatch(autoMatchId);
 
   const p1Strategy = scenario.p1 === 'bot-heuristic' ? 'heuristic' : 'random';
@@ -1116,6 +1142,8 @@ async function runBotVsBot(
     screenshotMode: opts.screenshotMode,
     p1: scenario.p1,
     p2: scenario.p2,
+    qaRunId,
+    matchId: autoMatchId,
   };
   await writeFile(join(runDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   await writeFile(join(runDir, 'replay_frames.json'), `${JSON.stringify(replayFrames, null, 2)}\n`);

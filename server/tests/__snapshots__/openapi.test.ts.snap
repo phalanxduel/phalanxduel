@@ -1157,6 +1157,47 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "minItems": 2,
             "type": "array",
           },
+          "quickDeployStrategies": {
+            "additionalItems": false,
+            "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+            "items": [
+              {
+                "anyOf": [
+                  {
+                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                    ],
+                    "type": "string",
+                  },
+                  {
+                    "type": "null",
+                  },
+                ],
+              },
+              {
+                "anyOf": [
+                  {
+                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                    ],
+                    "type": "string",
+                  },
+                  {
+                    "type": "null",
+                  },
+                ],
+              },
+            ],
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array",
+          },
           "reinforcement": {
             "additionalProperties": false,
             "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
@@ -1246,6 +1287,57 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         "playerIndex",
                         "column",
                         "cardId",
+                        "timestamp",
+                      ],
+                      "type": "object",
+                    },
+                    {
+                      "additionalProperties": false,
+                      "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                      "properties": {
+                        "expectedSequenceNumber": {
+                          "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer",
+                        },
+                        "msgId": {
+                          "description": "Reliable transport message identifier for ACK/replay.",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                          "type": "string",
+                        },
+                        "playerIndex": {
+                          "description": "Index of the player (0 or 1).",
+                          "maximum": 1,
+                          "minimum": 0,
+                          "type": "integer",
+                        },
+                        "strategy": {
+                          "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                          "enum": [
+                            "defensive",
+                            "aggressive",
+                            "random",
+                          ],
+                          "type": "string",
+                        },
+                        "timestamp": {
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                          "type": "string",
+                        },
+                        "type": {
+                          "enum": [
+                            "quickDeploy",
+                          ],
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "type",
+                        "playerIndex",
+                        "strategy",
                         "timestamp",
                       ],
                       "type": "object",
@@ -1931,6 +2023,49 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           ],
                           "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                         },
+                        "quickDeployments": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "cardId": {
+                                "type": "string",
+                              },
+                              "column": {
+                                "maximum": 11,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "gridIndex": {
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "playerIndex": {
+                                "maximum": 1,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "strategy": {
+                                "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                "enum": [
+                                  "defensive",
+                                  "aggressive",
+                                  "random",
+                                ],
+                                "type": "string",
+                              },
+                            },
+                            "required": [
+                              "playerIndex",
+                              "strategy",
+                              "cardId",
+                              "column",
+                              "gridIndex",
+                            ],
+                            "type": "object",
+                          },
+                          "type": "array",
+                        },
                         "type": {
                           "enum": [
                             "deploy",
@@ -1941,6 +2076,102 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       "required": [
                         "type",
                         "gridIndex",
+                        "phaseAfter",
+                      ],
+                      "type": "object",
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "deployments": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "cardId": {
+                                "type": "string",
+                              },
+                              "column": {
+                                "maximum": 11,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "gridIndex": {
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "playerIndex": {
+                                "maximum": 1,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "strategy": {
+                                "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                "enum": [
+                                  "defensive",
+                                  "aggressive",
+                                  "random",
+                                ],
+                                "type": "string",
+                              },
+                            },
+                            "required": [
+                              "playerIndex",
+                              "strategy",
+                              "cardId",
+                              "column",
+                              "gridIndex",
+                            ],
+                            "type": "object",
+                          },
+                          "minItems": 1,
+                          "type": "array",
+                        },
+                        "phaseAfter": {
+                          "anyOf": [
+                            {
+                              "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                              "enum": [
+                                "StartTurn",
+                                "DeploymentPhase",
+                                "AttackPhase",
+                                "AttackResolution",
+                                "CleanupPhase",
+                                "ReinforcementPhase",
+                                "DrawPhase",
+                                "EndTurn",
+                              ],
+                              "type": "string",
+                            },
+                            {
+                              "enum": [
+                                "gameOver",
+                              ],
+                              "type": "string",
+                            },
+                          ],
+                          "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                        },
+                        "strategy": {
+                          "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                          "enum": [
+                            "defensive",
+                            "aggressive",
+                            "random",
+                          ],
+                          "type": "string",
+                        },
+                        "type": {
+                          "enum": [
+                            "quickDeploy",
+                          ],
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "type",
+                        "strategy",
+                        "deployments",
                         "phaseAfter",
                       ],
                       "type": "object",
@@ -3092,6 +3323,46 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
       "GameViewModel": {
         "additionalProperties": false,
         "properties": {
+          "cosmetics": {
+            "additionalItems": false,
+            "items": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "cardSkinId": {
+                    "enum": [
+                      "default",
+                      "dual-loop",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "cardSkinId",
+                ],
+                "type": "object",
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "cardSkinId": {
+                    "enum": [
+                      "default",
+                      "dual-loop",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "cardSkinId",
+                ],
+                "type": "object",
+              },
+            ],
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array",
+          },
           "state": {
             "additionalProperties": false,
             "properties": {
@@ -3997,6 +4268,47 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "minItems": 2,
                 "type": "array",
               },
+              "quickDeployStrategies": {
+                "additionalItems": false,
+                "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+                "items": [
+                  {
+                    "anyOf": [
+                      {
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random",
+                        ],
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random",
+                        ],
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array",
+              },
               "reinforcement": {
                 "additionalProperties": false,
                 "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
@@ -4086,6 +4398,57 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "playerIndex",
                             "column",
                             "cardId",
+                            "timestamp",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                          "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Reliable transport message identifier for ACK/replay.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
+                            "playerIndex": {
+                              "description": "Index of the player (0 or 1).",
+                              "maximum": 1,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "strategy": {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            "timestamp": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                              "type": "string",
+                            },
+                            "type": {
+                              "enum": [
+                                "quickDeploy",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                            "playerIndex",
+                            "strategy",
                             "timestamp",
                           ],
                           "type": "object",
@@ -4771,6 +5134,49 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               ],
                               "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                             },
+                            "quickDeployments": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "cardId": {
+                                    "type": "string",
+                                  },
+                                  "column": {
+                                    "maximum": 11,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "gridIndex": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "playerIndex": {
+                                    "maximum": 1,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "strategy": {
+                                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                    "enum": [
+                                      "defensive",
+                                      "aggressive",
+                                      "random",
+                                    ],
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "playerIndex",
+                                  "strategy",
+                                  "cardId",
+                                  "column",
+                                  "gridIndex",
+                                ],
+                                "type": "object",
+                              },
+                              "type": "array",
+                            },
                             "type": {
                               "enum": [
                                 "deploy",
@@ -4781,6 +5187,102 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "required": [
                             "type",
                             "gridIndex",
+                            "phaseAfter",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "deployments": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "cardId": {
+                                    "type": "string",
+                                  },
+                                  "column": {
+                                    "maximum": 11,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "gridIndex": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "playerIndex": {
+                                    "maximum": 1,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "strategy": {
+                                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                    "enum": [
+                                      "defensive",
+                                      "aggressive",
+                                      "random",
+                                    ],
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "playerIndex",
+                                  "strategy",
+                                  "cardId",
+                                  "column",
+                                  "gridIndex",
+                                ],
+                                "type": "object",
+                              },
+                              "minItems": 1,
+                              "type": "array",
+                            },
+                            "phaseAfter": {
+                              "anyOf": [
+                                {
+                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                  "enum": [
+                                    "StartTurn",
+                                    "DeploymentPhase",
+                                    "AttackPhase",
+                                    "AttackResolution",
+                                    "CleanupPhase",
+                                    "ReinforcementPhase",
+                                    "DrawPhase",
+                                    "EndTurn",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "enum": [
+                                    "gameOver",
+                                  ],
+                                  "type": "string",
+                                },
+                              ],
+                              "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            },
+                            "strategy": {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            "type": {
+                              "enum": [
+                                "quickDeploy",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                            "strategy",
+                            "deployments",
                             "phaseAfter",
                           ],
                           "type": "object",
@@ -5988,6 +6490,57 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 },
                 {
                   "additionalProperties": false,
+                  "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                  "properties": {
+                    "expectedSequenceNumber": {
+                      "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Reliable transport message identifier for ACK/replay.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
+                    "playerIndex": {
+                      "description": "Index of the player (0 or 1).",
+                      "maximum": 1,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "strategy": {
+                      "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                      "enum": [
+                        "defensive",
+                        "aggressive",
+                        "random",
+                      ],
+                      "type": "string",
+                    },
+                    "timestamp": {
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                      "type": "string",
+                    },
+                    "type": {
+                      "enum": [
+                        "quickDeploy",
+                      ],
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "type",
+                    "playerIndex",
+                    "strategy",
+                    "timestamp",
+                  ],
+                  "type": "object",
+                },
+                {
+                  "additionalProperties": false,
                   "description": "Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column.",
                   "properties": {
                     "attackingColumn": {
@@ -7176,10 +7729,14 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
             },
             "trigger": {
-              "description": "State machine trigger that causes a phase transition. Player triggers: deploy, attack, pass, reinforce, forfeit. System triggers: deploy:complete, attack:reinforcement, attack:victory, reinforce:complete, system:advance, system:victory, system:init.",
+              "description": "State machine trigger that causes a phase transition. Player triggers: deploy, quickDeploy, attack, pass, reinforce, forfeit. System triggers include automatic/complete deployment, attack, reinforcement, draw, victory, advance, and init transitions.",
               "enum": [
                 "deploy",
                 "deploy:complete",
+                "quickDeploy",
+                "quickDeploy:complete",
+                "deploy:auto",
+                "deploy:auto:complete",
                 "attack",
                 "attack:reinforcement",
                 "attack:victory",
@@ -7265,10 +7822,14 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
             "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
           },
           "trigger": {
-            "description": "State machine trigger that causes a phase transition. Player triggers: deploy, attack, pass, reinforce, forfeit. System triggers: deploy:complete, attack:reinforcement, attack:victory, reinforce:complete, system:advance, system:victory, system:init.",
+            "description": "State machine trigger that causes a phase transition. Player triggers: deploy, quickDeploy, attack, pass, reinforce, forfeit. System triggers include automatic/complete deployment, attack, reinforcement, draw, victory, advance, and init transitions.",
             "enum": [
               "deploy",
               "deploy:complete",
+              "quickDeploy",
+              "quickDeploy:complete",
+              "deploy:auto",
+              "deploy:auto:complete",
               "attack",
               "attack:reinforcement",
               "attack:victory",
@@ -7303,10 +7864,14 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
         "type": "string",
       },
       "TransitionTrigger": {
-        "description": "State machine trigger that causes a phase transition. Player triggers: deploy, attack, pass, reinforce, forfeit. System triggers: deploy:complete, attack:reinforcement, attack:victory, reinforce:complete, system:advance, system:victory, system:init.",
+        "description": "State machine trigger that causes a phase transition. Player triggers: deploy, quickDeploy, attack, pass, reinforce, forfeit. System triggers include automatic/complete deployment, attack, reinforcement, draw, victory, advance, and init transitions.",
         "enum": [
           "deploy",
           "deploy:complete",
+          "quickDeploy",
+          "quickDeploy:complete",
+          "deploy:auto",
+          "deploy:auto:complete",
           "attack",
           "attack:reinforcement",
           "attack:victory",
@@ -7390,6 +7955,57 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "playerIndex",
                   "column",
                   "cardId",
+                  "timestamp",
+                ],
+                "type": "object",
+              },
+              {
+                "additionalProperties": false,
+                "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                "properties": {
+                  "expectedSequenceNumber": {
+                    "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Reliable transport message identifier for ACK/replay.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
+                  "playerIndex": {
+                    "description": "Index of the player (0 or 1).",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "strategy": {
+                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                    ],
+                    "type": "string",
+                  },
+                  "timestamp": {
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                    "type": "string",
+                  },
+                  "type": {
+                    "enum": [
+                      "quickDeploy",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "type",
+                  "playerIndex",
+                  "strategy",
                   "timestamp",
                 ],
                 "type": "object",
@@ -9007,6 +9623,47 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "minItems": 2,
                 "type": "array",
               },
+              "quickDeployStrategies": {
+                "additionalItems": false,
+                "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+                "items": [
+                  {
+                    "anyOf": [
+                      {
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random",
+                        ],
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random",
+                        ],
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array",
+              },
               "reinforcement": {
                 "additionalProperties": false,
                 "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
@@ -9096,6 +9753,57 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "playerIndex",
                             "column",
                             "cardId",
+                            "timestamp",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                          "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Reliable transport message identifier for ACK/replay.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
+                            "playerIndex": {
+                              "description": "Index of the player (0 or 1).",
+                              "maximum": 1,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "strategy": {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            "timestamp": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                              "type": "string",
+                            },
+                            "type": {
+                              "enum": [
+                                "quickDeploy",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                            "playerIndex",
+                            "strategy",
                             "timestamp",
                           ],
                           "type": "object",
@@ -9781,6 +10489,49 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               ],
                               "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                             },
+                            "quickDeployments": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "cardId": {
+                                    "type": "string",
+                                  },
+                                  "column": {
+                                    "maximum": 11,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "gridIndex": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "playerIndex": {
+                                    "maximum": 1,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "strategy": {
+                                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                    "enum": [
+                                      "defensive",
+                                      "aggressive",
+                                      "random",
+                                    ],
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "playerIndex",
+                                  "strategy",
+                                  "cardId",
+                                  "column",
+                                  "gridIndex",
+                                ],
+                                "type": "object",
+                              },
+                              "type": "array",
+                            },
                             "type": {
                               "enum": [
                                 "deploy",
@@ -9791,6 +10542,102 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "required": [
                             "type",
                             "gridIndex",
+                            "phaseAfter",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "deployments": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "cardId": {
+                                    "type": "string",
+                                  },
+                                  "column": {
+                                    "maximum": 11,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "gridIndex": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "playerIndex": {
+                                    "maximum": 1,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "strategy": {
+                                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                    "enum": [
+                                      "defensive",
+                                      "aggressive",
+                                      "random",
+                                    ],
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "playerIndex",
+                                  "strategy",
+                                  "cardId",
+                                  "column",
+                                  "gridIndex",
+                                ],
+                                "type": "object",
+                              },
+                              "minItems": 1,
+                              "type": "array",
+                            },
+                            "phaseAfter": {
+                              "anyOf": [
+                                {
+                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                  "enum": [
+                                    "StartTurn",
+                                    "DeploymentPhase",
+                                    "AttackPhase",
+                                    "AttackResolution",
+                                    "CleanupPhase",
+                                    "ReinforcementPhase",
+                                    "DrawPhase",
+                                    "EndTurn",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "enum": [
+                                    "gameOver",
+                                  ],
+                                  "type": "string",
+                                },
+                              ],
+                              "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            },
+                            "strategy": {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            "type": {
+                              "enum": [
+                                "quickDeploy",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                            "strategy",
+                            "deployments",
                             "phaseAfter",
                           ],
                           "type": "object",
@@ -11844,6 +12691,47 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "minItems": 2,
                 "type": "array",
               },
+              "quickDeployStrategies": {
+                "additionalItems": false,
+                "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+                "items": [
+                  {
+                    "anyOf": [
+                      {
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random",
+                        ],
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random",
+                        ],
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array",
+              },
               "reinforcement": {
                 "additionalProperties": false,
                 "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
@@ -11933,6 +12821,57 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "playerIndex",
                             "column",
                             "cardId",
+                            "timestamp",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                          "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Reliable transport message identifier for ACK/replay.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
+                            "playerIndex": {
+                              "description": "Index of the player (0 or 1).",
+                              "maximum": 1,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "strategy": {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            "timestamp": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                              "type": "string",
+                            },
+                            "type": {
+                              "enum": [
+                                "quickDeploy",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                            "playerIndex",
+                            "strategy",
                             "timestamp",
                           ],
                           "type": "object",
@@ -12618,6 +13557,49 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               ],
                               "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                             },
+                            "quickDeployments": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "cardId": {
+                                    "type": "string",
+                                  },
+                                  "column": {
+                                    "maximum": 11,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "gridIndex": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "playerIndex": {
+                                    "maximum": 1,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "strategy": {
+                                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                    "enum": [
+                                      "defensive",
+                                      "aggressive",
+                                      "random",
+                                    ],
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "playerIndex",
+                                  "strategy",
+                                  "cardId",
+                                  "column",
+                                  "gridIndex",
+                                ],
+                                "type": "object",
+                              },
+                              "type": "array",
+                            },
                             "type": {
                               "enum": [
                                 "deploy",
@@ -12628,6 +13610,102 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "required": [
                             "type",
                             "gridIndex",
+                            "phaseAfter",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "deployments": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "cardId": {
+                                    "type": "string",
+                                  },
+                                  "column": {
+                                    "maximum": 11,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "gridIndex": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "playerIndex": {
+                                    "maximum": 1,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "strategy": {
+                                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                    "enum": [
+                                      "defensive",
+                                      "aggressive",
+                                      "random",
+                                    ],
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "playerIndex",
+                                  "strategy",
+                                  "cardId",
+                                  "column",
+                                  "gridIndex",
+                                ],
+                                "type": "object",
+                              },
+                              "minItems": 1,
+                              "type": "array",
+                            },
+                            "phaseAfter": {
+                              "anyOf": [
+                                {
+                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                  "enum": [
+                                    "StartTurn",
+                                    "DeploymentPhase",
+                                    "AttackPhase",
+                                    "AttackResolution",
+                                    "CleanupPhase",
+                                    "ReinforcementPhase",
+                                    "DrawPhase",
+                                    "EndTurn",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "enum": [
+                                    "gameOver",
+                                  ],
+                                  "type": "string",
+                                },
+                              ],
+                              "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            },
+                            "strategy": {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            "type": {
+                              "enum": [
+                                "quickDeploy",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                            "strategy",
+                            "deployments",
                             "phaseAfter",
                           ],
                           "type": "object",
@@ -13878,6 +14956,57 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               },
               {
                 "additionalProperties": false,
+                "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                "properties": {
+                  "expectedSequenceNumber": {
+                    "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "msgId": {
+                    "description": "Reliable transport message identifier for ACK/replay.",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string",
+                  },
+                  "playerIndex": {
+                    "description": "Index of the player (0 or 1).",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                  "strategy": {
+                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                    ],
+                    "type": "string",
+                  },
+                  "timestamp": {
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                    "type": "string",
+                  },
+                  "type": {
+                    "enum": [
+                      "quickDeploy",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "type",
+                  "playerIndex",
+                  "strategy",
+                  "timestamp",
+                ],
+                "type": "object",
+              },
+              {
+                "additionalProperties": false,
                 "description": "Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column.",
                 "properties": {
                   "attackingColumn": {
@@ -14521,6 +15650,46 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "type": "object",
               },
             ],
+          },
+          "cosmetics": {
+            "additionalItems": false,
+            "items": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "cardSkinId": {
+                    "enum": [
+                      "default",
+                      "dual-loop",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "cardSkinId",
+                ],
+                "type": "object",
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "cardSkinId": {
+                    "enum": [
+                      "default",
+                      "dual-loop",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "cardSkinId",
+                ],
+                "type": "object",
+              },
+            ],
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array",
           },
           "events": {
             "items": {
@@ -15484,6 +16653,47 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "minItems": 2,
                 "type": "array",
               },
+              "quickDeployStrategies": {
+                "additionalItems": false,
+                "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+                "items": [
+                  {
+                    "anyOf": [
+                      {
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random",
+                        ],
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random",
+                        ],
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array",
+              },
               "reinforcement": {
                 "additionalProperties": false,
                 "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
@@ -15573,6 +16783,57 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "playerIndex",
                             "column",
                             "cardId",
+                            "timestamp",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                          "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Reliable transport message identifier for ACK/replay.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
+                            "playerIndex": {
+                              "description": "Index of the player (0 or 1).",
+                              "maximum": 1,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "strategy": {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            "timestamp": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                              "type": "string",
+                            },
+                            "type": {
+                              "enum": [
+                                "quickDeploy",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                            "playerIndex",
+                            "strategy",
                             "timestamp",
                           ],
                           "type": "object",
@@ -16258,6 +17519,49 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               ],
                               "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                             },
+                            "quickDeployments": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "cardId": {
+                                    "type": "string",
+                                  },
+                                  "column": {
+                                    "maximum": 11,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "gridIndex": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "playerIndex": {
+                                    "maximum": 1,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "strategy": {
+                                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                    "enum": [
+                                      "defensive",
+                                      "aggressive",
+                                      "random",
+                                    ],
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "playerIndex",
+                                  "strategy",
+                                  "cardId",
+                                  "column",
+                                  "gridIndex",
+                                ],
+                                "type": "object",
+                              },
+                              "type": "array",
+                            },
                             "type": {
                               "enum": [
                                 "deploy",
@@ -16268,6 +17572,102 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "required": [
                             "type",
                             "gridIndex",
+                            "phaseAfter",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "deployments": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "cardId": {
+                                    "type": "string",
+                                  },
+                                  "column": {
+                                    "maximum": 11,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "gridIndex": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "playerIndex": {
+                                    "maximum": 1,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "strategy": {
+                                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                    "enum": [
+                                      "defensive",
+                                      "aggressive",
+                                      "random",
+                                    ],
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "playerIndex",
+                                  "strategy",
+                                  "cardId",
+                                  "column",
+                                  "gridIndex",
+                                ],
+                                "type": "object",
+                              },
+                              "minItems": 1,
+                              "type": "array",
+                            },
+                            "phaseAfter": {
+                              "anyOf": [
+                                {
+                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                  "enum": [
+                                    "StartTurn",
+                                    "DeploymentPhase",
+                                    "AttackPhase",
+                                    "AttackResolution",
+                                    "CleanupPhase",
+                                    "ReinforcementPhase",
+                                    "DrawPhase",
+                                    "EndTurn",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "enum": [
+                                    "gameOver",
+                                  ],
+                                  "type": "string",
+                                },
+                              ],
+                              "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            },
+                            "strategy": {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            "type": {
+                              "enum": [
+                                "quickDeploy",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                            "strategy",
+                            "deployments",
                             "phaseAfter",
                           ],
                           "type": "object",
@@ -18321,6 +19721,47 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                 "minItems": 2,
                 "type": "array",
               },
+              "quickDeployStrategies": {
+                "additionalItems": false,
+                "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+                "items": [
+                  {
+                    "anyOf": [
+                      {
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random",
+                        ],
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                        "enum": [
+                          "defensive",
+                          "aggressive",
+                          "random",
+                        ],
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array",
+              },
               "reinforcement": {
                 "additionalProperties": false,
                 "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
@@ -18410,6 +19851,57 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "playerIndex",
                             "column",
                             "cardId",
+                            "timestamp",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                          "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Reliable transport message identifier for ACK/replay.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
+                            "playerIndex": {
+                              "description": "Index of the player (0 or 1).",
+                              "maximum": 1,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "strategy": {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            "timestamp": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                              "type": "string",
+                            },
+                            "type": {
+                              "enum": [
+                                "quickDeploy",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                            "playerIndex",
+                            "strategy",
                             "timestamp",
                           ],
                           "type": "object",
@@ -19095,6 +20587,49 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                               ],
                               "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                             },
+                            "quickDeployments": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "cardId": {
+                                    "type": "string",
+                                  },
+                                  "column": {
+                                    "maximum": 11,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "gridIndex": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "playerIndex": {
+                                    "maximum": 1,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "strategy": {
+                                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                    "enum": [
+                                      "defensive",
+                                      "aggressive",
+                                      "random",
+                                    ],
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "playerIndex",
+                                  "strategy",
+                                  "cardId",
+                                  "column",
+                                  "gridIndex",
+                                ],
+                                "type": "object",
+                              },
+                              "type": "array",
+                            },
                             "type": {
                               "enum": [
                                 "deploy",
@@ -19105,6 +20640,102 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                           "required": [
                             "type",
                             "gridIndex",
+                            "phaseAfter",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "deployments": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "cardId": {
+                                    "type": "string",
+                                  },
+                                  "column": {
+                                    "maximum": 11,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "gridIndex": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "playerIndex": {
+                                    "maximum": 1,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "strategy": {
+                                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                    "enum": [
+                                      "defensive",
+                                      "aggressive",
+                                      "random",
+                                    ],
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "playerIndex",
+                                  "strategy",
+                                  "cardId",
+                                  "column",
+                                  "gridIndex",
+                                ],
+                                "type": "object",
+                              },
+                              "minItems": 1,
+                              "type": "array",
+                            },
+                            "phaseAfter": {
+                              "anyOf": [
+                                {
+                                  "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                  "enum": [
+                                    "StartTurn",
+                                    "DeploymentPhase",
+                                    "AttackPhase",
+                                    "AttackResolution",
+                                    "CleanupPhase",
+                                    "ReinforcementPhase",
+                                    "DrawPhase",
+                                    "EndTurn",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "enum": [
+                                    "gameOver",
+                                  ],
+                                  "type": "string",
+                                },
+                              ],
+                              "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                            },
+                            "strategy": {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            "type": {
+                              "enum": [
+                                "quickDeploy",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                            "strategy",
+                            "deployments",
                             "phaseAfter",
                           ],
                           "type": "object",
@@ -20306,6 +21937,57 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "playerIndex",
                     "column",
                     "cardId",
+                    "timestamp",
+                  ],
+                  "type": "object",
+                },
+                {
+                  "additionalProperties": false,
+                  "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                  "properties": {
+                    "expectedSequenceNumber": {
+                      "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                      "maximum": 9007199254740991,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "msgId": {
+                      "description": "Reliable transport message identifier for ACK/replay.",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                      "type": "string",
+                    },
+                    "playerIndex": {
+                      "description": "Index of the player (0 or 1).",
+                      "maximum": 1,
+                      "minimum": 0,
+                      "type": "integer",
+                    },
+                    "strategy": {
+                      "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                      "enum": [
+                        "defensive",
+                        "aggressive",
+                        "random",
+                      ],
+                      "type": "string",
+                    },
+                    "timestamp": {
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                      "type": "string",
+                    },
+                    "type": {
+                      "enum": [
+                        "quickDeploy",
+                      ],
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "type",
+                    "playerIndex",
+                    "strategy",
                     "timestamp",
                   ],
                   "type": "object",
@@ -25034,6 +26716,57 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         },
                         {
                           "additionalProperties": false,
+                          "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                          "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Reliable transport message identifier for ACK/replay.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
+                            "playerIndex": {
+                              "description": "Index of the player (0 or 1).",
+                              "maximum": 1,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "strategy": {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            "timestamp": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                              "type": "string",
+                            },
+                            "type": {
+                              "enum": [
+                                "quickDeploy",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                            "playerIndex",
+                            "strategy",
+                            "timestamp",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
                           "description": "Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column.",
                           "properties": {
                             "attackingColumn": {
@@ -25677,6 +27410,46 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "object",
                         },
                       ],
+                    },
+                    "cosmetics": {
+                      "additionalItems": false,
+                      "items": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "cardSkinId": {
+                              "enum": [
+                                "default",
+                                "dual-loop",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "cardSkinId",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "cardSkinId": {
+                              "enum": [
+                                "default",
+                                "dual-loop",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "cardSkinId",
+                          ],
+                          "type": "object",
+                        },
+                      ],
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array",
                     },
                     "events": {
                       "items": {
@@ -26640,6 +28413,47 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "minItems": 2,
                           "type": "array",
                         },
+                        "quickDeployStrategies": {
+                          "additionalItems": false,
+                          "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+                          "items": [
+                            {
+                              "anyOf": [
+                                {
+                                  "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                  "enum": [
+                                    "defensive",
+                                    "aggressive",
+                                    "random",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "type": "null",
+                                },
+                              ],
+                            },
+                            {
+                              "anyOf": [
+                                {
+                                  "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                  "enum": [
+                                    "defensive",
+                                    "aggressive",
+                                    "random",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "type": "null",
+                                },
+                              ],
+                            },
+                          ],
+                          "maxItems": 2,
+                          "minItems": 2,
+                          "type": "array",
+                        },
                         "reinforcement": {
                           "additionalProperties": false,
                           "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
@@ -26729,6 +28543,57 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "playerIndex",
                                       "column",
                                       "cardId",
+                                      "timestamp",
+                                    ],
+                                    "type": "object",
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                                    "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Reliable transport message identifier for ACK/replay.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
+                                      "playerIndex": {
+                                        "description": "Index of the player (0 or 1).",
+                                        "maximum": 1,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "strategy": {
+                                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                        "enum": [
+                                          "defensive",
+                                          "aggressive",
+                                          "random",
+                                        ],
+                                        "type": "string",
+                                      },
+                                      "timestamp": {
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                                        "type": "string",
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "quickDeploy",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "type",
+                                      "playerIndex",
+                                      "strategy",
                                       "timestamp",
                                     ],
                                     "type": "object",
@@ -27414,6 +29279,49 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         ],
                                         "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                       },
+                                      "quickDeployments": {
+                                        "items": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "cardId": {
+                                              "type": "string",
+                                            },
+                                            "column": {
+                                              "maximum": 11,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "gridIndex": {
+                                              "maximum": 9007199254740991,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "playerIndex": {
+                                              "maximum": 1,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "strategy": {
+                                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                              "enum": [
+                                                "defensive",
+                                                "aggressive",
+                                                "random",
+                                              ],
+                                              "type": "string",
+                                            },
+                                          },
+                                          "required": [
+                                            "playerIndex",
+                                            "strategy",
+                                            "cardId",
+                                            "column",
+                                            "gridIndex",
+                                          ],
+                                          "type": "object",
+                                        },
+                                        "type": "array",
+                                      },
                                       "type": {
                                         "enum": [
                                           "deploy",
@@ -27424,6 +29332,102 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "required": [
                                       "type",
                                       "gridIndex",
+                                      "phaseAfter",
+                                    ],
+                                    "type": "object",
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "deployments": {
+                                        "items": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "cardId": {
+                                              "type": "string",
+                                            },
+                                            "column": {
+                                              "maximum": 11,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "gridIndex": {
+                                              "maximum": 9007199254740991,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "playerIndex": {
+                                              "maximum": 1,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "strategy": {
+                                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                              "enum": [
+                                                "defensive",
+                                                "aggressive",
+                                                "random",
+                                              ],
+                                              "type": "string",
+                                            },
+                                          },
+                                          "required": [
+                                            "playerIndex",
+                                            "strategy",
+                                            "cardId",
+                                            "column",
+                                            "gridIndex",
+                                          ],
+                                          "type": "object",
+                                        },
+                                        "minItems": 1,
+                                        "type": "array",
+                                      },
+                                      "phaseAfter": {
+                                        "anyOf": [
+                                          {
+                                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                            "enum": [
+                                              "StartTurn",
+                                              "DeploymentPhase",
+                                              "AttackPhase",
+                                              "AttackResolution",
+                                              "CleanupPhase",
+                                              "ReinforcementPhase",
+                                              "DrawPhase",
+                                              "EndTurn",
+                                            ],
+                                            "type": "string",
+                                          },
+                                          {
+                                            "enum": [
+                                              "gameOver",
+                                            ],
+                                            "type": "string",
+                                          },
+                                        ],
+                                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                      },
+                                      "strategy": {
+                                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                        "enum": [
+                                          "defensive",
+                                          "aggressive",
+                                          "random",
+                                        ],
+                                        "type": "string",
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "quickDeploy",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "type",
+                                      "strategy",
+                                      "deployments",
                                       "phaseAfter",
                                     ],
                                     "type": "object",
@@ -29477,6 +31481,47 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "minItems": 2,
                           "type": "array",
                         },
+                        "quickDeployStrategies": {
+                          "additionalItems": false,
+                          "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+                          "items": [
+                            {
+                              "anyOf": [
+                                {
+                                  "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                  "enum": [
+                                    "defensive",
+                                    "aggressive",
+                                    "random",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "type": "null",
+                                },
+                              ],
+                            },
+                            {
+                              "anyOf": [
+                                {
+                                  "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                  "enum": [
+                                    "defensive",
+                                    "aggressive",
+                                    "random",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "type": "null",
+                                },
+                              ],
+                            },
+                          ],
+                          "maxItems": 2,
+                          "minItems": 2,
+                          "type": "array",
+                        },
                         "reinforcement": {
                           "additionalProperties": false,
                           "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
@@ -29566,6 +31611,57 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "playerIndex",
                                       "column",
                                       "cardId",
+                                      "timestamp",
+                                    ],
+                                    "type": "object",
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                                    "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Reliable transport message identifier for ACK/replay.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
+                                      "playerIndex": {
+                                        "description": "Index of the player (0 or 1).",
+                                        "maximum": 1,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "strategy": {
+                                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                        "enum": [
+                                          "defensive",
+                                          "aggressive",
+                                          "random",
+                                        ],
+                                        "type": "string",
+                                      },
+                                      "timestamp": {
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                                        "type": "string",
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "quickDeploy",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "type",
+                                      "playerIndex",
+                                      "strategy",
                                       "timestamp",
                                     ],
                                     "type": "object",
@@ -30251,6 +32347,49 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         ],
                                         "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                       },
+                                      "quickDeployments": {
+                                        "items": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "cardId": {
+                                              "type": "string",
+                                            },
+                                            "column": {
+                                              "maximum": 11,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "gridIndex": {
+                                              "maximum": 9007199254740991,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "playerIndex": {
+                                              "maximum": 1,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "strategy": {
+                                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                              "enum": [
+                                                "defensive",
+                                                "aggressive",
+                                                "random",
+                                              ],
+                                              "type": "string",
+                                            },
+                                          },
+                                          "required": [
+                                            "playerIndex",
+                                            "strategy",
+                                            "cardId",
+                                            "column",
+                                            "gridIndex",
+                                          ],
+                                          "type": "object",
+                                        },
+                                        "type": "array",
+                                      },
                                       "type": {
                                         "enum": [
                                           "deploy",
@@ -30261,6 +32400,102 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "required": [
                                       "type",
                                       "gridIndex",
+                                      "phaseAfter",
+                                    ],
+                                    "type": "object",
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "deployments": {
+                                        "items": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "cardId": {
+                                              "type": "string",
+                                            },
+                                            "column": {
+                                              "maximum": 11,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "gridIndex": {
+                                              "maximum": 9007199254740991,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "playerIndex": {
+                                              "maximum": 1,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "strategy": {
+                                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                              "enum": [
+                                                "defensive",
+                                                "aggressive",
+                                                "random",
+                                              ],
+                                              "type": "string",
+                                            },
+                                          },
+                                          "required": [
+                                            "playerIndex",
+                                            "strategy",
+                                            "cardId",
+                                            "column",
+                                            "gridIndex",
+                                          ],
+                                          "type": "object",
+                                        },
+                                        "minItems": 1,
+                                        "type": "array",
+                                      },
+                                      "phaseAfter": {
+                                        "anyOf": [
+                                          {
+                                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                            "enum": [
+                                              "StartTurn",
+                                              "DeploymentPhase",
+                                              "AttackPhase",
+                                              "AttackResolution",
+                                              "CleanupPhase",
+                                              "ReinforcementPhase",
+                                              "DrawPhase",
+                                              "EndTurn",
+                                            ],
+                                            "type": "string",
+                                          },
+                                          {
+                                            "enum": [
+                                              "gameOver",
+                                            ],
+                                            "type": "string",
+                                          },
+                                        ],
+                                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                      },
+                                      "strategy": {
+                                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                        "enum": [
+                                          "defensive",
+                                          "aggressive",
+                                          "random",
+                                        ],
+                                        "type": "string",
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "quickDeploy",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "type",
+                                      "strategy",
+                                      "deployments",
                                       "phaseAfter",
                                     ],
                                     "type": "object",
@@ -31462,6 +33697,57 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "playerIndex",
                               "column",
                               "cardId",
+                              "timestamp",
+                            ],
+                            "type": "object",
+                          },
+                          {
+                            "additionalProperties": false,
+                            "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                            "properties": {
+                              "expectedSequenceNumber": {
+                                "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Reliable transport message identifier for ACK/replay.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
+                              "playerIndex": {
+                                "description": "Index of the player (0 or 1).",
+                                "maximum": 1,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "strategy": {
+                                "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                "enum": [
+                                  "defensive",
+                                  "aggressive",
+                                  "random",
+                                ],
+                                "type": "string",
+                              },
+                              "timestamp": {
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                                "type": "string",
+                              },
+                              "type": {
+                                "enum": [
+                                  "quickDeploy",
+                                ],
+                                "type": "string",
+                              },
+                            },
+                            "required": [
+                              "type",
+                              "playerIndex",
+                              "strategy",
                               "timestamp",
                             ],
                             "type": "object",
@@ -33442,6 +35728,47 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                       "minItems": 2,
                       "type": "array",
                     },
+                    "quickDeployStrategies": {
+                      "additionalItems": false,
+                      "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+                      "items": [
+                        {
+                          "anyOf": [
+                            {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        {
+                          "anyOf": [
+                            {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                      ],
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array",
+                    },
                     "reinforcement": {
                       "additionalProperties": false,
                       "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
@@ -33531,6 +35858,57 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                   "playerIndex",
                                   "column",
                                   "cardId",
+                                  "timestamp",
+                                ],
+                                "type": "object",
+                              },
+                              {
+                                "additionalProperties": false,
+                                "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                                "properties": {
+                                  "expectedSequenceNumber": {
+                                    "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                                    "maximum": 9007199254740991,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "msgId": {
+                                    "description": "Reliable transport message identifier for ACK/replay.",
+                                    "format": "uuid",
+                                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                    "type": "string",
+                                  },
+                                  "playerIndex": {
+                                    "description": "Index of the player (0 or 1).",
+                                    "maximum": 1,
+                                    "minimum": 0,
+                                    "type": "integer",
+                                  },
+                                  "strategy": {
+                                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                    "enum": [
+                                      "defensive",
+                                      "aggressive",
+                                      "random",
+                                    ],
+                                    "type": "string",
+                                  },
+                                  "timestamp": {
+                                    "format": "date-time",
+                                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                                    "type": "string",
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "quickDeploy",
+                                    ],
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "type",
+                                  "playerIndex",
+                                  "strategy",
                                   "timestamp",
                                 ],
                                 "type": "object",
@@ -34216,6 +36594,49 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     ],
                                     "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                   },
+                                  "quickDeployments": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "cardId": {
+                                          "type": "string",
+                                        },
+                                        "column": {
+                                          "maximum": 11,
+                                          "minimum": 0,
+                                          "type": "integer",
+                                        },
+                                        "gridIndex": {
+                                          "maximum": 9007199254740991,
+                                          "minimum": 0,
+                                          "type": "integer",
+                                        },
+                                        "playerIndex": {
+                                          "maximum": 1,
+                                          "minimum": 0,
+                                          "type": "integer",
+                                        },
+                                        "strategy": {
+                                          "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                          "enum": [
+                                            "defensive",
+                                            "aggressive",
+                                            "random",
+                                          ],
+                                          "type": "string",
+                                        },
+                                      },
+                                      "required": [
+                                        "playerIndex",
+                                        "strategy",
+                                        "cardId",
+                                        "column",
+                                        "gridIndex",
+                                      ],
+                                      "type": "object",
+                                    },
+                                    "type": "array",
+                                  },
                                   "type": {
                                     "enum": [
                                       "deploy",
@@ -34226,6 +36647,102 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 "required": [
                                   "type",
                                   "gridIndex",
+                                  "phaseAfter",
+                                ],
+                                "type": "object",
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "deployments": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "cardId": {
+                                          "type": "string",
+                                        },
+                                        "column": {
+                                          "maximum": 11,
+                                          "minimum": 0,
+                                          "type": "integer",
+                                        },
+                                        "gridIndex": {
+                                          "maximum": 9007199254740991,
+                                          "minimum": 0,
+                                          "type": "integer",
+                                        },
+                                        "playerIndex": {
+                                          "maximum": 1,
+                                          "minimum": 0,
+                                          "type": "integer",
+                                        },
+                                        "strategy": {
+                                          "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                          "enum": [
+                                            "defensive",
+                                            "aggressive",
+                                            "random",
+                                          ],
+                                          "type": "string",
+                                        },
+                                      },
+                                      "required": [
+                                        "playerIndex",
+                                        "strategy",
+                                        "cardId",
+                                        "column",
+                                        "gridIndex",
+                                      ],
+                                      "type": "object",
+                                    },
+                                    "minItems": 1,
+                                    "type": "array",
+                                  },
+                                  "phaseAfter": {
+                                    "anyOf": [
+                                      {
+                                        "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                        "enum": [
+                                          "StartTurn",
+                                          "DeploymentPhase",
+                                          "AttackPhase",
+                                          "AttackResolution",
+                                          "CleanupPhase",
+                                          "ReinforcementPhase",
+                                          "DrawPhase",
+                                          "EndTurn",
+                                        ],
+                                        "type": "string",
+                                      },
+                                      {
+                                        "enum": [
+                                          "gameOver",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    ],
+                                    "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                  },
+                                  "strategy": {
+                                    "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                    "enum": [
+                                      "defensive",
+                                      "aggressive",
+                                      "random",
+                                    ],
+                                    "type": "string",
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "quickDeploy",
+                                    ],
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "type",
+                                  "strategy",
+                                  "deployments",
                                   "phaseAfter",
                                 ],
                                 "type": "object",
@@ -36404,10 +38921,14 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                       },
                       "trigger": {
-                        "description": "State machine trigger that causes a phase transition. Player triggers: deploy, attack, pass, reinforce, forfeit. System triggers: deploy:complete, attack:reinforcement, attack:victory, reinforce:complete, system:advance, system:victory, system:init.",
+                        "description": "State machine trigger that causes a phase transition. Player triggers: deploy, quickDeploy, attack, pass, reinforce, forfeit. System triggers include automatic/complete deployment, attack, reinforcement, draw, victory, advance, and init transitions.",
                         "enum": [
                           "deploy",
                           "deploy:complete",
+                          "quickDeploy",
+                          "quickDeploy:complete",
+                          "deploy:auto",
+                          "deploy:auto:complete",
                           "attack",
                           "attack:reinforcement",
                           "attack:victory",
@@ -36804,7 +39325,25 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
         },
       },
     },
+    "/api/store/equip": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
     "/api/store/inventory": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+          },
+        },
+      },
+    },
+    "/api/store/loadout": {
       "get": {
         "responses": {
           "200": {
@@ -37039,6 +39578,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "FLAWLESS_VICTORY",
                               "BLITZKRIEG",
                               "OVERKILL",
+                              "RANDOM_DEPLOYMENT",
                             ],
                             "type": "string",
                           },
@@ -37946,6 +40486,57 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                         },
                         {
                           "additionalProperties": false,
+                          "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                          "properties": {
+                            "expectedSequenceNumber": {
+                              "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "msgId": {
+                              "description": "Reliable transport message identifier for ACK/replay.",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                              "type": "string",
+                            },
+                            "playerIndex": {
+                              "description": "Index of the player (0 or 1).",
+                              "maximum": 1,
+                              "minimum": 0,
+                              "type": "integer",
+                            },
+                            "strategy": {
+                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                              ],
+                              "type": "string",
+                            },
+                            "timestamp": {
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                              "type": "string",
+                            },
+                            "type": {
+                              "enum": [
+                                "quickDeploy",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "type",
+                            "playerIndex",
+                            "strategy",
+                            "timestamp",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
                           "description": "Declare an attack. Valid during AttackPhase. Requires a card at rank 0 of the attacking column.",
                           "properties": {
                             "attackingColumn": {
@@ -38589,6 +41180,46 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "type": "object",
                         },
                       ],
+                    },
+                    "cosmetics": {
+                      "additionalItems": false,
+                      "items": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "cardSkinId": {
+                              "enum": [
+                                "default",
+                                "dual-loop",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "cardSkinId",
+                          ],
+                          "type": "object",
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "cardSkinId": {
+                              "enum": [
+                                "default",
+                                "dual-loop",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "cardSkinId",
+                          ],
+                          "type": "object",
+                        },
+                      ],
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array",
                     },
                     "events": {
                       "items": {
@@ -39552,6 +42183,47 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "minItems": 2,
                           "type": "array",
                         },
+                        "quickDeployStrategies": {
+                          "additionalItems": false,
+                          "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+                          "items": [
+                            {
+                              "anyOf": [
+                                {
+                                  "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                  "enum": [
+                                    "defensive",
+                                    "aggressive",
+                                    "random",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "type": "null",
+                                },
+                              ],
+                            },
+                            {
+                              "anyOf": [
+                                {
+                                  "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                  "enum": [
+                                    "defensive",
+                                    "aggressive",
+                                    "random",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "type": "null",
+                                },
+                              ],
+                            },
+                          ],
+                          "maxItems": 2,
+                          "minItems": 2,
+                          "type": "array",
+                        },
                         "reinforcement": {
                           "additionalProperties": false,
                           "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
@@ -39641,6 +42313,57 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "playerIndex",
                                       "column",
                                       "cardId",
+                                      "timestamp",
+                                    ],
+                                    "type": "object",
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                                    "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Reliable transport message identifier for ACK/replay.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
+                                      "playerIndex": {
+                                        "description": "Index of the player (0 or 1).",
+                                        "maximum": 1,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "strategy": {
+                                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                        "enum": [
+                                          "defensive",
+                                          "aggressive",
+                                          "random",
+                                        ],
+                                        "type": "string",
+                                      },
+                                      "timestamp": {
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                                        "type": "string",
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "quickDeploy",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "type",
+                                      "playerIndex",
+                                      "strategy",
                                       "timestamp",
                                     ],
                                     "type": "object",
@@ -40326,6 +43049,49 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         ],
                                         "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                       },
+                                      "quickDeployments": {
+                                        "items": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "cardId": {
+                                              "type": "string",
+                                            },
+                                            "column": {
+                                              "maximum": 11,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "gridIndex": {
+                                              "maximum": 9007199254740991,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "playerIndex": {
+                                              "maximum": 1,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "strategy": {
+                                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                              "enum": [
+                                                "defensive",
+                                                "aggressive",
+                                                "random",
+                                              ],
+                                              "type": "string",
+                                            },
+                                          },
+                                          "required": [
+                                            "playerIndex",
+                                            "strategy",
+                                            "cardId",
+                                            "column",
+                                            "gridIndex",
+                                          ],
+                                          "type": "object",
+                                        },
+                                        "type": "array",
+                                      },
                                       "type": {
                                         "enum": [
                                           "deploy",
@@ -40336,6 +43102,102 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "required": [
                                       "type",
                                       "gridIndex",
+                                      "phaseAfter",
+                                    ],
+                                    "type": "object",
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "deployments": {
+                                        "items": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "cardId": {
+                                              "type": "string",
+                                            },
+                                            "column": {
+                                              "maximum": 11,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "gridIndex": {
+                                              "maximum": 9007199254740991,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "playerIndex": {
+                                              "maximum": 1,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "strategy": {
+                                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                              "enum": [
+                                                "defensive",
+                                                "aggressive",
+                                                "random",
+                                              ],
+                                              "type": "string",
+                                            },
+                                          },
+                                          "required": [
+                                            "playerIndex",
+                                            "strategy",
+                                            "cardId",
+                                            "column",
+                                            "gridIndex",
+                                          ],
+                                          "type": "object",
+                                        },
+                                        "minItems": 1,
+                                        "type": "array",
+                                      },
+                                      "phaseAfter": {
+                                        "anyOf": [
+                                          {
+                                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                            "enum": [
+                                              "StartTurn",
+                                              "DeploymentPhase",
+                                              "AttackPhase",
+                                              "AttackResolution",
+                                              "CleanupPhase",
+                                              "ReinforcementPhase",
+                                              "DrawPhase",
+                                              "EndTurn",
+                                            ],
+                                            "type": "string",
+                                          },
+                                          {
+                                            "enum": [
+                                              "gameOver",
+                                            ],
+                                            "type": "string",
+                                          },
+                                        ],
+                                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                      },
+                                      "strategy": {
+                                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                        "enum": [
+                                          "defensive",
+                                          "aggressive",
+                                          "random",
+                                        ],
+                                        "type": "string",
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "quickDeploy",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "type",
+                                      "strategy",
+                                      "deployments",
                                       "phaseAfter",
                                     ],
                                     "type": "object",
@@ -42389,6 +45251,47 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           "minItems": 2,
                           "type": "array",
                         },
+                        "quickDeployStrategies": {
+                          "additionalItems": false,
+                          "description": "Quick-deploy choice per player [P1, P2]. null keeps that player on manual deployment.",
+                          "items": [
+                            {
+                              "anyOf": [
+                                {
+                                  "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                  "enum": [
+                                    "defensive",
+                                    "aggressive",
+                                    "random",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "type": "null",
+                                },
+                              ],
+                            },
+                            {
+                              "anyOf": [
+                                {
+                                  "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                  "enum": [
+                                    "defensive",
+                                    "aggressive",
+                                    "random",
+                                  ],
+                                  "type": "string",
+                                },
+                                {
+                                  "type": "null",
+                                },
+                              ],
+                            },
+                          ],
+                          "maxItems": 2,
+                          "minItems": 2,
+                          "type": "array",
+                        },
                         "reinforcement": {
                           "additionalProperties": false,
                           "description": "Present only during ReinforcementPhase. Indicates which column requires reinforcement after cleanup (§14).",
@@ -42478,6 +45381,57 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "playerIndex",
                                       "column",
                                       "cardId",
+                                      "timestamp",
+                                    ],
+                                    "type": "object",
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                                    "properties": {
+                                      "expectedSequenceNumber": {
+                                        "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                                        "maximum": 9007199254740991,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "msgId": {
+                                        "description": "Reliable transport message identifier for ACK/replay.",
+                                        "format": "uuid",
+                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                        "type": "string",
+                                      },
+                                      "playerIndex": {
+                                        "description": "Index of the player (0 or 1).",
+                                        "maximum": 1,
+                                        "minimum": 0,
+                                        "type": "integer",
+                                      },
+                                      "strategy": {
+                                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                        "enum": [
+                                          "defensive",
+                                          "aggressive",
+                                          "random",
+                                        ],
+                                        "type": "string",
+                                      },
+                                      "timestamp": {
+                                        "format": "date-time",
+                                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                                        "type": "string",
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "quickDeploy",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "type",
+                                      "playerIndex",
+                                      "strategy",
                                       "timestamp",
                                     ],
                                     "type": "object",
@@ -43163,6 +46117,49 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                         ],
                                         "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
                                       },
+                                      "quickDeployments": {
+                                        "items": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "cardId": {
+                                              "type": "string",
+                                            },
+                                            "column": {
+                                              "maximum": 11,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "gridIndex": {
+                                              "maximum": 9007199254740991,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "playerIndex": {
+                                              "maximum": 1,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "strategy": {
+                                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                              "enum": [
+                                                "defensive",
+                                                "aggressive",
+                                                "random",
+                                              ],
+                                              "type": "string",
+                                            },
+                                          },
+                                          "required": [
+                                            "playerIndex",
+                                            "strategy",
+                                            "cardId",
+                                            "column",
+                                            "gridIndex",
+                                          ],
+                                          "type": "object",
+                                        },
+                                        "type": "array",
+                                      },
                                       "type": {
                                         "enum": [
                                           "deploy",
@@ -43173,6 +46170,102 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                     "required": [
                                       "type",
                                       "gridIndex",
+                                      "phaseAfter",
+                                    ],
+                                    "type": "object",
+                                  },
+                                  {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "deployments": {
+                                        "items": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "cardId": {
+                                              "type": "string",
+                                            },
+                                            "column": {
+                                              "maximum": 11,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "gridIndex": {
+                                              "maximum": 9007199254740991,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "playerIndex": {
+                                              "maximum": 1,
+                                              "minimum": 0,
+                                              "type": "integer",
+                                            },
+                                            "strategy": {
+                                              "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                              "enum": [
+                                                "defensive",
+                                                "aggressive",
+                                                "random",
+                                              ],
+                                              "type": "string",
+                                            },
+                                          },
+                                          "required": [
+                                            "playerIndex",
+                                            "strategy",
+                                            "cardId",
+                                            "column",
+                                            "gridIndex",
+                                          ],
+                                          "type": "object",
+                                        },
+                                        "minItems": 1,
+                                        "type": "array",
+                                      },
+                                      "phaseAfter": {
+                                        "anyOf": [
+                                          {
+                                            "description": "Deterministic turn lifecycle phase (RULES.md §4). Each turn executes all 8 phases in order: StartTurn → DeploymentPhase → AttackPhase → AttackResolution → CleanupPhase → ReinforcementPhase → DrawPhase → EndTurn. Player actions are only valid in specific phases.",
+                                            "enum": [
+                                              "StartTurn",
+                                              "DeploymentPhase",
+                                              "AttackPhase",
+                                              "AttackResolution",
+                                              "CleanupPhase",
+                                              "ReinforcementPhase",
+                                              "DrawPhase",
+                                              "EndTurn",
+                                            ],
+                                            "type": "string",
+                                          },
+                                          {
+                                            "enum": [
+                                              "gameOver",
+                                            ],
+                                            "type": "string",
+                                          },
+                                        ],
+                                        "description": "Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).",
+                                      },
+                                      "strategy": {
+                                        "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                        "enum": [
+                                          "defensive",
+                                          "aggressive",
+                                          "random",
+                                        ],
+                                        "type": "string",
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "quickDeploy",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "type",
+                                      "strategy",
+                                      "deployments",
                                       "phaseAfter",
                                     ],
                                     "type": "object",
@@ -44374,6 +47467,57 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "playerIndex",
                               "column",
                               "cardId",
+                              "timestamp",
+                            ],
+                            "type": "object",
+                          },
+                          {
+                            "additionalProperties": false,
+                            "description": "Choose a server-authoritative strategy for all remaining deployment turns. The opponent may continue deploying manually.",
+                            "properties": {
+                              "expectedSequenceNumber": {
+                                "description": "Client freshness guard for rejecting stale or out-of-order actions.",
+                                "maximum": 9007199254740991,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "msgId": {
+                                "description": "Reliable transport message identifier for ACK/replay.",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                                "type": "string",
+                              },
+                              "playerIndex": {
+                                "description": "Index of the player (0 or 1).",
+                                "maximum": 1,
+                                "minimum": 0,
+                                "type": "integer",
+                              },
+                              "strategy": {
+                                "description": "Server-authoritative strategy used to automate a player's remaining deployment turns.",
+                                "enum": [
+                                  "defensive",
+                                  "aggressive",
+                                  "random",
+                                ],
+                                "type": "string",
+                              },
+                              "timestamp": {
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                                "type": "string",
+                              },
+                              "type": {
+                                "enum": [
+                                  "quickDeploy",
+                                ],
+                                "type": "string",
+                              },
+                            },
+                            "required": [
+                              "type",
+                              "playerIndex",
+                              "strategy",
                               "timestamp",
                             ],
                             "type": "object",

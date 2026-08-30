@@ -4,7 +4,7 @@ title: Build Unified Production Assurance Suite
 status: To Do
 assignee: []
 created_date: '2026-07-14 00:17'
-updated_date: '2026-07-14 00:17'
+updated_date: '2026-08-04 22:40'
 labels:
   - production
   - qa
@@ -15,6 +15,8 @@ dependencies:
   - TASK-345.01
   - TASK-345.05
   - TASK-345.06
+  - TASK-343.15
+  - TASK-360.02
 documentation:
   - docs/ops/runbook.md
   - bin/qa/
@@ -48,3 +50,13 @@ Create a non-destructive-by-default production audit that evaluates every requir
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: @codex
+created: 2026-08-04 22:40
+---
+Automation audit sequencing: production assurance consumes the fail-closed gameplay capability matrix and durable browser-versus-SwiftUI proof instead of maintaining another incompatible proof format.
+---
+<!-- COMMENTS:END -->

@@ -22,6 +22,7 @@ var _ MappedNullable = &ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetai
 // ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5 struct for ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5
 type ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5 struct {
 	Type string `json:"type"`
+	WinnerIndex int32 `json:"winnerIndex"`
 }
 
 type _ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5 ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5
@@ -30,9 +31,10 @@ type _ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5 ApiMatche
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5(type_ string) *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5 {
+func NewApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5(type_ string, winnerIndex int32) *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5 {
 	this := ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5{}
 	this.Type = type_
+	this.WinnerIndex = winnerIndex
 	return &this
 }
 
@@ -68,6 +70,30 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5) SetTy
 	o.Type = v
 }
 
+// GetWinnerIndex returns the WinnerIndex field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5) GetWinnerIndex() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.WinnerIndex
+}
+
+// GetWinnerIndexOk returns a tuple with the WinnerIndex field value
+// and a boolean to check if the value has been set.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5) GetWinnerIndexOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.WinnerIndex, true
+}
+
+// SetWinnerIndex sets field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5) SetWinnerIndex(v int32) {
+	o.WinnerIndex = v
+}
+
 func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -79,6 +105,7 @@ func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5) Marsha
 func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["type"] = o.Type
+	toSerialize["winnerIndex"] = o.WinnerIndex
 	return toSerialize, nil
 }
 
@@ -88,6 +115,7 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf5) Unmar
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"type",
+		"winnerIndex",
 	}
 
 	allProperties := make(map[string]interface{})

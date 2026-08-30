@@ -20,11 +20,12 @@ import (
 // checks if the ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5 type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5{}
 
-// ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5 Internal: Initialize match state.
+// ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5 Immediately forfeit the match. Valid in any phase.
 type ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5 struct {
 	Type string `json:"type"`
+	// Index of the player (0 or 1).
+	PlayerIndex int32 `json:"playerIndex"`
 	Timestamp time.Time `json:"timestamp" validate:"regexp=^(?:(?:\\\\d\\\\d[2468][048]|\\\\d\\\\d[13579][26]|\\\\d\\\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\\\d|30)|(?:02)-(?:0[1-9]|1\\\\d|2[0-8])))T(?:(?:[01]\\\\d|2[0-3]):[0-5]\\\\d(?::[0-5]\\\\d(?:\\\\.\\\\d+)?)?(?:Z))$"`
-	Config *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5Config `json:"config,omitempty"`
 	// Reliable transport message identifier for ACK/replay.
 	MsgId *string `json:"msgId,omitempty" validate:"regexp=^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"`
 	// Client freshness guard for rejecting stale or out-of-order actions.
@@ -37,9 +38,10 @@ type _ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5 ApiMatches
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5(type_ string, timestamp time.Time) *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5 {
+func NewApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5(type_ string, playerIndex int32, timestamp time.Time) *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5 {
 	this := ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5{}
 	this.Type = type_
+	this.PlayerIndex = playerIndex
 	this.Timestamp = timestamp
 	return &this
 }
@@ -76,6 +78,30 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) SetTyp
 	o.Type = v
 }
 
+// GetPlayerIndex returns the PlayerIndex field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) GetPlayerIndex() int32 {
+	if o == nil {
+		var ret int32
+		return ret
+	}
+
+	return o.PlayerIndex
+}
+
+// GetPlayerIndexOk returns a tuple with the PlayerIndex field value
+// and a boolean to check if the value has been set.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) GetPlayerIndexOk() (*int32, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.PlayerIndex, true
+}
+
+// SetPlayerIndex sets field value
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) SetPlayerIndex(v int32) {
+	o.PlayerIndex = v
+}
+
 // GetTimestamp returns the Timestamp field value
 func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) GetTimestamp() time.Time {
 	if o == nil {
@@ -98,38 +124,6 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) GetTim
 // SetTimestamp sets field value
 func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) SetTimestamp(v time.Time) {
 	o.Timestamp = v
-}
-
-// GetConfig returns the Config field value if set, zero value otherwise.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) GetConfig() ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5Config {
-	if o == nil || IsNil(o.Config) {
-		var ret ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5Config
-		return ret
-	}
-	return *o.Config
-}
-
-// GetConfigOk returns a tuple with the Config field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) GetConfigOk() (*ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5Config, bool) {
-	if o == nil || IsNil(o.Config) {
-		return nil, false
-	}
-	return o.Config, true
-}
-
-// HasConfig returns a boolean if a field has been set.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) HasConfig() bool {
-	if o != nil && !IsNil(o.Config) {
-		return true
-	}
-
-	return false
-}
-
-// SetConfig gets a reference to the given ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5Config and assigns it to the Config field.
-func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) SetConfig(v ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5Config) {
-	o.Config = &v
 }
 
 // GetMsgId returns the MsgId field value if set, zero value otherwise.
@@ -207,10 +201,8 @@ func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) Marshal
 func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["type"] = o.Type
+	toSerialize["playerIndex"] = o.PlayerIndex
 	toSerialize["timestamp"] = o.Timestamp
-	if !IsNil(o.Config) {
-		toSerialize["config"] = o.Config
-	}
 	if !IsNil(o.MsgId) {
 		toSerialize["msgId"] = o.MsgId
 	}
@@ -226,6 +218,7 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf5) Unmars
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"type",
+		"playerIndex",
 		"timestamp",
 	}
 

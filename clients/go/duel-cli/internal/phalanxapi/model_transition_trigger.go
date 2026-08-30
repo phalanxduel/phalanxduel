@@ -15,13 +15,17 @@ import (
 	"fmt"
 )
 
-// TransitionTrigger State machine trigger that causes a phase transition. Player triggers: deploy, attack, pass, reinforce, forfeit. System triggers: deploy:complete, attack:reinforcement, attack:victory, reinforce:complete, system:advance, system:victory, system:init.
+// TransitionTrigger State machine trigger that causes a phase transition. Player triggers: deploy, quickDeploy, attack, pass, reinforce, forfeit. System triggers include automatic/complete deployment, attack, reinforcement, draw, victory, advance, and init transitions.
 type TransitionTrigger string
 
 // List of TransitionTrigger
 const (
 	TRANSITIONTRIGGER_DEPLOY TransitionTrigger = "deploy"
 	TRANSITIONTRIGGER_DEPLOY_COMPLETE TransitionTrigger = "deploy:complete"
+	TRANSITIONTRIGGER_QUICK_DEPLOY TransitionTrigger = "quickDeploy"
+	TRANSITIONTRIGGER_QUICK_DEPLOY_COMPLETE TransitionTrigger = "quickDeploy:complete"
+	TRANSITIONTRIGGER_DEPLOY_AUTO TransitionTrigger = "deploy:auto"
+	TRANSITIONTRIGGER_DEPLOY_AUTO_COMPLETE TransitionTrigger = "deploy:auto:complete"
 	TRANSITIONTRIGGER_ATTACK TransitionTrigger = "attack"
 	TRANSITIONTRIGGER_ATTACK_REINFORCEMENT TransitionTrigger = "attack:reinforcement"
 	TRANSITIONTRIGGER_ATTACK_VICTORY TransitionTrigger = "attack:victory"
@@ -39,6 +43,10 @@ const (
 var AllowedTransitionTriggerEnumValues = []TransitionTrigger{
 	"deploy",
 	"deploy:complete",
+	"quickDeploy",
+	"quickDeploy:complete",
+	"deploy:auto",
+	"deploy:auto:complete",
 	"attack",
 	"attack:reinforcement",
 	"attack:victory",

@@ -87,6 +87,7 @@ interface RecoverPlayerParams {
   playerId: string;
   playerIndex: 0 | 1;
   userId: string | null;
+  cardSkinId?: PlayerConnection['cardSkinId'];
   disconnectedAt?: string;
 }
 
@@ -95,6 +96,7 @@ function recoverPlayer({
   playerId,
   playerIndex,
   userId,
+  cardSkinId,
   disconnectedAt,
 }: RecoverPlayerParams): PlayerConnection | null {
   if (!playerName) return null;
@@ -103,6 +105,7 @@ function recoverPlayer({
     playerName,
     playerIndex,
     userId: userId ?? undefined,
+    cardSkinId,
     disconnectedAt,
   };
 }
@@ -151,6 +154,7 @@ function recoverPlayers(
       playerId: player0Id,
       playerIndex: 0,
       userId: row.player1Id,
+      cardSkinId: row.player1CardSkin === 'dual-loop' ? 'dual-loop' : 'default',
       disconnectedAt: disconnectedAtByPlayer[0],
     }),
     recoverPlayer({
@@ -158,6 +162,7 @@ function recoverPlayers(
       playerId: player1Id,
       playerIndex: 1,
       userId: row.player2Id,
+      cardSkinId: row.player2CardSkin === 'dual-loop' ? 'dual-loop' : 'default',
       disconnectedAt: disconnectedAtByPlayer[1],
     }),
   ];
@@ -429,6 +434,8 @@ export class MatchRepository {
       requiresEstablishedRating: match.requiresEstablishedRating ?? false,
       player1Name: match.players[0]?.playerName ?? null,
       player2Name: match.players[1]?.playerName ?? null,
+      player1CardSkin: match.players[0]?.cardSkinId ?? 'default',
+      player2CardSkin: match.players[1]?.cardSkinId ?? 'default',
       botStrategy: match.botStrategy ?? null,
       isAutomated: match.isAutomated ?? false,
       creatorIp: match.creatorIp ?? null,

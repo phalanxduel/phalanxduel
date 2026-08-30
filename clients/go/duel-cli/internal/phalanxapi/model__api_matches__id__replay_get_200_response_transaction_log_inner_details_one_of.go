@@ -25,6 +25,7 @@ type ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf struct {
 	GridIndex int32 `json:"gridIndex"`
 	// Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).
 	PhaseAfter string `json:"phaseAfter"`
+	QuickDeployments []ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOfQuickDeploymentsInner `json:"quickDeployments,omitempty"`
 }
 
 type _ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf
@@ -121,6 +122,38 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf) SetPha
 	o.PhaseAfter = v
 }
 
+// GetQuickDeployments returns the QuickDeployments field value if set, zero value otherwise.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf) GetQuickDeployments() []ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOfQuickDeploymentsInner {
+	if o == nil || IsNil(o.QuickDeployments) {
+		var ret []ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOfQuickDeploymentsInner
+		return ret
+	}
+	return o.QuickDeployments
+}
+
+// GetQuickDeploymentsOk returns a tuple with the QuickDeployments field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf) GetQuickDeploymentsOk() ([]ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOfQuickDeploymentsInner, bool) {
+	if o == nil || IsNil(o.QuickDeployments) {
+		return nil, false
+	}
+	return o.QuickDeployments, true
+}
+
+// HasQuickDeployments returns a boolean if a field has been set.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf) HasQuickDeployments() bool {
+	if o != nil && !IsNil(o.QuickDeployments) {
+		return true
+	}
+
+	return false
+}
+
+// SetQuickDeployments gets a reference to the given []ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOfQuickDeploymentsInner and assigns it to the QuickDeployments field.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf) SetQuickDeployments(v []ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOfQuickDeploymentsInner) {
+	o.QuickDeployments = v
+}
+
 func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -134,6 +167,9 @@ func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerDetailsOneOf) ToMap()
 	toSerialize["type"] = o.Type
 	toSerialize["gridIndex"] = o.GridIndex
 	toSerialize["phaseAfter"] = o.PhaseAfter
+	if !IsNil(o.QuickDeployments) {
+		toSerialize["quickDeployments"] = o.QuickDeployments
+	}
 	return toSerialize, nil
 }
 

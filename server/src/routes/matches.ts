@@ -26,6 +26,7 @@ import {
 import * as Hash from '@phalanxduel/shared/hash';
 const { computeStateHash } = Hash;
 import { projectTurnForViewer, projectForViewer } from '../utils/viewer-projection.js';
+import { getMatchCosmetics } from '../cosmetics.js';
 
 type CompactEvent = Record<string, unknown>;
 
@@ -1212,6 +1213,7 @@ export function registerMatchLogRoutes(
               postState,
               action: simAction,
               events,
+              cosmetics: getMatchCosmetics(match),
             },
             viewerIndex,
           );

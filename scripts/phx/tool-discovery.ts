@@ -4,7 +4,7 @@ import * as path from 'path';
 export interface ToolCapability {
   name: string;
   description: string;
-  type: 'gameplay' | 'analysis' | 'admin' | 'engine' | 'data';
+  type: 'gameplay' | 'analysis' | 'admin' | 'engine' | 'data' | 'embeddings';
 }
 
 export function getCapabilities(): ToolCapability[] {

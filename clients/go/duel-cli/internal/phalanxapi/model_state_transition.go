@@ -25,7 +25,7 @@ type StateTransition struct {
 	From string `json:"from"`
 	// Current game phase. One of the 8 turn lifecycle phases or gameOver. The gameOver phase is terminal and set when a victory condition is met (LP depletion, card depletion, forfeit, or pass limit).
 	To string `json:"to"`
-	// State machine trigger that causes a phase transition. Player triggers: deploy, attack, pass, reinforce, forfeit. System triggers: deploy:complete, attack:reinforcement, attack:victory, reinforce:complete, system:advance, system:victory, system:init.
+	// State machine trigger that causes a phase transition. Player triggers: deploy, quickDeploy, attack, pass, reinforce, forfeit. System triggers include automatic/complete deployment, attack, reinforcement, draw, victory, advance, and init transitions.
 	Trigger string `json:"trigger"`
 	Action *string `json:"action,omitempty"`
 	Description string `json:"description"`

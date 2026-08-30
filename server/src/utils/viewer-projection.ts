@@ -6,6 +6,7 @@
 import type { GameState, TurnViewModel } from '@phalanxduel/shared';
 import { projectGameState, projectTurnResult, type TurnProjectionOptions } from './projection.js';
 import type { MatchInstance } from '../match-types.js';
+import { getMatchCosmetics } from '../cosmetics.js';
 
 export function projectStateForViewer(state: GameState, viewerIndex: number | null): GameState {
   return projectGameState(state, viewerIndex).state;
@@ -33,5 +34,6 @@ export function projectForViewer(match: MatchInstance, viewerIndex: number | nul
     action,
     events,
     viewerIndex,
+    cosmetics: getMatchCosmetics(match),
   });
 }

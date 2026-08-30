@@ -10,7 +10,8 @@ export class CommentaryEngine {
   private unsub: (() => void) | null = null;
   private synth: SpeechSynthesis;
   private voice: SpeechSynthesisVoice | null = null;
-  private voiceEnabled = true;
+  // Voice narration is opt-in. Visual narration remains available through the bus consumers.
+  private voiceEnabled = false;
   private voiceVolume = 1.0;
 
   constructor(private bus: NarrationBus) {
@@ -151,6 +152,8 @@ export class CommentaryEngine {
 
   // Public method for Voice Test Reel
   public testVoice(profile: 'male' | 'female', text: string): void {
+    if (!this.voiceEnabled) return;
+
     this.synth.cancel();
 
     // Attempt to match profile based on simple heuristics

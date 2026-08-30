@@ -2,8 +2,8 @@ import type { GameState, TransactionLogEntry, AchievementType } from '@phalanxdu
 
 export interface DetectorContext {
   matchId: string;
-  winnerIndex: number;
-  loserIndex: number;
+  winnerIndex: 0 | 1 | null;
+  loserIndex: 0 | 1 | null;
   finalState: GameState;
   transactionLog: TransactionLogEntry[];
 }

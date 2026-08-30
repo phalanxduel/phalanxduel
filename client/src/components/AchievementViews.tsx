@@ -25,6 +25,7 @@ const EMOJIS: Record<string, string> = {
   FLAWLESS_VICTORY: '💎',
   BLITZKRIEG: '⚡',
   OVERKILL: '💥',
+  RANDOM_DEPLOYMENT: '🎲',
 };
 
 export function AchievementDetailView({ type }: { type: string }) {
@@ -103,6 +104,16 @@ export function AchievementDetailView({ type }: { type: string }) {
           </div>
 
           <div style="display: flex; gap: 2rem; width: 100%; justify-content: center;">
+            {metadata.points !== undefined && (
+              <div style="text-align: center;">
+                <p class="section-label" style="margin-bottom: 0.5rem;">
+                  ACHIEVEMENT_POINTS
+                </p>
+                <p class="status-title" style="font-size: 1.5rem; color: var(--gold);">
+                  +{metadata.points}
+                </p>
+              </div>
+            )}
             <div style="text-align: center;">
               <p class="section-label" style="margin-bottom: 0.5rem;">
                 GLOBAL_RARITY
@@ -217,6 +228,9 @@ export function AllAchievementsView() {
                       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
                         <span class="meta-tag" style="font-size: 0.5rem;">
                           {achievementMeta.category.toUpperCase()}
+                          {achievementMeta.points !== undefined
+                            ? ` · ${achievementMeta.points} PTS`
+                            : ''}
                         </span>
                         <span style="font-size: 0.6rem; color: var(--gold);">
                           {(stats[type] ?? 0).toFixed(1)}% PLAYERS

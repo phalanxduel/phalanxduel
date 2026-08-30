@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - codex
 created_date: '2026-07-13 13:59'
-updated_date: '2026-07-13 14:01'
+updated_date: '2026-08-30 13:45'
 labels:
   - gameplay
   - assurance
@@ -40,12 +40,6 @@ Establish a versioned, evidence-backed assurance program for Phalanx Duel that p
 - [ ] #6 Historical replay behavior remains reproducible under its recorded rules version
 <!-- AC:END -->
 
-## Implementation Plan
-
-<!-- SECTION:PLAN:BEGIN -->
-Execute the approved workstream sequentially on main using the child-task DAG. Begin with TASK-343.01 to establish the assurance charter and stable rule evidence registry; resolve versioned semantics in TASK-343.02; build the independent reference model in TASK-343.03; prove stateful invariants and liveness in TASK-343.04; add authoritative calculation provenance in TASK-343.05; enforce observer knowledge in TASK-343.07 before presenting formulas in TASK-343.06; correct rating settlement in TASK-343.08; run preregistered statistical experiments in TASK-343.09; and finish with the generated assurance manifest and release gates in TASK-343.10. Preserve historical replay compatibility, keep competitive v1 scoped to verified behavior, and run the relevant gameplay, schema, replay, database-isolated, playability, and release verification at each slice.
-<!-- SECTION:PLAN:END -->
-
 ## Definition of Done
 <!-- DOD:BEGIN -->
 - [ ] #1 Code builds without errors (pnpm build)
@@ -55,3 +49,21 @@ Execute the approved workstream sequentially on main using the child-task DAG. B
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+Execute the approved workstream sequentially on main using the child-task DAG. Begin with TASK-343.01 to establish the assurance charter and stable rule evidence registry; resolve versioned semantics in TASK-343.02; build the independent reference model in TASK-343.03; prove stateful invariants and liveness in TASK-343.04; add authoritative calculation provenance in TASK-343.05; enforce observer knowledge in TASK-343.07 before presenting formulas in TASK-343.06; correct rating settlement in TASK-343.08; run preregistered statistical experiments in TASK-343.09; and finish with the generated assurance manifest and release gates in TASK-343.10. Preserve historical replay compatibility, keep competitive v1 scoped to verified behavior, and run the relevant gameplay, schema, replay, database-isolated, playability, and release verification at each slice.
+
+Execution sequence (2026-08-30, durable operating plan): finish TASK-383 verification and documentation first; then execute TASK-343.13 canonical versioned run evidence; then TASK-343.14 shared trajectories across engine/WebSocket/REST/browser/MCP/Go; then TASK-360.03 semantic browser adapter; then TASK-343.10 assurance manifest and release gates; finally TASK-343.15 capability matrix. Each stage must pass its acceptance criteria and relevant checks before the next dependency starts.
+
+Current evidence baseline: the TypeScript playthrough Harness records deterministic manifests, replay/screenshots, QA run and match identifiers, optional O2 correlation attachments, Panoramic View, and Markdown scenario reports. A fresh local capture passed with O2 evidence attached.
+
+Execution gates: preserve server-authoritative rules and observer redaction; use isolated database wrappers for DB work; run schema generation/checks when contracts change; run the playability gate before UI automation changes; record evidence and blockers in the active task; do not advance a dependency on a warning or untested row.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-08-30 @codex: Durable sequential plan established. The immediate blocker is TASK-383, whose implementation is largely present but AC #7 and DoD #3-#5 remain open. The fresh Harness/O2 run validates the intended evidence shape but does not replace TASK-343.13.
+<!-- SECTION:NOTES:END -->

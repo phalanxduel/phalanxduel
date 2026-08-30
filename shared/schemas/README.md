@@ -3,7 +3,7 @@
 Machine-readable [JSON Schema (draft 2020-12)](https://json-schema.org/draft/2020-12/json-schema-core) contracts for the Phalanx Duel public event envelopes.
 
 **These files are auto-generated from the canonical Zod schemas in `shared/src/schema.ts`.**
-Do not edit them by hand — run `pnpm schema:gen` to regenerate.
+Do not edit them by hand — run `pnpm --filter @phalanxduel/shared schema:gen` to regenerate.
 
 ## Schemas
 
@@ -33,7 +33,7 @@ Schemas **not** published here (internal only):
 CI runs `pnpm schema:check` which regenerates schemas and fails if the committed files differ. If you modify `shared/src/schema.ts`, run:
 
 ```shell
-pnpm schema:gen
+pnpm --filter @phalanxduel/shared schema:gen
 ```
 
 Then commit the updated `.schema.json` files alongside your Zod changes.

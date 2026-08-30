@@ -2,6 +2,7 @@ import type { WebSocket } from 'ws';
 import type {
   GameState,
   Action,
+  CardSkinId,
   PhalanxEvent,
   GameOptions,
   MatchParameters,
@@ -37,6 +38,7 @@ export interface PlayerConnection {
   playerName: string;
   playerIndex: number;
   userId?: string;
+  cardSkinId?: CardSkinId;
   disconnectedAt?: string;
 }
 

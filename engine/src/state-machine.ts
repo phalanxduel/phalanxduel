@@ -102,6 +102,32 @@ export const STATE_MACHINE: StateTransition[] = [
   },
   {
     from: 'DeploymentPhase',
+    to: 'DeploymentPhase',
+    trigger: 'quickDeploy',
+    action: 'quickDeploy',
+    description: 'Player chooses a quick-deploy strategy; apply their next alternating placement',
+  },
+  {
+    from: 'DeploymentPhase',
+    to: 'AttackPhase',
+    trigger: 'quickDeploy:complete',
+    action: 'quickDeploy',
+    description: 'Quick-deploy choice fills the final slots and starts combat',
+  },
+  {
+    from: 'DeploymentPhase',
+    to: 'DeploymentPhase',
+    trigger: 'deploy:auto',
+    description: 'Stored quick-deploy strategy applies an automatic alternating placement',
+  },
+  {
+    from: 'DeploymentPhase',
+    to: 'AttackPhase',
+    trigger: 'deploy:auto:complete',
+    description: 'Automatic alternating placement fills the final slots and starts combat',
+  },
+  {
+    from: 'DeploymentPhase',
     to: 'gameOver',
     trigger: 'forfeit',
     action: 'forfeit',

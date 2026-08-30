@@ -33,6 +33,7 @@ export {
 export { resolveAttack, isValidTarget, getBaseAttackDamage, resetColumnHp } from './combat.js';
 export { validateAction, applyAction, getValidActions } from './turns.js';
 export type { ApplyActionOptions } from './turns.js';
+export { chooseQuickDeployAction } from './quick-deploy.js';
 export { replayGame, replayGameAtOrBeforeTurn } from './replay.js';
 export type { ReplayResult, TurnBoundedReplayResult } from './replay.js';
 export {

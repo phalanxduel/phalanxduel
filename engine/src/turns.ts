@@ -8,6 +8,7 @@ import type {
   Action,
   GamePhase,
   PhaseHopTrace,
+  QuickDeployPlacement,
   TransactionLogEntry,
   TransactionDetail,
 } from '@phalanxduel/shared';
@@ -31,6 +32,7 @@ import {
   isReinforcementPhase,
 } from '@phalanxduel/shared';
 import { evaluateLiveness } from './liveness.js';
+import { chooseQuickDeployAction } from './quick-deploy.js';
 
 /** Safely retrieve a player from state, throwing if missing. */
 function getPlayer(state: GameState, index: number): PlayerState {
@@ -171,6 +173,19 @@ export function validateAction(
       return { valid: true };
     }
 
+    case 'quickDeploy': {
+      const player = state.players[action.playerIndex];
+      if (!player) return { valid: false, error: 'Invalid player index' };
+      if (state.quickDeployStrategies?.[action.playerIndex]) {
+        return { valid: false, error: 'Quick deploy strategy already selected' };
+      }
+      const hasOpenSlot = player.battlefield.some((card) => card === null);
+      if (!hasOpenSlot || player.hand.length === 0) {
+        return { valid: false, error: 'No cards remain to deploy' };
+      }
+      return { valid: true };
+    }
+
     case 'attack': {
       const columns = state.params.columns;
       if (action.attackingColumn < 0 || action.attackingColumn >= columns) {
@@ -301,7 +316,11 @@ function applyDeploy(
   state: GameState,
   action: Extract<Action, { type: 'deploy' }>,
   transition: TransitionFn,
-): { resultState: GameState; details: TransactionDetail } {
+  triggers: { placed: TransitionTrigger; complete: TransitionTrigger } = {
+    placed: 'deploy',
+    complete: 'deploy:complete',
+  },
+): { resultState: GameState; details: Extract<TransactionDetail, { type: 'deploy' }> } {
   const playerIndex = action.playerIndex;
   const player = getPlayer(state, playerIndex);
   const handIndex = player.hand.findIndex((c: Card) => c.id === action.cardId);
@@ -326,12 +345,12 @@ function applyDeploy(
 
   if (p0Full && p1Full) {
     const attackFirst = newState.params.initiative.attackFirst === 'P1' ? 0 : 1;
-    newState = transition(newState, 'deploy:complete', 'AttackPhase', {
+    newState = transition(newState, triggers.complete, 'AttackPhase', {
       activePlayerIndex: attackFirst,
       turnNumber: 1,
     });
   } else {
-    newState = transition(newState, 'deploy', 'DeploymentPhase', {
+    newState = transition(newState, triggers.placed, 'DeploymentPhase', {
       activePlayerIndex: playerIndex === 0 ? 1 : 0,
     });
   }
@@ -340,6 +359,47 @@ function applyDeploy(
     resultState: newState,
     details: { type: 'deploy', gridIndex, phaseAfter: newState.phase },
   };
+}
+
+function toQuickDeployPlacement(
+  action: Extract<Action, { type: 'deploy' }>,
+  strategy: QuickDeployPlacement['strategy'],
+  details: Extract<TransactionDetail, { type: 'deploy' }>,
+): QuickDeployPlacement {
+  return {
+    playerIndex: action.playerIndex,
+    strategy,
+    cardId: action.cardId,
+    column: action.column,
+    gridIndex: details.gridIndex,
+  };
+}
+
+function continueQuickDeployment(
+  state: GameState,
+  timestamp: string,
+  transition: TransitionFn,
+): { resultState: GameState; deployments: QuickDeployPlacement[] } {
+  let resultState = state;
+  const deployments: QuickDeployPlacement[] = [];
+
+  while (resultState.phase === 'DeploymentPhase') {
+    const playerIndex = resultState.activePlayerIndex as 0 | 1;
+    const strategy = resultState.quickDeployStrategies?.[playerIndex];
+    if (!strategy) break;
+
+    const deployAction = chooseQuickDeployAction(resultState, playerIndex, strategy, timestamp);
+    if (!deployAction) break;
+
+    const result = applyDeploy(resultState, deployAction, transition, {
+      placed: 'deploy:auto',
+      complete: 'deploy:auto:complete',
+    });
+    deployments.push(toQuickDeployPlacement(deployAction, strategy, result.details));
+    resultState = result.resultState;
+  }
+
+  return { resultState, deployments };
 }
 
 /** Handle the 'attack' action. */
@@ -558,8 +618,47 @@ export function applyAction(
   switch (action.type) {
     case 'deploy': {
       const result = applyDeploy(state, action, transition);
-      resultState = result.resultState;
-      details = result.details;
+      const continued = continueQuickDeployment(result.resultState, timestamp, transition);
+      resultState = continued.resultState;
+      details = {
+        ...result.details,
+        phaseAfter: resultState.phase,
+        ...(continued.deployments.length > 0 ? { quickDeployments: continued.deployments } : {}),
+      };
+      break;
+    }
+
+    case 'quickDeploy': {
+      const playerIndex = action.playerIndex as 0 | 1;
+      const strategies = [...(state.quickDeployStrategies ?? [null, null])] as [
+        QuickDeployPlacement['strategy'] | null,
+        QuickDeployPlacement['strategy'] | null,
+      ];
+      strategies[playerIndex] = action.strategy;
+      const strategyState = { ...state, quickDeployStrategies: strategies };
+      const deployAction = chooseQuickDeployAction(
+        strategyState,
+        playerIndex,
+        action.strategy,
+        timestamp,
+      );
+      if (!deployAction) throw new Error('No legal quick deployment available');
+
+      const first = applyDeploy(strategyState, deployAction, transition, {
+        placed: 'quickDeploy',
+        complete: 'quickDeploy:complete',
+      });
+      const continued = continueQuickDeployment(first.resultState, timestamp, transition);
+      resultState = continued.resultState;
+      details = {
+        type: 'quickDeploy',
+        strategy: action.strategy,
+        deployments: [
+          toQuickDeployPlacement(deployAction, action.strategy, first.details),
+          ...continued.deployments,
+        ],
+        phaseAfter: resultState.phase,
+      };
       break;
     }
 
@@ -702,6 +801,15 @@ export function getValidActions(
       break;
 
     case 'DeploymentPhase':
+      if (
+        !state.quickDeployStrategies?.[playerIndex] &&
+        player.hand.length > 0 &&
+        player.battlefield.some((card) => card === null)
+      ) {
+        for (const strategy of ['defensive', 'aggressive', 'random'] as const) {
+          actions.push({ type: 'quickDeploy', playerIndex, strategy, timestamp });
+        }
+      }
       for (const card of player.hand) {
         for (let col = 0; col < columns; col++) {
           if (!isColumnFull(player.battlefield, col, rows, columns)) {

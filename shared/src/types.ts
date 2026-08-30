@@ -21,6 +21,7 @@ import type {
   CalculationVisibilitySchema,
   CardManifestSchema,
   CardSchema,
+  CardSkinIdSchema,
   CardTypeSchema,
   ClassicModeTypeSchema,
   ClientMessageSchema,
@@ -45,6 +46,7 @@ import type {
   GridPositionSchema,
   LivenessStateSchema,
   MatchConfigClassicSchema,
+  MatchCosmeticsSchema,
   MatchCreatedMessageSchema,
   MatchEventLogSchema,
   MatchHistoryEntrySchema,
@@ -55,8 +57,12 @@ import type {
   PhalanxTurnResultSchema,
   PhaseHopTraceSchema,
   PhaseRulesSchema,
+  PlayerActionSchema,
+  PlayerCosmeticsSchema,
   PlayerSchema,
   PlayerStateSchema,
+  QuickDeployPlacementSchema,
+  QuickDeployStrategySchema,
   ResolutionCueSchema,
   ResolutionModifierSchema,
   ResolutionOutcomeSchema,
@@ -90,6 +96,7 @@ export type CalculationTarget = z.infer<typeof CalculationTargetSchema>;
 export type CalculationVisibility = z.infer<typeof CalculationVisibilitySchema>;
 export type CardManifest = z.infer<typeof CardManifestSchema>;
 export type Card = z.infer<typeof CardSchema>;
+export type CardSkinId = z.infer<typeof CardSkinIdSchema>;
 export type CardType = z.infer<typeof CardTypeSchema>;
 export type ClassicModeType = z.infer<typeof ClassicModeTypeSchema>;
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
@@ -114,6 +121,7 @@ export type GameViewState = z.infer<typeof GameViewStateSchema>;
 export type GridPosition = z.infer<typeof GridPositionSchema>;
 export type LivenessState = z.infer<typeof LivenessStateSchema>;
 export type MatchConfigClassic = z.infer<typeof MatchConfigClassicSchema>;
+export type MatchCosmetics = z.infer<typeof MatchCosmeticsSchema>;
 export type MatchCreatedMessage = z.infer<typeof MatchCreatedMessageSchema>;
 export type MatchEventLog = z.infer<typeof MatchEventLogSchema>;
 export type MatchHistoryEntry = z.infer<typeof MatchHistoryEntrySchema>;
@@ -124,8 +132,12 @@ export type PhalanxEvent = z.infer<typeof PhalanxEventSchema>;
 export type PhalanxTurnResult = z.infer<typeof PhalanxTurnResultSchema>;
 export type PhaseHopTrace = z.infer<typeof PhaseHopTraceSchema>;
 export type PhaseRules = z.infer<typeof PhaseRulesSchema>;
+export type PlayerAction = z.infer<typeof PlayerActionSchema>;
+export type PlayerCosmetics = z.infer<typeof PlayerCosmeticsSchema>;
 export type Player = z.infer<typeof PlayerSchema>;
 export type PlayerState = z.infer<typeof PlayerStateSchema>;
+export type QuickDeployPlacement = z.infer<typeof QuickDeployPlacementSchema>;
+export type QuickDeployStrategy = z.infer<typeof QuickDeployStrategySchema>;
 export type ResolutionCue = z.infer<typeof ResolutionCueSchema>;
 export type ResolutionModifier = z.infer<typeof ResolutionModifierSchema>;
 export type ResolutionOutcome = z.infer<typeof ResolutionOutcomeSchema>;

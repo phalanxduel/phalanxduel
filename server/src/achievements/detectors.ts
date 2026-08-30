@@ -132,9 +132,25 @@ export const deadMansHandDetector: AchievementDetector = ({ finalState }) => {
 };
 
 /**
+ * RANDOM_DEPLOYMENT — Complete a match after opting into Random quick deploy.
+ */
+export const randomDeploymentDetector: AchievementDetector = ({ transactionLog }) => {
+  const players = new Set<0 | 1>();
+  for (const entry of transactionLog) {
+    if (entry.action.type !== 'quickDeploy' || entry.action.strategy !== 'random') continue;
+    players.add(entry.action.playerIndex as 0 | 1);
+  }
+  return [...players].map((playerIndex) => ({
+    type: 'RANDOM_DEPLOYMENT' as const,
+    playerIndex,
+  }));
+};
+
+/**
  * FLAWLESS_VICTORY — Win the match without losing a single Lifepoint.
  */
 export const flawlessVictoryDetector: AchievementDetector = ({ finalState, winnerIndex }) => {
+  if (winnerIndex === null) return [];
   const winner = finalState.players[winnerIndex];
   if (!winner) return [];
   const startingLp = finalState.gameOptions?.startingLifepoints ?? 20;
@@ -148,6 +164,7 @@ export const flawlessVictoryDetector: AchievementDetector = ({ finalState, winne
  * BLITZKRIEG — Win the match in 8 turns or less.
  */
 export const blitzkriegDetector: AchievementDetector = ({ finalState, winnerIndex }) => {
+  if (winnerIndex === null) return [];
   if (finalState.turnNumber <= 8) {
     return [{ type: 'BLITZKRIEG', playerIndex: winnerIndex }];
   }
@@ -219,4 +236,7 @@ export const ALL_DETECTORS: AchievementDetector[] = [
   blitzkriegDetector,
   ironWallDetector,
   overkillDetector,
+  randomDeploymentDetector,
 ];
+
+export const COMPLETION_DETECTORS: AchievementDetector[] = [randomDeploymentDetector];

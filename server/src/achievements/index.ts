@@ -2,7 +2,7 @@ import type { GameState } from '@phalanxduel/shared';
 import { db } from '../db/index.js';
 import { achievements } from '../db/schema.js';
 import { traceDbQuery } from '../db/observability.js';
-import { ALL_DETECTORS } from './detectors.js';
+import { ALL_DETECTORS, COMPLETION_DETECTORS } from './detectors.js';
 import type { DetectorContext } from './detector.js';
 
 export interface ProcessMatchAchievementsOptions {
@@ -26,19 +26,21 @@ export async function processMatchAchievements({
   if (!db) return;
 
   const outcome = finalState.outcome;
-  if (!outcome || outcome.winnerIndex === null) return;
+  if (!outcome) return;
 
   const transactionLog = finalState.transactionLog ?? [];
 
   const ctx: DetectorContext = {
     matchId,
-    winnerIndex: outcome.winnerIndex,
-    loserIndex: outcome.winnerIndex === 0 ? 1 : 0,
+    winnerIndex: outcome.winnerIndex as 0 | 1 | null,
+    loserIndex:
+      outcome.winnerIndex === null ? null : ((outcome.winnerIndex === 0 ? 1 : 0) as 0 | 1),
     finalState,
     transactionLog,
   };
 
-  for (const detector of ALL_DETECTORS) {
+  const detectors = outcome.winnerIndex === null ? COMPLETION_DETECTORS : ALL_DETECTORS;
+  for (const detector of detectors) {
     let detections;
     try {
       detections = detector(ctx);

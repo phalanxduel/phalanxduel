@@ -9,6 +9,12 @@ import { checkVictory } from './state.js';
 import { isGameOver } from '@phalanxduel/shared';
 import type { HeuristicWeights } from './bot-tiers.js';
 
+function getMCTSValidActions(state: GameState): Action[] {
+  return getValidActions(state, state.activePlayerIndex).filter(
+    (action) => action.type !== 'quickDeploy',
+  );
+}
+
 export interface MCTSConfig {
   iterations: number;
   explorationParam: number;
@@ -43,7 +49,7 @@ export class MCTSNode {
   }
 
   public isFullyExpanded(): boolean {
-    const validActions = getValidActions(this.state, this.state.activePlayerIndex);
+    const validActions = getMCTSValidActions(this.state);
     return this.children.size === validActions.length;
   }
 
@@ -157,7 +163,7 @@ export function runMCTS(
 
     // 2. Expansion
     if (!isGameOver(node.state)) {
-      const validActions = getValidActions(node.state, node.state.activePlayerIndex);
+      const validActions = getMCTSValidActions(node.state);
       const untriedActions = validActions.filter((a) => !node.children.has(JSON.stringify(a)));
 
       if (untriedActions.length > 0) {
@@ -174,7 +180,7 @@ export function runMCTS(
     let depth = 0;
     const maxDepth = 100; // Prevent infinite loops
     while (!isGameOver(simulationState) && depth < maxDepth) {
-      const actions = getValidActions(simulationState, simulationState.activePlayerIndex);
+      const actions = getMCTSValidActions(simulationState);
       if (actions.length === 0) break;
       const randomAction = actions[Math.floor(rng() * actions.length)]!;
       simulationState = applyAction(simulationState, randomAction);
@@ -207,7 +213,7 @@ export function runMCTS(
   }
 
   if (!bestAction) {
-    const fallbackActions = getValidActions(initialState, initialState.activePlayerIndex);
+    const fallbackActions = getMCTSValidActions(initialState);
     return (
       fallbackActions[0] || { type: 'pass', playerIndex, timestamp: '1970-01-01T00:00:00.000Z' }
     );

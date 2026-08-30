@@ -38,6 +38,16 @@ receivers:
           parse_from: attributes.span_id
 
 processors:
+  # Keep centralized gameplay analytics focused on this project. Logs remain
+  # unfiltered so Pino event/error records can still be correlated by trace ID.
+  filter/gameplay:
+    error_mode: ignore
+    traces:
+      span:
+        - 'resource.attributes["service.namespace"] != "phalanxduel"'
+    metrics:
+      metric:
+        - 'resource.attributes["service.namespace"] != "phalanxduel"'
   batch:
     timeout: 1s
 
@@ -49,11 +59,11 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
+      processors: [filter/gameplay, batch]
       exporters: [otlphttp/upstream]
     metrics:
       receivers: [otlp]
-      processors: [batch]
+      processors: [filter/gameplay, batch]
       exporters: [otlphttp/upstream]
     logs:
       receivers: [otlp, filelog]

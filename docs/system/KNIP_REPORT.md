@@ -16,11 +16,13 @@
 | :------------------ | :----------------------- | :------- |
 | @phalanxduel/engine | client/package.json:28:6 | error    |
 
-## Unused exports (2)
+## Unused exports (4)
 
 | Name                 | Location                            | Severity |
 | :------------------- | :---------------------------------- | :------- |
 | redactTransactionLog | server/src/utils/redaction.ts:18:17 | error    |
+| normalizeCardSkinId  | client/src/cosmetics.ts:33:17       | error    |
+| CARD_SKINS           | client/src/cosmetics.ts:12:14       | error    |
 | HUD_PHASE_LABELS     | client/src/constants.ts:7:14        | error    |
 
 ## Unused exported types (1)

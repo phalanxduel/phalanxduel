@@ -69,7 +69,7 @@ Generation commands create or update files. Verification commands check for drif
 | --- | --- |
 | `pnpm generate:artifacts` | build metadata + JSON schemas + doc artifacts in sequence |
 | `pnpm infra:metadata` | `shared/src/build-metadata.ts` from environment |
-| `pnpm schema:gen` | `shared/schemas/*.json` from `shared/src/schema.ts` |
+| `pnpm --filter @phalanxduel/shared schema:gen` | `shared/schemas/*.json` from `shared/src/schema.ts` |
 | `pnpm docs:artifacts` | dependency graph, KNIP report, API route table |
 | `pnpm openapi:gen` | OpenAPI JSON from server route annotations |
 | `pnpm sdk:gen` | Go and TypeScript client SDKs |
@@ -78,7 +78,7 @@ Run `pnpm generate:artifacts` after editing schema types, adding routes, or chan
 
 ## Schema and Rules
 
-- `pnpm schema:gen` — regenerate shared JSON Schema artifacts. Run after editing `shared/src/schema.ts`.
+- `pnpm --filter @phalanxduel/shared schema:gen` — regenerate shared JSON Schema artifacts. Run after editing `shared/src/schema.ts`.
 - `pnpm schema:check` — verify schema artifacts are current (runs generation then checks for uncommitted drift).
   Run before committing schema-touching changes, or let `verify:full` call it automatically.
 - `pnpm rules:check` — verify rules docs, runtime FSM consistency, event log coverage, rule evidence, and the independent combat model. Runs four checks:
@@ -99,6 +99,8 @@ Run `pnpm generate:artifacts` after editing schema types, adding routes, or chan
 - `pnpm qa:playthrough` — single headless simulation. Use for quick smoke testing.
 - `pnpm qa:playthrough:verify` — matrix run plus anomaly verification with warnings failing. **Required before marking gameplay or rules changes done.**
 - `pnpm qa:playthrough:ui` — browser-driven headed simulation with two side-by-side Chromium windows, plus an optional third spectator window for stream/recording checks. It supports `--base-url`, `--scenario` (`guest-pvp`, `auth-pvp`, `guest-pvb`, `auth-pvb`), `--bot-opponent`, `--max-games`, `--max-moves`, `--starting-lp`, `--stall-threshold`, `--forfeit-chance`, `--slow-mo-ms`, `--window-width`, `--window-height`, `--window-gap`, `--window-top`, `--devtools`, `--no-devtools`, `--telemetry`, `--no-telemetry`, `--spectator`, `--no-spectator`, `--headed`, and `--headless`. It emits a per-game correlation record (`matchId`, player sessions, trace ID), injects one shared `qa.run_id` into both browser clients, and emits a stable `game.match` client span after match binding.
+- `pnpm qa:panoramic -- --run <capture-dir>` — render an existing captured run as a self-contained, match-scoped Panoramic View timeline across experience, server, engine, evidence, and diagnostics lanes.
+- `pnpm qa:o2:attach -- --run <capture-dir> --input <o2-export.json>` — attach an exported O2 correlation snapshot to a captured run and its manifest.
 - `pnpm qa:playthrough:ui -- --swarm` — staged load-test mode that grows bot cohorts by `--cohort-growth fibonacci|fixed` or `--cohort-sizes`, reuses persistent identities from `--bot-identity-store`, and keeps bot inbox-friendly account names in the `bot+00001@phalanxduel.com` shape via `--bot-email-prefix` and `--bot-email-domain`. Use `--relogin-between-waves` to force logout/relogin cycles between cohorts.
 - `pnpm qa:playthrough:tournament` — ranked mini-tournament browser QA. Reuses persistent tournament bot accounts by default from `artifacts/tournament-accounts.json`, registers any missing players, and supports `--no-persistent-players` for isolated throwaway-account runs.
   Pass `-- --seed NUMBER` to make run IDs, tournament pairing, match option selection, and bot action choices reproducible.

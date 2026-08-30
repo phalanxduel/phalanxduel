@@ -57,6 +57,17 @@ receivers:
           parse_from: attributes.span_id
 
 processors:
+  # This collector is the local Phalanx Duel gameplay boundary. Keep the
+  # signal view focused on Phalanx traces and metrics while retaining all
+  # structured logs for event/error correlation.
+  filter/gameplay:
+    error_mode: ignore
+    traces:
+      span:
+        - 'resource.attributes["service.namespace"] != "phalanxduel"'
+    metrics:
+      metric:
+        - 'resource.attributes["service.namespace"] != "phalanxduel"'
   batch:
     timeout: 1s
 
@@ -69,11 +80,11 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
+      processors: [filter/gameplay, batch]
       exporters: [debug]
     metrics:
       receivers: [otlp]
-      processors: [batch]
+      processors: [filter/gameplay, batch]
       exporters: [debug]
     logs:
       receivers: [otlp, filelog]

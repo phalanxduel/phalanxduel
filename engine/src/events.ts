@@ -73,6 +73,18 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
 
   const currentPhaseParentId = phaseSpanIds[0] ?? turnSpanId;
 
+  const pushDeployEvent = (payload: Record<string, unknown>): void => {
+    events.push({
+      id: makeId(),
+      parentId: currentPhaseParentId,
+      type: 'functional_update',
+      name: TelemetryName.EVENT_DEPLOY,
+      timestamp: entry.timestamp,
+      payload,
+      status: 'ok',
+    });
+  };
+
   if (trace.length > 0) {
     pushPhaseStart(0);
   }
@@ -138,15 +150,17 @@ export function deriveEventsFromEntry(entry: TransactionLogEntry, matchId: strin
       }
 
       case 'deploy': {
-        events.push({
-          id: makeId(),
-          parentId: currentPhaseParentId,
-          type: 'functional_update',
-          name: TelemetryName.EVENT_DEPLOY,
-          timestamp: entry.timestamp,
-          payload: { gridIndex: details.gridIndex, phaseAfter: details.phaseAfter },
-          status: 'ok',
-        });
+        pushDeployEvent({ gridIndex: details.gridIndex, phaseAfter: details.phaseAfter });
+        for (const placement of details.quickDeployments ?? []) {
+          pushDeployEvent({ ...placement, automatic: true, phaseAfter: details.phaseAfter });
+        }
+        break;
+      }
+
+      case 'quickDeploy': {
+        for (const placement of details.deployments) {
+          pushDeployEvent({ ...placement, automatic: true, phaseAfter: details.phaseAfter });
+        }
         break;
       }
 

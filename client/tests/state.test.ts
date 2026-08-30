@@ -161,6 +161,16 @@ describe('state', () => {
           action: null,
           events: [],
         },
+        viewModel: {
+          preState: gs,
+          postState: gs,
+          matchId: 'm1',
+          viewerIndex: 0,
+          action: null,
+          events: [],
+          validActions: [],
+          cosmetics: [{ cardSkinId: 'dual-loop' }, { cardSkinId: 'default' }],
+        },
         spectatorCount: 3,
       } as unknown as ServerMessage);
 
@@ -170,6 +180,7 @@ describe('state', () => {
       expect(s.spectatorCount).toBe(3);
       expect(s.selectedAttacker).toBeNull();
       expect(s.selectedDeployCard).toBeNull();
+      expect(s.playerCosmetics).toEqual([{ cardSkinId: 'dual-loop' }, { cardSkinId: 'default' }]);
     });
 
     it('opens a rejoined completed match directly on the game-over screen', () => {

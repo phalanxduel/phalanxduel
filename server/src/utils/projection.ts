@@ -8,6 +8,7 @@ import type {
   Action,
   PhalanxEvent,
   GameViewModel,
+  MatchCosmetics,
   TurnViewModel,
 } from '@phalanxduel/shared';
 import {
@@ -38,13 +39,14 @@ export interface TurnProjectionOptions {
   action: Action;
   events: PhalanxEvent[];
   viewerIndex: number | null;
+  cosmetics?: MatchCosmetics;
 }
 
 /**
  * Projects a raw TurnResult into a redacted TurnViewModel.
  */
 export function projectTurnResult(options: TurnProjectionOptions): TurnViewModel {
-  const { matchId, preState, postState, action, events, viewerIndex } = options;
+  const { matchId, preState, postState, action, events, viewerIndex, cosmetics } = options;
   const observer = observerForViewer(viewerIndex);
   const projectedPre = projectGameState(preState, viewerIndex);
   const projectedPost = projectGameState(postState, viewerIndex);
@@ -57,5 +59,6 @@ export function projectTurnResult(options: TurnProjectionOptions): TurnViewModel
     action: projectActionForObserver(action, observer),
     events: projectEventsForObserver(events, observer),
     validActions: projectedPost.validActions,
+    cosmetics,
   };
 }

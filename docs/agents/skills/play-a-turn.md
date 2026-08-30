@@ -4,7 +4,7 @@ Play one complete turn in a Phalanx Duel match using the MCP engine tools.
 
 ## What You Need
 
-- A `GameState` object (from `match_create`, `action_submit`, or `match_get`)
+- A `GameState` object (from `match_create`, `match_join`, `match_get_state`, or `action_submit`)
 - The active player's index (`state.activePlayerIndex`)
 - For live matches: `matchId` and `playerId` to submit via `action_submit`
 

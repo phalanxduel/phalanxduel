@@ -57,6 +57,37 @@ const fixtures: Array<{ actionType: string; detailType: string; entry: Transacti
     },
   },
   {
+    actionType: 'quickDeploy',
+    detailType: 'quickDeploy',
+    entry: {
+      sequenceNumber: 2,
+      action: {
+        type: 'quickDeploy',
+        playerIndex: 0,
+        strategy: 'random',
+        timestamp: TIMESTAMP,
+      },
+      stateHashBefore: '',
+      stateHashAfter: '',
+      timestamp: TIMESTAMP,
+      details: {
+        type: 'quickDeploy',
+        strategy: 'random',
+        deployments: [
+          {
+            playerIndex: 0,
+            strategy: 'random',
+            cardId: 'card-random',
+            column: 2,
+            gridIndex: 2,
+          },
+        ],
+        phaseAfter: 'DeploymentPhase',
+      },
+      phaseTrace: [{ from: 'DeploymentPhase', trigger: 'quickDeploy', to: 'DeploymentPhase' }],
+    },
+  },
+  {
     actionType: 'attack',
     detailType: 'attack',
     entry: {

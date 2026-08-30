@@ -209,6 +209,10 @@ export function MatchDetailsDialog({ matchId, onClose, token }: Props) {
                       text = `${playerNameStr} deployed to grid index ${tx.details.gridIndex}`;
                       color = 'var(--neon-blue)';
                       break;
+                    case 'quickDeploy':
+                      text = `${playerNameStr} selected ${tx.details.strategy} quick deploy (${tx.details.deployments.length} placements)`;
+                      color = 'var(--gold)';
+                      break;
                     case 'attack':
                       text = `${playerNameStr} initiated combat`;
                       color = 'var(--neon-red)';

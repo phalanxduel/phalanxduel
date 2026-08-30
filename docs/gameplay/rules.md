@@ -286,6 +286,36 @@ If `modeClassicDeployment == true`:
 
 Other deployment models require version bump.
 
+## 5.1 Quick Deploy Automation
+
+Quick deploy is an input automation for Classic Deployment, not another
+deployment model. On one of their normal deployment turns, a player MAY select
+one of the strategies below. The authoritative engine then chooses that
+player's card and column whenever their next alternating deployment turn
+arrives. The opponent keeps the same alternating turns and MAY continue
+deploying manually or choose their own quick-deploy strategy.
+
+All automatic placements obey the same legality, face-up visibility, opening
+hand, board-capacity, hand-size, event-log, and phase-completion rules as a
+manual `deploy`. A strategy choice is public, cannot inspect the opponent's
+hidden zones, and remains active for that player's remaining deployment turns.
+
+* **Aggressive:** Prefer the front-most currently available rank, then the
+  lowest column. Put stronger cards in the front rank and weaker cards behind
+  it.
+* **Defensive:** Prefer the back-most currently available rank, then the lowest
+  column. Use weaker cards to open a column and put stronger cards behind them.
+* **Random:** Deterministically select a card and legal target from only the
+  choosing player's authoritative state. Choices are ordered by unsigned
+  32-bit FNV-1a of
+  `[matchId]:[playerId]:[deployedCount]:card:[cardId]` and
+  `[matchId]:[playerId]:[deployedCount]:target:[gridIndex]`, with lexical key
+  order breaking hash ties.
+
+The strategy declaration and every automatic placement MUST be retained in the
+transaction log so replay, recovery, event derivation, and achievement
+detection reproduce the same result.
+
 ---
 
 # 6. Attack Declaration
@@ -726,6 +756,7 @@ To support the goal of extreme cross-platform accessibility (from high-end Web t
 ### 20.1 Turn Command DSL
 Actions can be represented as compact strings for low-bandwidth environments:
 *   `D:[col]:[cardID]` (Deploy card to column)
+*   `Q:[defensive|aggressive|random]` (Quick deploy remaining alternating placements)
 *   `A:[atkCol]:[defCol]` (Attack column from column)
 *   `P` (Pass)
 *   `R:[cardID]` (Reinforce current context)

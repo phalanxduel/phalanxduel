@@ -1,4 +1,5 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { PlayerActionSchema } from '@phalanxduel/shared';
 import { z } from 'zod';
 import WebSocket from 'ws';
 import { randomUUID } from 'node:crypto';
@@ -412,16 +413,7 @@ export function registerGameplayTools(server: McpServer): void {
       inputSchema: {
         matchId: z.uuid().describe('Match ID returned by match_create'),
         playerId: z.string().describe('Player ID returned by match_create'),
-        action: z
-          .object({
-            type: z.enum(['deploy', 'attack', 'pass', 'reinforce', 'forfeit']),
-            playerIndex: z.number().int().min(0).max(1),
-            timestamp: z.string().datetime().optional(),
-            cardId: z.string().optional(),
-            column: z.number().int().min(0).max(11).optional(),
-            expectedSequenceNumber: z.number().int().min(0).optional(),
-          })
-          .describe('Action to submit'),
+        action: PlayerActionSchema,
         serverUrl: z.string().url().optional().describe('Override GAME_SERVER_URL for this call'),
         token: z.string().optional().describe('Override AGENT_TOKEN for this call'),
       },
@@ -452,11 +444,6 @@ export function registerGameplayTools(server: McpServer): void {
 
         // Submit the action
         const actionMsgId = randomUUID();
-        const resolvedAction = {
-          ...action,
-          timestamp: action.timestamp ?? new Date().toISOString(),
-        };
-
         const actionPromise = waitForMessages(ws, (msgs) => {
           const hasAck = msgs.some((m) => m.type === 'ack' && m.ackedMsgId === actionMsgId);
           const hasState = hasType(msgs, 'gameState');
@@ -464,7 +451,7 @@ export function registerGameplayTools(server: McpServer): void {
           return (hasAck && hasState) || hasError;
         });
 
-        sendJson(ws, { type: 'action', msgId: actionMsgId, matchId, action: resolvedAction });
+        sendJson(ws, { type: 'action', msgId: actionMsgId, matchId, action });
 
         const msgs = await actionPromise;
         ws.close();
