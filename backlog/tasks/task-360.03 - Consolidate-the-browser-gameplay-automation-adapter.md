@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-08-04 22:40'
-updated_date: '2026-08-30 21:44'
+updated_date: '2026-08-30 21:59'
 labels:
   - browser
   - automation
@@ -62,4 +62,12 @@ Replace duplicated selector, phase, action, wait, and terminal-state logic with 
 
 <!-- SECTION:NOTES:BEGIN -->
 2026-08-30 started after TASK-343.14 completion. Mandatory pnpm qa:playthrough:verify passed 12/12 scenarios with zero anomalies; browser adapter work is unblocked.
+
+2026-08-30 adapter slice: mandatory playability gate passed 12/12 with zero anomalies. Extended bin/qa/game-automator.ts with semantic phase observation, phase/terminal readiness waits, quickDeploy, pass, skipReinforcement, and forfeit methods. Routed simulate-ui pass/skip/forfeit actions through the shared adapter. Focused adapter lint and client typecheck pass; commit 0417aae passed verification hook.
+
+Remaining TASK-360.03 work: migrate deploy/attack selection fully into the adapter, exercise all quick-deploy strategies and mixed manual/quick UI flows, replace remaining fixed sleeps/class-dependent selectors, and run browser/visual/cross-client evidence gates.
+
+Browser validation found and fixed two real transition defects: qaQuickStart now sends classic.modes.quickStart parity required by strict server validation; PvB setup selects the bot before private match creation instead of waiting on a stale lobby. Terminal handling now waits for the semantic game-over-result after the game-over shell appears, preventing outcome reads during presentation latency. Client suite 237/237 and lint:tools pass. Browser evidence: local guest-pvb created and played against bot with match ed74e1f1-c04a-4e52-9a2e-0cad3922fede, trace d0428622d83fd3f5fcb3e2d945035d48; run reached live attack/reinforce turns. A low-LP terminal surfaced a remaining issue: the browser harness can loop on a visible forfeit command without receiving a terminal transition, and clipboard-copy NotAllowedError is noisy in headless mode. Keep task open for command idempotency/terminal assertion and quick-deploy strategy coverage.
+
+Commit 4c2ce47 adds --quick-deploy-strategy defensive|aggressive|random to simulate-ui and routes the selected player-visible control through GameAutomator.quickDeploy. lint:tools and CLI help verification pass. Next browser gate should run one non-quick-start game per strategy plus a mixed manual/quick flow; task remains In Progress until those runs and visual/cross-client reuse are proven.
 <!-- SECTION:NOTES:END -->
