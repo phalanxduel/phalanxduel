@@ -1,11 +1,16 @@
 import { readFile } from 'node:fs/promises';
 import { createInitialState, applyAction, computeBotAction } from '../../engine/src/index.ts';
-import { ActionSchema, DamageModeSchema } from '../../shared/src/index.ts';
+import {
+  ActionSchema,
+  DamageModeSchema,
+  GameplayTrajectorySchema,
+} from '../../shared/src/index.ts';
 import type { Action, DamageMode } from '../../shared/src/index.ts';
 import { computeStateHash } from '../../shared/src/hash.ts';
 import { z } from 'zod';
 
 export const ScenarioPlayerTypeSchema = z.enum(['bot-random', 'bot-heuristic', 'bot-mcts']);
+type ScenarioPlayerType = z.infer<typeof ScenarioPlayerTypeSchema>;
 const SCENARIO_TIMESTAMP = '1970-01-01T00:00:00.000Z';
 
 export const GameScenarioSchema = z.object({
@@ -22,6 +27,36 @@ export const GameScenarioSchema = z.object({
 });
 
 export type GameScenario = z.infer<typeof GameScenarioSchema>;
+
+export type ScenarioExecutionInput = GameScenario & {
+  trajectory?: z.infer<typeof GameplayTrajectorySchema>;
+  expectedCheckpoints?: z.infer<typeof GameplayTrajectorySchema>['checkpoints'];
+};
+
+export async function loadScenarioOrTrajectory(path: string): Promise<ScenarioExecutionInput> {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
+  const raw = JSON.parse(await readFile(path, 'utf8')) as unknown;
+  const trajectory = GameplayTrajectorySchema.safeParse(raw);
+  if (trajectory.success) {
+    const strategy = (value: string): ScenarioPlayerType =>
+      value === 'heuristic' ? 'bot-heuristic' : value === 'mcts' ? 'bot-mcts' : 'bot-random';
+    return {
+      version: 1,
+      id: trajectory.data.match.matchId,
+      seed: trajectory.data.match.seed,
+      damageMode: trajectory.data.match.damageMode,
+      startingLifepoints: trajectory.data.match.startingLifepoints,
+      p1: strategy(trajectory.data.strategies[0]),
+      p2: strategy(trajectory.data.strategies[1]),
+      actions: trajectory.data.actions,
+      finalStateHash: trajectory.data.terminalStateHash,
+      turnCount: trajectory.data.checkpoints.at(-1)?.turnNumber ?? 0,
+      trajectory: trajectory.data,
+      expectedCheckpoints: trajectory.data.checkpoints,
+    };
+  }
+  return GameScenarioSchema.parse(raw);
+}
 
 export async function loadScenario(path: string): Promise<GameScenario> {
   // eslint-disable-next-line security/detect-non-literal-fs-filename

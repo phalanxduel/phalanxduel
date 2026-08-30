@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-08-04 22:39'
-updated_date: '2026-08-30 14:20'
+updated_date: '2026-08-30 14:43'
 labels:
   - assurance
   - qa
@@ -17,6 +17,17 @@ documentation:
   - docs/reference/qa-runners.md
   - docs/adr/ADR-005-deterministic-replay-hash-compatibility.md
   - docs/adr/ADR-017-authoritative-view-model-projection.md
+modified_files:
+  - shared/src/schema.ts
+  - shared/src/types.ts
+  - shared/schemas/gameplay-trajectory.schema.json
+  - shared/schemas/README.md
+  - shared/scripts/generate-schemas.ts
+  - shared/tests/trajectory.test.ts
+  - bin/qa/record-trajectory.ts
+  - bin/qa/verify-trajectory.ts
+  - package.json
+  - docs/reference/qa-runners.md
 parent_task_id: TASK-343
 priority: high
 type: task
@@ -63,4 +74,10 @@ Make one deterministic gameplay trajectory the shared behavioral input for engin
 
 <!-- SECTION:NOTES:BEGIN -->
 2026-08-30 started after TASK-343.13 completion. Initial focus is repository-native trajectory/scenario tooling and adapter parity; no UI changes are planned.
+
+2026-08-30 implementation slice: added GameplayTrajectorySchema v1 with authoritative match parameters, strategy declarations, exact Action payloads, ordered checkpoints, observer projection hashes, event types, phase/turn checkpoints, and terminal hash integrity.
+
+Added qa:trajectory:record and qa:trajectory:verify. Offline deterministic fixture recorded 42 actions and 43 checkpoints from scenario-42; terminal hash matched scenario finalStateHash exactly. Verification catches schema, state, observer, event, phase/turn, and terminal drift.
+
+Commit 35415717 passed the full verify:quick hook. Network WebSocket and REST-fallback adapter execution remains the next slice.
 <!-- SECTION:NOTES:END -->

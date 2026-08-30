@@ -87,6 +87,14 @@ state-hash, observer-projection, phase/turn, event, terminal-state, or schema
 drift. The trajectory is the input that network adapters should consume; it
 does not permit a runner to silently choose a replacement bot strategy.
 
+The API/WebSocket playthrough accepts the same trajectory with `--scenario`;
+when a trajectory is supplied it preserves its action timestamps and compares
+each server transaction hash with the recorded checkpoint:
+
+```bash
+pnpm qa:api:run -- --scenario <trajectory.json> --base-url ws://127.0.0.1:3001/ws
+```
+
 ## Versioned run evidence
 
 All supported runner manifests can be normalized into the shared

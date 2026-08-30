@@ -26,7 +26,7 @@ import type { ClientMessage } from '../../shared/src/index.ts';
 import { createInitialState, applyAction as engineApplyAction } from '../../engine/src/index.ts';
 import type { GameConfig } from '../../engine/src/index.ts';
 import { computeStateHash } from '../../shared/src/hash.ts';
-import { loadScenario, type GameScenario } from './scenario';
+import { loadScenarioOrTrajectory, type ScenarioExecutionInput } from './scenario';
 import { beginQaRun, type QaRun } from './telemetry.js';
 import { canonicalizeLegacyRun } from './run-evidence.ts';
 
@@ -323,7 +323,7 @@ async function runSingleGame(
   seed: number,
   damageMode: DamageMode,
   startingLp: number,
-  scenarioData?: GameScenario,
+  scenarioData?: ScenarioExecutionInput,
 ): Promise<RunManifest> {
   const startAt = new Date().toISOString();
   const startMs = Date.now();
@@ -546,8 +546,9 @@ async function runSingleGame(
         throw new Error(`API_GAP: No valid actions for ${activeName} in phase ${currentPhase}`);
       }
 
-      // Ensure timestamp is fresh
-      chosenAction.timestamp = new Date().toISOString();
+      // Preserve canonical trajectory timestamps; generated scenarios retain
+      // the historical live-run behavior of using a current timestamp.
+      if (!scenarioData?.trajectory) chosenAction.timestamp = new Date().toISOString();
 
       // Throttle slightly to avoid hitting the server's 50 msgs/sec WebSocket rate limit
       await new Promise((resolve) => setTimeout(resolve, 25));
@@ -657,6 +658,13 @@ async function runSingleGame(
       const localTxEntry = localState.transactionLog?.at(-1);
       const localHash = localTxEntry?.stateHashAfter ?? '';
       const serverHash = serverTxEntry?.stateHashAfter ?? '';
+
+      const expectedCheckpoint = scenarioData?.expectedCheckpoints?.[actionCount];
+      if (expectedCheckpoint && serverHash !== expectedCheckpoint.stateHash) {
+        throw new Error(
+          `TRAJECTORY_DRIFT: server hash mismatch at action ${actionCount} (expected=${expectedCheckpoint.stateHash.slice(0, 12)} server=${serverHash.slice(0, 12)})`,
+        );
+      }
 
       if (!localHash || !serverHash) {
         log(
@@ -871,9 +879,9 @@ async function main(): Promise<void> {
   let successes = 0;
   let failures = 0;
 
-  let scenarioData: GameScenario | undefined;
+  let scenarioData: ScenarioExecutionInput | undefined;
   if (opts.scenarioPath) {
-    scenarioData = await loadScenario(opts.scenarioPath);
+    scenarioData = await loadScenarioOrTrajectory(opts.scenarioPath);
     opts.seed = scenarioData.seed;
     opts.damageModes = [scenarioData.damageMode];
     opts.startingLifepoints = [scenarioData.startingLifepoints];
