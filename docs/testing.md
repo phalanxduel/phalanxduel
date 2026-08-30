@@ -20,6 +20,11 @@ rtk pnpm test:run:server
 rtk pnpm test:run:shared
 ```
 
+The database-backed server suite runs with Vitest file parallelism disabled.
+Several server fixtures share process-level HTTP/WebSocket resources, so this
+keeps the canonical test command deterministic while retaining test-level
+concurrency where safe.
+
 ### 2. Gameplay Truth Gate (Headless Simulation)
 Deterministic simulations that verify game rules and state integrity across hundreds of scenarios.
 
