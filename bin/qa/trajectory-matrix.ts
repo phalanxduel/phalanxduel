@@ -137,6 +137,24 @@ function buildTrajectory(testCase: MatrixCase, index: number): GameplayTrajector
     checkpoints.push(checkpoint(state, actions.length));
   }
 
+  // Carry ordinary fixtures into the attack/reinforcement loop. This keeps
+  // deployment-policy coverage and combat-policy coverage in one trajectory,
+  // while terminal fixtures intentionally stop at their explicit action.
+  for (
+    let guard = 0;
+    !testCase.terminalAction && state.phase !== 'gameOver' && guard < 80;
+    guard++
+  ) {
+    const playerIndex = state.activePlayerIndex as 0 | 1;
+    const combatAction = computeBotAction(state, playerIndex, {
+      strategy: 'heuristic',
+      seed: 9000 + index + guard,
+    });
+    actions.push(combatAction);
+    state = apply(state, combatAction);
+    checkpoints.push(checkpoint(state, actions.length));
+  }
+
   if (testCase.terminalAction && state.phase !== 'gameOver') {
     const playerIndex = state.activePlayerIndex as 0 | 1;
     const terminal: Action =
@@ -179,8 +197,16 @@ function buildTrajectory(testCase: MatrixCase, index: number): GameplayTrajector
   });
 }
 
+const trajectories = CASES.map((testCase, index) => buildTrajectory(testCase, index));
+const actionTypes = new Set(
+  trajectories.flatMap((trajectory) => trajectory.actions.map((action) => action.type)),
+);
+for (const required of ['attack', 'reinforce', 'pass'] as const) {
+  if (!actionTypes.has(required)) throw new Error(`trajectory matrix missing ${required} coverage`);
+}
+
 for (const [index, testCase] of CASES.entries()) {
-  const trajectory = buildTrajectory(testCase, index);
+  const trajectory = trajectories[index]!;
   console.log(
     `${testCase.name}: ${trajectory.actions.length} actions, ` +
       `${trajectory.actions.filter((action) => action.type === 'deploy').length} deploy, ` +
