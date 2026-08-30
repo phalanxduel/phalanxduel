@@ -1659,17 +1659,9 @@ async function runSingleGame(
       return determineOutcome(p1, p2, setup.matchKind);
     }
 
-    const p1IsActive = await p1.page
-      .locator('.status-my-turn')
-      .isVisible()
-      .catch(() => false);
+    const p1IsActive = await new GameAutomator(p1.page).isMyTurn();
     const p2IsActive =
-      setup.matchKind === 'pvp' && p2
-        ? await p2.page
-            .locator('.status-my-turn')
-            .isVisible()
-            .catch(() => false)
-        : false;
+      setup.matchKind === 'pvp' && p2 ? await new GameAutomator(p2.page).isMyTurn() : false;
 
     if (p1IsActive) {
       idleLoopCount = 0;

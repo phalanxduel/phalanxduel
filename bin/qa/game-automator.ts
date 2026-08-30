@@ -68,6 +68,11 @@ export class GameAutomator {
     await this.page.waitForSelector('[data-testid="game-over"]', { state: 'visible', timeout });
   }
 
+  async isMyTurn(): Promise<boolean> {
+    const turnIndicator = this.page.locator('[data-testid="turn-indicator"]');
+    return (await turnIndicator.textContent().catch(() => null))?.trim() === 'YOUR_TURN';
+  }
+
   async waitForOutcome(timeout = 15_000): Promise<void> {
     await this.page.waitForSelector('[data-testid="game-over-result"]', {
       state: 'visible',

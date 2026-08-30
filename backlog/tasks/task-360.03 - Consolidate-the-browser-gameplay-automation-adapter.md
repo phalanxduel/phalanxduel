@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-08-04 22:40'
-updated_date: '2026-08-30 22:51'
+updated_date: '2026-08-30 22:56'
 labels:
   - browser
   - automation
@@ -74,4 +74,6 @@ Commit 4c2ce47 adds --quick-deploy-strategy defensive|aggressive|random to simul
 2026-08-30 visual gate: elevated local Chromium capture against healthy local server passed 3/3. The game-initial-board snapshot was intentionally regenerated to include the current semantic quick-deploy command console; lobby and component checks passed unchanged. Temporary no-webserver Playwright config was removed.
 
 2026-08-30 strategy evidence: elevated browser run created match b6fe42d3-d9dc-4361-9a8d-30067b8073cc and successfully submitted quickDeploy strategy=defensive through the semantic UI control. After server advancement the runner stalled while the browser continued heartbeat ACK/ping traffic and never reached the next action; bounded run was stopped. Treat this as a transition/readiness defect to diagnose before claiming the three-strategy matrix.
+
+2026-08-30 adapter fix: replaced simulate-ui turn ownership checks based on styling class .status-my-turn with GameAutomator.isMyTurn(), reading semantic [data-testid=turn-indicator] text YOUR_TURN. lint:tools and direct client tsc pass. Browser rerun still stalls after quickDeploy while awaiting the PvB bot transition; keep diagnosis open.
 <!-- SECTION:NOTES:END -->
