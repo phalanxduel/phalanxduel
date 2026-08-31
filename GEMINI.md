@@ -4,6 +4,9 @@ Gemini uses [`AGENTS.md`](AGENTS.md) as the canonical repo instruction surface.
 This file only records Gemini-specific routing/context that must remain
 consistent with `AGENTS.md`.
 
+**Cold-start resume state** = the `CURRENT FOCUS` block at the top of `AGENTS.md`.
+Closing a session = rewrite that block + commit, before the wrap-up summary.
+
 # RTK - Rust Token Killer
 
 **Usage**: Token-optimized CLI proxy (60-90% savings on dev operations)
