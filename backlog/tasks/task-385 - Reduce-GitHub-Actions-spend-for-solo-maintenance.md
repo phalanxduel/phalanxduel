@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-08-30 23:57'
-updated_date: '2026-08-30 23:58'
+updated_date: '2026-08-31 06:35'
 labels:
   - ci
   - maintenance
@@ -71,4 +71,8 @@ Discovery: pipeline.yml runs test, adversarial, publish-sdks, build, and product
 Implemented cost baseline: publish-sdks now requires manual workflow_dispatch with publish_sdks=true; Gemini scheduled triage and stale processing are manual-only. Deployment/testing docs distinguish required gates from optional SDK artifacts.
 
 Validation: actionlint passed all workflow files; pnpm lint:md passed 692 Markdown files; git diff --check passed.
+
+Remote Pipeline 33347538177 completed with adversarial security passing, but Test and Lint failed; build, production promotion, and SDK publication were skipped. The failure log was dominated by server test-lane output and could not be narrowed reliably before GitHub API connectivity degraded.
+
+Current blocker: gh authentication token for account just3ws is invalid, so rerun/failed-log inspection is unavailable. Do not repeatedly spend CI minutes until credentials are repaired and the failed job is understood.
 <!-- SECTION:NOTES:END -->

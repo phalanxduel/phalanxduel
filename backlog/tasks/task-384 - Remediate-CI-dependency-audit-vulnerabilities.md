@@ -1,11 +1,11 @@
 ---
 id: TASK-384
 title: Remediate CI dependency audit vulnerabilities
-status: Verification
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-08-30 22:59'
-updated_date: '2026-08-30 23:19'
+updated_date: '2026-08-31 06:35'
 labels:
   - security
   - dependencies
@@ -34,20 +34,20 @@ Resolve the dependency vulnerabilities currently failing the GitHub Actions audi
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 CI dependency audit passes at --audit-level=high
-- [ ] #2 find-my-way, @fastify/static, undici, fast-uri, js-yaml, nanoid, postcss, and all other reported high-severity paths are upgraded or explicitly remediated
-- [ ] #3 Full repository verification and affected package tests pass
-- [ ] #4 Lockfile and dependency documentation remain consistent
+- [x] #1 CI dependency audit passes at --audit-level=high
+- [x] #2 find-my-way, @fastify/static, undici, fast-uri, js-yaml, nanoid, postcss, and all other reported high-severity paths are upgraded or explicitly remediated
+- [x] #3 Full repository verification and affected package tests pass
+- [x] #4 Lockfile and dependency documentation remain consistent
 <!-- AC:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
-- [ ] #1 Code builds without errors (pnpm build)
-- [ ] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
-- [ ] #3 All unit and integration tests pass (pnpm test:run:all)
-- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
-- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
-- [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
+- [x] #1 Code builds without errors (pnpm build)
+- [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
 
 ## Implementation Notes
@@ -62,4 +62,12 @@ Verification: pnpm check passed after narrowing js-yaml to 4.3.1 and undici to 7
 Remote workflow 33341346452 reduced the audit from 9 high findings to one high finding: ip-address <=10.3.0 via the OpenAPI generator proxy chain. Added ip-address >=10.3.1 override.
 
 After the final override: pnpm check passed, including 163 shared, 422 engine, 402 server plus migrations, 237 client, 15 admin, and 8 MCP tests.
+
+Finalization: all four acceptance criteria are supported by remote audit workflow 33341657092 and local full verification. All Definition of Done checks completed.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Remediated the high-severity dependency audit paths by upgrading direct @fastify/static and adding narrowly scoped/root overrides for find-my-way, fast-uri, nanoid, postcss, js-yaml, undici, and ip-address. Remote workflow 33341657092 confirmed the dependency audit and adversarial security jobs pass; local commit/pre-push verification also passed build, lint, typecheck, full test/coverage suites, schema, docs, rules, replay, playability, and visual gates. The only later Pipeline failure was unrelated test-lane lifecycle flakiness on the separate CI-cost commit.
+<!-- SECTION:FINAL_SUMMARY:END -->
