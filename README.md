@@ -4,6 +4,8 @@ Arm yourself for battle with spades and clubs and shields against your opponent.
 
 Phalanx Duel is a tactical 1v1 card combat game. This repository contains the core rules engine and the official web implementation as a TypeScript monorepo.
 
+Phalanx Duel is also a hands-on architecture laboratory maintained by [Mike Hall](https://www.just3ws.com/), a Principal Software Engineer and Systems Architect available for hire for legacy modernization, distributed systems, platform resilience, OpenTelemetry, and AI-augmented engineering work. See the [Principal resume](https://www.just3ws.com/resumes/mike-hall-principal-software-engineer/) or [contact Mike](https://www.just3ws.com/contact/).
+
 ## 🚀 Quick Start
 
 ### 1. Prerequisites
@@ -46,6 +48,8 @@ The **[Documentation Wiki](docs/README.md)** is the central entry point for all 
 - **[Configuration](docs/configuration.md)** — Environment variables and secrets
 - **[Architecture](docs/architecture/principles.md)** — System design and boundaries
 - **[Contributing](CONTRIBUTING.md)** — Workflow, standards, and PR expectations
+
+Generated QA, playthrough, and presentation captures are local evidence rather than source code and are excluded from Git. Public site media required for builds is maintained in the [site repository](https://github.com/phalanxduel/phalanxduel.github.io); large local captures may be stored on external project storage.
 
 ## 🗺️ Monorepo Map
 
