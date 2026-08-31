@@ -81,9 +81,10 @@ narration and combat explanations remain available.
 The latest release line is **v1.5.0**. Current work includes cosmetic
 entitlements and payment experiments, desktop/Go distribution, native-client
 parity evidence, and production operations. The unresolved items are as
-important to the story as the shipped features: staging TLS, production OTel
-activation, truthful readiness signals, local database ownership, browser
-automation, dependency auditing, and an MCTS configuration race.
+important to the story as the shipped features: production OTel activation,
+truthful readiness signals, Fly.io billing before the next release can be
+promoted, browser automation, dependency maintenance, and an MCTS
+configuration race.
 
 **The one-sentence history:** Phalanx Duel moved from “can the rules be made
 playable?” to “can the same rules be exposed, explained, replayed, documented,
@@ -286,8 +287,8 @@ working, degraded, or merely configured?
 #### Slide: Honest roadmap
 
 - Production assurance and truthful readiness signals.
-- Staging TLS/connectivity.
-- Local database ownership repair so route documentation generation completes.
+- Production OTel restoration and truthful readiness signals.
+- Fly.io billing/account remediation so tested images can be promoted.
 - MCTS bot-configuration race.
 - Shared browser gameplay adapter and canonical evidence format.
 - Dependency/security audit after registry connectivity is available.
@@ -326,9 +327,9 @@ rtk pnpm qa:playthrough:verify
 ```
 
 Then run one short, deterministic engine demonstration and one browser
-demonstration. Keep a recorded fallback because the current local route-doc
-pipeline has a Postgres table-ownership issue and remote staging has recently
-failed TLS connectivity.
+demonstration. Keep a recorded fallback because production promotion is
+currently blocked by Fly.io billing, while the existing production release
+remains healthy.
 
 ### Suggested audience interaction
 
