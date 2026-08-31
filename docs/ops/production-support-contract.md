@@ -45,7 +45,7 @@ not a release prerequisite, fallback, health target, or supported endpoint.
 | `PD-PROD-008` | Required | Private MCP admin gateway | Fly private network or operator proxy only | MCP/Ops | No public route exists; missing or invalid bearer tokens are rejected; authorized read succeeds |
 | `PD-PROD-009` | Required | Transactional email | Postmark through the server email provider | Server/Ops | Provider configuration is present and a controlled test message reaches the operator test inbox |
 | `PD-PROD-010` | Required | Public product site and operational documentation | `https://phalanxduel.com/` and the GitHub wiki | Docs/Ops | Site deployment is green, public version context matches the game, and links resolve |
-| `PD-PROD-011` | Required | Generated Go and TypeScript SDK artifacts | GitHub Actions artifacts for the release SHA | SDK/Release | Compatibility tests pass and both artifacts publish from the released contract |
+| `PD-PROD-011` | Optional | Generated Go and TypeScript SDK artifacts | GitHub Actions artifacts when explicitly requested | SDK/Release | When requested, compatibility tests pass and both artifacts publish from the released contract |
 | `PD-PROD-012` | Required | Immutable release, rollback, and recovery path | GHCR image promoted to `phalanxduel-production` | Release/Ops | CI, security, build, promotion, health, rollback, and reconnect evidence refer to the same release SHA |
 | `PD-PROD-013` | Optional | Go duel CLI | `clients/go/duel-cli/` | Clients | Compatibility and local client checks pass against the published API contract |
 | `PD-PROD-014` | Retired | Staging deployment | None | Release/Ops | No active job, endpoint probe, approval gate, or operator prerequisite targets staging |

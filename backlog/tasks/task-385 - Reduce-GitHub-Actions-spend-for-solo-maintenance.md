@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-08-30 23:57'
-updated_date: '2026-08-31 12:59'
+updated_date: '2026-08-31 13:16'
 labels:
   - ci
   - maintenance
@@ -78,3 +78,13 @@ Current blocker: gh authentication token for account just3ws is invalid, so reru
 
 2026-08-31 follow-up: gh authentication was refreshed and remote evidence was inspected. Main run 33365794879 passed all unit/server/OpenAPI tests and adversarial security tests; its only failure was deterministic Linux visual mismatch for lobby-advanced-open. Downloaded CI artifacts showed all three retries produced identical actual hash 48596d97effec2162c96900da754735b076485ea, while the committed Linux baseline was stale. Refreshed qa/visual-regression/tests/visual.spec.ts-snapshots/lobby-advanced-open-chromium-linux.png from the stable CI capture. Local qa:playthrough:verify and pnpm verify:quick passed; local visual run had a separate stale reused-server Darwin lobby-main mismatch and must not be treated as a code failure. Pending commit/push and remote verification.
 <!-- SECTION:NOTES:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: @codex
+created: 2026-08-31 13:16
+---
+2026-08-31 follow-up: Production pipeline 33394909468 passed adversarial security, Test and Lint, and Build and Push. Production promotion failed with Fly.io HTTP 403 because the account has overdue invoices; no new production release was created. Existing production remains healthy: game `/health` and `/ready`, and admin `/health` and `/ready` all returned success with database ok. Corrected active deployment docs to make SDK publication optional and production-only environment wording. `verify:production-contract`, `docs:check`, and `lint:md` pass.
+---
+<!-- COMMENTS:END -->

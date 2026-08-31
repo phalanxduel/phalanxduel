@@ -7,7 +7,7 @@ Duel runtime and observability workflow.
 
 | Variable | Scope | Default | Required | Purpose |
 | --- | --- | --- | --- | --- |
-| `APP_ENV` | Runtime | none | yes for deploys | Deployment environment label (`staging`, `production`) |
+| `APP_ENV` | Runtime | none | yes for deploys | Deployment environment label (`production`) |
 | `NODE_ENV` | Runtime | `development` | yes | Node runtime mode |
 | `HOST` | Server | `0.0.0.0` | no | Bind address |
 | `PORT` / `PHALANX_SERVER_PORT` | Server | `3001` | no | Game-server HTTP listen port |
@@ -49,10 +49,9 @@ Duel runtime and observability workflow.
 
 Deployment label used for environment-specific behavior and telemetry tags.
 
-Examples:
+Example:
 
 ```bash
-APP_ENV=staging
 APP_ENV=production
 ```
 
@@ -85,8 +84,8 @@ expect `3001` unless there is an explicit reason to change it.
 
 ### DATABASE_URL
 
-Postgres connection string. Required for staging and production, optional for
-guest-only local flows that do not touch persistence.
+Postgres connection string. Required for production, optional for guest-only
+local flows that do not touch persistence.
 
 For host-run local development, `rtk pnpm dev:server` and
 `rtk pnpm dev:admin` default to the project development database at
@@ -400,7 +399,7 @@ OTEL_SERVICE_NAME=phx-server
 
 ```bash
 NODE_ENV=production
-APP_ENV=staging
+APP_ENV=development
 PHALANX_SERVER_PORT=3001
 DATABASE_URL="<compose-postgres-uri>"
 OTEL_EXPORTER_OTLP_ENDPOINT="http://otel-collector:4318"

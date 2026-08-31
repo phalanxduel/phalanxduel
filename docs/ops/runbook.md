@@ -51,7 +51,8 @@ Use `docs/ops/deployment-checklist.md` for the operator checklist and
 
 ### 2.2 Production Promotion
 
-1. Verify the `main` test, adversarial-security, SDK, and image-build jobs.
+1. Verify the `main` test, adversarial-security, and image-build jobs. Verify
+   SDK publication only when it was explicitly requested for that dispatch.
 2. Confirm the candidate GHCR image identifies the approved Git SHA.
 3. Trigger or approve the `Promote: Production` workflow in GitHub Actions.
 4. Verify production identity, health, and readiness at

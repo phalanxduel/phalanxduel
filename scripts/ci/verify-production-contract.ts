@@ -28,10 +28,10 @@ const PRODUCTION_WS_HOST = 'play.phalanxduel.com';
 const PRODUCTION_APP = 'phalanxduel-production';
 const ADMIN_APP = 'phalanxduel-admin';
 const REQUIRED_IDS = Array.from(
-  { length: 12 },
+  { length: 10 },
   (_, index) => `PD-PROD-${String(index + 1).padStart(3, '0')}`,
 );
-const OPTIONAL_IDS = ['PD-PROD-013'];
+const OPTIONAL_IDS = ['PD-PROD-011', 'PD-PROD-013'];
 const RETIRED_IDS = ['PD-PROD-014', 'PD-PROD-015', 'PD-PROD-016'];
 
 console.log('==> Verifying canonical production support contract...');

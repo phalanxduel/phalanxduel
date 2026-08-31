@@ -22,7 +22,8 @@ instructions.
       shared `ADMIN_INTERNAL_TOKEN`; the game app has the same internal token
 - [ ] schema/migration changes are understood and safe to promote
 - [ ] the candidate GHCR image was built from the approved Git SHA
-- [ ] test, adversarial-security, SDK, and image-build jobs are green
+- [ ] test, adversarial-security, and image-build jobs are green
+- [ ] if SDK publication was explicitly requested, its job is green
 - [ ] rollback owner and procedure are clear before promotion
 - [ ] active-match impact is understood: deploys and rollbacks may drop sockets,
       and reconnect continues under the original timeout window rather than a
@@ -35,7 +36,8 @@ instructions.
 
 Production releases are gated by manual approval in GitHub Actions.
 
-1. Review the successful test, adversarial, SDK, and image-build jobs.
+1. Review the successful test, adversarial, and image-build jobs. If SDK
+   publication was explicitly requested, review that job as well.
 2. Confirm the image metadata matches the approved release SHA.
 3. Approve the `production` environment in the pipeline.
 4. Let the workflow promote the tested image:
