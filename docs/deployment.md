@@ -80,7 +80,9 @@ Once merged into `main`, the pipeline switches to **Artifact Production**.
 ## 5. Phase 4: Production (The Promotion)
 
 Production releases are **never automatic**. They require manual approval after
-the test, adversarial-security, SDK, and image-build jobs succeed.
+the test, adversarial-security, and image-build jobs succeed. SDK artifact
+publication is optional and runs only when a maintainer manually dispatches the
+pipeline with `publish_sdks` enabled.
 
 ### Promotion Gate
 - **Manual Approval**: A maintainer must explicitly click **"Approve and Deploy"** in the GitHub Actions Environment UI.

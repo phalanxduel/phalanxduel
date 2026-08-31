@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      publish_sdks:
+        description: 'Build and upload optional SDK artifacts'
+        required: false
+        type: boolean
+        default: false
 
 env:
   REGISTRY: ghcr.io
@@ -223,6 +229,7 @@ jobs:
   publish-sdks:
     name: Publish SDK Artifacts
     needs: [test]
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_sdks == true
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout

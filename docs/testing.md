@@ -127,6 +127,18 @@ We enforce >80% code coverage on core packages.
 rtk pnpm test:coverage:run
 ```
 
+## GitHub Actions cost baseline
+
+The normal `main` push and pull-request pipeline runs the gameplay, adversarial
+server-authority, dependency-audit, build, contract, replay, and visual gates.
+SDK artifact publication is not part of every run because it is not required to
+validate or deploy the application. To publish SDK artifacts intentionally,
+manually dispatch the `Pipeline` workflow and enable `publish_sdks`.
+
+Issue stale-processing and Gemini scheduled triage are also manual-only. This
+keeps recurring maintenance and external AI usage opt-in for the solo
+maintainer while preserving the reusable Gemini workflows for explicit calls.
+
 ## Test Fixtures
 
 When writing tests that depend on specific card sequences or timestamps, use fixed seeds or `drawTimestamp` in the `GameConfig` to ensure reproducibility.
