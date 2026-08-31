@@ -10,6 +10,27 @@ related:
   - docs/system/AI_COLLABORATION.md
 ---
 
+<!-- ═══════════════════════════════════════════════════════════════════════
+     CURRENT FOCUS  —  last updated 2026-08-31
+     Cold-start resume state, canonical for every agent tool. Whoever closes
+     a session rewrites this block in place — step one, before the wrap-up.
+     Backlog + git log are truth for exact task status / SHAs; if this block
+     contradicts them, trust them and fix the block.
+
+       In flight: verify against Backlog (`backlog/tasks/`) and the most
+       recent phalanxduel entry in ~/.config/adots/handoffs/. Recent work
+       (git log): solo-maintainer CI spend reduction; insecure-origin
+       browser session fix (UUID fallback); dependency-audit remediation.
+       Open thread noted in the last Codex handoff: consolidating the
+       browser-gameplay automation adapter (task-360.03).
+       Deep handoff (local-only, never commit):
+         ~/.config/adots/handoffs/YYYY-MM-DD-*phalanx*.md  (or -2 / dated)
+
+     Close ritual: rewrite this block + commit; write the deep handoff for
+     anything unfinished. Reference impl: wwworkremote/core's
+     docs/agents/session-handoff.md.
+     ═══════════════════════════════════════════════════════════════════════ -->
+
 <!-- backlog-instructions v1 -->
 <CRITICAL_INSTRUCTION>
 
