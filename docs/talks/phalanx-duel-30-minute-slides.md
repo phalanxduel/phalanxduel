@@ -6,6 +6,8 @@ title: Phalanx Duel — Make the Rules Legible
 description: A 30-minute Software Craftsmanship talk about a deterministic tactical game as a systems laboratory.
 ---
 
+<!-- Editable PowerPoint export: phalanx-duel-30-minute-slides.pptx -->
+
 # Phalanx Duel
 
 ## Make the rules legible
@@ -44,7 +46,7 @@ not a claim that every planned platform surface is complete.
 
 July 2022 · Camp Tesomas
 
-![bg right:42%](https://phalanxduel.com/assets/history/primary/notebook/page_01.png)
+![bg right:42%](../site/assets/history/primary/notebook/page_01.png)
 
 - A standard 52-card deck
 - A notebook of formation and damage sketches
