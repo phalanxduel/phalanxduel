@@ -223,6 +223,28 @@ describe('state', () => {
       expect(getState().screen).toBe('gameOver');
     });
 
+    it('allows a synchronous terminal callback to promote the committed state', async () => {
+      const { completeTerminalPresentation } = await import('../src/state');
+      onTurnResult(() => completeTerminalPresentation());
+      const preState = makeGameState('AttackPhase');
+      const postState = makeGameState('gameOver');
+
+      dispatch({
+        type: 'gameState',
+        matchId: 'm1',
+        result: {
+          postState,
+          preState,
+          matchId: 'm1',
+          playerId: 'p1',
+          action: null,
+          events: [],
+        },
+      } as unknown as ServerMessage);
+
+      expect(getState().screen).toBe('gameOver');
+    });
+
     it('invokes turnResultCallback if registered', () => {
       const cb = vi.fn();
       onTurnResult(cb);

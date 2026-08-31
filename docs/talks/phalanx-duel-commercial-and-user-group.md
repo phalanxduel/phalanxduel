@@ -331,6 +331,20 @@ demonstration. Keep a recorded fallback because production promotion is
 currently blocked by Fly.io billing, while the existing production release
 remains healthy.
 
+To capture a complete local PvB game and retain both a full recording and a
+short highlight:
+
+```bash
+rtk pnpm exec tsx bin/qa/capture-gameplay-gif.ts \
+  --base-url http://127.0.0.1:5173 \
+  --out-dir artifacts/presentation-local \
+  --max-turns 120
+```
+
+The recorder requires the match to reach the authoritative `TERMINATED` or
+game-over state. It writes `gameplay-full.mp4` and `gameplay.webm` for the
+complete match, plus `gameplay.gif` as a 28-second highlight.
+
 ### Suggested audience interaction
 
 Pause after the combat-resolution diagram and ask: “Where would you put the

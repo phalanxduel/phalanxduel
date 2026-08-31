@@ -26,6 +26,7 @@ Usage:
 Options:
   --base-url <url>   Site URL (default: http://127.0.0.1:5173)
   --out-dir <dir>    Output directory (default: artifacts/marketing)
+  --max-turns <n>    Maximum browser turns before failing (default: 120)
   --help, -h         Show this help
 `);
   process.exit(0);
@@ -36,6 +37,7 @@ const { values } = parseArgs({
   options: {
     'base-url': { type: 'string' },
     'out-dir': { type: 'string', default: 'artifacts/marketing' },
+    'max-turns': { type: 'string', default: '120' },
     help: { type: 'boolean', default: false },
   },
 });
@@ -43,6 +45,7 @@ const { values } = parseArgs({
 const BASE_URL = values['base-url'] || process.env.PHALANX_BASE_URL || 'http://127.0.0.1:5173';
 const OUT_DIR = join(process.cwd(), values['out-dir'] as string);
 const VIDEO_TMP = join(OUT_DIR, '.video-tmp');
+const MAX_TURNS = Math.max(1, Number.parseInt(values['max-turns'] as string, 10) || 120);
 
 async function openCommandDrawer(page: Page): Promise<void> {
   const drawer = page.locator('.phx-command-drawer').first();
@@ -63,7 +66,7 @@ async function clickCommandBtn(page: Page, testId: string, label: string): Promi
   return page
     .locator(`[data-testid="${testId}"], .phx-drawer-content button:has-text("${label}")`)
     .first()
-    .click()
+    .click({ timeout: 1500 })
     .then(() => true)
     .catch(() => false);
 }
@@ -71,7 +74,7 @@ async function clickCommandBtn(page: Page, testId: string, label: string): Promi
 async function playTurn(page: Page, idx: number): Promise<string> {
   const phaseText = await page
     .locator('[data-testid="phase-indicator"]')
-    .textContent({ timeout: 4000 })
+    .textContent({ timeout: 1500 })
     .catch(() => null);
   if (!phaseText) return 'no-phase';
 
@@ -163,6 +166,7 @@ async function main(): Promise<void> {
   page.on('dialog', async (d) => d.accept());
 
   let videoPath: string | undefined;
+  let completed = false;
 
   try {
     console.log('Opening lobby...');
@@ -192,17 +196,34 @@ async function main(): Promise<void> {
     await page.waitForSelector('[data-testid="game-layout"]', { timeout: 15000 });
     await page.waitForTimeout(1500);
 
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < MAX_TURNS; i++) {
+      const phase = await page
+        .locator('[data-testid="game-layout"]')
+        .getAttribute('data-phase')
+        .catch(() => null);
       const gameOver = await page
-        .locator('[data-testid="game-over"], [data-phase="GameOver"]')
+        .locator('[data-testid="game-over"], [data-phase="GameOver"], text=Game Over')
         .isVisible()
         .catch(() => false);
-      if (gameOver) {
-        await page.waitForTimeout(2500);
+      if (gameOver || (phase && /TERMINATED|GAMEOVER/i.test(phase))) {
+        await page.waitForSelector('[data-testid="game-over"]', {
+          state: 'visible',
+          // The terminal cue is queued after the final combat narration;
+          // allow the presentation pipeline to finish before failing the
+          // capture rather than mistaking a narrated terminal board for a
+          // missing game-over screen.
+          timeout: 60_000,
+        });
+        completed = true;
+        await page.waitForTimeout(3500);
         break;
       }
       const result = await playTurn(page, i);
       if (result === 'no-phase') break;
+    }
+
+    if (!completed) {
+      throw new Error(`Gameplay recording did not reach game-over within ${MAX_TURNS} turns`);
     }
 
     videoPath = await page.video()?.path();
@@ -221,7 +242,25 @@ async function main(): Promise<void> {
   console.log(`WebM: ${webmPath}`);
 
   const gifPath = join(OUT_DIR, 'gameplay.gif');
+  const mp4Path = join(OUT_DIR, 'gameplay-full.mp4');
   const palettePath = join(VIDEO_TMP, 'palette.png');
+
+  console.log('Encoding full-game MP4...');
+  await exec('ffmpeg', [
+    '-y',
+    '-i',
+    webmPath,
+    '-c:v',
+    'libx264',
+    '-crf',
+    '18',
+    '-preset',
+    'medium',
+    '-pix_fmt',
+    'yuv420p',
+    mp4Path,
+  ]);
+  console.log(`Full-game MP4: ${mp4Path}`);
 
   // Trim: skip lobby setup, cap at 28s to stay within 15-30s target
   const SS = '4';

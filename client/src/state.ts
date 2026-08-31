@@ -495,7 +495,6 @@ function handleGameStateMessage(message: Extract<ServerMessage, { type: 'gameSta
     vibrate([100, 50, 100]);
   }
 
-  for (const cb of turnResultCallbacks) cb(message.result);
   setState({
     // Keep the resolved board mounted while the narration queue explains
     // the lethal transaction. The terminal narration boundary promotes
@@ -509,6 +508,12 @@ function handleGameStateMessage(message: Extract<ServerMessage, { type: 'gameSta
     spectatorCount: message.spectatorCount ?? 0,
     playerCosmetics: message.viewModel?.cosmetics ?? DEFAULT_MATCH_COSMETICS,
   });
+
+  // Consumers may emit the terminal presentation boundary synchronously.
+  // Notify them only after the resolved game state is committed so that
+  // completeTerminalPresentation() can promote the board to the game-over
+  // screen during the same turn.
+  for (const cb of turnResultCallbacks) cb(message.result);
 }
 
 export function completeTerminalPresentation(): void {
