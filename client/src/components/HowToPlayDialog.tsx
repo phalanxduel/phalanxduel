@@ -87,7 +87,7 @@ export function HowToPlayDialog({ onClose }: HowToPlayDialogProps) {
             </h4>
             <p class="intel-text" style="font-size: 1rem; line-height: 1.5;">
               Attack an opposing column using your active <strong>FRONT ROW</strong> unit. If the
-              attacker's value is greater than the defender's, the target is destroyed.
+              attacker's value meets or exceeds the defender's, the target is destroyed.
               <br />
               <br />
               Any remaining damage (Carryover) cascades backward to the next unit in the target
@@ -107,7 +107,8 @@ export function HowToPlayDialog({ onClose }: HowToPlayDialogProps) {
                   ♠ SPADES (Offense)
                 </div>
                 <div class="status-val" style="margin-top: 8px;">
-                  Deals <strong>2x Damage</strong> directly to the opponent's Core Lifepoints.
+                  As the attacker, doubles carryover damage the instant it crosses into the
+                  opponent's Core Lifepoints.
                 </div>
               </div>
               <div class="status-card" style="border-left: 2px solid var(--neon-blue);">
@@ -115,8 +116,8 @@ export function HowToPlayDialog({ onClose }: HowToPlayDialogProps) {
                   ♣ CLUBS (Offense)
                 </div>
                 <div class="status-val" style="margin-top: 8px;">
-                  Deals <strong>2x Damage</strong> against the very first unit it hits during an
-                  attack.
+                  As the attacker, doubles carryover damage once, the first time it hands off from
+                  one unit to another after a kill.
                 </div>
               </div>
               <div class="status-card" style="border-left: 2px solid var(--neon-red);">
@@ -124,8 +125,8 @@ export function HowToPlayDialog({ onClose }: HowToPlayDialogProps) {
                   ♥ HEARTS (Defense)
                 </div>
                 <div class="status-val" style="margin-top: 8px;">
-                  When destroyed, its value is absorbed from the attack before hitting your Core
-                  Lifepoints.
+                  If it is the last unit destroyed before damage reaches your Core Lifepoints, its
+                  value is subtracted from that hit first.
                 </div>
               </div>
               <div class="status-card" style="border-left: 2px solid var(--neon-red);">
@@ -133,8 +134,8 @@ export function HowToPlayDialog({ onClose }: HowToPlayDialogProps) {
                   ♦ DIAMONDS (Defense)
                 </div>
                 <div class="status-val" style="margin-top: 8px;">
-                  Pierces shields. Deals damage equal to its value directly, stopping any cascade or
-                  carryover.
+                  When destroyed, its value is subtracted from the carryover damage passed to the
+                  next unit.
                 </div>
               </div>
             </div>

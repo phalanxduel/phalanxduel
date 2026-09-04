@@ -74,9 +74,9 @@ export function WelcomeDialog({
           <div class="intel-block">
             <h4 class="meta-tag">WHAT IS THIS</h4>
             <p class="intel-text">
-              Phalanx Duel is a strategic card game I invented with a plain deck of playing cards
-              and some friends willing to give it a try. Now it's on the web — same core concept,
-              online multiplayer, and a few things a physical deck can't do.
+              Phalanx Duel started as a tabletop card game, played with a plain deck and a few
+              willing friends. It's now on the web: the same core rules, online multiplayer, and a
+              few things a physical deck can't do.
             </p>
           </div>
 
@@ -137,9 +137,9 @@ export function WelcomeDialog({
             <h4 class="meta-tag">A NOTE FROM THE CREATOR</h4>
             <p class="intel-text" style="font-style: italic; opacity: 0.9;">
               This is a labor of love. I built Phalanx Duel because I wanted to share something I
-              genuinely enjoy with more people — and because building it has been its own reward.
+              genuinely enjoy with more people, and because building it has been its own reward.
               It's not done, but I feel good about where it is. Your feedback, patience, and
-              willingness to play an unfinished game means a lot. — Mike
+              willingness to play an unfinished game mean a lot. — Mike
             </p>
           </div>
 
