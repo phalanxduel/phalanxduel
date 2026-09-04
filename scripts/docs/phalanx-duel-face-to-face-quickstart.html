@@ -1,0 +1,1072 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Phalanx Duel | Face-to-Face Quickstart</title>
+    <style>
+      @page {
+        size: Letter;
+        margin: 0;
+      }
+      :root {
+        --paper: #fffdf8;
+        --ink: #172033;
+        --muted: #566071;
+        --teal: #0f766e;
+        --teal-dark: #115e59;
+        --teal-wash: #eaf5f2;
+        --amber: #d97706;
+        --amber-wash: #fff4df;
+        --red: #c7374f;
+        --blue: #2775a6;
+        --line: #d9d5ca;
+        --soft: #f5f2eb;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #e7e3db;
+        color: var(--ink);
+        font-family: 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .page {
+        width: 8.5in;
+        height: 11in;
+        margin: 0 auto;
+        padding: 0.4in 0.48in 0.34in;
+        background: var(--paper);
+        position: relative;
+        page-break-after: always;
+        overflow: hidden;
+      }
+      .page:last-child {
+        page-break-after: auto;
+      }
+      .page::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 0.09in;
+        background: linear-gradient(90deg, var(--teal) 0 68%, var(--amber) 68% 100%);
+      }
+      .masthead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.12in;
+      }
+      .brand {
+        color: var(--teal-dark);
+        font-size: 12px;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .brand-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 0.24in;
+        height: 0.24in;
+        margin-right: 0.08in;
+        color: white;
+        background: var(--teal);
+        clip-path: polygon(50% 0, 92% 18%, 85% 72%, 50% 100%, 15% 72%, 8% 18%);
+        font-size: 10px;
+        letter-spacing: 0;
+        vertical-align: middle;
+      }
+      .folio {
+        color: var(--muted);
+        font-size: 8.5px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 0;
+        font-size: 29px;
+        line-height: 1.02;
+        letter-spacing: -0.025em;
+        font-weight: 800;
+      }
+      .dek {
+        margin: 0.07in 0 0.14in;
+        color: var(--muted);
+        font-size: 11.5px;
+        line-height: 1.38;
+      }
+      h2 {
+        margin: 0;
+        color: var(--teal-dark);
+        font-size: 10px;
+        line-height: 1.15;
+        font-weight: 800;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+      }
+      h3 {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.15;
+        font-weight: 800;
+      }
+      p {
+        margin: 0;
+        font-size: 10.5px;
+        line-height: 1.38;
+      }
+      b,
+      strong {
+        font-weight: 800;
+      }
+      .goal {
+        display: grid;
+        grid-template-columns: 1.05in 1fr auto;
+        gap: 0.16in;
+        align-items: center;
+        padding: 0.12in 0.16in;
+        border-top: 2px solid var(--teal);
+        border-bottom: 2px solid var(--teal);
+        background: var(--teal-wash);
+        margin-bottom: 0.17in;
+      }
+      .goal .label {
+        color: var(--teal-dark);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .goal .sentence {
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.16;
+      }
+      .goal .life {
+        color: var(--teal-dark);
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .learn-grid {
+        display: grid;
+        grid-template-columns: 3.18in 1fr;
+        gap: 0.24in;
+        align-items: start;
+      }
+      .section-head {
+        display: flex;
+        align-items: center;
+        gap: 0.1in;
+        margin-bottom: 0.1in;
+      }
+      .section-head::after {
+        content: '';
+        height: 1px;
+        flex: 1;
+        background: var(--line);
+      }
+      .steps {
+        display: grid;
+        gap: 0.09in;
+      }
+      .step {
+        display: grid;
+        grid-template-columns: 0.31in 1fr;
+        gap: 0.1in;
+        align-items: start;
+        position: relative;
+      }
+      .step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 0.15in;
+        top: 0.31in;
+        bottom: -0.09in;
+        width: 1px;
+        background: var(--line);
+      }
+      .step-num {
+        width: 0.3in;
+        height: 0.3in;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        background: var(--teal);
+        font-size: 11px;
+        font-weight: 800;
+        position: relative;
+        z-index: 1;
+      }
+      .step:last-child .step-num {
+        background: var(--amber);
+      }
+      .step h3 {
+        margin: 0.005in 0 0.025in;
+      }
+      .step p {
+        color: var(--muted);
+        font-size: 10.3px;
+        line-height: 1.33;
+      }
+      .battlefield {
+        padding-left: 0.02in;
+      }
+      .battlefield svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .keyline {
+        margin-top: 0.08in;
+        padding: 0.08in 0.11in;
+        border-left: 3px solid var(--amber);
+        background: var(--amber-wash);
+        color: var(--ink);
+        font-size: 9.7px;
+        line-height: 1.32;
+      }
+      .turn-map {
+        margin-top: 0.17in;
+        padding: 0.15in 0.16in 0.14in;
+        border: 2px solid var(--teal);
+        background: white;
+        position: relative;
+      }
+      .turn-map::before,
+      .turn-map::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        width: 0.26in;
+        height: 2px;
+        background: var(--amber);
+      }
+      .turn-map::before {
+        left: 0.22in;
+      }
+      .turn-map::after {
+        right: 0.22in;
+      }
+      .turn-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.11in;
+      }
+      .turn-head strong {
+        font-size: 15px;
+        line-height: 1;
+      }
+      .turn-head span {
+        color: var(--muted);
+        font-size: 9px;
+      }
+      .turn-flow {
+        display: grid;
+        grid-template-columns: 1fr 0.18in 1fr 0.18in 1fr 0.18in 1fr;
+        align-items: start;
+      }
+      .turn-step {
+        padding-right: 0.05in;
+      }
+      .turn-step .verb {
+        color: var(--teal-dark);
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .turn-step p {
+        margin-top: 0.035in;
+        font-size: 10.1px;
+        line-height: 1.28;
+      }
+      .chev {
+        color: var(--amber);
+        font-size: 20px;
+        line-height: 0.9;
+        font-weight: 800;
+        text-align: center;
+      }
+      .handoff {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.14in;
+        margin-top: 0.1in;
+        padding-top: 0.09in;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 10px;
+        line-height: 1.3;
+      }
+      .handoff strong {
+        color: var(--ink);
+      }
+      .ready {
+        color: var(--teal-dark);
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .memory {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 0.12in;
+        align-items: center;
+        margin-top: 0.14in;
+        padding: 0.09in 0.12in;
+        background: var(--soft);
+        border-left: 4px solid var(--amber);
+      }
+      .memory b {
+        font-size: 10px;
+      }
+      .memory p {
+        font-size: 10px;
+      }
+      .memory .values {
+        color: var(--teal-dark);
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .opening-call {
+        display: grid;
+        grid-template-columns: 1.14in 1fr;
+        gap: 0.14in;
+        align-items: center;
+        margin-top: 0.13in;
+        padding: 0.11in 0.14in;
+        border-top: 2px solid var(--amber);
+        border-bottom: 1px solid var(--line);
+      }
+      .opening-call h2 {
+        color: var(--amber);
+      }
+      .opening-call p {
+        font-size: 11px;
+      }
+      .opening-call em {
+        color: var(--teal-dark);
+        font-style: normal;
+        font-weight: 800;
+      }
+      .footer {
+        position: absolute;
+        left: 0.48in;
+        right: 0.48in;
+        bottom: 0.15in;
+        display: flex;
+        justify-content: space-between;
+        padding-top: 0.05in;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 7.5px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .combat-rule {
+        display: grid;
+        grid-template-columns: 0.72in 1fr;
+        gap: 0.12in;
+        align-items: center;
+        padding: 0.11in 0.14in;
+        margin-bottom: 0.13in;
+        background: var(--teal-wash);
+        border-left: 5px solid var(--teal);
+      }
+      .combat-rule strong {
+        color: var(--teal-dark);
+        font-size: 21px;
+        text-align: center;
+      }
+      .combat-rule p {
+        font-size: 11px;
+      }
+      .example {
+        margin-bottom: 0.14in;
+        padding: 0.13in 0.15in 0.14in;
+        background: var(--amber-wash);
+        border-top: 2px solid var(--amber);
+        border-bottom: 1px solid #efd6ad;
+      }
+      .example-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.1in;
+      }
+      .example-head p {
+        color: var(--muted);
+        font-size: 9.5px;
+      }
+      .attack-story {
+        display: grid;
+        grid-template-columns: 1fr 0.2in 1fr 0.2in 1fr 0.2in 1fr;
+        align-items: stretch;
+      }
+      .beat {
+        min-width: 0;
+        text-align: center;
+      }
+      .beat-head {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.06in;
+        margin-bottom: 0.07in;
+      }
+      .beat-no {
+        width: 0.22in;
+        height: 0.22in;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        background: var(--teal);
+        font-size: 9px;
+        font-weight: 800;
+      }
+      .beat h3 {
+        font-size: 11px;
+      }
+      .objects {
+        min-height: 0.58in;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.07in;
+      }
+      .physical-card {
+        width: 0.42in;
+        height: 0.56in;
+        border: 2px solid var(--teal);
+        border-radius: 5px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink);
+        font-size: 15px;
+        font-weight: 800;
+      }
+      .physical-card.origin {
+        border-color: var(--amber);
+      }
+      .damage-token {
+        width: 0.36in;
+        height: 0.36in;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        background: var(--amber);
+        font-size: 14px;
+        font-weight: 800;
+      }
+      .life-target {
+        width: 0.54in;
+        height: 0.42in;
+        border: 2px solid var(--red);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--red);
+        background: white;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .operator {
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .equation {
+        margin-top: 0.05in;
+        color: var(--teal-dark);
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .beat p {
+        margin: 0.025in auto 0;
+        max-width: 1.35in;
+        color: var(--muted);
+        font-size: 8.8px;
+        line-height: 1.2;
+      }
+      .story-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: 0.24in;
+        color: var(--amber);
+        font-size: 22px;
+        font-weight: 800;
+      }
+      .resolution {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.16in;
+        margin-bottom: 0.15in;
+      }
+      .resolution article {
+        position: relative;
+        padding-left: 0.38in;
+      }
+      .resolution .rnum {
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: var(--teal);
+        font-size: 25px;
+        line-height: 0.9;
+        font-weight: 800;
+      }
+      .resolution h3 {
+        font-size: 12px;
+        margin-bottom: 0.035in;
+      }
+      .resolution p {
+        color: var(--muted);
+        font-size: 10.2px;
+        line-height: 1.3;
+      }
+      .suit-table {
+        margin: 0.08in 0 0.14in;
+        border-top: 1px solid var(--line);
+      }
+      .suit-row {
+        display: grid;
+        grid-template-columns: 0.42in 1.62in 1fr;
+        gap: 0.1in;
+        align-items: center;
+        min-height: 0.47in;
+        border-bottom: 1px solid var(--line);
+      }
+      .suit-symbol {
+        font-size: 23px;
+        line-height: 1;
+        text-align: center;
+        font-weight: 800;
+      }
+      .suit-name {
+        font-size: 10px;
+        line-height: 1.15;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.055em;
+      }
+      .suit-row p {
+        color: var(--muted);
+        font-size: 10.2px;
+        line-height: 1.25;
+      }
+      .boundary-order {
+        margin: -0.04in 0 0.14in;
+        padding: 0.07in 0.1in;
+        color: var(--muted);
+        background: var(--soft);
+        font-size: 9.8px;
+        line-height: 1.3;
+        text-align: center;
+      }
+      .reference-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.22in;
+        padding-top: 0.02in;
+      }
+      .reference-grid section {
+        border-top: 2px solid var(--teal);
+        padding-top: 0.09in;
+      }
+      .reference-grid h2 {
+        margin-bottom: 0.07in;
+      }
+      .reference-grid p {
+        margin-bottom: 0.065in;
+        font-size: 10.2px;
+        line-height: 1.3;
+      }
+      .rank-line {
+        display: flex;
+        gap: 0.08in;
+        align-items: center;
+        margin: 0.04in 0 0.08in;
+      }
+      .rank-chip {
+        flex: 1;
+        padding: 0.055in 0.03in;
+        text-align: center;
+        background: var(--soft);
+        border-bottom: 2px solid var(--amber);
+        font-size: 9px;
+        font-weight: 800;
+      }
+      .end-strip {
+        display: grid;
+        grid-template-columns: 1.22in 1fr;
+        gap: 0.15in;
+        align-items: center;
+        margin-top: 0.13in;
+        padding: 0.12in 0.15in;
+        color: white;
+        background: var(--teal-dark);
+      }
+      .end-strip strong {
+        font-size: 18px;
+        line-height: 1.08;
+      }
+      .end-strip p {
+        font-size: 10.2px;
+        line-height: 1.3;
+      }
+      .table-note {
+        margin-top: 0.1in;
+        color: var(--muted);
+        font-size: 9.4px;
+        line-height: 1.3;
+        text-align: center;
+      }
+      @media print {
+        body {
+          background: var(--paper);
+        }
+        .page {
+          margin: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="page">
+      <header class="masthead">
+        <div class="brand"><span class="brand-mark">P</span>Phalanx Duel</div>
+        <div class="folio">First duel · Side A</div>
+      </header>
+      <h1>From shuffled decks to first attack</h1>
+      <p class="dek">
+        A face-to-face guide for two players. Read down the page, build your formations, then begin.
+      </p>
+      <div class="goal">
+        <div class="label">Your goal</div>
+        <div class="sentence">Break through a column and reduce your opponent to <b>0 LP.</b></div>
+        <div class="life">20 LP EACH</div>
+      </div>
+      <div class="learn-grid">
+        <section>
+          <div class="section-head"><h2>Set up together</h2></div>
+          <div class="steps">
+            <article class="step">
+              <div class="step-num">1</div>
+              <div>
+                <h3>Choose sides + shuffle</h3>
+                <p>
+                  Decide who is P1 and P2. Each player shuffles their own standard 52-card deck.
+                  Keep draw piles and hands private.
+                </p>
+              </div>
+            </article>
+            <article class="step">
+              <div class="step-num">2</div>
+              <div>
+                <h3>Draw 12 cards each</h3>
+                <p>Set both Life Point counters to 20. Paper and pencil work perfectly.</p>
+              </div>
+            </article>
+            <article class="step">
+              <div class="step-num">3</div>
+              <div>
+                <h3>Build four columns</h3>
+                <p>Each column has a front and back slot. Every battlefield card stays face-up.</p>
+              </div>
+            </article>
+            <article class="step">
+              <div class="step-num">4</div>
+              <div>
+                <h3>Deploy, one card at a time</h3>
+                <p>
+                  P2 places first; alternate placements. Stop when each player has 8 cards on the
+                  field and 4 in hand. <b>P1 attacks first.</b>
+                </p>
+              </div>
+            </article>
+          </div>
+        </section>
+        <section class="battlefield">
+          <div class="section-head"><h2>Build this formation</h2></div>
+          <svg
+            viewBox="0 0 330 344"
+            role="img"
+            aria-label="Two mirrored Phalanx Duel formations with four columns, front and back ranks, and the engagement line"
+          >
+            <defs>
+              <marker id="arrow" markerWidth="8" markerHeight="8" refX="6.4" refY="4" orient="auto">
+                <path d="M0,0 L8,4 L0,8 Z" fill="#d97706" />
+              </marker>
+            </defs>
+            <style>
+              text {
+                font-family:
+                  Avenir Next,
+                  Helvetica Neue,
+                  Arial,
+                  sans-serif;
+                fill: #566071;
+              }
+              .label {
+                font-size: 11px;
+                font-weight: 800;
+                letter-spacing: 1px;
+              }
+              .slot {
+                fill: #fff;
+                stroke: #d9d5ca;
+                stroke-width: 2;
+              }
+              .front {
+                fill: #fff4df;
+                stroke: #d97706;
+                stroke-width: 2.4;
+              }
+              .n {
+                font-size: 11px;
+                font-weight: 800;
+                text-anchor: middle;
+                dominant-baseline: middle;
+              }
+            </style>
+            <text x="3" y="17" class="label" fill="#115e59">OPPONENT · 20 LP</text>
+            <text x="326" y="17" text-anchor="end" font-size="9">all field cards face-up</text>
+            <text x="3" y="59" class="label">BACK</text>
+            <text x="3" y="116" class="label" fill="#d97706">FRONT</text>
+            <g transform="translate(66,34)">
+              <g class="slot">
+                <rect x="0" y="0" width="58" height="38" rx="5" />
+                <rect x="65" y="0" width="58" height="38" rx="5" />
+                <rect x="130" y="0" width="58" height="38" rx="5" />
+                <rect x="195" y="0" width="58" height="38" rx="5" />
+              </g>
+              <g class="front">
+                <rect x="0" y="57" width="58" height="38" rx="5" />
+                <rect x="65" y="57" width="58" height="38" rx="5" />
+                <rect x="130" y="57" width="58" height="38" rx="5" />
+                <rect x="195" y="57" width="58" height="38" rx="5" />
+              </g>
+              <g class="n">
+                <text x="29" y="19">1</text>
+                <text x="94" y="19">2</text>
+                <text x="159" y="19">3</text>
+                <text x="224" y="19">4</text>
+                <text x="29" y="76">1</text>
+                <text x="94" y="76">2</text>
+                <text x="159" y="76">3</text>
+                <text x="224" y="76">4</text>
+              </g>
+            </g>
+            <line
+              x1="3"
+              y1="152"
+              x2="327"
+              y2="152"
+              stroke="#0f766e"
+              stroke-width="2"
+              stroke-dasharray="7 5"
+            />
+            <text x="104" y="146" text-anchor="middle" class="label" fill="#0f766e">
+              ENGAGEMENT LINE
+            </text>
+            <path
+              d="M225 196 C225 180 225 167 225 152 C225 134 225 119 225 105"
+              fill="none"
+              stroke="#d97706"
+              stroke-width="3"
+              marker-end="url(#arrow)"
+            />
+            <rect x="200" y="141" width="50" height="22" rx="11" fill="#fffdf8" stroke="#d97706" />
+            <text
+              x="225"
+              y="156"
+              text-anchor="middle"
+              font-size="9"
+              font-weight="800"
+              fill="#d97706"
+            >
+              ATTACK
+            </text>
+            <text x="3" y="202" class="label" fill="#d97706">FRONT</text>
+            <text x="3" y="259" class="label">BACK</text>
+            <g transform="translate(66,177)">
+              <g class="front">
+                <rect x="0" y="0" width="58" height="38" rx="5" />
+                <rect x="65" y="0" width="58" height="38" rx="5" />
+                <rect x="130" y="0" width="58" height="38" rx="5" />
+                <rect x="195" y="0" width="58" height="38" rx="5" />
+              </g>
+              <g class="slot">
+                <rect x="0" y="57" width="58" height="38" rx="5" />
+                <rect x="65" y="57" width="58" height="38" rx="5" />
+                <rect x="130" y="57" width="58" height="38" rx="5" />
+                <rect x="195" y="57" width="58" height="38" rx="5" />
+              </g>
+              <g class="n">
+                <text x="29" y="19">1</text>
+                <text x="94" y="19">2</text>
+                <text x="159" y="19">3</text>
+                <text x="224" y="19">4</text>
+                <text x="29" y="76">1</text>
+                <text x="94" y="76">2</text>
+                <text x="159" y="76">3</text>
+                <text x="224" y="76">4</text>
+              </g>
+            </g>
+            <text x="3" y="298" class="label" fill="#115e59">YOU · 20 LP</text>
+            <text
+              x="165"
+              y="330"
+              text-anchor="middle"
+              font-size="10"
+              font-weight="800"
+              fill="#115e59"
+            >
+              A front card may attack any enemy column.
+            </text>
+          </svg>
+          <p class="keyline">
+            <b>Front faces danger.</b> The front slot is nearest your opponent; the back slot is
+            behind it.
+          </p>
+        </section>
+      </div>
+      <section class="turn-map">
+        <div class="turn-head">
+          <strong>Attack once—or pass</strong
+          ><span>Say the attacker and target column out loud.</span>
+        </div>
+        <div class="turn-flow">
+          <div class="turn-step">
+            <div class="verb">1 · Choose</div>
+            <p>Pick one of your front cards and any enemy column.</p>
+          </div>
+          <div class="chev">›</div>
+          <div class="turn-step">
+            <div class="verb">2 · Resolve</div>
+            <p>Damage travels through front, back, then LP.</p>
+          </div>
+          <div class="chev">›</div>
+          <div class="turn-step">
+            <div class="verb">3 · Rebuild</div>
+            <p>The defender may fill empty slots in only the attacked column.</p>
+          </div>
+          <div class="chev">›</div>
+          <div class="turn-step">
+            <div class="verb">4 · Switch</div>
+            <p>The defender draws to 4, then becomes the attacker.</p>
+          </div>
+        </div>
+        <div class="handoff">
+          <span><strong>If you pass:</strong> draw to 4; your opponent attacks next.</span
+          ><span class="ready">Turn over for combat →</span>
+        </div>
+      </section>
+      <div class="memory">
+        <b>Card values</b>
+        <p>Damage starts at the attacker's value. A surviving defender stops the attack.</p>
+        <div class="values">A = 1 · 2–10 · J/Q/K = 11</div>
+      </div>
+      <div class="opening-call">
+        <h2>Start the duel</h2>
+        <p>
+          P1 points and says: <em>“My [card] in column [#] attacks your column [#].”</em> Keep the
+          attacking card in its formation.
+        </p>
+      </div>
+      <footer class="footer">
+        <span>Phalanx Duel · Classic v3.0</span><span>Setup + first turn</span>
+      </footer>
+    </section>
+
+    <section class="page">
+      <header class="masthead">
+        <div class="brand"><span class="brand-mark">P</span>Phalanx Duel</div>
+        <div class="folio">First duel · Side B</div>
+      </header>
+      <h1>Resolve an attack</h1>
+      <p class="dek">
+        Follow the target column from front to back. Carry only the damage that remains.
+      </p>
+      <div class="combat-rule">
+        <strong>8 − 5 = 3</strong>
+        <p>
+          If damage is <b>less than</b> a defender's value, it survives and the attack stops. If
+          damage <b>meets or beats</b> its value, discard it and carry the remainder forward.
+        </p>
+      </div>
+      <section class="example">
+        <div class="example-head">
+          <h2>Worked attack</h2>
+          <p>8♣ attacks 5♠ in front, then 4♣ in back</p>
+        </div>
+        <div class="attack-story">
+          <article class="beat">
+            <div class="beat-head">
+              <div class="beat-no">1</div>
+              <h3>Hit the front</h3>
+            </div>
+            <div class="objects">
+              <div class="physical-card origin">8♣</div>
+              <div class="operator">−</div>
+              <div class="physical-card">5♠</div>
+            </div>
+            <div class="equation">8 − 5 = 3</div>
+            <p>Discard the 5♠. Carry 3 damage.</p>
+          </article>
+          <div class="story-arrow">›</div>
+          <article class="beat">
+            <div class="beat-head">
+              <div class="beat-no">2</div>
+              <h3>Club doubles</h3>
+            </div>
+            <div class="objects">
+              <div class="damage-token">3</div>
+              <div class="operator">× 2</div>
+              <div class="damage-token">6</div>
+            </div>
+            <div class="equation">3 × 2 = 6</div>
+            <p>Another card is next, so Club doubles once.</p>
+          </article>
+          <div class="story-arrow">›</div>
+          <article class="beat">
+            <div class="beat-head">
+              <div class="beat-no">3</div>
+              <h3>Hit the back</h3>
+            </div>
+            <div class="objects">
+              <div class="damage-token">6</div>
+              <div class="operator">−</div>
+              <div class="physical-card">4♣</div>
+            </div>
+            <div class="equation">6 − 4 = 2</div>
+            <p>Discard the 4♣. Carry 2 damage.</p>
+          </article>
+          <div class="story-arrow">›</div>
+          <article class="beat">
+            <div class="beat-head">
+              <div class="beat-no">4</div>
+              <h3>Reach LP</h3>
+            </div>
+            <div class="objects">
+              <div class="damage-token">2</div>
+              <div class="operator">→</div>
+              <div class="life-target">LP</div>
+            </div>
+            <div class="equation">LP − 2</div>
+            <p>The opponent loses 2 Life Points.</p>
+          </article>
+        </div>
+      </section>
+      <div class="section-head"><h2>Every attack follows this rhythm</h2></div>
+      <div class="resolution">
+        <article>
+          <div class="rnum">1</div>
+          <h3>Meet the card</h3>
+          <p>Compare remaining damage with the next defender. Stop if it survives.</p>
+        </article>
+        <article>
+          <div class="rnum">2</div>
+          <h3>Cross the boundary</h3>
+          <p>After a destruction, apply the suit effect only at the boundary it names.</p>
+        </article>
+        <article>
+          <div class="rnum">3</div>
+          <h3>Clear the field</h3>
+          <p>
+            Discard destroyed cards and slide the column forward. Surviving cards fully reset next
+            turn.
+          </p>
+        </article>
+      </div>
+      <div class="section-head"><h2>The four suit effects</h2></div>
+      <div class="suit-table">
+        <div class="suit-row">
+          <div class="suit-symbol" style="color: var(--red)">♦</div>
+          <div class="suit-name">Diamond · shield</div>
+          <p>Destroyed Diamond → another card: subtract that Diamond's value from carryover.</p>
+        </div>
+        <div class="suit-row">
+          <div class="suit-symbol" style="color: var(--red)">♥</div>
+          <div class="suit-name">Heart · last guard</div>
+          <p>Final destroyed Heart → LP: subtract that Heart's value before LP damage.</p>
+        </div>
+        <div class="suit-row">
+          <div class="suit-symbol" style="color: var(--blue)">♣</div>
+          <div class="suit-name">Club · breakthrough</div>
+          <p>
+            Club attacker: double carryover once after its first destruction, if another card is
+            next.
+          </p>
+        </div>
+        <div class="suit-row">
+          <div class="suit-symbol" style="color: var(--blue)">♠</div>
+          <div class="suit-name">Spade · finishing blow</div>
+          <p>Spade attacker → LP: double the damage that crosses from cards into the player.</p>
+        </div>
+      </div>
+      <p class="boundary-order">
+        <b>If effects meet at one boundary:</b> subtract the shield first, apply the attacker's
+        double second, then stop at zero.
+      </p>
+      <div class="reference-grid">
+        <section>
+          <h2>Aces + face cards</h2>
+          <p>
+            Classic special cards change <b>what can be destroyed</b>. An ineligible target stops
+            the attack.
+          </p>
+          <div class="rank-line">
+            <div class="rank-chip">J → J</div>
+            <div class="rank-chip">Q → J, Q</div>
+            <div class="rank-chip">K → J, Q, K</div>
+          </div>
+          <p><b>Ace → front Ace only.</b> No other attacker can destroy an Ace.</p>
+        </section>
+        <section>
+          <h2>Passes + empty decks</h2>
+          <p>
+            <b>3 consecutive passes</b> or <b>5 total passes by one player</b> forfeits the duel.
+          </p>
+          <p>
+            An empty draw pile is not a loss. Draw what you can; never reshuffle the discard pile.
+          </p>
+        </section>
+      </div>
+      <div class="end-strip">
+        <strong>Reach 0 LP.<br />Win the duel.</strong>
+        <p>
+          <b>At the table:</b> announce attacker and target; keep battlefield cards face-up; write
+          down both LP totals. If a rule is disputed, pause and ask the event judge.
+        </p>
+      </div>
+      <p class="table-note">
+        Long games may draw by threefold repetition, 50 turns without progress, or the 200-turn
+        limit. Tournament clocks and pairings are organizer-defined.
+      </p>
+      <footer class="footer">
+        <span>Phalanx Duel · Classic v3.0</span><span>Combat + table reference</span>
+      </footer>
+    </section>
+  </body>
+</html>
