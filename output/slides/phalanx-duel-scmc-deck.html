@@ -2,41 +2,60 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
-  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+  href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
   rel="stylesheet"
 />
 
 <style>
   /* ───────────────────────── tokens ─────────────────────────
-     Two committed worlds, not a light/dark toggle: Acts 1-2 (Learn,
-     Play) run the printed quickstart's paper palette; Act 3 (Code)
-     flips to the live client's own tactical HUD palette. Every color
-     below is declared explicitly per world — nothing depends on the
-     viewer's OS theme. */
+     Two committed worlds, not a light/dark toggle, and not invented for
+     this deck: Learn and Play run the exact palette and type stack of the
+     printed quickstart (output/pdf, scripts/docs/*.html) — same paper,
+     ink, teal, amber, and the shield/weapon red-vs-blue suit coding that
+     PDF already uses. Code flips to the live product's own brand system
+     (phalanxduel.com/assets/css/site.css "Luminous Vector Palette" +
+     client/src/style.css's dark tokens): the void, gold, and neon
+     offense/defense colors. Every color is declared explicitly per
+     world — nothing depends on the viewer's OS theme. */
   :root {
-    --paper: #f4eedb;
-    --paper-2: #ece2c8;
-    --ink: #22261f;
-    --ink-soft: #4d5246;
-    --teal: #0f6e63;
-    --teal-dark: #0b4f47;
-    --amber: #c1691f;
-    --redpen: #a3323a;
-    --rule: #cabf9c;
+    --paper: #fffdf8;
+    --paper-2: #f5f2eb;
+    --ink: #172033;
+    --ink-soft: #566071;
+    --teal: #0f766e;
+    --teal-dark: #115e59;
+    --amber: #d97706;
+    --paper-red: #c7374f;
+    --paper-blue: #2775a6;
+    --rule: #d9d5ca;
 
-    --void: #07090b;
-    --void-2: #0d1114;
-    --panel: #11161a;
-    --wire: #233038;
-    --paper-on-void: #e9ecec;
-    --mist: #8ba0a6;
-    --cyan: #5fd9e0;
-    --cyan-dim: #2c6469;
-    --gold: #e8b74b;
+    --void: #020205;
+    --void-2: #0a0a0f;
+    --panel: #0a0a0f;
+    --panel-up: #14141e;
+    --wire: #242424;
+    --wire-up: #444444;
+    --paper-on-void: #e0e0e0;
+    --mist: #999999;
+    --gold: #f0c040;
+    --gold-dim: #9a7828;
+    --offense: #007aff;
+    --offense-dim: #003a7a;
+    --defense-void: #ff2d55;
 
-    --display: 'Fraunces', ui-serif, Georgia, serif;
+    --defense: var(--paper-red);
+    --offense-current: var(--paper-blue);
+
+    --font-paper: 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
+    --font-digital: 'Barlow Condensed', 'Inter', sans-serif;
+    --display: var(--font-paper);
     --body: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  }
+  .world-code {
+    --display: var(--font-digital);
+    --defense: var(--defense-void);
+    --offense-current: var(--offense);
   }
 
   * {
@@ -87,7 +106,7 @@
     position: absolute;
     inset: 0 0 0 4.2rem;
     width: 2px;
-    background: var(--redpen);
+    background: var(--defense);
     opacity: 0.35;
   }
   .kicker {
@@ -100,7 +119,7 @@
     margin: 0 0 1.1rem;
   }
   .world-code .kicker {
-    color: var(--cyan);
+    color: var(--offense);
   }
   h1.slide-title {
     font-family: var(--display);
@@ -177,7 +196,7 @@
     max-width: 720px;
     background: var(--panel);
     border: 1px solid var(--wire);
-    border-left: 3px solid var(--cyan-dim);
+    border-left: 3px solid var(--offense-dim);
     border-radius: 4px;
     padding: 1.1rem 1.3rem;
     overflow-x: auto;
@@ -215,10 +234,15 @@
     opacity: 0.4;
     border-style: dashed;
   }
-  .cardslot.amber {
-    border-color: var(--amber);
-    color: var(--amber);
-    background: rgba(193, 105, 31, 0.09);
+  .cardslot.shield {
+    border-color: var(--defense);
+    color: var(--defense);
+    background: rgba(199, 55, 79, 0.08);
+  }
+  .cardslot.weapon {
+    border-color: var(--offense-current);
+    color: var(--offense-current);
+    background: rgba(39, 117, 166, 0.08);
   }
 
   ol.steps,
@@ -251,7 +275,7 @@
     color: var(--teal-dark);
   }
   .world-code ul.list li b {
-    color: var(--cyan);
+    color: var(--offense);
   }
   ol.steps {
     counter-reset: step;
@@ -278,7 +302,7 @@
     color: var(--amber);
   }
   .world-code ul.list li > b:first-child {
-    color: var(--cyan);
+    color: var(--offense);
   }
 
   .suits-grid {
@@ -288,16 +312,22 @@
     max-width: 760px;
   }
   .suit-card {
-    border-top: 3px solid var(--teal-dark);
+    border-top: 3px solid var(--defense);
     padding-top: 0.7rem;
   }
   .suit-card.weapon {
-    border-top-color: var(--amber);
+    border-top-color: var(--offense-current);
   }
   .suit-card h3 {
     font-family: var(--mono);
     font-size: 1.15rem;
     margin: 0 0 0.35rem;
+  }
+  .suit-card h3 {
+    color: var(--defense);
+  }
+  .suit-card.weapon h3 {
+    color: var(--offense-current);
   }
   .suit-card p {
     margin: 0;
@@ -378,7 +408,7 @@
     color: var(--gold);
   }
   .phase-arrow {
-    color: var(--cyan-dim);
+    color: var(--offense-dim);
     font-size: 0.85rem;
   }
 
@@ -402,11 +432,11 @@
     max-width: 150px;
   }
   .flow-node.accent {
-    border-color: var(--cyan-dim);
-    color: var(--cyan);
+    border-color: var(--offense-dim);
+    color: var(--offense);
   }
   .flow-arrow {
-    color: var(--cyan-dim);
+    color: var(--offense-dim);
   }
 
   .timeline {
@@ -429,13 +459,13 @@
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    background: var(--cyan);
+    background: var(--offense);
     box-shadow: 0 0 0 3px var(--void-2);
   }
   .timeline .tl-year {
     font-family: var(--mono);
     font-size: 0.74rem;
-    color: var(--cyan);
+    color: var(--offense);
     letter-spacing: 0.08em;
   }
   .timeline .tl-what {
@@ -467,7 +497,7 @@
     font-family: var(--mono);
     font-size: 0.68rem;
     letter-spacing: 0.14em;
-    color: var(--cyan);
+    color: var(--offense);
     text-transform: uppercase;
   }
   .link-card .val {
@@ -494,7 +524,7 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--paper);
-    background: var(--redpen);
+    background: var(--defense);
     padding: 0.35rem 0.75rem;
     transform: rotate(-2deg);
     margin-bottom: 1.3rem;
@@ -511,7 +541,7 @@
   }
   .world-code ~ .progress,
   body:has(section.world-code.active) .progress {
-    background: var(--cyan);
+    background: var(--offense);
   }
 
   a {
@@ -568,7 +598,7 @@
     background: rgba(7, 9, 11, 0.9);
   }
   .nav-btn:focus-visible {
-    outline: 2px solid var(--cyan);
+    outline: 2px solid var(--offense);
     outline-offset: 2px;
   }
 
@@ -577,12 +607,57 @@
       display: none;
     }
   }
+
+  /* The real Phalanx Duel mark (client/public/favicon.svg), not an
+     invented brand asset. Ink-toned on the paper slides, gold on the
+     digital ones — colors swapped by JS toggling body.on-code. */
+  .brand-watermark {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.6rem;
+    width: 1.6rem;
+    height: 1.6rem;
+    color: var(--ink);
+    opacity: 0.55;
+    z-index: 55;
+    pointer-events: none;
+  }
+  body.on-code .brand-watermark {
+    color: var(--gold);
+    opacity: 0.8;
+  }
+  @media print {
+    .brand-watermark {
+      display: none;
+    }
+  }
+
+  .cover-mark {
+    width: 2.6rem;
+    height: 2.6rem;
+    color: var(--teal-dark);
+    margin-bottom: 1.1rem;
+  }
 </style>
 
 <div class="progress" id="progress" style="width: 0%"></div>
+<svg class="brand-watermark" viewBox="0 0 32 32" aria-hidden="true">
+  <path
+    d="M16 4L6 8v8c0 5.52 4.48 10 10 10s10-4.48 10-10V8L16 4zm0 18c-4.41 0-8-3.59-8-8V9.38l8-3.2 8 3.2V14c0 4.41-3.59 8-8 8z"
+    fill="currentColor"
+  />
+  <rect x="14" y="10" width="4" height="8" rx="1" fill="currentColor" />
+</svg>
 <div class="deck" id="deck">
   <!-- 1 · COVER -->
   <section class="slide world-paper">
+    <svg class="cover-mark" viewBox="0 0 32 32" aria-hidden="true">
+      <path
+        d="M16 4L6 8v8c0 5.52 4.48 10 10 10s10-4.48 10-10V8L16 4zm0 18c-4.41 0-8-3.59-8-8V9.38l8-3.2 8 3.2V14c0 4.41-3.59 8-8 8z"
+        fill="currentColor"
+      />
+      <rect x="14" y="10" width="4" height="8" rx="1" fill="currentColor" />
+    </svg>
     <p class="kicker">Software Craftsmanship McHenry County · September 9, 2026</p>
     <h1 class="slide-title">Phalanx Duel</h1>
     <p
@@ -597,10 +672,10 @@
       An analog game, ported to digital with AI&#8211;assisted development.
     </p>
     <div class="board" style="max-width: 340px; margin-top: 1.4rem" aria-hidden="true">
-      <div class="cardslot">♦</div>
-      <div class="cardslot amber">♣</div>
-      <div class="cardslot">♥</div>
-      <div class="cardslot amber">♠</div>
+      <div class="cardslot shield">♦</div>
+      <div class="cardslot weapon">♣</div>
+      <div class="cardslot shield">♥</div>
+      <div class="cardslot weapon">♠</div>
     </div>
     <p class="slide-num">Mike Hall · just3ws.com</p>
   </section>
@@ -705,8 +780,8 @@
         <div
           class="chip"
           style="
-            border-color: var(--redpen);
-            color: var(--redpen);
+            border-color: var(--defense);
+            color: var(--defense);
             background: rgba(163, 50, 58, 0.08);
           "
         >
@@ -1052,7 +1127,9 @@ pnpm qa:replay:verify <span class="c-dim"># replay a match, confirm it's identic
     let current = slides[0];
     for (const s of slides) if (s.offsetTop <= mid) current = s;
     slides.forEach((s) => s.classList.toggle('active', s === current));
-    bar.style.background = current.classList.contains('world-code') ? '#5fd9e0' : '#c1691f';
+    const onCode = current.classList.contains('world-code');
+    bar.style.background = onCode ? '#f0c040' : '#d97706';
+    document.body.classList.toggle('on-code', onCode);
   }
   deckEl.addEventListener('scroll', updateProgress, { passive: true });
   updateProgress();
