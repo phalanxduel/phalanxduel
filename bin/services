@@ -113,9 +113,29 @@ is_running_tmux() {
   return 1
 }
 
+service_port() {
+  case "$1" in
+    server) echo 3001 ;;
+    client) echo 5173 ;;
+    admin) echo 3002 ;;
+    *) echo "" ;;
+  esac
+}
+
+# Port already LISTENing counts as running even without a pidfile/tmux
+# window — e.g. something started it manually in another terminal. Without
+# this check, `start` would happily spawn a second instance that fails to
+# bind (or fights the first one for the port) instead of recognizing it's
+# already up.
+is_port_listening() {
+  local port
+  port=$(service_port "$1")
+  [ -n "$port" ] && lsof -nP -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1
+}
+
 is_running() {
   local svc=$1
-  if is_running_pid "$svc" || is_running_tmux "$svc"; then return 0; fi
+  if is_running_pid "$svc" || is_running_tmux "$svc" || is_port_listening "$svc"; then return 0; fi
   return 1
 }
 
@@ -198,6 +218,19 @@ stop_service() {
     rm -f "$pidfile"
     echo "✔  $svc process stopped."
   fi
+
+  if ! is_running_tmux "$svc" && ! is_running_pid "$svc" && is_port_listening "$svc"; then
+    local port pids
+    port=$(service_port "$svc")
+    pids=$(lsof -nP -tiTCP:"$port" -sTCP:LISTEN 2>/dev/null || true)
+    echo "⏹️  $svc is listening on port $port but wasn't started via bin/services (PID(s): ${pids:-unknown}). Stopping directly..."
+    if [ -n "$pids" ]; then
+      kill -TERM $pids 2>/dev/null || true
+      sleep 1
+      is_port_listening "$svc" && kill -KILL $pids 2>/dev/null || true
+    fi
+    echo "✔  $svc process stopped."
+  fi
 }
 
 reload_service() {
@@ -236,6 +269,8 @@ status_service() {
     echo -e "🟢 \033[1;32m$svc\033[0m is RUNNING (tmux)"
   elif is_running_pid "$svc"; then
     echo -e "🟢 \033[1;32m$svc\033[0m is RUNNING (PID: $(cat "$RUN_DIR/$svc.pid"))"
+  elif is_port_listening "$svc"; then
+    echo -e "🟢 \033[1;32m$svc\033[0m is RUNNING (port $(service_port "$svc"), started outside bin/services)"
   else
     echo -e "🔴 \033[1;31m$svc\033[0m is STOPPED"
   fi

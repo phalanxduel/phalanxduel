@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# Zero-anxiety control for a live Phalanx Duel demo session: start the
+# server + client, wait until they're actually healthy (not just spawned),
+# reseed between rehearsals, and tear down cleanly. Built entirely on
+# existing primitives (bin/services, scripts/dev-dashboard.ts,
+# bin/maint/with-dev-postgres.sh) — no new infra.
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+CLIENT_URL="http://127.0.0.1:5173"
+READY_TIMEOUT="${PHALANX_DEMO_READY_TIMEOUT:-60}"
+
+usage() {
+  cat <<EOF
+Usage: bin/demo <command>
+
+Commands:
+  up       Start server + client (daemonized) and wait until both are READY.
+  down     Stop server + client.
+  status   One-shot health snapshot (pnpm dev:status).
+  reset    Reseed the dev database to a clean state between rehearsals.
+  logs     Tail server + client logs.
+
+Examples:
+  bin/demo up       # before the talk: start, wait, get a green light
+  bin/demo reset    # between rehearsals: clean slate
+  bin/demo down     # after: stop everything
+EOF
+  exit 1
+}
+
+wait_ready() {
+  echo "⏳ Waiting for server + client to report READY (up to ${READY_TIMEOUT}s)..."
+  local waited=0
+  while [ "$waited" -lt "$READY_TIMEOUT" ]; do
+    local json app client
+    json=$(pnpm --silent dev:status 2>/dev/null || true)
+    app=$(node -e "try{console.log(JSON.parse(process.argv[1]).services.app.status)}catch(e){console.log('UNKNOWN')}" "$json" 2>/dev/null || echo UNKNOWN)
+    client=$(node -e "try{console.log(JSON.parse(process.argv[1]).services.client.status)}catch(e){console.log('UNKNOWN')}" "$json" 2>/dev/null || echo UNKNOWN)
+    if [ "$app" = "READY" ] && [ "$client" = "READY" ]; then
+      echo "✅ Server and client are READY."
+      echo "   Play:   $CLIENT_URL"
+      echo "   Logs:   bin/demo logs"
+      echo "   Reset:  bin/demo reset"
+      echo "   Stop:   bin/demo down"
+      return 0
+    fi
+    sleep 2
+    waited=$((waited + 2))
+  done
+  echo "❌ Not READY after ${READY_TIMEOUT}s (server=$app client=$client)."
+  echo "   Check: bin/demo status   /   bin/demo logs"
+  return 1
+}
+
+case "${1:-}" in
+  up)
+    bin/services start server -d
+    bin/services start client -d
+    wait_ready
+    ;;
+  down)
+    bin/services stop client
+    bin/services stop server
+    ;;
+  status)
+    pnpm dev:status
+    ;;
+  reset)
+    echo "🔄 Reseeding dev database..."
+    pnpm admin:seed-dev
+    echo "✅ Dev database reset to a clean seed."
+    ;;
+  logs)
+    bin/services logs server client
+    ;;
+  *)
+    usage
+    ;;
+esac
