@@ -1,0 +1,1092 @@
+<title>Phalanx Duel: Analog to Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  /* ───────────────────────── tokens ─────────────────────────
+     Two committed worlds, not a light/dark toggle: Acts 1-2 (Learn,
+     Play) run the printed quickstart's paper palette; Act 3 (Code)
+     flips to the live client's own tactical HUD palette. Every color
+     below is declared explicitly per world — nothing depends on the
+     viewer's OS theme. */
+  :root {
+    --paper: #f4eedb;
+    --paper-2: #ece2c8;
+    --ink: #22261f;
+    --ink-soft: #4d5246;
+    --teal: #0f6e63;
+    --teal-dark: #0b4f47;
+    --amber: #c1691f;
+    --redpen: #a3323a;
+    --rule: #cabf9c;
+
+    --void: #07090b;
+    --void-2: #0d1114;
+    --panel: #11161a;
+    --wire: #233038;
+    --paper-on-void: #e9ecec;
+    --mist: #8ba0a6;
+    --cyan: #5fd9e0;
+    --cyan-dim: #2c6469;
+    --gold: #e8b74b;
+
+    --display: 'Fraunces', ui-serif, Georgia, serif;
+    --body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    scroll-behavior: smooth;
+    font-size: 18px;
+  }
+  @media (min-width: 1400px) {
+    html {
+      font-size: 20px;
+    }
+  }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .deck {
+    scroll-snap-type: y proximity;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  section.slide {
+    scroll-snap-align: start;
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(2rem, 6vw, 6rem);
+    overflow: hidden;
+  }
+
+  /* ── paper world ─────────────────────────────────────── */
+  .world-paper {
+    background: repeating-linear-gradient(var(--paper) 0 47px, var(--rule) 47px 48px), var(--paper);
+    color: var(--ink);
+  }
+  .world-paper::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 0 4.2rem;
+    width: 2px;
+    background: var(--redpen);
+    opacity: 0.35;
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--teal-dark);
+    margin: 0 0 1.1rem;
+  }
+  .world-code .kicker {
+    color: var(--cyan);
+  }
+  h1.slide-title {
+    font-family: var(--display);
+    font-weight: 700;
+    line-height: 1.03;
+    letter-spacing: -0.01em;
+    font-size: clamp(2.2rem, 5.2vw, 4.4rem);
+    margin: 0 0 1rem;
+    text-wrap: balance;
+    max-width: 18ch;
+  }
+  h2.slide-title {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(1.7rem, 3.6vw, 2.7rem);
+    line-height: 1.08;
+    margin: 0 0 1.4rem;
+    text-wrap: balance;
+    max-width: 22ch;
+  }
+  .dek {
+    font-size: clamp(1.02rem, 1.6vw, 1.28rem);
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 1.6rem;
+  }
+  .world-code .dek {
+    color: var(--mist);
+  }
+  .slide-num {
+    position: absolute;
+    bottom: 1.6rem;
+    right: 1.9rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    opacity: 0.65;
+  }
+  .world-code .slide-num {
+    color: var(--mist);
+  }
+
+  /* ── digital world ───────────────────────────────────── */
+  .world-code {
+    background: linear-gradient(180deg, var(--void) 0%, var(--void-2) 100%);
+    color: var(--paper-on-void);
+  }
+  .world-code::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--wire) 1px, transparent 1px),
+      linear-gradient(90deg, var(--wire) 1px, transparent 1px);
+    background-size: 64px 64px;
+    opacity: 0.16;
+    pointer-events: none;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--wire);
+    border-radius: 4px;
+    padding: 1.2rem 1.4rem;
+  }
+  .mono {
+    font-family: var(--mono);
+  }
+
+  .codeblock {
+    margin: 0;
+    max-width: 720px;
+    background: var(--panel);
+    border: 1px solid var(--wire);
+    border-left: 3px solid var(--cyan-dim);
+    border-radius: 4px;
+    padding: 1.1rem 1.3rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.86rem;
+    line-height: 1.7;
+    color: var(--paper-on-void);
+    white-space: pre;
+  }
+  .codeblock .c-dim {
+    color: var(--mist);
+  }
+
+  /* ── shared card / column motif (learn slides) ──────── */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.6rem;
+    max-width: 640px;
+  }
+  .cardslot {
+    aspect-ratio: 5/6.4;
+    border: 1.6px solid var(--teal-dark);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--teal-dark);
+    background: rgba(15, 110, 99, 0.06);
+  }
+  .cardslot.dim {
+    opacity: 0.4;
+    border-style: dashed;
+  }
+  .cardslot.amber {
+    border-color: var(--amber);
+    color: var(--amber);
+    background: rgba(193, 105, 31, 0.09);
+  }
+
+  ol.steps,
+  ul.list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    max-width: 56ch;
+  }
+  ol.steps li,
+  ul.list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    font-size: 1.08rem;
+    line-height: 1.55;
+  }
+  ol.steps li > span,
+  ul.list li > span {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  ol.steps li b,
+  ul.list li b {
+    font-family: var(--display);
+    font-weight: 700;
+    color: var(--teal-dark);
+  }
+  .world-code ul.list li b {
+    color: var(--cyan);
+  }
+  ol.steps {
+    counter-reset: step;
+  }
+  ol.steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    flex: 0 0 auto;
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--paper);
+    background: var(--teal-dark);
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    margin-top: 0.1rem;
+  }
+  ul.list li > b:first-child {
+    flex: 0 0 1.4rem;
+    color: var(--amber);
+  }
+  .world-code ul.list li > b:first-child {
+    color: var(--cyan);
+  }
+
+  .suits-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    max-width: 760px;
+  }
+  .suit-card {
+    border-top: 3px solid var(--teal-dark);
+    padding-top: 0.7rem;
+  }
+  .suit-card.weapon {
+    border-top-color: var(--amber);
+  }
+  .suit-card h3 {
+    font-family: var(--mono);
+    font-size: 1.15rem;
+    margin: 0 0 0.35rem;
+  }
+  .suit-card p {
+    margin: 0;
+    font-size: 0.94rem;
+    line-height: 1.48;
+    color: var(--ink-soft);
+  }
+
+  /* worked attack strip */
+  .beats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.4rem;
+    align-items: flex-start;
+  }
+  .beat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 118px;
+  }
+  .beat .n {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: var(--teal-dark);
+    letter-spacing: 0.06em;
+  }
+  .chip {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 1.05rem;
+    border: 1.6px solid var(--amber);
+    color: var(--amber);
+    background: rgba(193, 105, 31, 0.08);
+  }
+  .beat .eq {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .arrow-sep {
+    align-self: center;
+    color: var(--amber);
+    font-size: 1.3rem;
+    margin-top: 1.2rem;
+  }
+
+  /* code-world phase ribbon */
+  .phase-ribbon {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    max-width: 900px;
+  }
+  .phase-pill {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--paper-on-void);
+    border: 1px solid var(--wire);
+    background: var(--panel);
+    padding: 0.55rem 0.8rem;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .phase-pill.terminal {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .phase-arrow {
+    color: var(--cyan-dim);
+    font-size: 0.85rem;
+  }
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.5rem;
+    align-items: center;
+    max-width: 920px;
+  }
+  .flow-node {
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    font-weight: 600;
+    padding: 0.6rem 0.85rem;
+    border-radius: 3px;
+    border: 1px solid var(--wire);
+    background: var(--panel);
+    color: var(--paper-on-void);
+    line-height: 1.3;
+    max-width: 150px;
+  }
+  .flow-node.accent {
+    border-color: var(--cyan-dim);
+    color: var(--cyan);
+  }
+  .flow-arrow {
+    color: var(--cyan-dim);
+  }
+
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 640px;
+    border-left: 2px solid var(--wire);
+    padding-left: 1.4rem;
+  }
+  .timeline .tl-item {
+    position: relative;
+    padding: 0 0 1.6rem;
+  }
+  .timeline .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -1.51rem;
+    top: 0.35rem;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 0 3px var(--void-2);
+  }
+  .timeline .tl-year {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--cyan);
+    letter-spacing: 0.08em;
+  }
+  .timeline .tl-what {
+    font-size: 0.98rem;
+    margin-top: 0.15rem;
+    color: var(--paper-on-void);
+  }
+  .timeline .tl-what b {
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.9rem;
+    max-width: 820px;
+  }
+  .link-card {
+    display: block;
+    text-decoration: none;
+    border: 1px solid var(--wire);
+    border-radius: 4px;
+    padding: 0.9rem 1.05rem;
+    background: var(--panel);
+    color: var(--paper-on-void);
+  }
+  .link-card .lbl {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    color: var(--cyan);
+    text-transform: uppercase;
+  }
+  .link-card .val {
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+    overflow-wrap: anywhere;
+  }
+
+  .bio {
+    max-width: 56ch;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--mist);
+    border-top: 1px solid var(--wire);
+    padding-top: 1.2rem;
+    margin-top: 1.6rem;
+  }
+
+  .badge-now {
+    display: inline-block;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--redpen);
+    padding: 0.35rem 0.75rem;
+    transform: rotate(-2deg);
+    margin-bottom: 1.3rem;
+  }
+
+  .progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--amber);
+    z-index: 50;
+    transition: width 140ms ease;
+  }
+  .world-code ~ .progress,
+  body:has(section.world-code.active) .progress {
+    background: var(--cyan);
+  }
+
+  a {
+    color: inherit;
+  }
+
+  @media print {
+    html,
+    .deck {
+      height: auto;
+      overflow: visible;
+      scroll-snap-type: none;
+    }
+    section.slide {
+      min-height: 100vh;
+      page-break-after: always;
+    }
+    .progress {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  .nav-btn {
+    position: fixed;
+    right: 1.6rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    border: 1px solid var(--wire);
+    background: rgba(7, 9, 11, 0.72);
+    color: var(--paper-on-void);
+    font-size: 1.1rem;
+    cursor: pointer;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .nav-prev {
+    bottom: 5.4rem;
+  }
+  .nav-next {
+    bottom: 2.2rem;
+  }
+  .nav-btn:hover,
+  .nav-btn:focus-visible {
+    background: rgba(7, 9, 11, 0.9);
+  }
+  .nav-btn:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+
+  @media print {
+    .nav-btn {
+      display: none;
+    }
+  }
+</style>
+
+<div class="progress" id="progress" style="width: 0%"></div>
+<div class="deck" id="deck">
+  <!-- 1 · COVER -->
+  <section class="slide world-paper">
+    <p class="kicker">Software Craftsmanship McHenry County · September 9, 2026</p>
+    <h1 class="slide-title">Phalanx Duel</h1>
+    <p
+      class="dek"
+      style="
+        font-family: var(--display);
+        font-style: italic;
+        font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+        color: var(--ink);
+      "
+    >
+      An analog game, ported to digital with AI&#8211;assisted development.
+    </p>
+    <div class="board" style="max-width: 340px; margin-top: 1.4rem" aria-hidden="true">
+      <div class="cardslot">♦</div>
+      <div class="cardslot amber">♣</div>
+      <div class="cardslot">♥</div>
+      <div class="cardslot amber">♠</div>
+    </div>
+    <p class="slide-num">Mike Hall · just3ws.com</p>
+  </section>
+
+  <!-- 2 · ORIGIN -->
+  <section class="slide world-paper">
+    <p class="kicker">Learn · 01 — Where this came from</p>
+    <h2 class="slide-title">It started because it was raining.</h2>
+    <p class="dek">
+      July 2022, Camp Tesomas. I was an adult leader on my son's troop trip when a storm pushed
+      everyone into their tents. No phone service, no game night, and I'd left my Magic: The
+      Gathering deck at home. So I grabbed a notebook and a plain deck of cards from the camp
+      trading post and started sketching.
+    </p>
+    <p class="dek">
+      A week of tent-flap playtesting worked out the damage math, gave each suit a job, and landed
+      on a four&#8209;column battlefield. The rules in that notebook are still the rules you're
+      about to learn.
+    </p>
+    <p class="slide-num">2 / 14</p>
+  </section>
+
+  <!-- 3 · GOAL & BOARD -->
+  <section class="slide world-paper">
+    <p class="kicker">Learn · 02 — Setup</p>
+    <h2 class="slide-title">Two decks. Four columns. 20 life points.</h2>
+    <p class="dek">
+      Each player shuffles a standard 52&#8209;card deck and draws 12. Cards go face up into four
+      columns, two ranks deep: a front rank that attacks and can be attacked, a back rank held in
+      reserve. Columns are numbered from your own left &mdash; you sit facing your opponent, so your
+      column 1 lines up across from their column 4.
+    </p>
+    <div class="board" aria-hidden="true">
+      <div class="cardslot dim">4</div>
+      <div class="cardslot dim">3</div>
+      <div class="cardslot dim">2</div>
+      <div class="cardslot dim">1</div>
+    </div>
+    <div class="board" style="margin-top: 0.5rem" aria-hidden="true">
+      <div class="cardslot">1</div>
+      <div class="cardslot">2</div>
+      <div class="cardslot">3</div>
+      <div class="cardslot">4</div>
+    </div>
+    <p class="slide-num">3 / 14</p>
+  </section>
+
+  <!-- 4 · A TURN -->
+  <section class="slide world-paper">
+    <p class="kicker">Learn · 03 — On your turn</p>
+    <h2 class="slide-title">Attack once, or pass.</h2>
+    <ol class="steps">
+      <li>
+        <span><b>Choose.</b> Pick one of your front cards and any enemy column.</span>
+      </li>
+      <li>
+        <span
+          ><b>Resolve.</b> Damage travels through the column: front, back, then life points.</span
+        >
+      </li>
+      <li>
+        <span
+          ><b>Rebuild.</b> The defender may fill empty slots &mdash; only in the attacked
+          column.</span
+        >
+      </li>
+      <li>
+        <span><b>Switch.</b> The defender draws to four, then becomes the attacker.</span>
+      </li>
+    </ol>
+    <p class="slide-num">4 / 14</p>
+  </section>
+
+  <!-- 5 · RESOLVE AN ATTACK -->
+  <section class="slide world-paper">
+    <p class="kicker">Learn · 04 — Resolving an attack</p>
+    <h2 class="slide-title">Follow the damage, front to back.</h2>
+    <p class="dek" style="margin-bottom: 1.2rem">
+      8♣ attacks a column holding 5♠ in front and 4♣ in back.
+    </p>
+    <div class="beats">
+      <div class="beat">
+        <span class="n">1 · HIT THE FRONT</span>
+        <div class="chip">8♣&minus;5♠</div>
+        <span class="eq">8&minus;5=3<br />discard 5♠</span>
+      </div>
+      <div class="arrow-sep">&rsaquo;</div>
+      <div class="beat">
+        <span class="n">2 · CLUB DOUBLES</span>
+        <div class="chip">3&times;2</div>
+        <span class="eq">3&times;2=6<br />club boundary</span>
+      </div>
+      <div class="arrow-sep">&rsaquo;</div>
+      <div class="beat">
+        <span class="n">3 · HIT THE BACK</span>
+        <div class="chip">6&minus;4♣</div>
+        <span class="eq">6&minus;4=2<br />discard 4♣</span>
+      </div>
+      <div class="arrow-sep">&rsaquo;</div>
+      <div class="beat">
+        <span class="n">4 · REACH LP</span>
+        <div
+          class="chip"
+          style="
+            border-color: var(--redpen);
+            color: var(--redpen);
+            background: rgba(163, 50, 58, 0.08);
+          "
+        >
+          &minus;2
+        </div>
+        <span class="eq">opponent<br />loses 2 LP</span>
+      </div>
+    </div>
+    <p class="slide-num">5 / 14</p>
+  </section>
+
+  <!-- 6 · THE FOUR SUITS -->
+  <section class="slide world-paper">
+    <p class="kicker">Learn · 05 — The four suits</p>
+    <h2 class="slide-title">Timing rules, not superpowers.</h2>
+    <p class="dek" style="margin-bottom: 1.3rem">Each suit fires only at the boundary it names.</p>
+    <div class="suits-grid">
+      <div class="suit-card">
+        <h3>&#9830; Diamond &middot; Shield</h3>
+        <p>
+          When a destroyed Diamond's carryover is headed to another card, subtract the Diamond's own
+          value first.
+        </p>
+      </div>
+      <div class="suit-card">
+        <h3>&#9829; Heart &middot; Last guard</h3>
+        <p>
+          If the final card destroyed before life points is a Heart, subtract its value before that
+          damage lands.
+        </p>
+      </div>
+      <div class="suit-card weapon">
+        <h3>&#9827; Club &middot; Breakthrough</h3>
+        <p>
+          A Club attacker doubles carryover once, the first time it crosses from one card to
+          another.
+        </p>
+      </div>
+      <div class="suit-card weapon">
+        <h3>&#9824; Spade &middot; Finishing blow</h3>
+        <p>A Spade attacker doubles the carryover the instant it crosses into life points.</p>
+      </div>
+    </div>
+    <p
+      class="dek mono"
+      style="font-size: 0.78rem; margin-top: 1.3rem; color: var(--ink-soft); opacity: 0.8"
+    >
+      docs/gameplay/rules.md &middot; &ldquo;The four suits&rdquo;
+    </p>
+    <p class="slide-num">6 / 14</p>
+  </section>
+
+  <!-- 7 · REINFORCE & WIN -->
+  <section class="slide world-paper">
+    <p class="kicker">Learn · 06 — Answering and winning</p>
+    <h2 class="slide-title">Rebuild the column. Reach zero.</h2>
+    <ul class="list">
+      <li>
+        <b>&#9642;</b
+        ><span
+          >After an attack, the defender may reinforce only the column that was hit, then draws back
+          to four cards and becomes the attacker.</span
+        >
+      </li>
+      <li>
+        <b>&#9642;</b
+        ><span
+          >A card that survived a hit returns to full value next turn &mdash; damage doesn't carry
+          between turns.</span
+        >
+      </li>
+      <li>
+        <b>&#9642;</b
+        ><span
+          >Reach 0 life points and you win. Passing is legal, but three passes in a row, or five in
+          a game, forfeits the duel.</span
+        >
+      </li>
+      <li>
+        <b>&#9642;</b
+        ><span>Running out of cards to draw is not a loss. There is no reshuffle.</span>
+      </li>
+    </ul>
+    <p class="slide-num">7 / 14</p>
+  </section>
+
+  <!-- 8 · PLAY -->
+  <section class="slide world-paper" style="background: var(--paper-2)">
+    <p class="kicker">Play · Now</p>
+    <span class="badge-now">Grab a deck</span>
+    <h2 class="slide-title">Now play a hand.</h2>
+    <p class="dek">
+      Pair up. Each of you needs a standard 52&#8209;card deck &mdash; I brought extras if you
+      didn't. Shuffle, draw twelve, build your formation, and play until someone breaks through.
+      About ten minutes. If a rule is disputed, wave me down.
+    </p>
+    <p class="dek" style="font-family: var(--mono); font-size: 0.85rem; color: var(--ink-soft)">
+      Setup &rarr; a turn &rarr; resolve an attack &rarr; the four suits &rarr; reinforce &rarr;
+      win. That's the whole game.
+    </p>
+    <p class="slide-num">8 / 14</p>
+  </section>
+
+  <!-- 9 · TRANSITION -->
+  <section class="slide world-code">
+    <p class="kicker">Code · 01 — The port</p>
+    <h2 class="slide-title" style="color: var(--paper-on-void)">
+      Same rules. Now watch them run as software.
+    </h2>
+    <p class="dek">
+      Everything you just played by hand is enforced, unmodified, by the server behind this screen.
+      No production deployment, no cloud account &mdash; the same server runs on a laptop.
+    </p>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-year">JULY 2022</div>
+        <div class="tl-what">Notebook rules, tested at a table.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">2022&ndash;2023</div>
+        <div class="tl-what">A Ruby prototype made the combat rules <b>executable</b>.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">2023&ndash;2026</div>
+        <div class="tl-what">
+          Rebuilt in TypeScript, <b>server&#8209;authoritative</b>, with a web client, a Go CLI, and
+          live multiplayer.
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">NOW</div>
+        <div class="tl-what">
+          v1.5.0 live at phalanxduel.com, built through
+          <b>bounded AI&#8211;assisted development</b>: a human architect, agent&#8209;driven
+          implementation, verification gates instead of blind trust in model output.
+        </div>
+      </div>
+    </div>
+    <p class="slide-num">9 / 14</p>
+  </section>
+
+  <!-- 10 · ARCHITECTURE -->
+  <section class="slide world-code">
+    <p class="kicker">Code · 02 — Architecture</p>
+    <h2 class="slide-title" style="color: var(--paper-on-void)">
+      The client proposes. The server decides.
+    </h2>
+    <p class="dek" style="margin-bottom: 1.3rem">
+      No gameplay logic ships in client code &mdash; it's a rule enforced by review, not just
+      intent.
+    </p>
+    <div class="flow">
+      <div class="flow-node">Player intent</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node">Client</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node accent">Authoritative<br />server</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node accent">Deterministic<br />engine</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node">Validated<br />transition</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node">Ledger &amp;<br />replay evidence</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node">Player, spectator,<br />or bot</div>
+    </div>
+    <p class="dek mono" style="font-size: 0.8rem; margin-top: 1.6rem; color: var(--mist)">
+      server/src/match&#8209;actor.ts &middot; engine/src/combat.ts &middot;
+      server/src/event&#8209;bus.ts
+    </p>
+    <p class="slide-num">10 / 14</p>
+  </section>
+
+  <!-- 11 · PHASE LIFECYCLE -->
+  <section class="slide world-code">
+    <p class="kicker">Code · 03 — Every turn, the same eight phases</p>
+    <h2 class="slide-title" style="color: var(--paper-on-void)">
+      The turn lifecycle, straight from the schema.
+    </h2>
+    <p class="dek" style="margin-bottom: 1.2rem">
+      Every turn executes all eight, in order. Player actions are only valid in specific phases.
+    </p>
+    <div class="phase-ribbon">
+      <span class="phase-pill">StartTurn</span><span class="phase-arrow">&rarr;</span>
+      <span class="phase-pill">DeploymentPhase</span><span class="phase-arrow">&rarr;</span>
+      <span class="phase-pill">AttackPhase</span><span class="phase-arrow">&rarr;</span>
+      <span class="phase-pill">AttackResolution</span><span class="phase-arrow">&rarr;</span>
+      <span class="phase-pill">CleanupPhase</span><span class="phase-arrow">&rarr;</span>
+      <span class="phase-pill">ReinforcementPhase</span><span class="phase-arrow">&rarr;</span>
+      <span class="phase-pill">DrawPhase</span><span class="phase-arrow">&rarr;</span>
+      <span class="phase-pill">EndTurn</span>
+    </div>
+    <p class="dek mono" style="font-size: 0.82rem; margin-top: 1.4rem">
+      terminal:
+      <span class="phase-pill terminal" style="display: inline-block">gameOver</span> &mdash; life
+      points depleted, deck depleted, forfeit, or pass limit.
+    </p>
+    <p class="dek mono" style="font-size: 0.8rem; margin-top: 1.6rem; color: var(--mist)">
+      shared/src/schema.ts &middot; TurnPhaseSchema &middot; docs/gameplay/rules.md &sect;4
+    </p>
+    <p class="slide-num">11 / 14</p>
+  </section>
+
+  <!-- 12 · VERIFY IT YOURSELF -->
+  <section class="slide world-code">
+    <p class="kicker">Code · 04 — Try it yourself</p>
+    <h2 class="slide-title" style="color: var(--paper-on-void)">
+      Clone it. Run it. Break it on purpose.
+    </h2>
+    <p class="dek" style="margin-bottom: 1.1rem">
+      Everything on this slide is a real command against the real repository &mdash; nothing staged
+      for the talk.
+    </p>
+    <pre class="codeblock"><code>git clone https://github.com/phalanxduel/phalanxduel
+cd phalanxduel/game &amp;&amp; pnpm install
+
+bin/demo up          <span class="c-dim"># starts server + client, waits for healthy</span>
+pnpm check            <span class="c-dim"># lint, typecheck, full test suite</span>
+pnpm qa:replay:verify <span class="c-dim"># replay a match, confirm it's identical</span></code></pre>
+    <ul class="list" style="margin-top: 1.3rem">
+      <li>
+        <b>&#9642;</b
+        ><span class="mono" style="font-size: 0.92rem"
+          ><b style="color: var(--gold)">docs/gameplay/rules.md</b> &mdash; the versioned rule spec;
+          &sect;4 is the turn lifecycle from the last slide.</span
+        >
+      </li>
+      <li>
+        <b>&#9642;</b
+        ><span class="mono" style="font-size: 0.92rem"
+          ><b style="color: var(--gold)">shared/src/schema.ts</b> &mdash; every phase and every wire
+          message, as Zod schemas.</span
+        >
+      </li>
+      <li>
+        <b>&#9642;</b
+        ><span class="mono" style="font-size: 0.92rem"
+          ><b style="color: var(--gold)">engine/src/combat.ts</b> &mdash; the
+          damage&#8209;resolution function itself.</span
+        >
+      </li>
+    </ul>
+    <p class="slide-num">12 / 14</p>
+  </section>
+
+  <!-- 13 · WHY DETERMINISM -->
+  <section class="slide world-code">
+    <p class="kicker">Code · 05 — Why it's built this way</p>
+    <h2 class="slide-title" style="color: var(--paper-on-void)">
+      What you verified by hand is what the server verifies every turn.
+    </h2>
+    <ul class="list">
+      <li>
+        <b>&#9642;</b
+        ><span>No dice, no shuffle mid&#8209;match. Same inputs, same outcome, every time.</span>
+      </li>
+      <li>
+        <b>&#9642;</b
+        ><span
+          >Every match keeps a replay log &mdash; independently verifiable, not just trusted.</span
+        >
+      </li>
+      <li>
+        <b>&#9642;</b
+        ><span
+          >AI&#8211;assisted, not AI&#8211;authored: a human architect sets the contract, agents
+          implement inside it, and verification gates &mdash; not the model's own claims &mdash;
+          decide what merges.</span
+        >
+      </li>
+    </ul>
+    <p class="slide-num">13 / 14</p>
+  </section>
+
+  <!-- 13 · LINKS / BIO / THANKS -->
+  <section class="slide world-code">
+    <p class="kicker">Play along</p>
+    <h2 class="slide-title" style="color: var(--paper-on-void)">Nothing to install. Try it now.</h2>
+    <div class="link-grid">
+      <a class="link-card" href="https://phalanxduel.com" target="_blank" rel="noopener">
+        <div class="lbl">Play online</div>
+        <div class="val">phalanxduel.com</div>
+      </a>
+      <a
+        class="link-card"
+        href="https://phalanxduel.com/learn/rules/"
+        target="_blank"
+        rel="noopener"
+      >
+        <div class="lbl">Canonical rules</div>
+        <div class="val">phalanxduel.com/learn/rules</div>
+      </a>
+      <a
+        class="link-card"
+        href="https://github.com/phalanxduel/phalanxduel"
+        target="_blank"
+        rel="noopener"
+      >
+        <div class="lbl">Source</div>
+        <div class="val">github.com/phalanxduel</div>
+      </a>
+      <a
+        class="link-card"
+        href="https://www.just3ws.com/phalanx-duel"
+        target="_blank"
+        rel="noopener"
+      >
+        <div class="lbl">This talk</div>
+        <div class="val">just3ws.com/phalanx&#8209;duel</div>
+      </a>
+    </div>
+    <div class="bio">
+      <p>
+        <b style="color: var(--gold); font-weight: 600">Mike Hall</b> is a software engineer based
+        in Chicago, working across production systems, platform reliability, legacy modernization,
+        and observability. Phalanx Duel began as a notebook sketch at a Boy Scout camp in 2022 and
+        is now his hands&#8209;on laboratory for deterministic systems and carefully bounded
+        AI&#8211;assisted engineering: replayable state transitions, server&#8209;authoritative
+        rules, and verification gates that check behavior across a match's full lifecycle.
+      </p>
+    </div>
+    <p class="slide-num">14 / 14</p>
+  </section>
+</div>
+
+<button id="nav-prev" class="nav-btn nav-prev" aria-label="Previous slide" type="button">
+  &#8593;
+</button>
+<button id="nav-next" class="nav-btn nav-next" aria-label="Next slide" type="button">
+  &#8595;
+</button>
+
+<script>
+  const deckEl = document.getElementById('deck');
+  const bar = document.getElementById('progress');
+  const slides = Array.from(document.querySelectorAll('section.slide'));
+
+  function updateProgress() {
+    const max = deckEl.scrollHeight - deckEl.clientHeight;
+    const pct = max > 0 ? (deckEl.scrollTop / max) * 100 : 0;
+    bar.style.width = pct + '%';
+    const mid = deckEl.scrollTop + deckEl.clientHeight / 2;
+    let current = slides[0];
+    for (const s of slides) if (s.offsetTop <= mid) current = s;
+    slides.forEach((s) => s.classList.toggle('active', s === current));
+    bar.style.background = current.classList.contains('world-code') ? '#5fd9e0' : '#c1691f';
+  }
+  deckEl.addEventListener('scroll', updateProgress, { passive: true });
+  updateProgress();
+
+  function currentIndex() {
+    const top = deckEl.scrollTop + 8;
+    let idx = 0;
+    slides.forEach((s, i) => {
+      if (s.offsetTop <= top) idx = i;
+    });
+    return idx;
+  }
+
+  function goTo(i) {
+    slides[Math.max(0, Math.min(i, slides.length - 1))].scrollIntoView({ behavior: 'smooth' });
+  }
+  document.getElementById('nav-prev').addEventListener('click', () => goTo(currentIndex() - 1));
+  document.getElementById('nav-next').addEventListener('click', () => goTo(currentIndex() + 1));
+
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowDown', 'PageDown', ' '].includes(e.key)) {
+      e.preventDefault();
+      slides[Math.min(currentIndex() + 1, slides.length - 1)].scrollIntoView({
+        behavior: 'smooth',
+      });
+    } else if (['ArrowUp', 'PageUp'].includes(e.key)) {
+      e.preventDefault();
+      slides[Math.max(currentIndex() - 1, 0)].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      slides[0].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      slides[slides.length - 1].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+</script>
