@@ -20,7 +20,8 @@ Welcome to the central documentation hub. This directory contains the canonical 
 | **[Deployment](./deployment.md)** | CI/CD pipeline and release automation |
 | **[Troubleshooting](./troubleshooting.md)** | Solutions to common issues and FAQ |
 | **[Features](./reference/features.md)** | Summary of core tactical and technical features |
-| **[How to Play](./gameplay/how-to-play.md)** | Player-friendly guide to rules and mechanics |
+| **[How to Play](./gameplay/how-to-play.md)** | Player-first guide from setup to a completed Classic duel |
+| **[Face-to-Face Quickstart](./gameplay/face-to-face-quickstart.md)** | Compact script for teaching a duel with physical cards |
 
 ## 🏗️ System & Architecture
 
