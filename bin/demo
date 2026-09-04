@@ -10,6 +10,9 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
 CLIENT_URL="http://127.0.0.1:5173"
+# The branded URL from nginx/phalanxduel.localhost.conf (bin/install-localhost),
+# if it's set up on this machine — falls back to the raw dev port otherwise.
+PLAY_URL="https://play.phalanxduel.localhost"
 READY_TIMEOUT="${PHALANX_DEMO_READY_TIMEOUT:-60}"
 
 usage() {
@@ -41,7 +44,11 @@ wait_ready() {
     client=$(node -e "try{console.log(JSON.parse(process.argv[1]).services.client.status)}catch(e){console.log('UNKNOWN')}" "$json" 2>/dev/null || echo UNKNOWN)
     if [ "$app" = "READY" ] && [ "$client" = "READY" ]; then
       echo "✅ Server and client are READY."
-      echo "   Play:   $CLIENT_URL"
+      if curl -sSk -o /dev/null --max-time 2 "$PLAY_URL" 2>/dev/null; then
+        echo "   Play:   $PLAY_URL"
+      else
+        echo "   Play:   $CLIENT_URL   (run bin/install-localhost for the branded URL)"
+      fi
       echo "   Logs:   bin/demo logs"
       echo "   Reset:  bin/demo reset"
       echo "   Stop:   bin/demo down"
