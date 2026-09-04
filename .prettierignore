@@ -16,3 +16,4 @@ experiments/gh-metadata/report_template.html
 archive/**
 playwright-report/
 test-results/
+scripts/video/build/

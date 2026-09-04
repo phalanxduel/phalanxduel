@@ -37,6 +37,8 @@
     "docs:build": "pnpm docs:artifacts && typedoc",
     "docs:check": "bash scripts/ci/verify-doc-artifacts.sh",
     "docs:dash": "bash scripts/build/generate-docset.sh",
+    "docs:demo:build": "node scripts/video/build-demo.mjs",
+    "docs:demo:record": "node scripts/video/record-demo.mjs",
     "docs:dependency-graph": "bash scripts/docs/render-dependency-graph.sh",
     "docs:knip": "bash scripts/docs/render-knip-report.sh",
     "docs:routes": "pnpm --filter @phalanxduel/server docs:routes",

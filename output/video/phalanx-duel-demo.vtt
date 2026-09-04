@@ -1,0 +1,26 @@
+WEBVTT
+
+00:00:02.250 --> 00:00:21.251
+Phalanx Duel is a tactical card game for two players. Each player runs a standard deck of fifty two cards and starts with a pool of life points. You win by breaking through a column of your opponent's cards and driving their life points to zero. Everything you see here runs from one shuffled seed, so the same game plays the same way every time.
+
+00:00:24.001 --> 00:00:41.553
+Each player shuffles their own deck and draws twelve cards. You build four columns, each with a front card and a back card. Players take turns placing one card face up until each board holds eight cards and each hand holds four. The front card of every column faces the enemy. The back card waits behind it.
+
+00:00:44.303 --> 00:00:59.903
+On your turn you do one thing. You attack, or you pass. To attack, pick one of your own front cards and point it at one enemy column. A card's attack value is its printed number. Tens count as ten. Face cards count as eleven. That value is the damage the attack starts with.
+
+00:01:02.653 --> 00:01:26.363
+Damage moves through the target column in order. Front card, then back card, then life points. Compare the damage to the front card. If the card's value is higher, it survives and the attack stops. If the damage meets or beats the card, the card is destroyed. Subtract its value and carry the rest forward. The leftover damage then hits the back card, and whatever remains after that reaches the opponent's life points.
+
+00:01:29.113 --> 00:01:51.551
+Each suit changes the math at one boundary in that chain. It is a timing rule, not a card power. A destroyed Diamond subtracts its value from damage carrying on to another card. A destroyed Heart subtracts its value from damage headed to life points. A Club attacker doubles the carryover once, right after its first kill. A Spade attacker doubles the damage that crosses from the cards into the player.
+
+00:01:54.301 --> 00:02:12.071
+After the attack resolves, the defender may reinforce, but only the column that was hit. You play cards from your hand into the open ranks of that one column. Then you draw back up to four cards, and now you are the attacker. A card that survived a hit returns to its full value on your turn. Damage does not carry between turns.
+
+00:02:14.821 --> 00:02:30.826
+The duel ends when one player's life points reach zero. Passing is legal, but three passes in a row, or five passes in a game, forfeits the duel. Running out of cards to draw is not a loss. There is no reshuffle. So every attack is a choice about which column to break, and when.
+
+00:02:33.576 --> 00:02:46.069
+That is the whole game. Set up four columns, send one card at a time, and follow the damage through. The printed rules and the face to face quickstart go deeper on special cards and edge cases. Shuffle a deck and play a hand.
+
