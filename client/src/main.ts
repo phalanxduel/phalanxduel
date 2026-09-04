@@ -22,12 +22,15 @@ import { PizzazzEngine } from './pizzazz';
 import { fetchCardsManifest } from './manifest';
 import { initDebugMode } from './debug';
 import './debug.css';
+import { mountReportIssueButton } from './report-issue';
 
 // ── App Initialization ──────────────────────────────────────────────
 
 async function init() {
   const root = document.getElementById('app');
   if (!root) return;
+
+  mountReportIssueButton();
 
   // Handle mobile detection
   const checkMobile = () => {
