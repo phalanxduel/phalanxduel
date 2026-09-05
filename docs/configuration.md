@@ -43,6 +43,21 @@ The dedicated admin app receives only `DATABASE_URL`, `JWT_SECRET`, and
 `ADMIN_INTERNAL_TOKEN`; provision these explicitly rather than copying every
 game-service secret.
 
+For development-only browser RUM, declare `VITE_PHX_RUM_TOKEN` in the local
+secret DSL with `@target: LOCAL` and `@concern: OBSERVABILITY`. Let the local
+environment/bootstrap tooling make it available to the Vite process; do not
+read or source `.env.secrets*` manually, and never provision this token to a
+production build.
+
+The root `.env` is the first runtime layer and should provide shared safe
+defaults. The committed `.env.example` provides safe host-native localhost
+defaults for
+the browser, API, admin, cockpit, OpenObserve, and Grafana endpoints. The local
+demo controller loads only `PHALANX_DEMO_*` settings from the root `.env.local`.
+These are non-secret URL overrides for rehearsal surfaces; they are not loaded
+by production deployment tooling. Production and staging should provide their
+own deployment-specific server origins rather than inheriting local URLs.
+
 ## Security Rules
 
 - **Never commit live secrets.** Only `*.example` templates are safe to commit.

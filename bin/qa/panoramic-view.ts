@@ -45,6 +45,16 @@ interface TimelineEvent {
   detail: string;
   status: 'observed' | 'unknown' | 'absence';
   source: string;
+  trailIds?: string[];
+}
+interface Trail {
+  id: string;
+  label: string;
+  description: string;
+  lanes: Lane[];
+  eventIds: number[];
+  status: TimelineEvent['status'];
+  color: string;
 }
 
 const argv = process.argv.slice(2).filter((arg) => arg !== '--');
@@ -157,14 +167,114 @@ function normalize(
     });
   return result;
 }
+function deriveTrails(events: TimelineEvent[]): Trail[] {
+  const first = (lane: Lane) => events.find((event) => event.lane === lane);
+  const last = (lane: Lane) => [...events].reverse().find((event) => event.lane === lane);
+  const firstNamed = (title: string) => events.find((event) => event.title === title);
+  const lastNamed = (title: string) => [...events].reverse().find((event) => event.title === title);
+  const build = (
+    id: string,
+    label: string,
+    description: string,
+    candidates: (TimelineEvent | undefined)[],
+    color: string,
+  ): Trail => {
+    const eventIds = [...new Set(candidates.filter(Boolean).map((event) => event!.id))];
+    const trailEvents = eventIds.map((eventId) => events[eventId]);
+    const status = trailEvents.some((event) => event.status === 'unknown')
+      ? 'unknown'
+      : trailEvents.some((event) => event.status === 'absence')
+        ? 'absence'
+        : 'observed';
+    return {
+      id,
+      label,
+      description,
+      lanes: (['experience', 'server', 'engine', 'evidence', 'diagnostics'] as Lane[]).filter(
+        (lane) => trailEvents.some((event) => event.lane === lane),
+      ),
+      eventIds,
+      status,
+      color,
+    };
+  };
+  const actionEvents = events.filter((event) => event.lane === 'experience');
+  const engineEvents = events.filter((event) => event.lane === 'engine');
+  const stateEvents = events.filter((event) => event.lane === 'server');
+  const trails = [
+    build(
+      'match-bootstrap',
+      'MATCH BOOTSTRAP',
+      'lobby interaction → server state → engine boundary → first evidence',
+      [first('experience'), first('server'), first('engine'), first('evidence')],
+      '#55d6be',
+    ),
+    build(
+      'turn-cascade',
+      'TURN CASCADE',
+      'user actions → engine applications → authoritative server projections',
+      [...actionEvents, ...engineEvents, ...stateEvents].sort((a, b) => a.atMs - b.atMs),
+      '#e2a93b',
+    ),
+    build(
+      'terminal-proof',
+      'TERMINAL PROOF',
+      'final action → final engine boundary → replay evidence → diagnostics',
+      [last('experience'), last('engine'), lastNamed('REPLAY EVIDENCE'), last('diagnostics')],
+      '#ff7f66',
+    ),
+    build(
+      'observability-correlation',
+      'OBSERVABILITY CORRELATION',
+      'first experience signal → replay record → O2 correlation boundary',
+      [first('experience'), firstNamed('REPLAY EVIDENCE'), firstNamed('O2 CORRELATION')],
+      '#9d8cff',
+    ),
+  ];
+  for (const trail of trails) {
+    for (const eventId of trail.eventIds) {
+      const event = events[eventId];
+      event.trailIds = [...(event.trailIds ?? []), trail.id];
+    }
+  }
+  return trails.filter((trail) => trail.eventIds.length > 0);
+}
 function eventMarkup(event: TimelineEvent, duration: number): string {
   const left = Math.min(98, (event.atMs / duration) * 100);
-  return `<button class="event ${event.status}" style="left:${left}%" data-event-id="${event.id}" title="${escapeHtml(event.detail)}">${escapeHtml(event.title)}</button>`;
+  const trailIds = event.trailIds?.join(',') ?? '';
+  return `<button class="event ${event.status}" style="left:${left}%" data-event-id="${event.id}" data-trails="${trailIds}" title="${escapeHtml(event.detail)}">${escapeHtml(event.title)}</button>`;
 }
-function html(manifest: Manifest, events: TimelineEvent[], replay: ReplayFrame[]): string {
+function trailMarkup(
+  trail: Trail,
+  duration: number,
+  lanes: Lane[],
+  events: TimelineEvent[],
+): string {
+  const points = trail.eventIds
+    .map((eventId) => {
+      const event = events[eventId];
+      return `${Math.min(98, (event.atMs / duration) * 100)},${lanes.indexOf(event.lane) * 58 + 29}`;
+    })
+    .join(' ');
+  const markers = trail.eventIds
+    .map((eventId) => {
+      const event = events[eventId];
+      const x = Math.min(98, (event.atMs / duration) * 100);
+      const y = lanes.indexOf(event.lane) * 58 + 29;
+      return `<circle cx="${x}" cy="${y}" r="3" fill="${trail.color}"/>`;
+    })
+    .join('');
+  return `<g class="trail-path" data-trail-id="${trail.id}" data-status="${trail.status}"><polyline points="${points}" fill="none" stroke="${trail.color}" stroke-width="0.45" vector-effect="non-scaling-stroke"/>${markers}</g>`;
+}
+function html(
+  manifest: Manifest,
+  events: TimelineEvent[],
+  replay: ReplayFrame[],
+  trails: Trail[],
+): string {
   const duration = Math.max(manifest.durationMs ?? 0, ...events.map((event) => event.atMs), 1);
   const lanes: Lane[] = ['experience', 'server', 'engine', 'evidence', 'diagnostics'];
-  const data = JSON.stringify({ manifest, events, replay }).replaceAll('<', '\\u003c');
+  const data = JSON.stringify({ manifest, events, replay, trails }).replaceAll('<', '\\u003c');
   const tracks = lanes
     .map(
       (lane) =>
@@ -180,7 +290,48 @@ function html(manifest: Manifest, events: TimelineEvent[], replay: ReplayFrame[]
 :root{color-scheme:dark;--ink:#e8eef2;--muted:#91a2ac;--line:#29404b;--bg:#071015;--panel:#0d1b22;--accent:#e2a93b}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#17323d,var(--bg) 55%);color:var(--ink);font:14px/1.45 ui-monospace,monospace}main{max-width:1500px;margin:auto;padding:28px}header{border-bottom:1px solid var(--line);padding-bottom:18px}h1{font:900 30px system-ui;margin:0}h1 small{display:block;color:var(--accent);font:12px monospace;margin-top:6px}.subtitle,.legend{color:var(--muted);margin-top:8px}dl{display:flex;flex-wrap:wrap;gap:8px 24px;margin:22px 0}.metric{min-width:120px}dt{color:var(--muted);font-size:11px;text-transform:uppercase}dd{margin:2px 0;color:var(--accent);font-size:18px}.controls{display:flex;gap:12px;align-items:center;margin:18px 0}.control{background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:8px 12px;cursor:pointer}input{flex:1;accent-color:var(--accent)}.timeline{border:1px solid var(--line);background:#050c10aa;padding:15px;overflow:hidden}.lane{display:grid;grid-template-columns:125px minmax(650px,1fr);min-height:58px;border-bottom:1px solid #29404b88}.lane:last-child{border:0}h2{color:var(--muted);font-size:12px;text-transform:uppercase;text-align:right;margin:18px 15px 0 0}.track{position:relative;min-height:58px;background:linear-gradient(90deg,transparent 49.9%,#29404b55 50%,transparent 50.1%)}.track:after{content:"";position:absolute;left:0;right:0;top:29px;border-top:1px solid var(--line)}.event{position:absolute;top:10px;z-index:2;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid;border-radius:3px;padding:5px 7px;cursor:pointer;font:10px monospace}.observed{background:#143b42;border-color:#2e9b9d;color:#c9f2ed}.unknown{background:#463524;border-color:#b68138;color:#ffe1a2}.absence{background:#292e32;border-color:#66737a;color:#c3cbd0}.playhead{position:absolute;top:0;bottom:0;width:2px;background:#ffcf59;z-index:3;pointer-events:none}.detail{min-height:48px;border-left:3px solid var(--accent);padding:10px 12px;margin-top:15px;background:var(--panel)}@media(max-width:800px){main{padding:16px}.lane{grid-template-columns:85px 1fr}h2{font-size:10px}.event{max-width:120px}}
 </style></head><body><main><header><h1>PHALANX DUEL<small>ELECTRIC PANORAMIC · RUNTIME REALITY</small></h1><div class="subtitle">One scenario interwoven across experience, server, engine, evidence, and diagnostics.</div></header><dl>${metric('status', manifest.status)}${metric('seed', manifest.seed)}${metric('turns', manifest.turnCount)}${metric('actions', manifest.actionCount)}${metric('duration', `${manifest.durationMs ?? 0} ms`)}${metric('replay frames', replay.length)}${metric('screenshots', manifest.screenshotCount ?? manifest.screenshots?.length)}</dl><div class="controls"><button class="control" id="play" type="button">▶ play sweep</button><input id="scrub" type="range" min="0" max="${duration}" value="0"><output id="clock">0 ms</output></div><div class="timeline" id="timeline"><div class="playhead" id="playhead"></div>${tracks}</div><div class="detail" id="detail">Select an event or start the sweep.</div><div class="legend">Observed evidence is green. Unknown or incomplete evidence is amber; absence is gray.</div></main><script>const D=${data},duration=${duration},scrub=document.getElementById('scrub'),head=document.getElementById('playhead'),clock=document.getElementById('clock'),detail=document.getElementById('detail');let playing=false,offset=0,started=0;function select(id){const e=D.events.find(x=>x.id===id);if(e)detail.innerHTML='<strong>'+e.title+'</strong> · '+e.detail+' <em>['+e.source+']</em>'}function draw(v){const n=Number(v);scrub.value=String(n);head.style.left=(n/duration*100)+'%';clock.textContent=Math.round(n)+' ms';const e=D.events.filter(x=>x.atMs<=n).at(-1);if(e)select(e.id)}document.getElementById('timeline').addEventListener('click',e=>{const t=e.target.closest('[data-event-id]');if(t)select(Number(t.dataset.eventId))});scrub.addEventListener('input',e=>draw(e.target.value));document.getElementById('play').addEventListener('click',()=>{playing=!playing;document.getElementById('play').textContent=playing?'⏸ pause':'▶ play sweep';if(playing){offset=Number(scrub.value);started=performance.now();requestAnimationFrame(step)}});function step(now){if(!playing)return;const n=offset+(now-started)*1.4;if(n>=duration){draw(duration);playing=false;document.getElementById('play').textContent='▶ play sweep';return}draw(n);requestAnimationFrame(step)}draw(0);</script></body></html>`;
 }
-function scenarioReport(manifest: Manifest, events: CaptureEvent[], replay: ReplayFrame[]): string {
+function decoratePanoramicHtml(
+  rendered: string,
+  trails: Trail[],
+  events: TimelineEvent[],
+  duration: number,
+  lanes: Lane[],
+): string {
+  const trailHeight = lanes.length * 58;
+  const trailControls = trails
+    .map(
+      (trail) =>
+        `<button class="trail-control ${trail.status}" data-trail-id="${trail.id}" title="${escapeHtml(trail.description)}"><span class="trail-swatch" style="background:${trail.color}"></span>${escapeHtml(trail.label)}</button>`,
+    )
+    .join('');
+  const trailPaths = trails.map((trail) => trailMarkup(trail, duration, lanes, events)).join('');
+  const trailScript = `document.querySelector('.trail-bar').addEventListener('click',e=>{const t=e.target.closest('[data-trail-id]');if(!t)return;const trail=D.trails.find(x=>x.id===t.dataset.trailId);if(!trail)return;document.querySelectorAll('[data-trail-id]').forEach(x=>x.classList.toggle('active',x.dataset.trailId===trail.id));document.querySelectorAll('.event').forEach(x=>x.classList.toggle('trail-focus',trail.eventIds.includes(Number(x.dataset.eventId))));detail.innerHTML='<strong>'+trail.label+'</strong> · '+trail.description+' <em>['+trail.lanes.join(' → ')+']</em>'});`;
+  return rendered
+    .replace(
+      '</style>',
+      '.trail-bar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.trail-control{background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:7px 9px;cursor:pointer;font:11px monospace}.trail-control.active,.trail-control:hover{color:var(--ink);border-color:var(--accent)}.trail-swatch{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}.timeline{position:relative}.trail-overlay{position:absolute;left:140px;right:15px;top:15px;width:calc(100% - 155px);height:' +
+        trailHeight +
+        'px;z-index:1;pointer-events:none;opacity:.28}.trail-path{transition:opacity .15s}.trail-path.active{opacity:1;filter:drop-shadow(0 0 4px currentColor)}.event.trail-focus{box-shadow:0 0 0 2px var(--accent),0 0 14px var(--accent);z-index:4}</style>',
+    )
+    .replace(
+      '<div class="timeline" id="timeline"><div class="playhead"',
+      '<nav class="trail-bar" aria-label="Panoramic trails">' +
+        trailControls +
+        '</nav><div class="timeline" id="timeline"><svg class="trail-overlay" viewBox="0 0 100 ' +
+        trailHeight +
+        '" preserveAspectRatio="none" aria-hidden="true">' +
+        trailPaths +
+        '</svg><div class="playhead"',
+    )
+    .replace('Select an event or start the sweep.', 'Select an event, trail, or start the sweep.')
+    .replace('draw(0);</script>', trailScript + 'draw(0);</script>');
+}
+function scenarioReport(
+  manifest: Manifest,
+  events: CaptureEvent[],
+  replay: ReplayFrame[],
+  trails: Trail[],
+): string {
   const phases = [
     ...new Set(events.map((event) => event.detail.match(/phase=([A-Z_]+)/)?.[1]).filter(Boolean)),
   ];
@@ -233,6 +384,10 @@ does not infer facts that the capture did not record.
 - Terminal evidence: ${replay.at(-1)?.phase ?? 'not recorded'}.
 - O2 correlation: ${manifest.o2Correlation ? `attached (${manifest.o2Correlation.file ?? 'o2-correlation.json'})` : 'not attached; local collector emission was enabled'}.
 
+## Marked panoramic trails
+
+${trails.map((trail) => `- **${trail.label}** (${trail.status}): ${trail.description}; layers: ${trail.lanes.join(' → ')}; marked events: ${trail.eventIds.length}.`).join('\n') || '- None recorded'}
+
 ## Unknowns and follow-up
 
 ${list(unknowns)}
@@ -258,11 +413,28 @@ async function main(): Promise<void> {
     // O2 attachment is optional; the report preserves this as an explicit unknown.
   }
   const evidence = canonicalizeLegacyRun(manifest, events, 'replay_frames.json');
+  const timelineEvents = normalize(events, manifest, replay);
+  const trails = deriveTrails(timelineEvents);
+  const lanes: Lane[] = ['experience', 'server', 'engine', 'evidence', 'diagnostics'];
+  const duration = Math.max(
+    manifest.durationMs ?? 0,
+    ...timelineEvents.map((event) => event.atMs),
+    1,
+  );
   await writeFile(join(runDir, 'run-evidence.json'), `${JSON.stringify(evidence, null, 2)}\n`);
-  await writeFile(outputPath, html(manifest, normalize(events, manifest, replay), replay));
+  await writeFile(
+    outputPath,
+    decoratePanoramicHtml(
+      html(manifest, timelineEvents, replay, trails),
+      trails,
+      timelineEvents,
+      duration,
+      lanes,
+    ),
+  );
   await writeFile(
     join(resolve(outputPath, '..'), 'scenario-report.md'),
-    scenarioReport(manifest, events, replay),
+    scenarioReport(manifest, events, replay, trails),
   );
   console.log(`Panoramic View: ${outputPath}`);
   console.log(`Scenario report: ${join(resolve(outputPath, '..'), 'scenario-report.md')}`);

@@ -25,7 +25,7 @@ Confirmed gaps this workstream closes:
 1. No way to paste a match ID or a player/spectator link and land on that match's admin context.
 2. Unconfirmed whether MatchDetail reflects a match live while it's still in progress, or only renders a completed/historical transaction log.
 3. Wiki diagrams' accuracy against current code is unaudited (recent unrelated audits this session found stale docs more often than not, e.g. the printed quickstart's facing diagram and the phalanxduel.com rules page both had real bugs).
-4. No single operator-facing command/query library pulling together what already exists and is scattered: `scripts/dev-dashboard.ts` (pnpm dev:status/dev:verify), `bin/services`, `bin/demo`, `Reports.tsx` canned reports, and the o2/OpenObserve MCP tools.
+4. No single operator-facing command/query library pulling together what already exists and is scattered: `scripts/dev-dashboard.ts` (pnpm dev:status/dev:verify), `bin/services`, `bin/phx-demo-ctl`, `Reports.tsx` canned reports, and the o2/OpenObserve MCP tools.
 
 Full spec: backlog/docs (see linked specification document) for structure, sequencing rationale, and the first slice.
 <!-- SECTION:DESCRIPTION:END -->

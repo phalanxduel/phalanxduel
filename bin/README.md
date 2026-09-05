@@ -3,7 +3,8 @@
 The executable tooling follows the `phx-*` command naming convention used by
 zdots. The canonical commands are `phx-demo-ctl`, `phx-services`, `phx-dock`,
 `phx-check`, `phx-test`, `phx-install-localhost`, and `phx-setup`; the shorter
-`bin/demo`-style paths remain compatibility entrypoints.
+The `phx-*` names are the only supported entrypoints; use `bin/phx-demo-ctl`
+for the local demo controller.
 
 Shell completions live in [`completions/`](../completions/README.md).
 

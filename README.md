@@ -25,11 +25,11 @@ rtk pnpm services start all --tmux
 ```
 The game will be available at [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
-For a guided local rehearsal, run `bin/demo up`. It starts the server, browser
+For a guided local rehearsal, run `bin/phx-demo-ctl up`. It starts the server, browser
 client, and dedicated admin pair, then writes a local quicklinks page with
 confirmed URLs, health results, PIDs, log paths, source paths, and a short demo
-sequence. Use `bin/demo links --no-open` to refresh it without opening a
-browser, or `bin/demo cockpit` for the interactive terminal dashboard. When the
+sequence. Use `bin/phx-demo-ctl links --no-open` to refresh it without opening a
+browser, or `bin/phx-demo-ctl cockpit` for the interactive terminal dashboard. When the
 local nginx vhost is installed, the generated cockpit is available at
 `https://phalanxduel.localhost/demo/`; otherwise use the direct loopback
 fallback printed by the command.

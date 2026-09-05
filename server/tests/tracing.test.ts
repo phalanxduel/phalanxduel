@@ -9,6 +9,9 @@ describe('tracing helpers', () => {
     const withActiveSpan = vi.fn(async (_name, _options, callback) => callback({ end: vi.fn() }));
 
     vi.doMock('../src/observability.js', () => ({
+      createHistogram: vi.fn(() => ({ record: vi.fn() })),
+      createMutableGauge: vi.fn(() => ({ set: vi.fn() })),
+      createCounter: vi.fn(() => ({ add: vi.fn() })),
       withActiveSpan,
     }));
 
@@ -34,6 +37,9 @@ describe('tracing helpers', () => {
     const withActiveSpan = vi.fn(async (_name, _options, callback) => callback({ end: vi.fn() }));
 
     vi.doMock('../src/observability.js', () => ({
+      createHistogram: vi.fn(() => ({ record: vi.fn() })),
+      createMutableGauge: vi.fn(() => ({ set: vi.fn() })),
+      createCounter: vi.fn(() => ({ add: vi.fn() })),
       withActiveSpan,
     }));
 
@@ -56,6 +62,9 @@ describe('tracing helpers', () => {
     const withActiveSpan = vi.fn(async (_name, _options, callback) => callback(span));
 
     vi.doMock('../src/observability.js', () => ({
+      createHistogram: vi.fn(() => ({ record: vi.fn() })),
+      createMutableGauge: vi.fn(() => ({ set: vi.fn() })),
+      createCounter: vi.fn(() => ({ add: vi.fn() })),
       withActiveSpan,
     }));
 
@@ -75,6 +84,9 @@ describe('tracing helpers', () => {
 
   it('httpRequestAttributes derives semantic HTTP attributes from the request', async () => {
     vi.doMock('../src/observability.js', () => ({
+      createHistogram: vi.fn(() => ({ record: vi.fn() })),
+      createMutableGauge: vi.fn(() => ({ set: vi.fn() })),
+      createCounter: vi.fn(() => ({ add: vi.fn() })),
       withActiveSpan: vi.fn(),
     }));
 
@@ -100,6 +112,9 @@ describe('tracing helpers', () => {
 
   it('httpTraceContext combines request attributes with reply status lookup', async () => {
     vi.doMock('../src/observability.js', () => ({
+      createHistogram: vi.fn(() => ({ record: vi.fn() })),
+      createMutableGauge: vi.fn(() => ({ set: vi.fn() })),
+      createCounter: vi.fn(() => ({ add: vi.fn() })),
       withActiveSpan: vi.fn(),
     }));
 
@@ -131,6 +146,9 @@ describe('tracing helpers', () => {
     const withActiveSpan = vi.fn(async (_name, _options, callback) => callback({ end: vi.fn() }));
 
     vi.doMock('../src/observability.js', () => ({
+      createHistogram: vi.fn(() => ({ record: vi.fn() })),
+      createMutableGauge: vi.fn(() => ({ set: vi.fn() })),
+      createCounter: vi.fn(() => ({ add: vi.fn() })),
       withActiveSpan,
     }));
 
@@ -147,6 +165,9 @@ describe('tracing helpers', () => {
     const withActiveSpan = vi.fn(async (_name, _options, callback) => callback({ end: vi.fn() }));
 
     vi.doMock('../src/observability.js', () => ({
+      createHistogram: vi.fn(() => ({ record: vi.fn() })),
+      createMutableGauge: vi.fn(() => ({ set: vi.fn() })),
+      createCounter: vi.fn(() => ({ add: vi.fn() })),
       withActiveSpan,
     }));
 
@@ -169,6 +190,9 @@ describe('tracing helpers', () => {
     const withActiveSpan = vi.fn(async (_name, _options, callback) => callback({ end: vi.fn() }));
 
     vi.doMock('../src/observability.js', () => ({
+      createHistogram: vi.fn(() => ({ record: vi.fn() })),
+      createMutableGauge: vi.fn(() => ({ set: vi.fn() })),
+      createCounter: vi.fn(() => ({ add: vi.fn() })),
       withActiveSpan,
     }));
 

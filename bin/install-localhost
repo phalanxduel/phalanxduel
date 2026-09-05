@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # bin/install-localhost — serve the local dev stack at:
-#   https://play.phalanxduel.localhost   (client, once `bin/demo up` is running)
-#   https://admin.phalanxduel.localhost  (admin UI, once `bin/demo up` is running)
+#   https://play.phalanxduel.localhost   (client, once `bin/phx-demo-ctl up` is running)
+#   https://admin.phalanxduel.localhost  (admin UI, once `bin/phx-demo-ctl up` is running)
 #   https://phalanxduel.localhost        (static site from phalanxduel/site)
 #   https://phalanxduel.localhost/demo/  (generated local cockpit, when running)
 #
@@ -73,6 +73,13 @@ echo
 info "If you regenerated the cert above, nginx was already reloaded. Otherwise:"
 cat <<'EOF'
 
+  # Repair the host-native nginx temp-path traversal/write permissions if the
+  # error log contains client_body_temp or proxy_temp Permission denied.
+  # The current Homebrew layout uses nobody for these worker-owned temp dirs.
+  sudo chmod 755 /opt/homebrew/var/run/nginx
+  sudo chown nobody:admin /opt/homebrew/var/run/nginx/client_body_temp /opt/homebrew/var/run/nginx/proxy_temp
+  sudo chmod 700 /opt/homebrew/var/run/nginx/client_body_temp /opt/homebrew/var/run/nginx/proxy_temp
+
   nginx -t
   sudo launchctl kickstart -k system/homebrew.mxcl.nginx
 
@@ -81,7 +88,7 @@ cat <<'EOF'
 EOF
 
 echo
-info "Then:  bin/demo up"
+info "Then:  bin/phx-demo-ctl up"
 info "       open https://play.phalanxduel.localhost"
-info "       cockpit opens from bin/demo -> https://phalanxduel.localhost/demo/"
+info "       cockpit opens from bin/phx-demo-ctl -> https://phalanxduel.localhost/demo/"
 info "       admin opens from the quicklinks page -> https://admin.phalanxduel.localhost"

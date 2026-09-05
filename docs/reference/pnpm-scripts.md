@@ -227,7 +227,7 @@ developer-facing tooling contract:
 
 | Tool | Focus | Help |
 | --- | --- | --- |
-| [`bin/demo`](../../bin/demo) | Host-native demo rehearsal and browser cockpit | `bin/demo --help` |
+| [`bin/phx-demo-ctl`](../../bin/phx-demo-ctl) | Host-native demo rehearsal and browser cockpit | `bin/phx-demo-ctl --help` |
 | [`bin/services`](../../bin/services) | Host-native service lifecycle and logs | `bin/services --help` |
 | [`bin/phx`](../../bin/phx) | Unified guide, capabilities, and context control plane | `bin/phx --help` |
 | [`bin/dock`](../../bin/dock) | Explicit Docker automation and verification | `bin/dock --help` |

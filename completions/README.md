@@ -1,7 +1,7 @@
 # Phalanx Duel shell completions
 
 The canonical executable names use the `phx-*` convention. The original
-`bin/demo`, `bin/services`, and similar paths remain compatibility entrypoints.
+The `phx-*` names are the supported command entrypoints.
 
 With the repository root on `PATH`, load the Zsh completions for the current
 shell with:

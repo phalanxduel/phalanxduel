@@ -17,9 +17,10 @@ fi
 #
 
 load_env_file() {
-  local env_file override_existing line key value
+  local env_file override_existing key_prefix line key value
   env_file="$1"
   override_existing="$2"
+  key_prefix="${3:-}"
 
   while IFS= read -r line || [ -n "$line" ]; do
     case "$line" in
@@ -37,6 +38,10 @@ load_env_file() {
 
     key="$(printf '%s' "$key" | xargs)"
 
+    if [ -n "$key_prefix" ] && [[ "$key" != "$key_prefix"* ]]; then
+      continue
+    fi
+
     if [ "${value#\"}" != "$value" ] && [ "${value%\"}" != "$value" ]; then
       value="${value#\"}"
       value="${value%\"}"
@@ -49,6 +54,34 @@ load_env_file() {
       export "$key=$value"
     fi
   done <"$env_file"
+}
+
+load_local_vite_env() {
+  local script_dir repo_root secrets_file
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  repo_root="$(cd "$script_dir/../.." && pwd)"
+  secrets_file="$repo_root/.env.secrets.local"
+
+  if [ -f "$secrets_file" ]; then
+    load_env_file "$secrets_file" 1 "VITE_"
+  fi
+}
+
+load_local_demo_env() {
+  local script_dir repo_root env_file defaults_file
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  repo_root="$(cd "$script_dir/../.." && pwd)"
+  defaults_file="$repo_root/.env"
+  env_file="$repo_root/.env.local"
+
+  # Keep the same precedence as load_release_env: shared root defaults first,
+  # then local presentation overrides. Only demo URL/settings are imported.
+  if [ -f "$defaults_file" ]; then
+    load_env_file "$defaults_file" 0 "PHALANX_DEMO_"
+  fi
+  if [ -f "$env_file" ]; then
+    load_env_file "$env_file" 1 "PHALANX_DEMO_"
+  fi
 }
 
 load_release_env() {

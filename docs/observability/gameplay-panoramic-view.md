@@ -86,6 +86,23 @@ aggregation:
 Do not interpret bot outcomes as human balance evidence, or missing production
 telemetry as missing gameplay behavior.
 
+## Marked trails
+
+The renderer marks four causal trails across the five panoramic lanes. A trail
+is an ordered set of observed event nodes, not an inferred span:
+
+| Trail | Layer sequence | Purpose |
+| --- | --- | --- |
+| Match bootstrap | experience → server → engine → evidence | Proves that a user-visible start reached authoritative state and replay evidence. |
+| Turn cascade | experience → server → engine | Shows the repeated action/state/engine wave through the match. |
+| Terminal proof | experience → engine → evidence → diagnostics | Connects the final action to terminal replay and operational evidence. |
+| Observability correlation | experience → evidence → diagnostics | Shows where the match capture meets replay and O2 correlation. |
+
+The generated HTML draws each trail across the lane grid, marks its event
+nodes, and lets the operator focus one trail at a time. Trail status is
+`observed`, `unknown`, or `absence`; unknown O2 status is intentional when a
+capture has telemetry emission but no attached O2 query result.
+
 ## Local collector policy
 
 The local console and upstream collector configurations include a
