@@ -97,7 +97,13 @@ is_running_pid() {
     local pid
     pid=$(cat "$pidfile")
     if kill -0 "$pid" 2>/dev/null; then
-      return 0
+      # A package-manager wrapper can survive after its child service exits.
+      # For port-backed services, the listener is the truth, not the wrapper.
+      local port
+      port=$(service_port "$svc")
+      if [ -z "$port" ] || is_port_listening "$svc"; then
+        return 0
+      fi
     fi
   fi
   return 1
@@ -154,6 +160,11 @@ start_service() {
     start_cmd="cd ../site && ./bin/server"
   elif [ "$svc" = "backlog" ]; then
     start_cmd="backlog browser"
+  elif [ "$svc" = "admin" ]; then
+    # Local demo ports are intentionally isolated from the common 3000 range.
+    # Keep this explicit because a shell or dotenv value from an older setup
+    # must not silently move the admin API away from the vhost and waiter.
+    start_cmd="PHALANX_ADMIN_PORT=3102 pnpm dev:admin"
   fi
 
   if [ "$USE_TMUX" = "true" ]; then
@@ -190,6 +201,7 @@ stop_service() {
 
   if ! is_running "$svc"; then
     echo "⏸️  $svc is not running."
+    rm -f "$pidfile"
     return
   fi
 

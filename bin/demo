@@ -192,12 +192,11 @@ wait_ready() {
   echo "⏳ Waiting for server + client + admin to report READY (up to ${READY_TIMEOUT}s)..."
   local waited=0
   while [ "$waited" -lt "$READY_TIMEOUT" ]; do
-    local json app client admin
-    json=$(pnpm --silent dev:status 2>/dev/null || true)
-    app=$(node -e "try{console.log(JSON.parse(process.argv[1]).services.app.status)}catch(e){console.log('UNKNOWN')}" "$json" 2>/dev/null || echo UNKNOWN)
-    client=$(node -e "try{console.log(JSON.parse(process.argv[1]).services.client.status)}catch(e){console.log('UNKNOWN')}" "$json" 2>/dev/null || echo UNKNOWN)
-    admin=$(node -e "try{console.log(JSON.parse(process.argv[1]).services.admin.status)}catch(e){console.log('UNKNOWN')}" "$json" 2>/dev/null || echo UNKNOWN)
-    if [ "$app" = "READY" ] && [ "$client" = "READY" ] && [ "$admin" = "READY" ]; then
+    local app_code client_code admin_code
+    app_code=$(probe_code "$APP_URL/health")
+    client_code=$(probe_code "$CLIENT_URL/")
+    admin_code=$(probe_code "$ADMIN_API_URL/health")
+    if [[ "$app_code" =~ ^2|3 ]] && [[ "$client_code" =~ ^2|3 ]] && [[ "$admin_code" =~ ^2|3 ]]; then
       echo "✅ Server, client, and admin are READY."
       write_quicklinks
       echo "   Logs:   bin/demo logs"
@@ -208,7 +207,7 @@ wait_ready() {
     sleep 2
     waited=$((waited + 2))
   done
-  echo "❌ Not READY after ${READY_TIMEOUT}s (server=$app client=$client admin=$admin)."
+  echo "❌ Not READY after ${READY_TIMEOUT}s (server=$app_code client=$client_code admin=$admin_code)."
   echo "   Check: bin/demo status   /   bin/demo logs"
   return 1
 }
