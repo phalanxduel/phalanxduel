@@ -95,6 +95,8 @@ CLAUDE.md
 !.agents/skills/production-verification/**
 !.agents/skills/zdots-local-ai/
 !.agents/skills/zdots-local-ai/**
+!.agents/skills/phalanx-keymaster/
+!.agents/skills/phalanx-keymaster/**
 skills-lock.json
 
 # Godot editor cache

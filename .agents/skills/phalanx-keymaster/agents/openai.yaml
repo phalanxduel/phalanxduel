@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Phalanx Keymaster'
+  short_description: 'Safely manage Phalanx Duel credentials'
+  default_prompt: 'Use $phalanx-keymaster to audit or manage Phalanx Duel secrets without exposing values.'
+policy:
+  allow_implicit_invocation: true

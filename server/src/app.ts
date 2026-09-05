@@ -70,6 +70,9 @@ import {
   matchesActive,
   actionsTotal,
   actionsDurationMs,
+  actionResults,
+  featureEvents,
+  sloViolations,
   wsConnections,
   testCounter,
   trackProcess,
@@ -1410,7 +1413,17 @@ export async function buildApp(options: BuildAppOptions = {}) {
                               action,
                             );
                             actionsTotal.add(1, { 'action.type': msg.action.type });
-                            actionsDurationMs.record(performance.now() - start);
+                            const durationMs = performance.now() - start;
+                            actionsDurationMs.record(durationMs);
+                            if (durationMs > 1000) {
+                              sloViolations.add('game-action-latency', 'ws.action', {
+                                'action.type': msg.action.type,
+                              });
+                            }
+                            actionResults.add('accepted', msg.action.type);
+                            featureEvents.add('gameplay', 'action_accepted', {
+                              'action.type': msg.action.type,
+                            });
 
                             // Emit the transaction log entry to the Pino log stream so the
                             // game can be tailed in real-time: tail -f logs/server.log | jq .
@@ -1440,6 +1453,13 @@ export async function buildApp(options: BuildAppOptions = {}) {
                           } catch (err) {
                             console.error('[WS_ACTION_ERROR]', err);
                             actionsDurationMs.record(performance.now() - start);
+                            actionResults.add(
+                              'rejected',
+                              msg.action.type,
+                              err instanceof ActionError || err instanceof MatchError
+                                ? err.code
+                                : 'ACTION_FAILED',
+                            );
                             if (err instanceof ActionError) {
                               sendMessage(
                                 {

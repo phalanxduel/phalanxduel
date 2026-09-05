@@ -25,7 +25,7 @@ import { MatchRepository } from './db/match-repo.js';
 import { MatchActor } from './match-actor.js';
 import { type ILedgerStore, PostgresLedgerStore } from './db/ledger-store.js';
 import { LadderService } from './ladder.js';
-import { matchLifecycleTotal } from './metrics.js';
+import { matchLifecycleTotal, matchDurationMs, matchOutcomes, matchTurns } from './metrics.js';
 import { projectStateForViewer, projectTurnForViewer } from './utils/viewer-projection.js';
 import { buildDelayedSpectatorFrame, type SpectatorFrame } from './utils/spectator-delay.js';
 import { processMatchAchievements } from './achievements/index.js';
@@ -1442,6 +1442,10 @@ export class LocalMatchManager implements IMatchManager {
       },
       status: 'ok',
     });
+    matchLifecycleTotal.add('completed');
+    matchOutcomes.add(outcome?.winnerIndex ?? null, outcome?.victoryType ?? null);
+    matchDurationMs.record(Date.now() - match.createdAt);
+    matchTurns.record(outcome?.turnNumber ?? state.turnNumber);
   }
 
   private broadcastState(match: MatchInstance): void {

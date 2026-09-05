@@ -13,7 +13,7 @@ import {
 import { getToken } from './auth';
 import { getSavedSession } from './state';
 import { createClientUuid } from './uuid';
-import { trackClientEvent } from './analytics';
+import { recordClientActionLatency, trackClientEvent, trackFeatureEvent } from './analytics';
 
 export interface Connection {
   send(message: OutboundClientMessage): void;
@@ -42,6 +42,7 @@ type OutboundClientMessage = OutboundReliableClientMessage | TransportClientMess
 interface PendingEntry {
   message: ReliableClientMessage & { msgId: string };
   serialized: string;
+  sentAt?: number;
 }
 
 const tracer = trace.getTracer('phx-client');
@@ -277,6 +278,7 @@ export function createConnection(
     const entry = {
       message: queuedMessage,
       serialized: JSON.stringify(queuedMessage),
+      sentAt: Date.now(),
     };
     pending.set(queuedMessage.msgId, entry);
     return entry;
@@ -427,6 +429,12 @@ export function createConnection(
 
         if (data.type === 'ack') {
           if (typeof data.ackedMsgId === 'string') {
+            const entry = pending.get(data.ackedMsgId);
+            if (entry?.sentAt) {
+              recordClientActionLatency(Date.now() - entry.sentAt, {
+                'message.type': entry.message.type,
+              });
+            }
             pending.delete(data.ackedMsgId);
           }
           return;
@@ -448,6 +456,7 @@ export function createConnection(
         }
 
         const attrs = matchAttrs(data);
+        trackFeatureEvent('websocket', 'message_received', { 'message.type': data.type });
         sessionSpan?.setAttributes(attrs);
         sessionSpan?.addEvent(`ws.recv.${data.type}`, { ...sessionAttrs(), ...attrs });
         if (data.type === 'opponentDisconnected') {
@@ -546,6 +555,7 @@ export function createConnection(
       });
       sendSpan.end();
       trackClientEvent('message.sent', { message_type: message.type });
+      trackFeatureEvent('websocket', 'message_sent', { 'message.type': message.type });
 
       if (ws?.readyState === WebSocket.OPEN && !awaitingResync) {
         sendRaw(entry.serialized);

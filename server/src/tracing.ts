@@ -16,7 +16,13 @@ import {
   ATTR_SERVER_PORT,
   ATTR_URL_PATH,
 } from '@opentelemetry/semantic-conventions';
-import { withActiveSpan } from './observability.js';
+import { createHistogram, withActiveSpan } from './observability.js';
+import { sloViolations } from './metrics.js';
+
+const httpDurationMs = createHistogram('http.server.duration_ms', {
+  description: 'Duration of instrumented HTTP handlers.',
+  unit: 'ms',
+});
 
 export interface WsTelemetryCarrier {
   traceparent?: string;
@@ -175,9 +181,17 @@ export function traceHttpHandler<T>(
     `http.${operationName}`,
     { attributes: options.attributes ?? {}, kind: SpanKind.SERVER },
     async (span) => {
+      const startedAt = performance.now();
       try {
         return await handler(span);
       } finally {
+        const durationMs = performance.now() - startedAt;
+        httpDurationMs.record(durationMs, {
+          'http.operation': operationName,
+        });
+        if (durationMs > 1000) {
+          sloViolations.add('http-handler-latency', operationName);
+        }
         const statusCode = options.getStatusCode?.();
         if (statusCode !== undefined) {
           span.setAttribute(ATTR_HTTP_RESPONSE_STATUS_CODE, statusCode);

@@ -24,6 +24,22 @@ For repo-local gameplay automation discipline, read [Gameplay Automation Contrac
 For repeatable local proof runs, use the `phalanx-end-to-end-playthrough` skill.
 For UI/UX design collaboration, use the `phalanx-ui-design-capture` skill to generate deterministic visual baselines.
 
+For local observability work, use:
+
+- [OpenObserve O2 Agent](./profiles/openobserve-o2-agent.md) and the
+  [O2 operator skill](./skills/phalanx-o2-operator/SKILL.md) for host-native
+  setup, configuration, verification, backups, and handoff across the local
+  observability stack.
+- [OpenObserve Dashboard Agent](./profiles/openobserve-dashboard-agent.md) and
+  [dashboard skill](./skills/phalanx-openobserve-dashboard/SKILL.md) for O2
+  panels, SQL, chart field mappings, and dashboard verification.
+- [Local RUM Agent](./profiles/local-rum-agent.md) and
+  [local RUM skill](./skills/phalanx-local-rum/SKILL.md) for localhost-only
+  browser monitoring, RUM credentials, replay privacy, and local analysis.
+
+For credential lifecycle work, use the [Phalanx Keymaster Agent](./profiles/keymaster-agent.md)
+and the repository skill at [`.agents/skills/phalanx-keymaster/SKILL.md`](../../.agents/skills/phalanx-keymaster/SKILL.md).
+
 ## Capability Tiers
 
 | Tier | Requires | Unlocks |
