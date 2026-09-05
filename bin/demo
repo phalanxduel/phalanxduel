@@ -9,13 +9,14 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-CLIENT_URL="http://127.0.0.1:5173"
-APP_URL="http://127.0.0.1:3001"
-ADMIN_API_URL="http://127.0.0.1:3102"
-ADMIN_UI_URL="http://127.0.0.1:3103"
+CLIENT_URL="${PHALANX_DEMO_CLIENT_URL:-http://localhost:5173}"
+APP_URL="${PHALANX_DEMO_APP_URL:-http://localhost:3001}"
+ADMIN_API_URL="${PHALANX_DEMO_ADMIN_API_URL:-http://localhost:3102}"
+ADMIN_UI_URL="${PHALANX_DEMO_ADMIN_UI_URL:-http://localhost:3103}"
+ADMIN_URL="${PHALANX_DEMO_ADMIN_URL:-$ADMIN_UI_URL}"
 # The branded URL from nginx/phalanxduel.localhost.conf (bin/install-localhost),
 # if it's set up on this machine — falls back to the raw dev port otherwise.
-PLAY_URL="https://play.phalanxduel.localhost"
+PLAY_URL="${PHALANX_DEMO_PLAY_URL:-$CLIENT_URL}"
 READY_TIMEOUT="${PHALANX_DEMO_READY_TIMEOUT:-60}"
 DEMO_RUNTIME_DIR="${PHALANX_DEMO_RUNTIME_DIR:-$REPO_ROOT/.phx/cockpit}"
 QUICKLINKS_FILE="$DEMO_RUNTIME_DIR/quicklinks.html"
@@ -23,7 +24,9 @@ SERVICES_RUN_DIR="$REPO_ROOT/.phx/run"
 SERVICES_LOG_DIR="$REPO_ROOT/.phx/logs"
 COCKPIT_PORT="${PHALANX_DEMO_COCKPIT_PORT:-3333}"
 COCKPIT_BRIDGE_URL="http://127.0.0.1:${COCKPIT_PORT}/"
-COCKPIT_BRANDED_URL="https://phalanxduel.localhost/demo/"
+COCKPIT_BRANDED_URL="${PHALANX_DEMO_BRANDED_URL:-https://phalanxduel.localhost/demo/}"
+O2_URL="${PHALANX_DEMO_O2_URL:-http://localhost:5080}"
+GRAFANA_URL="${PHALANX_DEMO_GRAFANA_URL:-http://localhost:3000}"
 COCKPIT_URL="${PHALANX_DEMO_COCKPIT_URL:-$COCKPIT_BRANDED_URL}"
 COCKPIT_PID_FILE="$SERVICES_RUN_DIR/cockpit.pid"
 CLI_NAME="${PHX_CLI_NAME:-$(basename "$0")}"
@@ -168,7 +171,7 @@ write_quicklinks() {
   git_commit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)
   app_code=$(probe_code "$APP_URL/health")
   play_code=$(probe_code "$PLAY_URL/")
-  admin_code=$(probe_code "https://admin.phalanxduel.localhost/")
+  admin_code=$(probe_code "$ADMIN_URL")
   api_code=$(probe_code "$APP_URL/docs")
 
   local server_pid client_pid admin_pid
@@ -252,12 +255,12 @@ write_quicklinks() {
 
   <h2 id="launch">Launch deck</h2>
   <div class="launch-grid">
-    <div class="card launch-card"><a class="surface-link" href="https://play.phalanxduel.localhost/">Play the game ↗</a><small>Primary browser demo · $(probe_label "$play_code")</small></div>
-    <div class="card launch-card"><a class="surface-link" href="https://admin.phalanxduel.localhost/">Admin console ↗</a><small>Operator UI · $(probe_label "$admin_code") · login required</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$PLAY_URL/")">Play the game ↗</a><small>Primary browser demo · $(probe_label "$play_code")</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$ADMIN_URL")">Admin console ↗</a><small>Operator UI · $(probe_label "$admin_code") · login required</small></div>
     <div class="card launch-card"><a class="surface-link" href="$(html_escape "$CLIENT_URL/")">Raw client ↗</a><small>Direct Vite fallback on port 5173</small></div>
     <div class="card launch-card"><a class="surface-link" href="$(html_escape "$APP_URL/docs")">API command center ↗</a><small>OpenAPI explorer · $(probe_label "$api_code")</small></div>
-    <div class="card launch-card"><a class="surface-link" href="http://127.0.0.1:3000/">Grafana LGTM ↗</a><small>Local observability surface, when enabled</small></div>
-    <div class="card launch-card"><a class="surface-link" href="https://o2.localhost/web/dashboards/view?org_identifier=default&amp;dashboard=7501905489362419712&amp;folder=default&amp;tab=default&amp;refresh=Off&amp;period=15m&amp;print=false">O2 dashboard ↗</a><small>OpenObserve Phalanx Duel dashboard · 15m</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$GRAFANA_URL/")">Grafana LGTM ↗</a><small>Local observability surface, when enabled</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$O2_URL/web/dashboards/view?org_identifier=default&amp;dashboard=7501905489362419712&amp;folder=default&amp;tab=default&amp;refresh=Off&amp;period=15m&amp;print=false)">O2 dashboard ↗</a><small>OpenObserve Phalanx Duel dashboard · 15m</small></div>
     <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/output/video/phalanx-duel-demo.webm")">Demo reel ↗</a><small>Recorded face-to-face demo asset</small></div>
     <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/output/pdf/phalanx-duel-face-to-face-quickstart.pdf")">Quickstart PDF ↗</a><small>Talk track and rehearsal reference</small></div>
     <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/scripts/video/demo-narration.md")">Demo narration ↗</a><small>Presenter script and scene cues</small></div>
@@ -270,8 +273,8 @@ write_quicklinks() {
 
   <h2>Useful surfaces</h2>
   <ul>
-    <li><a class="surface-link" href="https://play.phalanxduel.localhost/health">Branded health</a> · quick liveness check</li>
-    <li><a class="surface-link" href="https://play.phalanxduel.localhost/ready">Branded readiness</a> · dependency-aware readiness</li>
+    <li><a class="surface-link" href="$(html_escape "$PLAY_URL/health")">Client health</a> · quick liveness check</li>
+    <li><a class="surface-link" href="$(html_escape "$PLAY_URL/ready")">Client readiness</a> · dependency-aware readiness</li>
     <li><a class="surface-link" href="$(html_escape "$APP_URL/health")">Raw app health</a> · $(probe_label "$app_code")</li>
     <li><a class="surface-link" href="$(html_escape "$APP_URL/ready")">Raw app readiness</a> · database-aware check</li>
     <li><a class="surface-link" href="$(html_escape "$ADMIN_API_URL/health")">Raw admin health</a> · API liveness and readiness</li>
@@ -279,7 +282,7 @@ write_quicklinks() {
     <li><a class="surface-link" href="$(html_escape "$ADMIN_UI_URL/")">Raw admin UI</a> · direct Vite fallback if nginx is unavailable</li>
     <li><a class="surface-link" href="$(html_escape "$APP_URL/docs")">OpenAPI browser</a> · $(probe_label "$api_code")</li>
     <li><a class="surface-link" href="$(html_escape "$APP_URL/docs/json")">OpenAPI JSON</a> · raw API contract</li>
-    <li><a class="surface-link" href="https://play.phalanxduel.localhost/">Client through nginx</a> · use this for the demo, not the raw Vite port</li>
+    <li><a class="surface-link" href="$(html_escape "$PLAY_URL/")">Client endpoint</a> · configurable with <code>PHALANX_DEMO_PLAY_URL</code></li>
   </ul>
 
   <h2><span class="live-dot"></span>Live analytics <small id="analytics-updated">connecting…</small></h2>
@@ -446,8 +449,8 @@ write_quicklinks() {
 EOF
   echo "🔗 Quicklinks: $COCKPIT_URL"
   echo "   Static copy: $QUICKLINKS_FILE"
-  echo "   Play:       https://play.phalanxduel.localhost/   ($(probe_label "$play_code"))"
-  echo "   Admin:      https://admin.phalanxduel.localhost/  ($(probe_label "$admin_code"))"
+  echo "   Play:       $PLAY_URL/   ($(probe_label "$play_code"))"
+  echo "   Admin:      $ADMIN_URL  ($(probe_label "$admin_code"))"
   echo "   App health: $APP_URL/health                    ($(probe_label "$app_code"))"
   echo "   API docs:   $APP_URL/docs                       ($(probe_label "$api_code"))"
   echo "   Source:     $REPO_ROOT"

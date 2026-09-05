@@ -9,11 +9,11 @@
 # exports AGENT_TOKEN into the current shell. Must be sourced (not executed) so
 # the export survives into the caller's environment.
 #
-# Requires: curl, jq, local game server running at SERVER_URL (default: http://127.0.0.1:3001)
+# Requires: curl, jq, local game server running at SERVER_URL (default: http://localhost:3001)
 
 set -euo pipefail
 
-SERVER_URL="${GAME_SERVER_URL:-http://127.0.0.1:3001}"
+SERVER_URL="${GAME_SERVER_URL:-http://localhost:3001}"
 EMAIL="agent@phalanxduel.local"
 PASSWORD=""
 GAMERTAG="AgentOne"

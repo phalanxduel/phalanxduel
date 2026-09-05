@@ -58,7 +58,7 @@ async function checkSync() {
   }
 
   // 2. Wait for live health
-  const healthUrl = 'http://127.0.0.1:3001/health';
+  const healthUrl = `${process.env.GAME_SERVER_URL || 'http://localhost:3001'}/health`;
   process.stdout.write('   Waiting for server readiness');
   const liveHealth = await waitForServer(healthUrl);
   console.log(' (READY)');

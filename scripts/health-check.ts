@@ -8,7 +8,7 @@
  *
  * Usage:
  *   pnpm health:check [environment]
- *   pnpm health:check 127.0.0.1:3001
+ *   pnpm health:check localhost:3001
  *   pnpm health:check staging
  *   pnpm health:check production
  */
@@ -50,8 +50,16 @@ interface EnvironmentConfig {
 
 // Environment configuration mapping
 const ENVIRONMENTS: Record<string, EnvironmentConfig> = {
-  local: { name: 'Local', url: 'http://127.0.0.1:3001', isProduction: false },
-  '127.0.0.1': { name: 'Local', url: 'http://127.0.0.1:3001', isProduction: false },
+  local: {
+    name: 'Local',
+    url: process.env.GAME_SERVER_URL || 'http://localhost:3001',
+    isProduction: false,
+  },
+  localhost: {
+    name: 'Local',
+    url: process.env.GAME_SERVER_URL || 'http://localhost:3001',
+    isProduction: false,
+  },
   staging: { name: 'Staging', url: 'https://phalanxduel-staging.fly.dev', isProduction: false },
   production: {
     name: 'Production',

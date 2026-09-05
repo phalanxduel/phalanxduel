@@ -8,10 +8,10 @@ const [quicklinksFile, logDirectory, rawPort = '3333'] = process.argv.slice(2);
 const port = Number.parseInt(rawPort, 10);
 const allowedServices = new Set(['server', 'client', 'admin']);
 const probeTargets = new Map([
-  ['app-health', 'http://127.0.0.1:3001/health'],
-  ['app-stats', 'http://127.0.0.1:3001/api/stats'],
-  ['admin-health', 'http://127.0.0.1:3102/health'],
-  ['client', 'http://127.0.0.1:5173/'],
+  ['app-health', `${process.env.PHALANX_DEMO_APP_URL || 'http://localhost:3001'}/health`],
+  ['app-stats', `${process.env.PHALANX_DEMO_APP_URL || 'http://localhost:3001'}/api/stats`],
+  ['admin-health', `${process.env.PHALANX_DEMO_ADMIN_API_URL || 'http://localhost:3102'}/health`],
+  ['client', `${process.env.PHALANX_DEMO_CLIENT_URL || 'http://localhost:5173'}/`],
 ]);
 
 if (process.argv.includes('--help') || process.argv.includes('-h')) {

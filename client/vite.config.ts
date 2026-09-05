@@ -4,6 +4,8 @@ import { SCHEMA_VERSION } from '../shared/src/index';
 import { execSync } from 'child_process';
 
 const IGNORE_PROTOBUFJS_EVAL_WARNING_UNTIL = '2026-04-09';
+const proxyTarget = process.env.VITE_PROXY_TARGET || 'http://localhost:3001';
+const otelProxyTarget = process.env.VITE_OTEL_PROXY_TARGET || 'http://localhost:4318';
 
 let buildId = 'unknown';
 try {
@@ -28,26 +30,26 @@ export default defineConfig({
     allowedHosts: ['zalewhol.local', 'zalewhol.com', '10.36.1.137', '100.95.136.70'],
     proxy: {
       '/ws': {
-        target: (process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001').replace(/^http/, 'ws'),
+        target: proxyTarget.replace(/^http/, 'ws'),
         ws: true,
         changeOrigin: true,
       },
       '/api': {
-        target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001',
+        target: proxyTarget,
         changeOrigin: true,
       },
       '/health': {
-        target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001',
+        target: proxyTarget,
         changeOrigin: true,
       },
       '/matches': {
-        target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001',
+        target: proxyTarget,
         changeOrigin: true,
       },
       // Keep browser OTLP same-origin during local HTTPS development. The
       // project vhost applies the same route for play.phalanxduel.localhost.
       '/otel': {
-        target: 'http://127.0.0.1:4318',
+        target: otelProxyTarget,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/otel/u, ''),
       },

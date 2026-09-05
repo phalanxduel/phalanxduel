@@ -14,7 +14,18 @@ Duel runtime and observability workflow.
 | `PHALANX_ADMIN_PORT` | Admin | `3102` | no | Dedicated admin HTTP listen port |
 | `DATABASE_URL` | Server/Admin | none | yes in production | Postgres connection string |
 | `JWT_SECRET` | Server/Admin | none | yes in production | Shared session signing key |
-| `GAME_SERVER_INTERNAL_URL` | Admin | `http://127.0.0.1:3001` outside production | yes in production | Private game-server origin |
+| `GAME_SERVER_INTERNAL_URL` | Admin | `http://localhost:3001` outside production | yes in production | Private game-server origin |
+| `VITE_PROXY_TARGET` | Client dev server | `http://localhost:3001` | no | API/WebSocket proxy target |
+| `VITE_OTEL_PROXY_TARGET` | Client dev server | `http://localhost:4318` | no | Same-origin `/otel` proxy target |
+| `PHALANX_DEMO_APP_URL` | Demo cockpit | `http://localhost:3001` | no | App health/stats endpoint |
+| `PHALANX_DEMO_CLIENT_URL` | Demo cockpit | `http://localhost:5173` | no | Raw browser client URL |
+| `PHALANX_DEMO_ADMIN_API_URL` | Demo cockpit | `http://localhost:3102` | no | Admin API health endpoint |
+| `PHALANX_DEMO_ADMIN_UI_URL` | Demo cockpit | `http://localhost:3103` | no | Raw admin UI URL |
+| `PHALANX_DEMO_PLAY_URL` | Demo cockpit | `PHALANX_DEMO_CLIENT_URL` | no | Preferred player link; set to branded nginx URL when needed |
+| `PHALANX_DEMO_ADMIN_URL` | Demo cockpit | `https://admin.phalanxduel.localhost/` | no | Preferred admin link |
+| `PHALANX_DEMO_BRANDED_URL` | Demo cockpit | `https://phalanxduel.localhost/demo/` | no | Branded cockpit URL override |
+| `PHALANX_DEMO_O2_URL` | Demo cockpit | `http://localhost:5080` | no | OpenObserve UI/API link |
+| `PHALANX_DEMO_GRAFANA_URL` | Demo cockpit | `http://localhost:3000` | no | Optional legacy Grafana link |
 | `ADMIN_INTERNAL_TOKEN` | Server/Admin | none | yes in production | Shared internal bearer token |
 | `OTEL_SDK_DISABLED` | Server/Admin | `false` | yes during production containment | Prevent OTel exporters from starting |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Server/Admin | `http://127.0.0.1:4318` | no | OTLP collector intake |
@@ -28,6 +39,7 @@ Duel runtime and observability workflow.
 | `FLY_REGION` | Fly.io | auto | auto | Fly region code |
 | `VITE_AB_LOBBY_PREACT_PERCENT` | Client build | `0` | no | Lobby rollout percentage |
 | `VITE_PREACT_LOBBY` | Client build | `false` | no | Force-enable Preact lobby |
+| `VITE_PHX_RUM_TOKEN` | Local client build | none | no | Development-only OpenObserve RUM token; managed by the local secret DSL |
 | `POSTMARK_SERVER_TOKEN` | Server/Email | none | yes in prod | Postmark API token |
 | `MAIL_FROM` | Server/Email | auto | no | Verified sender identity |
 | `SUPPORT_EMAIL` | Server/Email | auto | no | Reply-to address for system emails |
@@ -40,7 +52,7 @@ Duel runtime and observability workflow.
 | `LLAMA_MODEL` | MCP | `local` | no | Model alias passed to the llama.cpp API |
 | `ANTHROPIC_API_KEY` | MCP | none | no (not required when `ANALYSIS_PROVIDER=llama`) | Enables Anthropic-backed `match_analyze` |
 | `OPENAI_API_KEY` | MCP | none | no | Enables embedding tools (`match_embed`, `match_find_similar`) |
-| `GAME_SERVER_URL` | MCP | none | yes for gameplay tools | Base URL of the game server for `match_create`, `match_join`, `match_get_state`, and `action_submit` (e.g. `http://127.0.0.1:3001`) |
+| `GAME_SERVER_URL` | MCP | none | yes for gameplay tools | Base URL of the game server for `match_create`, `match_join`, `match_get_state`, and `action_submit` (e.g. `http://localhost:3001`) |
 | `AGENT_TOKEN` | MCP | none | yes for gameplay tools | JWT for the agent user account; used as `Authorization: Bearer` on WebSocket upgrades |
 
 ## Runtime Variables
@@ -337,7 +349,7 @@ Base URL of the game server used by `match_create`, `match_join`, `match_get_sta
 connection to `/ws`.
 
 ```bash
-GAME_SERVER_URL=http://127.0.0.1:3001      # local dev
+GAME_SERVER_URL=http://localhost:3001      # local dev
 GAME_SERVER_URL=https://phalanxduel-staging.fly.dev   # staging
 ```
 
@@ -381,6 +393,14 @@ Examples:
 VITE_PREACT_LOBBY=1
 ```
 
+### VITE_PHX_RUM_TOKEN
+
+Development-only client token for local OpenObserve RUM. Store it through the
+annotated local secret DSL described in [Configuration](../configuration.md),
+using the repository's secret-management tooling. Never commit, print, or put
+the token in source, dashboard JSON, logs, or chat. Production builds must not
+initialize RUM or receive this variable.
+
 ## Deployment Examples
 
 ### Local Development
@@ -421,7 +441,7 @@ OTEL_SDK_DISABLED=true
 ```bash
 env | sort
 node -e "console.log(process.env.OTEL_EXPORTER_OTLP_ENDPOINT)"
-rtk curl -sS http://127.0.0.1:3001/health
+rtk curl -sS http://localhost:3001/health
 ```
 
 The `/health` endpoint reports `observability.otel_active: false` when

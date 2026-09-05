@@ -44,7 +44,10 @@ async function main() {
 
     // Stabilize dynamic fields for the published spec
     spec.servers = [
-      { url: 'http://127.0.0.1:3001', description: 'Local Development Server' },
+      {
+        url: process.env.GAME_SERVER_URL || 'http://localhost:3001',
+        description: 'Local Development Server',
+      },
       { url: 'https://play.phalanxduel.com', description: 'Production API' },
     ];
 

@@ -18,7 +18,7 @@ describe('admin production configuration', () => {
     vi.stubEnv('ADMIN_INTERNAL_TOKEN', '');
 
     expect(adminJwtSecret()).toBe('phalanx-dev-secret');
-    expect(gameServerInternalUrl()).toBe('http://127.0.0.1:3001');
+    expect(gameServerInternalUrl()).toBe('http://localhost:3001');
     expect(adminInternalToken()).toBeUndefined();
   });
 

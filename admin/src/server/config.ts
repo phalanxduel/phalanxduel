@@ -1,5 +1,5 @@
 const DEVELOPMENT_JWT_SECRET = 'phalanx-dev-secret';
-const DEVELOPMENT_GAME_SERVER_URL = 'http://127.0.0.1:3001';
+const DEVELOPMENT_GAME_SERVER_URL = 'http://localhost:3001';
 
 function isProduction(): boolean {
   return process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production';
