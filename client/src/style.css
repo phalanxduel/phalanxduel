@@ -3612,6 +3612,7 @@ select:focus {
   z-index: 1;
   opacity: var(--card-surface-opacity);
   background:
+    radial-gradient(ellipse at 50% 54%, var(--card-accent-soft) 0%, transparent 58%),
     linear-gradient(
       180deg,
       var(--surface-highlight) 0%,
@@ -3681,11 +3682,11 @@ select:focus {
   top: 48%;
   left: 0;
   width: 100%;
-  color: rgba(220, 203, 164, 0.2);
+  color: rgba(220, 203, 164, 0.24);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.7rem, 17cqw, 1.45rem);
+  font-size: clamp(0.85rem, 23cqw, 1.85rem);
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.22em;
   line-height: 1;
   text-align: center;
   transform: rotate(-18deg);
@@ -3698,17 +3699,18 @@ select:focus {
 .phx-card-rank-greek-hero {
   position: absolute;
   inset: 50% auto auto 50%;
-  z-index: -1;
+  z-index: 0;
   display: block;
-  max-width: 90%;
+  width: 132%;
+  max-width: none;
   overflow: hidden;
   color: var(--gold);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(1.8rem, 42cqw, 5.2rem);
+  font-size: clamp(3rem, 82cqw, 9rem);
   font-weight: 700;
   letter-spacing: -0.08em;
   line-height: 0.8;
-  opacity: 0.17;
+  opacity: 0.2;
   pointer-events: none;
   text-align: center;
   text-shadow:
@@ -3717,6 +3719,14 @@ select:focus {
   transform: translate(-50%, -50%) rotate(-10deg);
   user-select: none;
   white-space: nowrap;
+}
+
+.phx-card-rank,
+.phx-card-suit,
+.phx-card-type,
+.phx-card-hp-container {
+  position: relative;
+  z-index: 2;
 }
 
 .phx-card-rank-greek-hero::after {
