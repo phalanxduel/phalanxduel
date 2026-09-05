@@ -19,13 +19,13 @@
       "id": "request-rate",
       "title": "Request rate by service",
       "type": "time_series",
-      "query": "SELECT histogram_interval(_timestamp, '1 minute') AS time, service_name, count(*) AS requests FROM default WHERE service_namespace = 'phalanxduel' GROUP BY time, service_name ORDER BY time"
+      "query": "SELECT histogram(_timestamp, '1 minute') AS time, service_name, count(*) AS requests FROM default WHERE service_namespace = 'phalanxduel' GROUP BY time, service_name ORDER BY time"
     },
     {
       "id": "error-rate",
       "title": "Errors by service",
       "type": "time_series",
-      "query": "SELECT histogram_interval(_timestamp, '1 minute') AS time, service_name, count(*) AS errors FROM default WHERE service_namespace = 'phalanxduel' AND (status_code = 'ERROR' OR level = 'error') GROUP BY time, service_name ORDER BY time"
+      "query": "SELECT histogram(_timestamp, '1 minute') AS time, service_name, count(*) AS errors FROM default WHERE service_namespace = 'phalanxduel' AND (status_code = 'ERROR' OR level = 'error') GROUP BY time, service_name ORDER BY time"
     },
     {
       "id": "action-latency",
@@ -37,25 +37,79 @@
       "id": "match-lifecycle",
       "title": "Match lifecycle",
       "type": "time_series",
-      "query": "SELECT histogram_interval(_timestamp, '1 minute') AS time, event, sum(value) AS matches FROM default WHERE service_namespace = 'phalanxduel' AND metric_name = 'match.lifecycle' GROUP BY time, event ORDER BY time"
+      "query": "SELECT histogram(_timestamp, '1 minute') AS time, event, sum(value) AS matches FROM default WHERE service_namespace = 'phalanxduel' AND metric_name = 'match.lifecycle' GROUP BY time, event ORDER BY time"
     },
     {
       "id": "websocket-health",
       "title": "WebSocket sessions and reconnects",
       "type": "time_series",
-      "query": "SELECT histogram_interval(_timestamp, '1 minute') AS time, event, count(*) AS events FROM default WHERE service_namespace = 'phalanxduel' AND (span_name = 'ws.session' OR event LIKE 'ws.%') GROUP BY time, event ORDER BY time"
+      "query": "SELECT histogram(_timestamp, '1 minute') AS time, event, count(*) AS events FROM default WHERE service_namespace = 'phalanxduel' AND (span_name = 'ws.session' OR event LIKE 'ws.%') GROUP BY time, event ORDER BY time"
     },
     {
       "id": "browser-events",
       "title": "Browser lifecycle and gameplay events",
       "type": "time_series",
-      "query": "SELECT histogram_interval(_timestamp, '1 minute') AS time, event, sum(value) AS events FROM default WHERE service_namespace = 'phalanxduel' AND metric_name = 'phx.client.events' GROUP BY time, event ORDER BY time"
+      "query": "SELECT histogram(_timestamp, '1 minute') AS time, event, sum(value) AS events FROM default WHERE service_namespace = 'phalanxduel' AND metric_name = 'phx.client.events' GROUP BY time, event ORDER BY time"
     },
     {
       "id": "active-state",
       "title": "Active matches and WebSocket connections",
       "type": "time_series",
-      "query": "SELECT histogram_interval(_timestamp, '1 minute') AS time, metric_name, max(value) AS value FROM default WHERE service_namespace = 'phalanxduel' AND metric_name IN ('system.matches_active', 'system.ws_connections') GROUP BY time, metric_name ORDER BY time"
+      "query": "SELECT histogram(_timestamp, '1 minute') AS time, metric_name, max(value) AS value FROM default WHERE service_namespace = 'phalanxduel' AND metric_name IN ('system.matches_active', 'system.ws_connections') GROUP BY time, metric_name ORDER BY time"
+    },
+    {
+      "id": "golden-throughput",
+      "title": "Golden signal · throughput",
+      "type": "time_series",
+      "query": "SELECT histogram(_timestamp, '1 minute') AS time, metric_name, sum(value) AS operations FROM default WHERE service_namespace = 'phalanxduel' AND metric_name IN ('system.actions_total', 'game.action.results', 'match.lifecycle') GROUP BY time, metric_name ORDER BY time"
+    },
+    {
+      "id": "golden-errors",
+      "title": "Golden signal · errors",
+      "type": "time_series",
+      "query": "SELECT histogram(_timestamp, '1 minute') AS time, metric_name, sum(value) AS errors FROM default WHERE service_namespace = 'phalanxduel' AND (metric_name = 'slo.violations' OR status_code = 'ERROR' OR level = 'error') GROUP BY time, metric_name ORDER BY time"
+    },
+    {
+      "id": "golden-latency",
+      "title": "Golden signal · latency distributions",
+      "type": "table",
+      "query": "SELECT metric_name, round(avg(value), 2) AS avg_ms, round(max(value), 2) AS max_ms, count(*) AS samples FROM default WHERE service_namespace = 'phalanxduel' AND metric_name IN ('system.actions_duration_ms', 'game.match.duration_ms', 'phx.client.action_latency_ms') GROUP BY metric_name ORDER BY avg_ms DESC"
+    },
+    {
+      "id": "match-outcomes",
+      "title": "Match outcomes and duration",
+      "type": "time_series",
+      "query": "SELECT histogram(_timestamp, '5 minute') AS time, metric_name, sum(value) AS matches FROM default WHERE service_namespace = 'phalanxduel' AND metric_name IN ('game.match.outcomes', 'game.match.duration_ms', 'game.match.turns') GROUP BY time, metric_name ORDER BY time"
+    },
+    {
+      "id": "feature-adoption",
+      "title": "Feature adoption",
+      "type": "time_series",
+      "query": "SELECT histogram(_timestamp, '5 minute') AS time, feature, event, sum(value) AS events FROM default WHERE service_namespace = 'phalanxduel' AND metric_name IN ('game.feature.events', 'phx.client.feature_events') GROUP BY time, feature, event ORDER BY time"
+    },
+    {
+      "id": "slo-budget",
+      "title": "SLO budget burn",
+      "type": "time_series",
+      "query": "SELECT histogram(_timestamp, '5 minute') AS time, slo, operation, sum(value) AS violations FROM default WHERE service_namespace = 'phalanxduel' AND metric_name = 'slo.violations' GROUP BY time, slo, operation ORDER BY time"
+    },
+    {
+      "id": "browser-experience",
+      "title": "Browser experience · Web Vitals and action ACK",
+      "type": "time_series",
+      "query": "SELECT histogram(_timestamp, '1 minute') AS time, metric_name, name, round(avg(value), 2) AS value FROM default WHERE service_namespace = 'phalanxduel' AND metric_name IN ('phx.client.web_vitals', 'phx.client.action_latency_ms') GROUP BY time, metric_name, name ORDER BY time"
+    },
+    {
+      "id": "dependency-latency",
+      "title": "Dependency latency · Postgres and external calls",
+      "type": "table",
+      "query": "SELECT peer_service, db_operation, round(avg(duration_ms), 2) AS avg_ms, round(max(duration_ms), 2) AS max_ms, count(*) AS calls FROM default WHERE service_namespace = 'phalanxduel' AND (peer_service IS NOT NULL OR db_operation IS NOT NULL) GROUP BY peer_service, db_operation ORDER BY calls DESC"
+    },
+    {
+      "id": "uptime-and-saturation",
+      "title": "Uptime and saturation",
+      "type": "time_series",
+      "query": "SELECT histogram(_timestamp, '1 minute') AS time, metric_name, max(value) AS value FROM default WHERE service_namespace = 'phalanxduel' AND metric_name IN ('system.process_uptime_seconds', 'system.matches_active', 'system.ws_connections') GROUP BY time, metric_name ORDER BY time"
     },
     {
       "id": "recent-errors",

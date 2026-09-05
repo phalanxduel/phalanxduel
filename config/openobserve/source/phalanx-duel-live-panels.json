@@ -1,0 +1,48 @@
+{
+  "dashboard_id": "7501905489362419712",
+  "organization": "default",
+  "stream": "default",
+  "captured_at": "2026-09-05",
+  "panels": [
+    {
+      "id": "Panel_PHX001",
+      "title": "Phalanx Duel request rate",
+      "type": "line",
+      "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(*) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
+      "x": "histogram(_timestamp)",
+      "y": ["count(*)"]
+    },
+    {
+      "title": "Platinum · latency activity",
+      "type": "line",
+      "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(delay_ms) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
+      "x": "histogram(_timestamp)",
+      "y": ["count(delay_ms)"],
+      "intent": "Live proof that gameplay and dependency timing records are arriving."
+    },
+    {
+      "title": "Platinum · action throughput",
+      "type": "line",
+      "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(action) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
+      "x": "histogram(_timestamp)",
+      "y": ["count(action)"],
+      "intent": "Gameplay action flow."
+    },
+    {
+      "title": "Platinum · dependency activity",
+      "type": "line",
+      "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(db_operation) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
+      "x": "histogram(_timestamp)",
+      "y": ["count(db_operation)"],
+      "intent": "Database instrumentation activity."
+    },
+    {
+      "title": "Platinum · environment mix",
+      "type": "line",
+      "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(deployment_environment) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
+      "x": "histogram(_timestamp)",
+      "y": ["count(deployment_environment)"],
+      "intent": "Development-only deployment signal."
+    }
+  ]
+}
