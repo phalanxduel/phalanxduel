@@ -41,8 +41,7 @@ Start with the narrowest key available and carry it through every query:
 | `ws.reconnect_attempt` | Reconnect behavior for the session |
 | `service.name` | `phx-client`, `phx-server`, or a QA runner |
 | `service.namespace` | `phalanxduel` for the game domain |
-| `deployment.environment` | `local` for PVL filelog evidence |
-| `deployment.environment` | Local, test, or production context |
+| `deployment.environment` | Local, test, or production context; `local` for PVL filelog evidence |
 
 ## Discrete flows to show
 
@@ -177,3 +176,28 @@ O2 service catalog queries to group them with server traces. The collector may
 still normalize resource fields according to the zdots platform policy.
 After changing `.zdots.local`, restart the host collector with
 `rtk otel-collector restart`.
+
+## Identity across strata
+
+Pavel's defining responsibility is identity continuity across the system's
+strata. The scenario runner identifier, `qa.run_id`, is the scenario spine.
+The trace ID is the operational spine beneath it and each span is the local
+operation anchor. Every service, gameplay, persistence, and PVL identifier
+must map back to the scenario runner identifier through its trace/span pair
+while retaining its native meaning:
+
+| Stratum | Native identity | Mapping key |
+| --- | --- | --- |
+| Browser/RUM | session, request, and replay context | `qa.run_id`, `ws.session_id`, trace ID |
+| Collector | resource and span identity | `service.name`, `service.namespace`, trace/span ID |
+| Service | HTTP/WebSocket request and connection state | trace ID, `ws.session_id` |
+| Gameplay | match, turn, and action | `match.id`, `game.match`, action sequence |
+| Persistence | ledger transaction and replay position | transaction ID, sequence number, state hashes |
+| PVL evidence | lane, node, and observed outcome | `match_id`, `trace_id`, `span_id`, `source` |
+
+When following a trail, start with the scenario runner identifier and map it
+through the trace: `qa.run_id` → browser trace → `ws.session_id` → `match.id` →
+transaction sequence/state hash → PVL evidence node. A missing mapping is an
+explicit evidence gap, not permission to infer that two events are the same.
+Never substitute player identity, email, token, or secret material for a
+technical correlation key.

@@ -4,7 +4,8 @@
 
 Operate the host-native Phalanx Duel observability environment at
 `o2.localhost`: OTel intake, local OpenObserve dashboards, browser telemetry,
-panel source, backups, and safe verification.
+panel source, backups, and safe verification. Pair O2 with Jaeger for trace
+search and dependency graphs; do not treat Jaeger as the log or RUM backend.
 
 ## Load these skills
 
@@ -27,6 +28,9 @@ panel source, backups, and safe verification.
   shell output.
 - Treat the versioned dashboard manifest and source package as the reviewable
   contract; treat O2 UI state as a live deployment that must be backed up.
+- For trace investigations, use [`jaeger-phalanx-duel.md`](../../observability/jaeger-phalanx-duel.md):
+  O2 owns RUM/logs/metrics/dashboard context, while Jaeger owns span search and
+  dependency visualization.
 
 ## Required handoff
 

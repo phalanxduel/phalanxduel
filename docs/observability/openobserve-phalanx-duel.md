@@ -7,6 +7,12 @@ updated: "2026-09-05"
 
 # Phalanx Duel OpenObserve dashboard
 
+OpenObserve is the local Phalanx Duel signal hub for RUM, logs, metrics,
+dashboards, and trace context. Jaeger is the paired trace-search and dependency
+graph surface; use the pairing described in
+[`jaeger-phalanx-duel.md`](jaeger-phalanx-duel.md) when following one request or
+match across services.
+
 The versioned dashboard manifest lives at
 `config/openobserve/phalanx-duel-dashboard.json`. It is the source of truth
 for the local O2 view and is intentionally scoped to
@@ -19,8 +25,9 @@ browser at https://play.phalanxduel.localhost
   -> same-origin /otel/v1/{traces,metrics}
   -> nginx HTTPS boundary
   -> host OTel collector :4318
-  -> OpenObserve default stream
-  -> o2.localhost dashboard
+  -> traces: OpenObserve + Jaeger
+  -> logs/metrics: OpenObserve default stream
+  -> o2.localhost / jaeger.localhost operator surfaces
 ```
 
 The browser uses `phx-client`; the game server uses `phx-server`. Both carry
@@ -34,10 +41,18 @@ The current O2 topology surface is the Service Catalog:
 https://o2.localhost/web/traces?org_identifier=default&tab=services-catalog
 ```
 
-It is a service inventory with RED health data rather than a dedicated graph.
-The cockpit links directly to the catalog and trace search. A future graph can
-be built from the same spans once `peer.service` edges are consistently
-available for browser, server, Postgres, and Redis dependencies.
+It is a service inventory with RED health data. The graphical dependency view
+is provided by Jaeger Deep Dependency Graph:
+
+```text
+https://jaeger.localhost/dependencies
+```
+
+The cockpit links to both surfaces. O2 answers “what is happening across
+signals?” while Jaeger answers “which spans and service edges made this happen?”
+Jaeger Monitor is the local Service Performance Monitoring surface for the
+collector's span-derived RED metrics. Search and Deep Dependency Graph remain
+the most useful fallback views when following one recorded trace.
 
 OpenObserve's Logs page does not select a stream from the bare organization
 URL. Use the `default` stream explicitly:
@@ -48,7 +63,9 @@ https://o2.localhost/web/logs?stream_type=logs&stream=default&period=15m&refresh
 
 If the page says “Select a stream,” choose `default` and run the query. Fresh
 Phalanx Duel filelog records then appear; the receiver starts at the end of the
-local file and does not backfill older lines.
+local file and does not backfill older lines. The zdots PVL overlay stamps
+these records with `service.name=phx-server`, preserving the server identity in
+O2's Service Catalog without changing production collector configuration.
 
 ## Development-only loading boundary
 
@@ -91,6 +108,10 @@ TLS or proxy error is a failure.
    select the `default` stream if prompted, and import or reproduce the panels
    in the manifest.
 5. Use `match.id`, `ws.session_id`, or `qa.run_id` for trace drill-downs.
+6. For a trace that crosses the browser and server, open the same trace in
+   Jaeger Search and inspect its service list. A healthy local gameplay trace
+   commonly includes `phx-client` and `phx-server`; use Deep Dependency Graph
+   from the result to show the service relationship.
 
 Do not put player IDs, tokens, email addresses, or match IDs into metric
 dimensions. Those are trace correlation fields, not dashboard aggregation

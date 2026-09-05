@@ -26,6 +26,7 @@ Duel runtime and observability workflow.
 | `PHALANX_DEMO_BRANDED_URL` | Demo cockpit | `https://phalanxduel.localhost/demo/` | no | Branded cockpit URL override |
 | `PHALANX_DEMO_O2_URL` | Demo cockpit | `http://localhost:5080` | no | OpenObserve UI/API link |
 | `PHALANX_DEMO_GRAFANA_URL` | Demo cockpit | `http://localhost:3000` | no | Optional legacy Grafana link |
+| `PHALANX_DEMO_JAEGER_URL` | Demo cockpit | `https://jaeger.localhost` | no | Jaeger Search, dependency graph, and Monitor links |
 | `ADMIN_INTERNAL_TOKEN` | Server/Admin | none | yes in production | Shared internal bearer token |
 | `OTEL_SDK_DISABLED` | Server/Admin | `false` | yes during production containment | Prevent OTel exporters from starting |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | Server/Admin | `http://127.0.0.1:4318` | no | OTLP collector intake |

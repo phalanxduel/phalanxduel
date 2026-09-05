@@ -58,6 +58,14 @@ For match-scoped Panoramic View evidence, use the ignored project
 YAML for a normal local run. The authoritative writer is the server's
 `MatchActor`; it emits safe JSONL to `ZDOTS_APP_LOG` after ledger acceptance.
 
+The canonical zdots overlay for this repo is
+`~/.config/zdots-work/otel.d/phalanxduel.yaml` with
+`app_service_name: phx-server`. It is compiled by `zdots-otel-phi-compile` and
+keeps PVL filelog records aligned with the server trace identity. The collector
+exports traces to both O2 and Jaeger: use Jaeger Search, `/dependencies`, and
+`/monitor` for trace, edge, and RED views; use O2 for RUM, replay, logs,
+metrics, dashboards, and SLO panels.
+
 ## Safe boundaries
 
 - Never click dashboard export/download/reset/delete controls while probing.

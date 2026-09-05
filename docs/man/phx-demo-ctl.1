@@ -51,10 +51,17 @@ Cockpit bridge port; defaults to 3333.
 .TP
 .B PHALANX_DEMO_READY_TIMEOUT
 Service readiness timeout; defaults to 60 seconds.
+.TP
+.B PHALANX_DEMO_JAEGER_URL
+Jaeger base URL used by the generated cockpit; defaults to
+https://jaeger.localhost.
 .SH FILES
 .TP
 .B .phx/logs/
 Host-native service logs and cockpit.log.
+.TP
+.B output/demo/OBSERVABILITY-PAIRING.md
+Presenter packet for the OpenObserve and Jaeger telemetry walkthrough.
 .SH SEE ALSO
 .BR phx-services (1),
 .BR phx (1),

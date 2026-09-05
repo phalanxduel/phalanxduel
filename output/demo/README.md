@@ -21,7 +21,8 @@ It is not part of the default local rehearsal yet.
 | 4 | Live software demo | `https://play.phalanxduel.localhost` | Requires `phx-demo-ctl up` running (see Pre-flight). |
 | 5 | Local demo cockpit | `https://phalanxduel.localhost/demo/` | Generated under ignored `.phx/cockpit/`; returns 404 when the cockpit is not running. |
 | 6 | Fallback demo video | `output/video/phalanx-duel-demo.mp4` | Narrated, ~3 min. Play this if the live demo breaks. |
-| 7 | Source references (for the room to see, not memorize) | `docs/gameplay/rules.md`, `shared/src/schema.ts`, `engine/src/combat.ts` | Already cited on-slide (Code · 04). Have the repo open in an editor tab if you want to actually scroll to them live. |
+| 7 | Observability pairing packet | `output/demo/OBSERVABILITY-PAIRING.md` | O2 and Jaeger links, correlation keys, presenter sequence, and recovery cue. |
+| 8 | Source references (for the room to see, not memorize) | `docs/gameplay/rules.md`, `shared/src/schema.ts`, `engine/src/combat.ts` | Already cited on-slide (Code · 04). Have the repo open in an editor tab if you want to actually scroll to them live. |
 
 ## Pre-flight (do this before people arrive)
 
@@ -58,10 +59,11 @@ times out, run `phx-demo-ctl status` to see which of app/client isn't up, then
 
 The cockpit is served at `https://phalanxduel.localhost/demo/`. It contains
 live service health, match analytics, related demo/doc links, alternative
-clients, and formatted log tails. The generated artifact is intentionally not
-committed. If `.phx/cockpit/quicklinks.html` or the cockpit bridge is absent,
-the `/demo/` path returns 404. After cockpit-only changes, refresh it without
-interrupting a match:
+clients, formatted log tails, and paired OpenObserve/Jaeger links. The
+generated artifact is intentionally not committed. If
+`.phx/cockpit/quicklinks.html` or the cockpit bridge is absent, the `/demo/`
+path returns 404. After cockpit-only changes, refresh it without interrupting a
+match:
 
 ```bash
 rtk phx-demo-ctl restart-cockpit
@@ -72,6 +74,20 @@ The admin UI is at `https://admin.phalanxduel.localhost/` when the local nginx
 vhost is installed. Its local API is on port `3102` and its Vite UI is on port
 `3103`. The game server remains on port `3001`, and the client remains on
 Vite's port `5173`.
+
+For the observability portion of the rehearsal, keep the packet
+[`OBSERVABILITY-PAIRING.md`](OBSERVABILITY-PAIRING.md) open. It maps each
+question to the right surface:
+
+- OpenObserve (`o2.localhost`) for RUM, replay, logs, metrics, dashboards, and
+  trace context.
+- Jaeger (`jaeger.localhost`) for trace search, span timing, and the Deep
+  Dependency Graph.
+- The `match.id`, `qa.run_id`, and `ws.session_id` values are the handoff keys
+  between the two surfaces.
+
+The reusable presenter/operator checklist is
+[`docs/templates/demo-observability-checklist.md`](../../docs/templates/demo-observability-checklist.md).
 
 Then, in your browser, open **two tabs** ahead of time and leave them ready:
 
@@ -113,6 +129,7 @@ shorter — the beats and their order don't change, only the minutes per beat.
 | 21:30 | 10 — Architecture | Code 02 | "The client proposes, the server decides." One sentence on why: no gameplay logic ships in client code. |
 | 23:30 | 11 — Turn lifecycle | Code 03 | The 8 phases, straight from `shared/src/schema.ts`. This is the bridge into the live demo. |
 | 25:00 | *(switch tabs)* | **Live demo** | Alt-tab to `play.phalanxduel.localhost`. Play one attack. Narrate it against the phase names and the worked example from slide 5 — same math, same order. Budget ~3 min. **If it breaks:** stop, say so plainly, play `output/video/phalanx-duel-demo.mp4` instead, keep talking over it. |
+| 27:45 | *(cockpit)* | **Telemetry trail** | Open the cockpit's O2 and Jaeger links. Show the O2 live log/RUM context, then Jaeger Search for a `phx-client` trace containing `phx-server`; open Deep Dependency Graph to make the cross-service path visible. |
 | 28:00 | 12 — Try it yourself | Code 04 | The real commands and file paths. This is the slide this audience came for — slow down here. |
 | 29:00 | 13 — Why determinism | Code 05 | The thesis line: what you verified by hand is what the server verifies every turn. |
 | 29:30 | 14 — Links & bio | Close | Play URL, canonical rules, source, this talk's page. Thanks, open for questions. |

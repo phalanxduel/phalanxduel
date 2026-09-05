@@ -17,6 +17,7 @@ retired.
 | `PHALANX_SERVER_PORT`| `3001` | HTTP listen port |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://127.0.0.1:4318` | OTLP collector intake |
 | `ZDOTS_APP_LOG` | none | Local-only JSONL path for match-scoped Panoramic View filelog evidence |
+| `PHALANX_DEMO_JAEGER_URL` | `https://jaeger.localhost` | Local demo cockpit Jaeger Search, dependency graph, and Monitor links |
 
 For a full list of supported variables, see [Environment Variables Reference](./reference/environment-variables.md).
 

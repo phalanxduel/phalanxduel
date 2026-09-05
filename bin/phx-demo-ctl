@@ -34,6 +34,7 @@ COCKPIT_BRIDGE_URL="http://127.0.0.1:${COCKPIT_PORT}/"
 COCKPIT_BRANDED_URL="${PHALANX_DEMO_BRANDED_URL:-https://phalanxduel.localhost/demo/}"
 O2_URL="${PHALANX_DEMO_O2_URL:-http://localhost:5080}"
 GRAFANA_URL="${PHALANX_DEMO_GRAFANA_URL:-http://localhost:3000}"
+JAEGER_URL="${PHALANX_DEMO_JAEGER_URL:-https://jaeger.localhost}"
 COCKPIT_URL="${PHALANX_DEMO_COCKPIT_URL:-$COCKPIT_BRANDED_URL}"
 COCKPIT_PID_FILE="$SERVICES_RUN_DIR/cockpit.pid"
 CLI_NAME="${PHX_CLI_NAME:-$(basename "$0")}"
@@ -185,12 +186,15 @@ write_quicklinks() {
   server_pid=$(service_pid server)
   client_pid=$(service_pid client)
   admin_pid=$(service_pid admin)
-  local o2_dashboard_url o2_logs_url o2_traces_url o2_services_url
+  local o2_dashboard_url o2_logs_url o2_traces_url o2_services_url jaeger_search_url jaeger_monitor_url jaeger_dependencies_url
   o2_dashboard_url="$O2_URL/web/dashboards/view?org_identifier=default&dashboard=7501905489362419712&folder=default&tab=default&refresh=Off&period=15m&print=false"
   o2_logs_url="$O2_URL/web/logs?stream_type=logs&stream=default&period=15m&refresh=0&fn_editor=false&defined_schemas=user_defined_schema&org_identifier=default&quick_mode=false&show_histogram=true&logs_visualize_toggle=logs"
   o2_traces_url="$O2_URL/web/traces?org_identifier=default"
   o2_services_url="$O2_URL/web/traces?org_identifier=default&tab=services-catalog"
-  local esc_git esc_play esc_admin esc_client esc_app_docs esc_grafana esc_o2 esc_o2_logs esc_o2_traces esc_o2_services esc_go esc_cockpit
+  jaeger_search_url="$JAEGER_URL/search"
+  jaeger_monitor_url="$JAEGER_URL/monitor"
+  jaeger_dependencies_url="$JAEGER_URL/dependencies"
+  local esc_git esc_play esc_admin esc_client esc_app_docs esc_grafana esc_o2 esc_o2_logs esc_o2_traces esc_o2_services esc_jaeger_search esc_jaeger_monitor esc_jaeger_dependencies esc_go esc_cockpit
   local esc_reel esc_pdf esc_narration esc_manifest esc_compat esc_server_log esc_client_log esc_admin_log
   local esc_play_health esc_play_ready esc_app_health esc_app_ready esc_admin_health esc_admin_ready esc_admin_ui esc_app_json
   local label_play label_admin label_app label_api
@@ -204,6 +208,9 @@ write_quicklinks() {
   esc_o2_logs=$(html_escape "$o2_logs_url")
   esc_o2_traces=$(html_escape "$o2_traces_url")
   esc_o2_services=$(html_escape "$o2_services_url")
+  esc_jaeger_search=$(html_escape "$jaeger_search_url")
+  esc_jaeger_monitor=$(html_escape "$jaeger_monitor_url")
+  esc_jaeger_dependencies=$(html_escape "$jaeger_dependencies_url")
   esc_go=$(html_escape "$GO_CLIENT_README")
   esc_cockpit=$(html_escape "$COCKPIT_URL")
   esc_reel=$(html_escape "file://$REPO_ROOT/output/video/phalanx-duel-demo.webm")
@@ -312,6 +319,9 @@ write_quicklinks() {
     <div class="card launch-card"><a class="surface-link" href="$esc_o2_logs">O2 logs ↗</a><small>OpenObserve default log stream · 15m</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_o2_traces">O2 traces ↗</a><small>Trace search and span detail</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_o2_services">O2 service catalog ↗</a><small>Service health, rates, errors, and latency</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_jaeger_search">Jaeger Search ↗</a><small>Trace search, tags, duration, and RUM correlation</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_jaeger_dependencies">Jaeger dependencies ↗</a><small>Deep dependency graph from selected traces</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_jaeger_monitor">Jaeger Monitor ↗</a><small>Service Performance Monitoring · RED rate, errors, duration</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_reel">Demo reel ↗</a><small>Recorded face-to-face demo asset</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_pdf">Quickstart PDF ↗</a><small>Talk track and rehearsal reference</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_narration">Demo narration ↗</a><small>Presenter script and scene cues</small></div>

@@ -38,7 +38,7 @@ The browser cockpit is served at `https://phalanxduel.localhost/demo/` when the
 local nginx vhost is installed, with `http://127.0.0.1:3333/` as the direct
 fallback. It refreshes health, match metrics, and service state in real time.
 All cockpit links open in a new tab. The page also links to the game, admin UI,
-API docs, observability tools, alternative clients, related docs/assets, and
+API docs, OpenObserve and Jaeger observability tools, alternative clients, related docs/assets, and
 the exact local log paths. `restart-cockpit` refreshes the bridge without
 stopping an active game. The generated `quicklinks.html` is stored under
 ignored `.phx/cockpit/`; when that artifact or the bridge is absent, `/demo/`

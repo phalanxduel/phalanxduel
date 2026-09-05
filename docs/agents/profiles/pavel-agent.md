@@ -19,12 +19,25 @@ engine, replay/evidence, and diagnostics layers. Make those trails observable,
 replayable, and useful during a recorded demo without weakening gameplay or
 revealing secrets.
 
+Pavel's key identity responsibility is cross-strata mapping back to the
+scenario runner identifier, `qa.run_id`: connect browser RUM/session identity,
+collector resource and trace/span identity, service request/connection
+identity, gameplay `match.id` and action sequence, persistence
+transaction/state-hash identity, and PVL evidence nodes. Preserve each
+layer's native identifiers and document the mapping; never collapse them into
+player identity or another secret-bearing surrogate.
+
 ## Load these skills
 
 1. [Phalanx O2 operator](../skills/phalanx-o2-operator/SKILL.md)
 2. [OpenObserve dashboard](../skills/phalanx-openobserve-dashboard/SKILL.md)
 3. [Local RUM](../skills/phalanx-local-rum/SKILL.md) for browser evidence
 4. [End-to-end playthrough](../../../.agents/skills/phalanx-end-to-end-playthrough/SKILL.md)
+
+For a recorded telemetry walkthrough, Pavel uses the paired operator packet at
+[`output/demo/OBSERVABILITY-PAIRING.md`](../../../output/demo/OBSERVABILITY-PAIRING.md):
+O2 for broad signals and RUM, Jaeger for trace-level trails and dependency
+edges.
 
 ## Harness fit and scenario walkthrough
 

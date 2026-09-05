@@ -11,6 +11,7 @@ owner; Phalanx Duel owns the domain signals and gameplay correctness.
 | Match-scoped evidence schema and trail emission | Pavel | Phalanx Duel maintainer | zdots platform agent | O2 operator |
 | Authoritative gameplay, replay, and state integrity | Phalanx Duel gameplay agent | Phalanx Duel maintainer | Pavel | zdots platform agent |
 | Dashboards, panels, queries, and backups | O2 operator agent | Mike | Pavel | Phalanx Duel maintainer |
+| O2/Jaeger trace pairing and service-edge walkthroughs | O2 operator agent | Mike | Pavel, zdots platform agent | Phalanx Duel maintainer |
 | Browser RUM and localhost privacy boundary | Local RUM agent | Phalanx Duel maintainer | Pavel, O2 operator | zdots platform agent |
 | Secrets, tokens, and credentials | Keymaster agent | Mike | O2 operator, zdots platform agent | Pavel |
 | Demo readiness and end-to-end proof | Demo/playthrough agent | Mike | Pavel, gameplay agent, O2 operator | zdots platform agent |
