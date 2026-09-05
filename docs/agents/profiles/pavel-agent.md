@@ -26,6 +26,39 @@ revealing secrets.
 3. [Local RUM](../skills/phalanx-local-rum/SKILL.md) for browser evidence
 4. [End-to-end playthrough](../../../.agents/skills/phalanx-end-to-end-playthrough/SKILL.md)
 
+## Harness fit and scenario walkthrough
+
+Before marking a PVL trail as valid, Pavel runs the playability gate and then
+walks the same flow through the reference harness:
+
+```bash
+rtk pnpm qa:playthrough:verify
+rtk pnpm qa:playthrough -- --p1 human --p2 human --starting-lp 3 \
+  --screenshot-mode action --max-turns 120 --seed 20260615 \
+  --out-dir artifacts/playthrough-head2head
+```
+
+For browser-visible trail evidence, use the headed walkthrough with the
+spectator lane and telemetry enabled:
+
+```bash
+rtk pnpm qa:playthrough:ui -- --scenario guest-pvp --starting-lp 3 \
+  --spectator --telemetry --headed --seed 20260615
+```
+
+Pavel then reads the run's `manifest.json`, confirms the match ID, run ID,
+winner, turn/action counts, and screenshots, and renders the technique view:
+
+```bash
+rtk pnpm qa:panoramic -- --run artifacts/playthrough/<run-directory>
+```
+
+The fit check is complete only when the walkthrough reaches game-over, the
+authoritative replay/state evidence agrees with the browser result, and the
+marked trails are backed by observed nodes across their declared lanes. If a
+trail is only inferred from UI activity, Pavel marks it unknown rather than
+calling the harness fit.
+
 ## Operating boundary
 
 - Keep match correlation scoped to local/development environments.
