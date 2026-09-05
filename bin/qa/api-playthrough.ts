@@ -216,7 +216,6 @@ function sendJson(ws: WebSocket, qaRun: QaRun, msg: ClientMessage): void {
     (typeof msg.msgId !== 'string' || msg.msgId.length === 0)
       ? { ...msg, msgId: crypto.randomUUID() }
       : msg;
-  const wrapped = qaRun.wrapClientMessage(reliableMessage);
   const sendSpan = tracer.startSpan(
     `ws.send.${msg.type}`,
     {
@@ -228,8 +227,9 @@ function sendJson(ws: WebSocket, qaRun: QaRun, msg: ClientMessage): void {
         'qa.run_id': qaRun.runId,
       },
     },
-    context.active(),
+    qaRun.context,
   );
+  const wrapped = qaRun.wrapClientMessage(reliableMessage, trace.setSpan(qaRun.context, sendSpan));
   ws.send(JSON.stringify(wrapped));
   sendSpan.end();
 }
@@ -469,6 +469,12 @@ async function runSingleGame(
 
     const matchJoined = await waitForMessage(ws2, (m) => m.type === 'matchJoined');
     const p2Id = matchJoined.playerId as string;
+    qaRun.bindMatch(matchId, {
+      'qa.p1_id': p1Id,
+      'qa.p2_id': p2Id,
+      'qa.p1_index': Number(matchCreated.playerIndex ?? 0),
+      'qa.p2_index': Number(matchJoined.playerIndex ?? 1),
+    });
     qaRun.annotate('qa.player.joined', {
       'qa.p2_id': p2Id,
       'qa.p2_index': Number(matchJoined.playerIndex ?? 1),

@@ -550,9 +550,10 @@ console.log = (...args: unknown[]): void => {
   rawConsoleLog(`[${new Date().toISOString()}]`, `[${PLAYTHROUGH_ID}]`, ...args);
 };
 
-function withRunParams(url: string, qaRunId: string): string {
+function withRunParams(url: string, qaRunId: string, traceparent?: string): string {
   const nextUrl = new URL(url);
   nextUrl.searchParams.set('qaRunId', qaRunId);
+  if (traceparent) nextUrl.searchParams.set('qaTraceparent', traceparent);
   nextUrl.searchParams.set('telemetry', OPTIONS.telemetryEnabled ? 'on' : 'off');
   return nextUrl.toString();
 }
@@ -1007,8 +1008,8 @@ async function ensureTournamentAccounts(count: number): Promise<BotAccountRecord
   return records;
 }
 
-async function waitForLobbyReady(page: Page, qaRunId: string): Promise<void> {
-  await page.goto(withRunParams(OPTIONS.baseUrl, qaRunId));
+async function waitForLobbyReady(page: Page, qaRunId: string, traceparent?: string): Promise<void> {
+  await page.goto(withRunParams(OPTIONS.baseUrl, qaRunId, traceparent));
   await page.waitForSelector('[data-component="LobbyView"]', { timeout: 30_000 });
   // The actionable lobby contract is stronger than a decorative health badge
   // and remains valid when responsive layouts collapse footer diagnostics.
@@ -1148,7 +1149,7 @@ async function createAndJoinMatch(
     throw new Error(`Refusing self-match: both players are named "${creator.operativeId}"`);
   }
 
-  await waitForLobbyReady(creator.page, qaRun.runId);
+  await waitForLobbyReady(creator.page, qaRun.runId, qaRun.traceparent);
   if (creatorAccount) {
     await authenticatePlayer(
       creator.page,
@@ -1177,6 +1178,7 @@ async function createAndJoinMatch(
 
     const correlation = await readServerCorrelation(matchId);
     qaRun.bindMatch(matchId, {
+      'qa.p1_id': creatorSession?.playerId,
       'game.damage_mode': selectedMode,
       'game.starting_lp': startingLifepoints,
       'game.opponent': OPTIONS.botOpponent,
@@ -1209,7 +1211,7 @@ async function createAndJoinMatch(
   logGame(gameRunId, `📦 Match Created by ${creator.operativeId}: "${matchId}"`);
 
   if (joiner) {
-    await waitForLobbyReady(joiner.page, qaRun.runId);
+    await waitForLobbyReady(joiner.page, qaRun.runId, qaRun.traceparent);
     if (joinerAccount) {
       await authenticatePlayer(
         joiner.page,
@@ -1238,6 +1240,10 @@ async function createAndJoinMatch(
     waitForStoredSession(creator.page),
     joiner ? waitForStoredSession(joiner.page) : Promise.resolve(null),
   ]);
+  qaRun.bindMatch(matchId, {
+    'qa.p1_id': creatorSession?.playerId,
+    'qa.p2_id': joinerSession?.playerId,
+  });
   const correlation = await readServerCorrelation(matchId);
 
   await Promise.all([
@@ -1275,8 +1281,9 @@ async function joinSpectator(
   matchId: string,
   qaRunId: string,
   gameRunId: string,
+  traceparent?: string,
 ): Promise<void> {
-  const watchUrl = new URL(withRunParams(OPTIONS.baseUrl, qaRunId));
+  const watchUrl = new URL(withRunParams(OPTIONS.baseUrl, qaRunId, traceparent));
   watchUrl.searchParams.set('watch', matchId);
   logGame(gameRunId, `📺 ${spectator.name} watching via: ${watchUrl}`);
   await spectator.page.goto(watchUrl.toString());
@@ -2708,7 +2715,13 @@ async function main(): Promise<void> {
       const setup = await createAndJoinMatch(p1, p2, creatorAccount, joinerAccount);
       if (OPTIONS.spectator) {
         setup.spectator = await launchPlayer(uniqueName('Spectator'), 2);
-        await joinSpectator(setup.spectator, setup.matchId, setup.qaRun.runId, setup.gameRunId);
+        await joinSpectator(
+          setup.spectator,
+          setup.matchId,
+          setup.qaRun.runId,
+          setup.gameRunId,
+          setup.qaRun.traceparent,
+        );
       }
 
       logGame(

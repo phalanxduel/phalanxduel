@@ -28,6 +28,7 @@ export interface ConnectionConfig {
   onStateChange?: (state: ConnectionLifecycleState) => void;
   originService?: string;
   qaRunId?: string;
+  qaTraceparent?: string;
 }
 
 type TransportClientMessage = Extract<ClientMessage, { type: 'ack' | 'ping' | 'pong' }>;
@@ -139,6 +140,9 @@ export function createConnection(
   let activeMatchId: string | null = null;
   let reconnectAttempt = 0;
   let socketSessionId = '';
+  const qaParentContext = config.qaTraceparent
+    ? propagation.extract(context.active(), { traceparent: config.qaTraceparent })
+    : context.active();
   let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   let heartbeatWatchdog: ReturnType<typeof setInterval> | null = null;
   let lastServerActivityAt = Date.now();
@@ -173,12 +177,12 @@ export function createConnection(
           ...sessionAttrs(attrs),
         },
       });
-      sessionContext = trace.setSpan(context.active(), sessionSpan);
+      sessionContext = trace.setSpan(qaParentContext, sessionSpan);
       return sessionContext;
     }
 
     sessionSpan.setAttributes(attrs);
-    return sessionContext ?? trace.setSpan(context.active(), sessionSpan);
+    return sessionContext ?? trace.setSpan(qaParentContext, sessionSpan);
   }
 
   function endMatchSpan(status: SpanStatusCode, message?: string): void {

@@ -162,7 +162,8 @@ The collector's filelog/app pipeline consumes one JSON object per line. Each
 record includes `timestamp`, `trace_id`, `span_id`, `match_id`, optional
 `qa_run_id`, `lane`, `kind`,
 `label`, `status`, `duration_ms`, `source`, and `confidence`, plus safe replay
-metadata such as action type and state hashes. Match IDs are not request trace
+metadata such as action type, player index, message ID, turn hash, phase-trace
+digest, and state hashes. Match IDs are not request trace
 IDs: the match UUID with dashes removed is the stable 32-character
 `trace_id`, while the transaction sequence is the deterministic `span_id`.
 Request spans remain available for HTTP/WebSocket causality.
@@ -202,3 +203,19 @@ transaction sequence/state hash → PVL evidence node. A missing mapping is an
 explicit evidence gap, not permission to infer that two events are the same.
 Never substitute player identity, email, token, or secret material for a
 technical correlation key.
+
+## QA trace context and player correlation
+
+Every `phx-qa-*` run creates a W3C trace context. API/WebSocket runners inject a
+fresh child `traceparent` for each outbound message, so each turn or lifecycle
+operation has its own span while remaining under the QA run span. Browser
+walkthroughs receive the run `traceparent` as a local-only launch parameter;
+the browser's `phx-client` session, match, and message spans then continue that
+trace context into the server WebSocket spans.
+
+The runner records safe technical player identifiers after the server assigns
+them (`qa.p1_id`, `qa.p2_id`, and player indexes). Server spans retain their
+native `player.id` and `match.id` attributes. This creates the mapping
+`qa.run_id` → `traceparent` → `player.id`/`ws.session_id` → `match.id` without
+putting emails, tokens, or player names into telemetry. Player identifiers are
+for local correlation only and must not become metric dimensions.

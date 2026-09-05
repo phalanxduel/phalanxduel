@@ -47,6 +47,7 @@ async function init() {
 
   const urlParams = new URLSearchParams(window.location.search);
   const qaRunId = urlParams.get('qaRunId')?.trim() ?? undefined;
+  const qaTraceparent = urlParams.get('qaTraceparent')?.trim() ?? undefined;
 
   const bus = globalNarrationBus;
   const music = new MusicEngine();
@@ -134,6 +135,7 @@ async function init() {
           });
         },
         qaRunId,
+        qaTraceparent,
       },
     );
 

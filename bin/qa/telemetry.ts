@@ -92,6 +92,7 @@ export class QaRun {
   readonly runId: string;
   readonly tool: string;
   private readonly span: Span;
+  private readonly runContext: ReturnType<typeof trace.setSpan>;
   private readonly baseAttrs: Attributes;
 
   constructor(meta: QaRunMeta) {
@@ -112,7 +113,18 @@ export class QaRun {
     this.span = tracer.startSpan(`qa.${meta.tool}.run`, {
       attributes: this.baseAttrs,
     });
+    this.runContext = trace.setSpan(context.active(), this.span);
     emitLog(this.span, SeverityNumber.INFO, 'INFO', `qa.run.start ${meta.tool}`, this.baseAttrs);
+  }
+
+  get context(): ReturnType<typeof trace.setSpan> {
+    return this.runContext;
+  }
+
+  get traceparent(): string | undefined {
+    const carrier: Record<string, string> = {};
+    propagation.inject(this.runContext, carrier);
+    return carrier.traceparent;
   }
 
   bindMatch(matchId: string, attrs: Record<string, AttrValue | undefined> = {}): void {
@@ -135,9 +147,9 @@ export class QaRun {
     );
   }
 
-  wrapClientMessage<T extends ClientMessage>(message: T): T {
+  wrapClientMessage<T extends ClientMessage>(message: T, messageContext = this.runContext): T {
     const carrier: Record<string, string> = {};
-    propagation.inject(trace.setSpan(context.active(), this.span), carrier);
+    propagation.inject(messageContext, carrier);
     const existingTelemetry =
       'telemetry' in message && typeof message.telemetry === 'object' && message.telemetry !== null
         ? message.telemetry

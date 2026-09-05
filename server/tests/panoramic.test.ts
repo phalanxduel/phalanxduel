@@ -15,6 +15,8 @@ const entry = {
   details: { type: 'pass' },
   phaseTrace: [],
   msgId: null,
+  turnHash: 'turn-hash',
+  phaseTraceDigest: 'phase-digest',
 } as unknown as TransactionLogEntry;
 
 describe('PVL Panoramic View records', () => {
@@ -49,6 +51,10 @@ describe('PVL Panoramic View records', () => {
       status: 'up',
       confidence: 'high',
       source: 'engine/src/events.ts',
+      player_index: 0,
+      turn_hash: 'turn-hash',
+      phase_trace_digest: 'phase-digest',
+      msg_id: null,
     });
   });
 

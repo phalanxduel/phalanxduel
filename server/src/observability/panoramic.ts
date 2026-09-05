@@ -26,6 +26,10 @@ export interface PanoramicRecord {
   phase?: string;
   state_hash_before?: string;
   state_hash_after?: string;
+  turn_hash?: string;
+  phase_trace_digest?: string;
+  msg_id?: string | null;
+  player_index?: number;
 }
 
 let writeQueue = Promise.resolve();
@@ -69,8 +73,12 @@ export function buildPanoramicTurnRecords(
     deployment_environment: 'local' as const,
     sequence_number: entry.sequenceNumber,
     action_type: entry.action.type,
+    player_index: 'playerIndex' in entry.action ? entry.action.playerIndex : undefined,
     state_hash_before: entry.stateHashBefore,
     state_hash_after: entry.stateHashAfter,
+    turn_hash: entry.turnHash,
+    phase_trace_digest: entry.phaseTraceDigest,
+    msg_id: entry.msgId,
     lane: 'game-engine',
     status: 'up' as const,
     duration_ms: 0,
