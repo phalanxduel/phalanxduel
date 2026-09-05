@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # bin/install-localhost — serve the local dev stack at:
 #   https://play.phalanxduel.localhost   (client, once `bin/demo up` is running)
-#   https://admin.phalanxduel.localhost  (admin UI, once `pnpm dev:admin` is running)
+#   https://admin.phalanxduel.localhost  (admin UI, once `bin/demo up` is running)
 #   https://phalanxduel.localhost        (redirects to play)
 #
 # Installs the project-owned nginx vhost (nginx/phalanxduel.localhost.conf),
@@ -72,4 +72,4 @@ EOF
 echo
 info "Then:  bin/demo up"
 info "       open https://play.phalanxduel.localhost"
-info "Admin (separate from bin/demo):  pnpm dev:admin  ->  https://admin.phalanxduel.localhost"
+info "       admin opens from the quicklinks page -> https://admin.phalanxduel.localhost"

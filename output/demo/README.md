@@ -23,12 +23,19 @@ needs to be built the day of.
 Run in order, from the repo root:
 
 ```bash
-bin/demo up                    # starts server + client, polls until READY
+bin/demo up                    # starts server + client + admin, opens quicklinks
 ```
 
-Wait for the green "READY" line — it prints the play URL when it's done. If it
+Wait for the green "READY" line. The command prints and opens a local
+quicklinks page with the play URL, admin console, health and API links, process
+IDs, logs, source paths, and rehearsal tips. If it
 times out, run `bin/demo status` to see which of app/client isn't up, then
 `bin/demo logs`.
+
+The admin UI is at `https://admin.phalanxduel.localhost/` when the local nginx
+vhost is installed. Its local API is on port `3102` and its Vite UI is on port
+`3103`. The game server remains on port `3001`, and the client remains on
+Vite's port `5173`.
 
 Then, in your browser, open **two tabs** ahead of time and leave them ready:
 
@@ -39,7 +46,7 @@ Then, in your browser, open **two tabs** ahead of time and leave them ready:
 
 Checklist:
 
-- [ ] `bin/demo up` printed READY for both app and client
+- [ ] `bin/demo up` printed READY for app, client, and admin
 - [ ] `https://play.phalanxduel.localhost` loads and shows the Welcome dialog
 - [ ] Deck tab open, scrolled to slide 1
 - [ ] Printed quickstarts counted out (one per pair + spares)

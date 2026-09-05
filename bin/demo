@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Zero-anxiety control for a live Phalanx Duel demo session: start the
-# server + client, wait until they're actually healthy (not just spawned),
-# reseed between rehearsals, and tear down cleanly. Built entirely on
-# existing primitives (bin/services, scripts/dev-dashboard.ts,
+# server, client, and admin pair, wait until they're actually healthy (not
+# just spawned), generate a local quicklinks page, and tear down cleanly.
+# Built entirely on existing primitives (bin/services, scripts/dev-dashboard.ts,
 # bin/maint/with-dev-postgres.sh) — no new infra.
 set -euo pipefail
 
@@ -10,45 +10,196 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
 CLIENT_URL="http://127.0.0.1:5173"
+APP_URL="http://127.0.0.1:3001"
+ADMIN_API_URL="http://127.0.0.1:3102"
+ADMIN_UI_URL="http://127.0.0.1:3103"
 # The branded URL from nginx/phalanxduel.localhost.conf (bin/install-localhost),
 # if it's set up on this machine — falls back to the raw dev port otherwise.
 PLAY_URL="https://play.phalanxduel.localhost"
 READY_TIMEOUT="${PHALANX_DEMO_READY_TIMEOUT:-60}"
+DEMO_RUNTIME_DIR="${PHALANX_DEMO_RUNTIME_DIR:-${TMPDIR:-/tmp}/phalanxduel-demo}"
+QUICKLINKS_FILE="$DEMO_RUNTIME_DIR/quicklinks.html"
+SERVICES_RUN_DIR="$REPO_ROOT/.phx/run"
+SERVICES_LOG_DIR="$REPO_ROOT/.phx/logs"
 
 usage() {
   cat <<EOF
-Usage: bin/demo <command>
+Usage: bin/demo <command> [options]
 
 Commands:
-  up       Start server + client (daemonized) and wait until both are READY.
-  down     Stop server + client.
+  up       Start server + client + admin (daemonized), wait, and open quicklinks.
+  down     Stop server + client + admin.
   status   One-shot health snapshot (pnpm dev:status).
   reset    Reseed the dev database to a clean state between rehearsals.
   logs     Tail server + client logs.
+  links    Generate the local HTML quicklinks page and open it.
+  cockpit  Open the interactive terminal development cockpit.
+
+Options:
+  --no-open  Print or generate the result without opening a browser.
 
 Examples:
-  bin/demo up       # before the talk: start, wait, get a green light
+  bin/demo up       # before the talk: start, wait, and open the cockpit page
+  bin/demo links --no-open
+  bin/demo cockpit  # headed terminal dashboard; Ctrl+C to exit
   bin/demo reset    # between rehearsals: clean slate
   bin/demo down     # after: stop everything
 EOF
   exit 1
 }
 
+NO_OPEN=false
+for arg in "$@"; do
+  [ "$arg" = "--no-open" ] && NO_OPEN=true
+done
+
+service_pid() {
+  local service=$1
+  if [ -f "$SERVICES_RUN_DIR/$service.pid" ]; then
+    cat "$SERVICES_RUN_DIR/$service.pid"
+  else
+    lsof -nP -tiTCP:"$(case "$service" in server) echo 3001;; client) echo 5173;; admin) echo 3102;; esac)" -sTCP:LISTEN 2>/dev/null | head -1 || true
+  fi
+}
+
+service_state() {
+  local service=$1
+  local pid
+  pid=$(service_pid "$service")
+  if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+    echo "RUNNING"
+  else
+    echo "STOPPED"
+  fi
+}
+
+probe_code() {
+  local code
+  code=$(curl -ksS -o /dev/null --max-time 2 -w '%{http_code}' "$1" 2>/dev/null || true)
+  printf '%s' "${code:-000}"
+}
+
+probe_label() {
+  local code=$1
+  case "$code" in
+    2*|3*|401|403) echo "reachable ($code)" ;;
+    *) echo "not reachable ($code)" ;;
+  esac
+}
+
+html_escape() {
+  printf '%s' "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g'
+}
+
+open_quicklinks() {
+  if [ "$NO_OPEN" = "true" ]; then
+    return
+  fi
+  if command -v open >/dev/null 2>&1; then
+    open "$QUICKLINKS_FILE" >/dev/null 2>&1 || true
+  else
+    echo "   Browser opener unavailable. Open: $QUICKLINKS_FILE"
+  fi
+}
+
+write_quicklinks() {
+  mkdir -p "$(dirname "$QUICKLINKS_FILE")"
+  local generated_at git_commit app_code play_code admin_code api_code
+  generated_at=$(date '+%Y-%m-%d %H:%M:%S %Z')
+  git_commit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)
+  app_code=$(probe_code "$APP_URL/health")
+  play_code=$(probe_code "$PLAY_URL/")
+  admin_code=$(probe_code "https://admin.phalanxduel.localhost/")
+  api_code=$(probe_code "$APP_URL/docs")
+
+  local server_pid client_pid admin_pid
+  server_pid=$(service_pid server)
+  client_pid=$(service_pid client)
+  admin_pid=$(service_pid admin)
+
+  cat > "$QUICKLINKS_FILE" <<EOF
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phalanx Duel local demo cockpit</title>
+  <style>
+    :root { color-scheme: light dark; font: 16px/1.5 system-ui, sans-serif; }
+    body { max-width: 980px; margin: 0 auto; padding: 2rem; }
+    h1 { margin-bottom: .25rem; } h2 { margin-top: 2rem; }
+    .meta, small { color: #777; } .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .card { border: 1px solid #8885; border-radius: .6rem; padding: 1rem; }
+    a { font-weight: 650; } code { overflow-wrap: anywhere; }
+    li { margin: .55rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Phalanx Duel local demo cockpit</h1>
+  <p class="meta">Generated $generated_at · commit <code>$(html_escape "$git_commit")</code></p>
+
+  <h2>Start here</h2>
+  <div class="grid">
+    <div class="card"><a href="https://play.phalanxduel.localhost/">Play the game</a><br><small>Primary browser demo · $(probe_label "$play_code")</small></div>
+    <div class="card"><a href="https://admin.phalanxduel.localhost/">Admin console</a><br><small>Operator UI · $(probe_label "$admin_code") · login required</small></div>
+    <div class="card"><a href="quicklinks.html">This quicklinks page</a><br><small>Regenerate with <code>bin/demo links</code></small></div>
+  </div>
+
+  <h2>Useful surfaces</h2>
+  <ul>
+    <li><a href="https://play.phalanxduel.localhost/health">Branded health</a> · quick liveness check</li>
+    <li><a href="https://play.phalanxduel.localhost/ready">Branded readiness</a> · dependency-aware readiness</li>
+    <li><a href="$(html_escape "$APP_URL/health")">Raw app health</a> · $(probe_label "$app_code")</li>
+    <li><a href="$(html_escape "$ADMIN_API_URL/health")">Raw admin health</a> · API liveness and readiness</li>
+    <li><a href="$(html_escape "$ADMIN_UI_URL/")">Raw admin UI</a> · direct Vite fallback if nginx is unavailable</li>
+    <li><a href="$(html_escape "$APP_URL/docs")">OpenAPI browser</a> · $(probe_label "$api_code")</li>
+    <li><a href="$(html_escape "$APP_URL/docs/json")">OpenAPI JSON</a> · raw API contract</li>
+    <li><a href="https://play.phalanxduel.localhost/">Client through nginx</a> · use this for the demo, not the raw Vite port</li>
+  </ul>
+
+  <h2>Demo sequence</h2>
+  <ol>
+    <li>Open the play link and let the Welcome dialog load.</li>
+    <li>Use the admin link only for operator actions or match inspection.</li>
+    <li>Play one attack, narrating Choose, Resolve, Rebuild, and Switch.</li>
+    <li>If the branded host is unavailable, use <code>$(html_escape "$CLIENT_URL/")</code> as the local fallback.</li>
+    <li>After rehearsal, run <code>bin/demo reset</code> for a clean seeded database.</li>
+  </ol>
+
+  <h2>Runtime map</h2>
+  <div class="grid">
+    <div class="card"><strong>Server</strong><br>PID: <code>$(html_escape "${server_pid:-not recorded}")</code><br>Port: <code>3001</code><br>Log: <code>$(html_escape "$SERVICES_LOG_DIR/server.log")</code><br>Status: $(service_state server)</div>
+    <div class="card"><strong>Client</strong><br>PID: <code>$(html_escape "${client_pid:-not recorded}")</code><br>Port: <code>5173</code><br>Log: <code>$(html_escape "$SERVICES_LOG_DIR/client.log")</code><br>Status: $(service_state client)</div>
+    <div class="card"><strong>Admin</strong><br>PID: <code>$(html_escape "${admin_pid:-not recorded}")</code><br>UI: <code>3103</code> · API: <code>3102</code><br>Log: <code>$(html_escape "$SERVICES_LOG_DIR/admin.log")</code><br>Status: $(service_state admin)</div>
+  </div>
+  <p><strong>Source:</strong> <code>$(html_escape "$REPO_ROOT")</code></p>
+  <p><strong>Commands:</strong> <code>bin/demo cockpit</code> for the headed terminal dashboard, <code>bin/demo status</code> for JSON, <code>bin/demo logs</code> for logs, and <code>bin/demo down</code> to stop.</p>
+</body>
+</html>
+EOF
+  echo "🔗 Quicklinks: $QUICKLINKS_FILE"
+  echo "   Play:       https://play.phalanxduel.localhost/   ($(probe_label "$play_code"))"
+  echo "   Admin:      https://admin.phalanxduel.localhost/  ($(probe_label "$admin_code"))"
+  echo "   App health: $APP_URL/health                    ($(probe_label "$app_code"))"
+  echo "   API docs:   $APP_URL/docs                       ($(probe_label "$api_code"))"
+  echo "   Source:     $REPO_ROOT"
+  echo "   PIDs:       server=${server_pid:-unknown} client=${client_pid:-unknown} admin=${admin_pid:-unknown}"
+  echo "   Logs:       $SERVICES_LOG_DIR/{server,client,admin}.log"
+  open_quicklinks
+}
+
 wait_ready() {
-  echo "⏳ Waiting for server + client to report READY (up to ${READY_TIMEOUT}s)..."
+  echo "⏳ Waiting for server + client + admin to report READY (up to ${READY_TIMEOUT}s)..."
   local waited=0
   while [ "$waited" -lt "$READY_TIMEOUT" ]; do
-    local json app client
+    local json app client admin
     json=$(pnpm --silent dev:status 2>/dev/null || true)
     app=$(node -e "try{console.log(JSON.parse(process.argv[1]).services.app.status)}catch(e){console.log('UNKNOWN')}" "$json" 2>/dev/null || echo UNKNOWN)
     client=$(node -e "try{console.log(JSON.parse(process.argv[1]).services.client.status)}catch(e){console.log('UNKNOWN')}" "$json" 2>/dev/null || echo UNKNOWN)
-    if [ "$app" = "READY" ] && [ "$client" = "READY" ]; then
-      echo "✅ Server and client are READY."
-      if curl -sSk -o /dev/null --max-time 2 "$PLAY_URL" 2>/dev/null; then
-        echo "   Play:   $PLAY_URL"
-      else
-        echo "   Play:   $CLIENT_URL   (run bin/install-localhost for the branded URL)"
-      fi
+    admin=$(node -e "try{console.log(JSON.parse(process.argv[1]).services.admin.status)}catch(e){console.log('UNKNOWN')}" "$json" 2>/dev/null || echo UNKNOWN)
+    if [ "$app" = "READY" ] && [ "$client" = "READY" ] && [ "$admin" = "READY" ]; then
+      echo "✅ Server, client, and admin are READY."
+      write_quicklinks
       echo "   Logs:   bin/demo logs"
       echo "   Reset:  bin/demo reset"
       echo "   Stop:   bin/demo down"
@@ -57,7 +208,7 @@ wait_ready() {
     sleep 2
     waited=$((waited + 2))
   done
-  echo "❌ Not READY after ${READY_TIMEOUT}s (server=$app client=$client)."
+  echo "❌ Not READY after ${READY_TIMEOUT}s (server=$app client=$client admin=$admin)."
   echo "   Check: bin/demo status   /   bin/demo logs"
   return 1
 }
@@ -66,9 +217,11 @@ case "${1:-}" in
   up)
     bin/services start server -d
     bin/services start client -d
+    bin/services start admin -d
     wait_ready
     ;;
   down)
+    bin/services stop admin
     bin/services stop client
     bin/services stop server
     ;;
@@ -81,7 +234,13 @@ case "${1:-}" in
     echo "✅ Dev database reset to a clean seed."
     ;;
   logs)
-    bin/services logs server client
+    bin/services logs server client admin
+    ;;
+  links)
+    write_quicklinks
+    ;;
+  cockpit)
+    exec pnpm dev:dashboard
     ;;
   *)
     usage

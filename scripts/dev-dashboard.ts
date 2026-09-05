@@ -23,7 +23,8 @@ const REFRESH_INTERVAL_MS = 2000;
 const PROBE_TIMEOUT_MS = 2000;
 const PORTS = {
   APP: 3001,
-  ADMIN: 3002,
+  ADMIN: 3102,
+  ADMIN_UI: 3103,
   CLIENT: 5173,
   POSTGRES: 5432,
   OTEL_HTTP: 4318,
@@ -259,7 +260,7 @@ async function collectState(): Promise<EnvState> {
 
   const [appH, adminH, clientH, otelH, statsH] = await Promise.all([
     fetchHttp(`http://127.0.0.1:${PORTS.APP}/health`),
-    fetchHttp(`http://127.0.0.1:${PORTS.ADMIN}/`),
+    fetchHttp(`http://127.0.0.1:${PORTS.ADMIN}/health`),
     fetchHttp(`http://127.0.0.1:${PORTS.CLIENT}/`),
     fetchHttp(`http://127.0.0.1:${PORTS.OTEL_HEALTH}/`),
     fetchHttp(`http://127.0.0.1:${PORTS.APP}/api/stats`),
@@ -513,7 +514,7 @@ async function collectState(): Promise<EnvState> {
       },
       {
         label: 'Admin Console',
-        url: `http://127.0.0.1:${PORTS.ADMIN}/`,
+        url: `http://127.0.0.1:${PORTS.ADMIN_UI}/`,
         description: 'Management UI',
       },
       { label: 'Client UI', url: `http://127.0.0.1:${PORTS.CLIENT}/`, description: 'Game UI' },

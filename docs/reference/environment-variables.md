@@ -11,7 +11,7 @@ Duel runtime and observability workflow.
 | `NODE_ENV` | Runtime | `development` | yes | Node runtime mode |
 | `HOST` | Server | `0.0.0.0` | no | Bind address |
 | `PORT` / `PHALANX_SERVER_PORT` | Server | `3001` | no | Game-server HTTP listen port |
-| `PHALANX_ADMIN_PORT` | Admin | `3002` | no | Dedicated admin HTTP listen port |
+| `PHALANX_ADMIN_PORT` | Admin | `3102` | no | Dedicated admin HTTP listen port |
 | `DATABASE_URL` | Server/Admin | none | yes in production | Postgres connection string |
 | `JWT_SECRET` | Server/Admin | none | yes in production | Shared session signing key |
 | `GAME_SERVER_INTERNAL_URL` | Admin | `http://127.0.0.1:3001` outside production | yes in production | Private game-server origin |

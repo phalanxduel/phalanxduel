@@ -25,6 +25,12 @@ rtk pnpm services start all --tmux
 ```
 The game will be available at [http://127.0.0.1:5173](http://127.0.0.1:5173).
 
+For a guided local rehearsal, run `bin/demo up`. It starts the server, browser
+client, and dedicated admin pair, then writes a local quicklinks page with
+confirmed URLs, health results, PIDs, log paths, source paths, and a short demo
+sequence. Use `bin/demo links --no-open` to refresh it without opening a
+browser, or `bin/demo cockpit` for the interactive terminal dashboard.
+
 For detailed setup, troubleshooting, and advanced workflows, see the **[Development Guide](docs/development.md)**.
   
 ## ✨ Feature Highlights

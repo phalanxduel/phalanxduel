@@ -10,9 +10,9 @@ export default defineConfig({
   },
   server: {
     host: '127.0.0.1',
-    port: 3003,
+    port: 3103,
     proxy: {
-      '/admin-api': 'http://127.0.0.1:3002',
+      '/admin-api': 'http://127.0.0.1:3102',
     },
   },
 });

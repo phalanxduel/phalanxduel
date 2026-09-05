@@ -5,7 +5,7 @@
  *   GAME_SERVER_INTERNAL_URL — e.g. http://phalanxduel.internal:3001
  *   ADMIN_INTERNAL_TOKEN     — Secret for POST /internal/matches
  * Optional:
- *   PORT                     — Default: 3002
+ *   PORT                     — Default: 3102
  *   NODE_ENV                 — 'production' | 'development' | 'test'
  */
 import './loadEnv.js';
@@ -62,7 +62,7 @@ export async function buildAdminApp() {
 async function main() {
   await checkPendingMigrations();
   const app = await buildAdminApp();
-  const port = parseInt(process.env.PHALANX_ADMIN_PORT ?? '3002', 10);
+  const port = parseInt(process.env.PHALANX_ADMIN_PORT ?? '3102', 10);
   const host = process.env.HOST ?? '::';
   await app.listen({ port, host });
   console.log(`Admin service listening on port ${port}`);
