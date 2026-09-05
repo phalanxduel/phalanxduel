@@ -15,8 +15,14 @@ cd "$ROOT_DIR"
 
 echo "==> 🏗️ Verifying architecture boundaries..."
 
-# Run dependency-cruiser
-if ! npx dependency-cruiser --config .dependency-cruiser.json .; then
+# Analyze source modules only. Generated bundles under package dist/ directories
+# are deployment artifacts, not source architecture, and bundlers can introduce
+# legitimate runtime cycles between split chunks.
+SOURCE_DIRS=(engine/src server/src client/src shared/src admin/src)
+if ! npx dependency-cruiser \
+  --config .dependency-cruiser.json \
+  --include-only '^(engine|server|client|shared|admin)/src' \
+  "${SOURCE_DIRS[@]}"; then
   echo ""
   echo "❌ ERROR: Architecture boundary violation detected."
   echo "Check .dependency-cruiser.json for rule definitions."
