@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "initiative": "PVL",
+  "project": {
+    "id": "phalanxduel",
+    "name": "Phalanx Duel",
+    "persona": "standard-user",
+    "environment": "local-development"
+  },
+  "scenarios": [
+    {
+      "id": "auth.signup.standard-user",
+      "title": "Create an account",
+      "surface": "authentication",
+      "status": "partially-covered",
+      "entrypoint": "/?screen=auth",
+      "runner": "browser-ui",
+      "command": "pnpm qa:playthrough:ui -- --scenario auth-pvb --no-devtools",
+      "steps": [
+        "Open the public lobby and choose account access.",
+        "Submit a valid gamertag, email, and password.",
+        "Confirm the authenticated user bar replaces the sign-in entry point.",
+        "Confirm the user can return to the public lobby without losing the session."
+      ],
+      "layers": ["browser", "edge", "auth.register", "users persistence", "telemetry"],
+      "identities": ["qa.run_id", "traceparent", "player.id", "session.id"],
+      "evidence": {
+        "expected": [
+          "registration response is successful",
+          "player identity is correlated without email or password in telemetry",
+          "auth.register trace and users INSERT are observable locally"
+        ],
+        "unknown_until_run": [
+          "OpenObserve and Jaeger query attachment",
+          "exact database CRUD rollup for the local run"
+        ]
+      }
+    },
+    {
+      "id": "auth.login.standard-user",
+      "title": "Return and sign in",
+      "surface": "authentication",
+      "status": "covered",
+      "entrypoint": "/?screen=auth",
+      "runner": "browser-ui",
+      "command": "pnpm qa:playthrough:ui -- --scenario auth-pvb --no-devtools",
+      "steps": [
+        "Open account access from the public lobby.",
+        "Submit the registered email and password.",
+        "Confirm the authenticated user bar shows the standard user's gamertag and rating.",
+        "Reload the lobby and confirm session restoration keeps the user signed in."
+      ],
+      "layers": [
+        "browser",
+        "edge",
+        "auth.login",
+        "users persistence",
+        "session cookie or bearer token",
+        "telemetry"
+      ],
+      "identities": ["qa.run_id", "traceparent", "player.id", "session.id"],
+      "evidence": {
+        "expected": [
+          "auth.login trace is present",
+          "users SELECT is safe and correlated",
+          "session restoration reaches the lobby"
+        ],
+        "unknown_until_run": ["replay and RUM attachment for the browser session"]
+      }
+    },
+    {
+      "id": "profile.view-own.standard-user",
+      "title": "View and update my profile",
+      "surface": "authenticated-profile",
+      "status": "inventory",
+      "entrypoint": "/",
+      "runner": "browser-ui",
+      "command": null,
+      "steps": [
+        "Sign in as a standard user.",
+        "Select the user identity and open the own-profile surface.",
+        "Confirm gamertag, rating, avatar, favorite suit, and tagline are readable.",
+        "Change one editable preference and confirm it survives a reload.",
+        "Return to the public lobby."
+      ],
+      "layers": ["browser", "auth.profile", "users persistence", "telemetry"],
+      "identities": ["qa.run_id", "traceparent", "player.id", "profile.id"],
+      "evidence": {
+        "expected": [
+          "profile reads and updates do not expose credentials",
+          "profile update is tied to the authenticated player identity"
+        ],
+        "unknown_until_run": [
+          "browser automation coverage",
+          "OpenObserve and Jaeger query attachment",
+          "CRUD rollup for the users table"
+        ]
+      }
+    },
+    {
+      "id": "public.lobby.standard-user",
+      "title": "Arrive at the public lobby",
+      "surface": "public-lobby",
+      "status": "covered",
+      "entrypoint": "/",
+      "runner": "browser-ui",
+      "command": "pnpm qa:playthrough:ui -- --scenario guest-pvb --no-devtools",
+      "steps": [
+        "Open the game without an account.",
+        "Confirm the lobby is ready and the help surface is discoverable.",
+        "Confirm public play, account access, rules, and public match navigation are visible.",
+        "Confirm the standard user can start a guest game without Docker or admin access."
+      ],
+      "layers": ["browser", "client session", "health/readiness", "public lobby API", "telemetry"],
+      "identities": ["qa.run_id", "traceparent", "session.id"],
+      "evidence": {
+        "expected": [
+          "lobby readiness and guest entry are observable",
+          "help modal opens with one low-friction guide"
+        ],
+        "unknown_until_run": [
+          "RUM replay CORS and ingestion status",
+          "public-surface service map coverage"
+        ]
+      }
+    },
+    {
+      "id": "public.browse-surfaces.standard-user",
+      "title": "Browse public game surfaces",
+      "surface": "public-lobby",
+      "status": "inventory",
+      "entrypoint": "/",
+      "runner": "browser-ui",
+      "command": null,
+      "steps": [
+        "Open the public match list and inspect available matches.",
+        "Open the spectator surface and confirm a visitor can observe without joining.",
+        "Open the ladder and inspect rankings.",
+        "Open achievements and return to the lobby.",
+        "Open a public profile from a visible player identity, when one is available."
+      ],
+      "layers": [
+        "browser",
+        "public_lobby API",
+        "spectator session",
+        "leaderboard persistence",
+        "profile persistence",
+        "telemetry"
+      ],
+      "identities": ["qa.run_id", "traceparent", "session.id", "profile.id", "match.id"],
+      "evidence": {
+        "expected": [
+          "public reads are redacted to visitor-safe projections",
+          "navigation returns to the lobby without stale screen state"
+        ],
+        "unknown_until_run": [
+          "route-by-route browser evidence",
+          "CRUD rollup by affected table",
+          "service map and trace links"
+        ]
+      }
+    }
+  ]
+}
