@@ -4,6 +4,7 @@ description: "A match-scoped view across player experience, game flows, and Open
 status: active
 updated: "2026-08-29"
 audience: human
+initiative: "Panoramic View Labs (PVL, pronounced Pavel)"
 related:
   - docs/ops/runbook.md
   - docs/reference/environment-variables.md
@@ -11,6 +12,11 @@ related:
 ---
 
 # Gameplay Panoramic View
+
+Panoramic View is the technique. Panoramic View Labs (`PVL`, pronounced
+“Pavel”) is the initiative that develops it. The zdots platform is the root of
+the local-system PVL capabilities: collector, context-engine, evidence seams,
+and operator surfaces.
 
 The panoramic view follows one match across the experience and the system:
 
@@ -140,3 +146,28 @@ and makes the O2 lane/report entry observed instead of unknown. The attachment
 command treats the payload as opaque JSON so it can carry trace, metric, or log
 query results from the local O2 installation without coupling the harness to a
 particular dashboard API.
+
+## Local JSONL filelog seam
+
+The authoritative `MatchActor` writes match-scoped evidence after an action is
+accepted by the ledger. Local daemon startup loads the ignored `.zdots.local`
+override:
+
+```bash
+export ZDOTS_APP_LOG=/Users/mike/github.com/phalanxduel/game/logs/panoramic.jsonl
+```
+
+The collector's filelog/app pipeline consumes one JSON object per line. Each
+record includes `timestamp`, `trace_id`, `span_id`, `match_id`, `lane`, `kind`,
+`label`, `status`, `duration_ms`, `source`, and `confidence`, plus safe replay
+metadata such as action type and state hashes. Match IDs are not request trace
+IDs: the match UUID with dashes removed is the stable 32-character
+`trace_id`, while the transaction sequence is the deterministic `span_id`.
+Request spans remain available for HTTP/WebSocket causality.
+
+The writer is local/development-only and non-blocking. It never writes player
+names, credentials, tokens, raw game state, or private card collections. A
+rejected action is represented as `status: down` with
+`confidence: observed-failure`; a failed telemetry write cannot fail a turn.
+After changing `.zdots.local`, restart the host collector with
+`rtk otel-collector restart`.

@@ -10,6 +10,14 @@ CLI_NAME="${PHX_CLI_NAME:-$(basename "$0")}"
 
 mkdir -p "$RUN_DIR" "$LOG_DIR"
 
+# Optional local-only seam for the host OpenTelemetry filelog receiver. The
+# file is gitignored and contains no secrets; production never uses this
+# controller. Keep the export in the daemon environment for the server.
+if [ -f "$REPO_ROOT/.zdots.local" ]; then
+  # shellcheck disable=SC1091
+  source "$REPO_ROOT/.zdots.local"
+fi
+
 KNOWN_SERVICES=("server" "client" "admin" "site" "backlog")
 
 usage() {

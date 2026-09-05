@@ -33,6 +33,7 @@ Duel runtime and observability workflow.
 | `OTEL_SERVICE_NAME` | Server/Admin | service-specific | no | Service name in traces/logs/metrics |
 | `OTEL_SERVICE_VERSION` | Server/Admin | `unknown` | no | Service version resource attribute |
 | `OTEL_CONSOLE_LOGS_ENABLED` | Server/Admin | `false` in production | no | Forward console logs to OTLP |
+| `ZDOTS_APP_LOG` | Local server | none | no | Ignored local JSONL path consumed by the host filelog receiver for Panoramic View evidence |
 | `OTEL_UPSTREAM_OTLP_ENDPOINT` | Local collector helper | `http://127.0.0.1:4318` or host Docker endpoint | no | Upstream centralized collector intake on the LGTM path |
 | `FLY_APP_NAME` | Fly.io | auto | auto | Fly app name |
 | `FLY_MACHINE_ID` | Fly.io | auto | auto | Fly machine identifier |
@@ -56,6 +57,15 @@ Duel runtime and observability workflow.
 | `AGENT_TOKEN` | MCP | none | yes for gameplay tools | JWT for the agent user account; used as `Authorization: Bearer` on WebSocket upgrades |
 
 ## Runtime Variables
+
+### ZDOTS_APP_LOG
+
+Optional local-development-only path for match-scoped Panoramic View evidence.
+Set it in the ignored `.zdots.local` file; do not add it to production
+configuration or secret stores. The server writes safe JSONL records with the
+match UUID as `trace_id` (dashes removed), the transaction sequence as
+`span_id`, and `match_id` as a queryable attribute. The request-level server
+trace remains separate.
 
 ### APP_ENV
 

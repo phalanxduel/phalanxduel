@@ -185,6 +185,41 @@ write_quicklinks() {
   server_pid=$(service_pid server)
   client_pid=$(service_pid client)
   admin_pid=$(service_pid admin)
+  local o2_dashboard_url
+  o2_dashboard_url="$O2_URL/web/dashboards/view?org_identifier=default&dashboard=7501905489362419712&folder=default&tab=default&refresh=Off&period=15m&print=false"
+  local esc_git esc_play esc_admin esc_client esc_app_docs esc_grafana esc_o2 esc_go esc_cockpit
+  local esc_reel esc_pdf esc_narration esc_manifest esc_compat esc_server_log esc_client_log esc_admin_log
+  local esc_play_health esc_play_ready esc_app_health esc_app_ready esc_admin_health esc_admin_ready esc_admin_ui esc_app_json
+  local label_play label_admin label_app label_api
+  esc_git=$(html_escape "$git_commit")
+  esc_play=$(html_escape "$PLAY_URL/")
+  esc_admin=$(html_escape "$ADMIN_URL")
+  esc_client=$(html_escape "$CLIENT_URL/")
+  esc_app_docs=$(html_escape "$APP_URL/docs")
+  esc_grafana=$(html_escape "$GRAFANA_URL/")
+  esc_o2=$(html_escape "$o2_dashboard_url")
+  esc_go=$(html_escape "$GO_CLIENT_README")
+  esc_cockpit=$(html_escape "$COCKPIT_URL")
+  esc_reel=$(html_escape "file://$REPO_ROOT/output/video/phalanx-duel-demo.webm")
+  esc_pdf=$(html_escape "file://$REPO_ROOT/output/pdf/phalanx-duel-face-to-face-quickstart.pdf")
+  esc_narration=$(html_escape "file://$REPO_ROOT/scripts/video/demo-narration.md")
+  esc_manifest=$(html_escape "file://$REPO_ROOT/config/openobserve/phalanx-duel-dashboard.json")
+  esc_compat=$(html_escape "file://$REPO_ROOT/docs/reference/client-compatibility.md")
+  esc_server_log=$(html_escape "file://$SERVICES_LOG_DIR/server.log")
+  esc_client_log=$(html_escape "file://$SERVICES_LOG_DIR/client.log")
+  esc_admin_log=$(html_escape "file://$SERVICES_LOG_DIR/admin.log")
+  label_play=$(probe_label "$play_code")
+  label_admin=$(probe_label "$admin_code")
+  label_app=$(probe_label "$app_code")
+  label_api=$(probe_label "$api_code")
+  esc_play_health=$(html_escape "$PLAY_URL/health")
+  esc_play_ready=$(html_escape "$PLAY_URL/ready")
+  esc_app_health=$(html_escape "$APP_URL/health")
+  esc_app_ready=$(html_escape "$APP_URL/ready")
+  esc_admin_health=$(html_escape "$ADMIN_API_URL/health")
+  esc_admin_ready=$(html_escape "$ADMIN_API_URL/ready")
+  esc_admin_ui=$(html_escape "$ADMIN_UI_URL/")
+  esc_app_json=$(html_escape "$APP_URL/docs/json")
 
   cat > "$QUICKLINKS_FILE" <<EOF
 <!doctype html>
@@ -245,7 +280,7 @@ write_quicklinks() {
       <div class="kicker">PHX // LOCAL OPERATIONS</div>
       <h1>Phalanx Duel <span>Demo Cockpit</span></h1>
       <p>Launch, observe, and rehearse the local game stack from one command deck.</p>
-      <p class="meta">Generated $generated_at · commit <code>$(html_escape "$git_commit")</code></p>
+      <p class="meta">Generated $generated_at · commit <code>$esc_git</code></p>
     </div>
     <div class="cockpit-status">
       <div class="live-badge"><span class="live-dot"></span>LIVE LINK</div>
@@ -262,34 +297,34 @@ write_quicklinks() {
 
   <h2 id="launch">Launch deck</h2>
   <div class="launch-grid">
-    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$PLAY_URL/")">Play the game ↗</a><small>Primary browser demo · $(probe_label "$play_code")</small></div>
-    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$ADMIN_URL")">Admin console ↗</a><small>Operator UI · $(probe_label "$admin_code") · login required</small></div>
-    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$CLIENT_URL/")">Raw client ↗</a><small>Direct Vite fallback on port 5173</small></div>
-    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$APP_URL/docs")">API command center ↗</a><small>OpenAPI explorer · $(probe_label "$api_code")</small></div>
-    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$GRAFANA_URL/")">Grafana LGTM ↗</a><small>Local observability surface, when enabled</small></div>
-    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$O2_URL/web/dashboards/view?org_identifier=default&amp;dashboard=7501905489362419712&amp;folder=default&amp;tab=default&amp;refresh=Off&amp;period=15m&amp;print=false)">O2 dashboard ↗</a><small>OpenObserve Phalanx Duel dashboard · 15m</small></div>
-    <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/output/video/phalanx-duel-demo.webm")">Demo reel ↗</a><small>Recorded face-to-face demo asset</small></div>
-    <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/output/pdf/phalanx-duel-face-to-face-quickstart.pdf")">Quickstart PDF ↗</a><small>Talk track and rehearsal reference</small></div>
-    <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/scripts/video/demo-narration.md")">Demo narration ↗</a><small>Presenter script and scene cues</small></div>
-    <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/config/openobserve/phalanx-duel-dashboard.json")">O2 dashboard manifest ↗</a><small>Versioned observability panels</small></div>
-    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$GO_CLIENT_README")">Go duel CLI ↗</a><small>Alternative client · <code>cd clients/go/duel-cli &amp;&amp; go run .</code></small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_play">Play the game ↗</a><small>Primary browser demo · $label_play</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_admin">Admin console ↗</a><small>Operator UI · $label_admin · login required</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_client">Raw client ↗</a><small>Direct Vite fallback on port 5173</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_app_docs">API command center ↗</a><small>OpenAPI explorer · $label_api</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_grafana">Grafana LGTM ↗</a><small>Local observability surface, when enabled</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_o2">O2 dashboard ↗</a><small>OpenObserve Phalanx Duel dashboard · 15m</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_reel">Demo reel ↗</a><small>Recorded face-to-face demo asset</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_pdf">Quickstart PDF ↗</a><small>Talk track and rehearsal reference</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_narration">Demo narration ↗</a><small>Presenter script and scene cues</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_manifest">O2 dashboard manifest ↗</a><small>Versioned observability panels</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_go">Go duel CLI ↗</a><small>Alternative client · <code>cd clients/go/duel-cli &amp;&amp; go run .</code></small></div>
     $SWIFTUI_CLIENT_CARD
-    <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/docs/reference/client-compatibility.md")">Client compatibility ↗</a><small>Cross-client contract and capability matrix</small></div>
-    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$COCKPIT_URL")">Refresh this cockpit ↗</a><small>Regenerate with <code>phx-demo-ctl links</code></small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_compat">Client compatibility ↗</a><small>Cross-client contract and capability matrix</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_cockpit">Refresh this cockpit ↗</a><small>Regenerate with <code>phx-demo-ctl links</code></small></div>
   </div>
 
   <h2>Useful surfaces</h2>
   <ul>
-    <li><a class="surface-link" href="$(html_escape "$PLAY_URL/health")">Client health</a> · quick liveness check</li>
-    <li><a class="surface-link" href="$(html_escape "$PLAY_URL/ready")">Client readiness</a> · dependency-aware readiness</li>
-    <li><a class="surface-link" href="$(html_escape "$APP_URL/health")">Raw app health</a> · $(probe_label "$app_code")</li>
-    <li><a class="surface-link" href="$(html_escape "$APP_URL/ready")">Raw app readiness</a> · database-aware check</li>
-    <li><a class="surface-link" href="$(html_escape "$ADMIN_API_URL/health")">Raw admin health</a> · API liveness and readiness</li>
-    <li><a class="surface-link" href="$(html_escape "$ADMIN_API_URL/ready")">Raw admin readiness</a> · migration/database check</li>
-    <li><a class="surface-link" href="$(html_escape "$ADMIN_UI_URL/")">Raw admin UI</a> · direct Vite fallback if nginx is unavailable</li>
-    <li><a class="surface-link" href="$(html_escape "$APP_URL/docs")">OpenAPI browser</a> · $(probe_label "$api_code")</li>
-    <li><a class="surface-link" href="$(html_escape "$APP_URL/docs/json")">OpenAPI JSON</a> · raw API contract</li>
-    <li><a class="surface-link" href="$(html_escape "$PLAY_URL/")">Client endpoint</a> · configurable with <code>PHALANX_DEMO_PLAY_URL</code></li>
+    <li><a class="surface-link" href="$esc_play_health">Client health</a> · quick liveness check</li>
+    <li><a class="surface-link" href="$esc_play_ready">Client readiness</a> · dependency-aware readiness</li>
+    <li><a class="surface-link" href="$esc_app_health">Raw app health</a> · $label_app</li>
+    <li><a class="surface-link" href="$esc_app_ready">Raw app readiness</a> · database-aware check</li>
+    <li><a class="surface-link" href="$esc_admin_health">Raw admin health</a> · API liveness and readiness</li>
+    <li><a class="surface-link" href="$esc_admin_ready">Raw admin readiness</a> · migration/database check</li>
+    <li><a class="surface-link" href="$esc_admin_ui">Raw admin UI</a> · direct Vite fallback if nginx is unavailable</li>
+    <li><a class="surface-link" href="$esc_app_docs">OpenAPI browser</a> · $label_api</li>
+    <li><a class="surface-link" href="$esc_app_json">OpenAPI JSON</a> · raw API contract</li>
+    <li><a class="surface-link" href="$esc_client">Client endpoint</a> · configurable with <code>PHALANX_DEMO_PLAY_URL</code></li>
   </ul>
 
   <h2><span class="live-dot"></span>Live analytics <small id="analytics-updated">connecting…</small></h2>

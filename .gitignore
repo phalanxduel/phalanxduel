@@ -32,6 +32,7 @@ backups/
 # Logs & QA artifacts
 *.log
 logs/
+.zdots.local
 artifacts
 .artifacts/
 tmp/

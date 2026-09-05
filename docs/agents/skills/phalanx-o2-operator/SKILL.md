@@ -5,6 +5,10 @@ description: Set up, configure, verify, and hand off the host-native OpenObserve
 
 # Phalanx O2 Operator
 
+This is a PVL capability rooted in the zdots platform. “Panoramic View” names
+the technique; “Panoramic View Labs” (`PVL`, pronounced “Pavel”) names the
+initiative and Pavel is its specialist agent.
+
 Own the local observability path for Phalanx Duel:
 
 ```text
@@ -48,6 +52,11 @@ Build in this order: throughput, errors, latency, saturation/uptime, match
 outcomes, WebSocket health, browser/RUM, database dependencies, feature
 adoption, and SLO burn. A `No Data` result is a finding: inspect the stream,
 time window, field spelling, and emitted telemetry before changing a query.
+
+For match-scoped Panoramic View evidence, use the ignored project
+`.zdots.local` filelog override and restart the collector. Do not edit collector
+YAML for a normal local run. The authoritative writer is the server's
+`MatchActor`; it emits safe JSONL to `ZDOTS_APP_LOG` after ledger acceptance.
 
 ## Safe boundaries
 

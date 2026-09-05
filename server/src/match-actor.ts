@@ -14,6 +14,11 @@ import type { ILedgerStore, LedgerAction } from './db/ledger-store.js';
 import { ActionError } from './match-types.js';
 import { recordAction, recordPhaseTransition, recordActionRejection } from './telemetry.js';
 import type { IEventBus, MatchUpdatedEvent } from './event-bus.js';
+import {
+  buildPanoramicFailureRecord,
+  buildPanoramicTurnRecords,
+  emitPanoramicRecords,
+} from './observability/panoramic.js';
 
 type SystemInitAction = Extract<Action, { type: 'system:init' }>;
 
@@ -267,6 +272,10 @@ export class MatchActor {
             stateHashAfter: lastEntry.stateHashAfter,
             msgId: lastEntry.msgId,
           });
+
+          emitPanoramicRecords(
+            buildPanoramicTurnRecords(this.matchId, lastEntry, this._lastEvents),
+          );
 
           if (preState.phase !== postState.phase) {
             recordPhaseTransition(this.matchId, preState.phase, postState.phase);
@@ -674,6 +683,7 @@ export class MatchActor {
       await callbacks.onSuccess(result);
       return result;
     } catch (err) {
+      emitPanoramicRecords([buildPanoramicFailureRecord(this.matchId, action.type)]);
       recordActionRejection(this.matchId, err);
       await callbacks.onError(err);
       throw err;

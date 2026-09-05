@@ -1,5 +1,7 @@
 # AI Agent Integration
 
+Agent ownership and escalation for PVL are defined in the [Agent RACI](./raci.md).
+
 Phalanx Duel exposes a full [Model Context Protocol](https://modelcontextprotocol.io/)
 server. Any MCP-compatible AI agent can connect and immediately read game rules, evaluate
 positions, query match data, and — with the right credentials — play live matches.
@@ -25,6 +27,11 @@ For repeatable local proof runs, use the `phalanx-end-to-end-playthrough` skill.
 For UI/UX design collaboration, use the `phalanx-ui-design-capture` skill to generate deterministic visual baselines.
 
 For local observability work, use:
+
+- [Pavel — PVL specialist agent](./profiles/pavel-agent.md) for Panoramic View
+  Labs trail design, match-scoped evidence, and cross-layer flow analysis.
+  PVL capabilities are rooted in the zdots platform's local collector and
+  context-engine surfaces.
 
 - [OpenObserve O2 Agent](./profiles/openobserve-o2-agent.md) and the
   [O2 operator skill](./skills/phalanx-o2-operator/SKILL.md) for host-native
