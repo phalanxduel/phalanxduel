@@ -1,12 +1,31 @@
+import { useEffect, useRef } from 'preact/hooks';
+import { PlayerGlossary } from './PlayerGlossary';
+
 interface HowToPlayDialogProps {
   onClose: () => void;
 }
 
 export function HowToPlayDialog({ onClose }: HowToPlayDialogProps) {
+  const primaryActionRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    primaryActionRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
   return (
-    <div class="phx-modal-overlay onboarding-overlay" onClick={onClose}>
+    <div class="phx-modal-overlay onboarding-overlay" onClick={onClose} role="presentation">
       <div
         class="phx-modal-content hud-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="phx-rules-dialog-title"
+        aria-describedby="phx-rules-dialog-description"
+        data-component="HowToPlayDialog"
         style="max-width: 700px; max-height: 90vh; overflow-y: auto;"
         onClick={(e) => {
           e.stopPropagation();
@@ -16,8 +35,10 @@ export function HowToPlayDialog({ onClose }: HowToPlayDialogProps) {
           class="phx-modal-header"
           style="position: sticky; top: 0; background: var(--bg-dark); z-index: 10;"
         >
-          <h2 class="section-label">HOW TO PLAY (RULES OVERVIEW)</h2>
-          <button class="btn btn-secondary btn-tiny" onClick={onClose}>
+          <h2 class="section-label" id="phx-rules-dialog-title">
+            HOW TO PLAY · ΤΑΞΙΣ OF THE LINE
+          </h2>
+          <button class="btn btn-secondary btn-tiny" onClick={onClose} aria-label="Close rules">
             X
           </button>
         </header>
@@ -31,7 +52,11 @@ export function HowToPlayDialog({ onClose }: HowToPlayDialogProps) {
             <h4 class="meta-tag" style="color: var(--gold)">
               1. MISSION OBJECTIVE
             </h4>
-            <p class="intel-text" style="font-size: 1rem; line-height: 1.5;">
+            <p
+              class="intel-text"
+              id="phx-rules-dialog-description"
+              style="font-size: 1rem; line-height: 1.5;"
+            >
               Engage the enemy on a tactical grid. Your goal is to breach their defenses and degrade
               their <strong>CORE LIFEPOINTS</strong> to 0. You achieve this by deploying units
               (cards) and initiating attacks.
@@ -181,11 +206,18 @@ export function HowToPlayDialog({ onClose }: HowToPlayDialogProps) {
               critical offensive units.
             </p>
           </section>
+
+          <PlayerGlossary />
         </div>
 
         <footer class="phx-modal-footer">
-          <button class="btn btn-primary" onClick={onClose} style="width: 100%;">
-            ACKNOWLEDGE RULES
+          <button
+            ref={primaryActionRef}
+            class="btn btn-primary"
+            onClick={onClose}
+            style="width: 100%;"
+          >
+            RETURN TO LOBBY · ENTER THE LINE
           </button>
         </footer>
       </div>

@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import type { Card, BattlefieldCard, Suit } from '@phalanxduel/shared';
-import { suitSymbol, suitColor, cardLabel, hpDisplay, isWeapon, isFace } from '../src/cards';
+import {
+  suitSymbol,
+  suitColor,
+  cardLabel,
+  greekRankLabel,
+  hpDisplay,
+  isWeapon,
+  isFace,
+} from '../src/cards';
 
 function makeCard(overrides: Partial<Card> = {}): Card {
   return {
@@ -54,6 +62,24 @@ describe('cardLabel', () => {
   });
   it('works for number cards', () => {
     expect(cardLabel(makeCard({ face: '7', suit: 'hearts' }))).toBe('7\u2665');
+  });
+});
+
+describe('greekRankLabel', () => {
+  it.each([
+    ['2', 'Βʹ'],
+    ['6', 'ϛʹ'],
+    ['10', 'Ιʹ'],
+    ['J', 'ΙΑʹ'],
+    ['Q', 'ΙΒʹ'],
+    ['K', 'ΙΓʹ'],
+    ['A', 'Αʹ'],
+  ])('maps %s to a Greek numeral', (face, expected) => {
+    expect(greekRankLabel(face)).toBe(expected);
+  });
+
+  it('returns empty for an unknown rank', () => {
+    expect(greekRankLabel('joker')).toBe('');
   });
 });
 

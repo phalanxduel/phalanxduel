@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+# bin/phx-swiftbar — Phalanx Duel host-native demo pulse for SwiftBar.
+#
+# Syntagma: the coordination pulse between the phalanx battle line and the
+# zdots platform. Pure local consumption: probes configured demo endpoints,
+# reads ignored .phx runtime/artifact paths, and emits SwiftBar menu syntax.
+# It does not inspect databases, secrets, containers, or telemetry credentials.
+# Install the thin refresh shim at ~/.swiftbar/phalanxduel-pulse.30s.sh.
+#
+# Usage: phx-swiftbar [--help]
+
+set -uo pipefail
+
+case "${1:-}" in
+  -h|--help)
+    sed -n '2,10p' "$0" | sed 's/^# *//'
+    exit 0
+    ;;
+  ?*)
+    echo "phx-swiftbar: unknown argument: $1" >&2
+    exit 2
+    ;;
+esac
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Import only the PHALANX_DEMO_* URL/settings namespace. This is the same
+# non-secret loader used by phx-demo-ctl, so SwiftBar follows the repo's
+# configured branded/local surface instead of inventing localhost links.
+# shellcheck source=scripts/release/load-release-env.sh
+if [[ -r "$REPO_ROOT/scripts/release/load-release-env.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$REPO_ROOT/scripts/release/load-release-env.sh"
+  # The helper returns the status of its optional local override file; a
+  # missing override is normal for SwiftBar and must not abort the menu.
+  load_local_demo_env || true
+  # The loader enables errexit for deployment scripts; SwiftBar intentionally
+  # continues after a down endpoint so it can render the complete menu.
+  set +e
+fi
+
+# Defaults are deliberately host-native. Endpoint overrides remain available
+# for a tunnel, nginx localhost aliases, or a different local port layout.
+CLIENT_URL="${PHALANX_DEMO_CLIENT_URL:-http://localhost:5173}"
+APP_URL="${PHALANX_DEMO_APP_URL:-http://localhost:3001}"
+ADMIN_URL="${PHALANX_DEMO_ADMIN_URL:-http://localhost:3103}"
+COCKPIT_URL="${PHALANX_DEMO_COCKPIT_URL:-http://127.0.0.1:${PHALANX_DEMO_COCKPIT_PORT:-3333}/}"
+PLAY_URL="${PHALANX_DEMO_PLAY_URL:-$CLIENT_URL}"
+O2_URL="${PHALANX_DEMO_O2_URL:-https://o2.localhost}"
+JAEGER_URL="${PHALANX_DEMO_JAEGER_URL:-https://jaeger.localhost}"
+LOG_DIR="${REPO_ROOT}/.phx/logs"
+ARTIFACT_DIR="${REPO_ROOT}/artifacts"
+
+probe() {
+  local url="$1" code
+  code="$(curl -ksS --max-time 2 -o /dev/null -w '%{http_code}' "$url" 2>/dev/null || true)"
+  case "$code" in
+    2*|3*|401|403) printf '%s' "$code"; return 0 ;;
+    *) printf '%s' "000"; return 1 ;;
+  esac
+}
+
+state_for() {
+  case "$1" in
+    2*|3*|401|403) printf 'READY' ;;
+    *) printf 'DOWN' ;;
+  esac
+}
+
+menu_url() {
+  local label="$1" url="$2" color="${3:-white}"
+  printf '%s | href=%s color=%s\n' "$label" "$url" "$color"
+}
+
+file_url() {
+  local label="$1" path="$2" color="${3:-white}"
+  if [[ -e "$path" ]]; then
+    printf '%s | bash=/usr/bin/open param1="file://%s" terminal=false color=%s\n' "$label" "$path" "$color"
+  else
+    printf '%s | color=gray\n' "$label"
+  fi
+}
+
+app_code="$(probe "$APP_URL/health")"
+play_code="$(probe "$PLAY_URL/")"
+admin_code="$(probe "$ADMIN_URL/")"
+o2_code="$(probe "$O2_URL/")"
+jaeger_code="$(probe "$JAEGER_URL/")"
+
+overall="🟢"
+[[ "$app_code" == 000 || "$play_code" == 000 || "$admin_code" == 000 ]] && overall="🟠"
+[[ "$app_code" == 000 && "$play_code" == 000 && "$admin_code" == 000 ]] && overall="🔴"
+
+echo "$overall PHX"
+echo "---"
+echo "Σύνταγμα / Syntagma · Phalanx Duel coordination pulse | size=14"
+echo "Battle line ↔ trace timeline ↔ zdots | color=gray size=11"
+echo "Host-native development · Docker/Colima not required | color=gray size=11"
+echo "---"
+
+app_state="$(state_for "$app_code")"
+play_state="$(state_for "$play_code")"
+admin_state="$(state_for "$admin_code")"
+app_color=red; [[ "$app_code" != 000 ]] && app_color=green
+play_color=red; [[ "$play_code" != 000 ]] && play_color=green
+admin_color=red; [[ "$admin_code" != 000 ]] && admin_color=green
+echo "API: $app_state ($app_code) | color=$app_color"
+echo "Client: $play_state ($play_code) | color=$play_color"
+echo "Admin: $admin_state ($admin_code) | color=$admin_color"
+echo "---"
+
+echo "Ἀγορά / Agora · live surfaces | size=13"
+menu_url "  Play the game ↗" "$PLAY_URL" "$play_color"
+menu_url "  Client UI ↗" "$CLIENT_URL" "$play_color"
+menu_url "  Admin UI ↗" "$ADMIN_URL" "$admin_color"
+menu_url "  API docs ↗" "$APP_URL/docs" "$app_color"
+menu_url "  Demo cockpit ↗" "$COCKPIT_URL" "white"
+echo "---"
+
+echo "Observability | size=13"
+o2_color=red; [[ "$o2_code" != 000 ]] && o2_color=green
+jaeger_color=red; [[ "$jaeger_code" != 000 ]] && jaeger_color=green
+echo "OpenObserve: $(state_for "$o2_code") ($o2_code) | color=$o2_color"
+menu_url "  PHX dashboard ↗" "$O2_URL/web/dashboards/view?org_identifier=default&dashboard=7501905489362419712&folder=default&tab=default&refresh=Off&period=15m&print=false" "$o2_color"
+menu_url "  Logs ↗" "$O2_URL/web/logs?stream_type=logs&stream=default&period=15m&refresh=0&org_identifier=default" "$o2_color"
+menu_url "  Traces ↗" "$O2_URL/web/traces?org_identifier=default" "$o2_color"
+echo "Jaeger: $(state_for "$jaeger_code") ($jaeger_code) | color=$jaeger_color"
+menu_url "  Trace search ↗" "$JAEGER_URL/search" "$jaeger_color"
+menu_url "  Service dependencies ↗" "$JAEGER_URL/dependencies" "$jaeger_color"
+menu_url "  Service performance ↗" "$JAEGER_URL/monitor" "$jaeger_color"
+echo "---"
+
+echo "Ἰχνη / Ichni · PVL trails & QA evidence | size=13"
+latest_report="$(ls -td "$ARTIFACT_DIR"/playthrough-*/*/scenario-report.md 2>/dev/null | head -1)"
+if [[ -n "$latest_report" ]]; then
+  latest_run="$(dirname "$latest_report")"
+  file_url "Latest scenario report ↗" "$latest_report" green
+  file_url "Panoramic View ↗" "$latest_run/panoramic-view.html" green
+  file_url "Run manifest ↗" "$latest_run/manifest.json" green
+else
+  echo "No local PVL scenario report yet | color=gray"
+fi
+file_url "Artifacts directory ↗" "$ARTIFACT_DIR" gray
+file_url "Server log ↗" "$LOG_DIR/server.log" gray
+file_url "Client log ↗" "$LOG_DIR/client.log" gray
+file_url "Admin log ↗" "$LOG_DIR/admin.log" gray
+echo "---"
+
+echo "Στρατηγός / Strategos · controls | size=13"
+echo "Open demo status | bash=$REPO_ROOT/bin/phx-demo-ctl param1=status terminal=true refresh=true"
+echo "Start / reconcile demo | bash=$REPO_ROOT/bin/phx-demo-ctl param1=up terminal=true refresh=true"
+echo "Restart demo | bash=$REPO_ROOT/bin/phx-demo-ctl param1=restart terminal=true refresh=true"
+echo "Tail demo logs | bash=$REPO_ROOT/bin/phx-demo-ctl param1=logs terminal=true"
+echo "Stop demo | bash=$REPO_ROOT/bin/phx-demo-ctl param1=down terminal=true refresh=true"
+echo "Refresh | refresh=true"

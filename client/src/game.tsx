@@ -25,7 +25,7 @@ import { HelpDialog } from './components/HelpDialog';
 import { OnboardingBriefing } from './components/OnboardingBriefing';
 import { HealthBadge } from './components/HealthBadge';
 import { CopyButton } from './components/CopyButton';
-import { cardLabel, suitColor, suitSymbol, isFace } from './cards';
+import { cardLabel, greekRankLabel, suitColor, suitSymbol, isFace } from './cards';
 import { EngagementLog } from './components/EngagementLog';
 import { NarrationTicker } from './components/NarrationTicker';
 import { CombatMath } from './components/CombatMath';
@@ -269,6 +269,9 @@ function PhxCard(props: {
       <div class="phx-card-content">
         <div class="phx-card-rank" style={{ color }}>
           {actualCard.face}
+          <span class="phx-card-rank-greek" aria-hidden="true">
+            {greekRankLabel(actualCard.face)}
+          </span>
         </div>
         <div class="phx-card-suit" style={{ color }}>
           {suitSymbol(actualCard.suit)}

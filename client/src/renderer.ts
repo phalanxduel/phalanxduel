@@ -4,7 +4,7 @@ import { renderLobby, unmountLobby } from './lobby';
 import { renderGame } from './game';
 import { renderWaiting } from './waiting';
 import { renderGameOver } from './game-over';
-import { isFace, suitColor, suitSymbol } from './cards';
+import { greekRankLabel, isFace, suitColor, suitSymbol } from './cards';
 import { applySuitAura } from './card-utils';
 import { renderError } from './error-ui';
 
@@ -354,6 +354,12 @@ function renderFloatingCard(state: AppState): void {
 
   const rank = el('div', state.themePhx ? 'phx-card-rank' : 'card-rank');
   rank.textContent = card.face;
+  if (state.themePhx) {
+    const greekRank = el('span', 'phx-card-rank-greek');
+    greekRank.setAttribute('aria-hidden', 'true');
+    greekRank.textContent = greekRankLabel(card.face);
+    rank.appendChild(greekRank);
+  }
   rank.style.color = suitColor(card.suit);
   floatingEl.appendChild(rank);
 

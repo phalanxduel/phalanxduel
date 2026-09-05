@@ -38,7 +38,6 @@ import { getToken, logout, openInDesktopApp, restoreSession } from './auth';
 import { MatchHistory } from './components/MatchHistory';
 import { WaitingApp } from './waiting';
 import { getQuickMatchOperativeId } from './ux-derivations';
-import { HelpDialog } from './components/HelpDialog';
 import { HowToPlayDialog } from './components/HowToPlayDialog';
 import { WelcomeDialog, useWelcomeDialog } from './components/WelcomeDialog';
 
@@ -2580,17 +2579,16 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   const [resetToken, setResetToken] = useState(
     new URLSearchParams(window.location.search).get('token'),
   );
-  const [helpOpen, setHelpOpen] = useState(() => {
+  const [howToPlayOpen, setHowToPlayOpen] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.has('qaRunId')) return false;
     const stored = localStorage.getItem('phx:helpOpen');
     return stored === null ? true : stored === 'true';
   });
-  const setHelpOpenPersist = (open: boolean) => {
-    setHelpOpen(open);
+  const setHowToPlayOpenPersist = (open: boolean) => {
+    setHowToPlayOpen(open);
     localStorage.setItem('phx:helpOpen', String(open));
   };
-  const [howToPlayOpen, setHowToPlayOpen] = useState(false);
   const [listPublicly, setListPublicly] = useState(false);
   const welcome = useWelcomeDialog();
   const {
@@ -2804,7 +2802,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
       <LobbyLayout
         themePhx={state.themePhx}
         onOpenHelp={() => {
-          setHelpOpenPersist(true);
+          setHowToPlayOpenPersist(true);
         }}
         state={state}
         nameRef={nameRef}
@@ -2827,7 +2825,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
       <LobbyLayout
         themePhx={state.themePhx}
         onOpenHelp={() => {
-          setHelpOpenPersist(true);
+          setHowToPlayOpenPersist(true);
         }}
         state={state}
         nameRef={nameRef}
@@ -2845,7 +2843,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
       <LobbyLayout
         themePhx={state.themePhx}
         onOpenHelp={() => {
-          setHelpOpenPersist(true);
+          setHowToPlayOpenPersist(true);
         }}
         state={state}
         nameRef={nameRef}
@@ -2877,7 +2875,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
       <LobbyLayout
         themePhx={state.themePhx}
         onOpenHelp={() => {
-          setHelpOpenPersist(true);
+          setHowToPlayOpenPersist(true);
         }}
         state={state}
         nameRef={nameRef}
@@ -2919,7 +2917,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
       <LobbyLayout
         themePhx={state.themePhx}
         onOpenHelp={() => {
-          setHelpOpenPersist(true);
+          setHowToPlayOpenPersist(true);
         }}
         state={state}
         nameRef={nameRef}
@@ -3575,7 +3573,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
             class="footer-link btn-text"
             style="background: none; border: none; cursor: pointer; color: var(--gold);"
             onClick={() => {
-              setHowToPlayOpen(true);
+              setHowToPlayOpenPersist(true);
             }}
           >
             HOW TO PLAY
@@ -3634,19 +3632,10 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           <div ref={debugRef} />
         </footer>
 
-        {helpOpen && (
-          <HelpDialog
-            topicId="lobby"
-            onClose={() => {
-              setHelpOpenPersist(false);
-            }}
-          />
-        )}
-
         {howToPlayOpen && (
           <HowToPlayDialog
             onClose={() => {
-              setHowToPlayOpen(false);
+              setHowToPlayOpenPersist(false);
             }}
           />
         )}

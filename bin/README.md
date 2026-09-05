@@ -30,6 +30,20 @@ live health/match charts, links to the game, admin, API docs, Grafana, O2,
 alternative clients, documentation/assets, and read-only tails of the local
 `.phx/logs/` files.
 
+## SwiftBar menu-bar pulse
+
+`bin/phx-swiftbar` emits a read-only Phalanx Duel menu-bar pulse for SwiftBar.
+It is the local Syntagma coordination surface: demo health, game/admin/API
+links, OpenObserve and Jaeger, recent PVL scenario evidence, local log paths,
+and safe demo controls. It does not inspect databases, secrets, containers, or
+telemetry credentials.
+
+The installed SwiftBar shim is `~/.swiftbar/phalanxduel-pulse.30s.sh`; the
+tracked implementation stays in `bin/` so it can be reviewed and tested.
+The labels use a small, translated historical vocabulary: `Σύνταγμα / Syntagma`
+for coordination, `Ἀγορά / Agora` for the linked operator surfaces, `Ἰχνη /
+Ichni` for marked PVL trails, and `Στρατηγός / Strategos` for demo controls.
+
 The generated `quicklinks.html` lives under ignored `.phx/cockpit/`; it is not
 committed. If the generated file or bridge is absent, `/demo/` returns 404.
 After changing cockpit code, use `phx-demo-ctl restart-cockpit` to restart only the

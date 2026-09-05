@@ -37,6 +37,17 @@
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
+  /* Classical material palette: stone, bronze, sea, and restrained terracotta. */
+  --stone: light-dark(#e9e3d5, #24231f);
+  --bronze: light-dark(#9b6b2f, #c79a55);
+  --terracotta: light-dark(#a64b38, #c56b54);
+  --sea-dark: light-dark(#174b5b, #0a2833);
+  --radius-card: clamp(5px, 5cqw, 9px);
+  --radius-panel: 12px;
+  --radius-control: 8px;
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--neon-blue) 72%, transparent);
+  --focus-ring-offset: 2px;
+
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-med: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   --motion-enter: 180ms;
@@ -92,6 +103,14 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* One visible focus language: strong enough for the board, quiet enough for
+   the shell. Component-specific focus styles may add a second glow. */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--neon-blue);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring);
 }
 
 html {
@@ -223,7 +242,22 @@ body {
 .branding-title {
   text-align: left;
   font-size: 2.5rem;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.22em;
+  position: relative;
+}
+
+.branding-title::after {
+  content: 'ΦΑΛΑΓΞ';
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--bronze);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.34em;
+  font-weight: 700;
+  letter-spacing: 0.42em;
+  line-height: 1;
+  opacity: 0.78;
+  text-shadow: 0 1px 12px rgba(199, 154, 85, 0.2);
 }
 
 .subtitle {
@@ -336,8 +370,11 @@ body {
   flex-direction: column;
   gap: 2rem;
   padding: 3rem;
-  background: rgba(5, 5, 5, 0.9);
-  border: 1px solid var(--border-up);
+  background:
+    linear-gradient(180deg, rgba(199, 154, 85, 0.05), transparent 16%),
+    linear-gradient(135deg, rgba(23, 75, 91, 0.12), transparent 42%), rgba(5, 5, 5, 0.9);
+  border: 1px solid color-mix(in srgb, var(--bronze) 42%, var(--border-up));
+  border-radius: var(--radius-panel);
   position: relative;
   box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
 }
@@ -441,7 +478,12 @@ select:focus {
   color: var(--text-muted);
   transition: all 50ms ease;
   position: relative;
-  border-radius: 0;
+  border-radius: var(--radius-control);
+}
+
+.btn:not(.btn-tiny) {
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .btn:disabled,
@@ -2571,6 +2613,7 @@ select:focus {
   --phase-grid-opacity: var(--board-grid-intensity);
   --phase-divider-glow: rgba(240, 192, 64, 0.08);
   --phase-panel-glow: var(--stat-panel-glow);
+  --architectural-line: rgba(199, 154, 85, 0.11);
 }
 
 .phx-game-layout::before,
@@ -2590,6 +2633,12 @@ select:focus {
   background:
     radial-gradient(circle at 50% 48%, var(--phase-accent) 0%, transparent 42%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 26%, rgba(0, 0, 0, 0.44) 100%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 47px,
+      var(--architectural-line) 48px,
+      transparent 49px 95px
+    ),
     linear-gradient(
       90deg,
       rgba(255, 255, 255, 0.02),
@@ -2661,7 +2710,8 @@ select:focus {
   align-items: center;
   padding: 0.5rem 1rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 65%), var(--surface);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 2px solid color-mix(in srgb, var(--bronze) 62%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--bronze) 28%, rgba(255, 255, 255, 0.08));
   box-shadow: 0 18px 30px rgba(0, 0, 0, 0.24);
   z-index: 1000;
   min-height: 0;
@@ -3168,7 +3218,7 @@ select:focus {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
 }
 
 .phx-battlefield::before {
@@ -3370,7 +3420,7 @@ select:focus {
   touch-action: manipulation;
   overflow: hidden;
   isolation: isolate;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   box-shadow: var(--card-glow-core), var(--card-glow-edge);
   --card-accent-soft: rgba(240, 192, 64, 0.18);
   --card-accent-core: rgba(240, 192, 64, 0.34);
@@ -3474,6 +3524,21 @@ select:focus {
   background-size: 14px 14px;
 }
 
+.phx-card-back-art::after {
+  content: 'ΦΑΛΑΓΞ';
+  position: absolute;
+  inset: 50% 0 auto;
+  color: rgba(220, 203, 164, 0.66);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.42rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  transform: translateY(-50%) rotate(-18deg);
+}
+
 .phx-card-back[data-card-theme='dual-loop'] .phx-card-back-art {
   background-image: url('/images/card-backs/dual-loop.webp');
   background-position: center;
@@ -3556,6 +3621,25 @@ select:focus {
     linear-gradient(125deg, transparent 18%, var(--surface-reflection) 48%, transparent 72%),
     radial-gradient(circle at 50% 58%, transparent 60%, rgba(0, 0, 0, var(--card-vignette)) 100%);
   mix-blend-mode: screen;
+}
+
+/* A restrained wordmark evokes painted shield bands without replacing the
+   familiar card face. It is decorative and never participates in hit testing. */
+.phx-card-layer-surface::after {
+  content: 'ΦΑΛΑΓΞ';
+  position: absolute;
+  top: 48%;
+  left: 0;
+  width: 100%;
+  color: rgba(220, 203, 164, 0.12);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.55rem, 11cqw, 1rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-align: center;
+  transform: rotate(-18deg);
+  white-space: nowrap;
 }
 
 .phx-card-layer-interaction {
@@ -4011,6 +4095,22 @@ select:focus {
   text-shadow: var(--content-shadow-or-bloom);
 }
 
+/* Greek numeral ornament: readable at card scale, secondary to the canonical
+   rank so the standard card language and all existing locators remain intact. */
+.phx-card-rank-greek {
+  display: inline-block;
+  margin-left: 0.28em;
+  color: color-mix(in srgb, currentColor 58%, transparent);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.34em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  opacity: 0.8;
+  transform: translateY(-0.18em);
+  vertical-align: top;
+}
+
 .phx-card-suit,
 .card-pip {
   grid-area: suit;
@@ -4426,6 +4526,8 @@ select:focus {
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  padding: 1rem;
+  overscroll-behavior: contain;
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -4444,6 +4546,23 @@ select:focus {
   max-height: 90vh;
   overflow-y: auto;
   border-color: var(--gold-dim) !important;
+  border-radius: var(--radius-panel);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.58),
+    0 0 0 1px rgba(199, 154, 85, 0.12),
+    0 0 44px rgba(199, 154, 85, 0.08);
+  animation: modalRise var(--motion-impact) var(--motion-emphasis) both;
+}
+
+@keyframes modalRise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .phx-modal-header {
@@ -4505,10 +4624,77 @@ select:focus {
   margin-top: 0.5rem;
 }
 
+.intel-block-context {
+  border-left-color: var(--bronze);
+  background: linear-gradient(90deg, rgba(199, 154, 85, 0.08), transparent 72%);
+}
+
+.glossary-block {
+  border-left-color: var(--bronze);
+  background:
+    linear-gradient(135deg, rgba(199, 154, 85, 0.08), transparent 48%), rgba(255, 255, 255, 0.03);
+}
+
+.glossary-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.glossary-intro {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+}
+
+.glossary-mark {
+  color: var(--bronze);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  margin-top: 1rem;
+}
+
+.glossary-entry {
+  border-top: 1px solid rgba(199, 154, 85, 0.22);
+  padding-top: 0.65rem;
+}
+
+.glossary-entry dt {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.glossary-entry dd {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  margin-top: 0.3rem;
+}
+
 .phx-modal-footer {
   margin-top: 2rem;
   display: flex;
   justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+  .glossary-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .onboarding-overlay {
   z-index: 10000;
@@ -5142,5 +5328,34 @@ select:focus {
   .cinematic-modal.is-active .cinematic-content {
     transform: none;
     filter: none;
+  }
+
+  .btn,
+  .phx-card,
+  .phx-spectator-pill,
+  .spectator-count,
+  .phx-modal-content {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .btn:hover:not(:disabled),
+  .phx-card:hover,
+  .phx-card.selected {
+    transform: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border: light-dark(#4b5563, #cbd5e1);
+    --border-up: light-dark(#1f2937, #f8fafc);
+    --text-muted: light-dark(#1f2937, #e5e7eb);
+  }
+
+  .phx-card,
+  .btn,
+  .phx-hud-top {
+    border-width: 2px;
   }
 }
