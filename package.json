@@ -5,6 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "admin:reset-dev": "bash bin/maint/reset-dev-admin.sh",
     "admin:reset-password": "tsx admin/scripts/reset-password.ts",
     "admin:seed-dev": "bash bin/maint/with-dev-postgres.sh pnpm admin:seed-dev:raw",
     "admin:seed-dev:raw": "tsx admin/scripts/seed-dev-admin.ts",
