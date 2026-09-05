@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Canonical phx-* entrypoint; bin/services remains a compatibility path.
+set -euo pipefail
+PHX_CLI_NAME=phx-services exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/services" "$@"

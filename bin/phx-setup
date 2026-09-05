@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Canonical phx-* entrypoint; bin/setup remains a compatibility path.
+set -euo pipefail
+exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/setup" "$@"

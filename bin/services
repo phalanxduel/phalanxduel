@@ -6,6 +6,7 @@ PHX_DIR="$REPO_ROOT/.phx"
 RUN_DIR="$PHX_DIR/run"
 LOG_DIR="$PHX_DIR/logs"
 TMUX_SESSION="phx"
+CLI_NAME="${PHX_CLI_NAME:-$(basename "$0")}"
 
 mkdir -p "$RUN_DIR" "$LOG_DIR"
 
@@ -13,7 +14,7 @@ KNOWN_SERVICES=("server" "client" "admin" "site" "backlog")
 
 usage() {
   cat <<EOF
-Usage: bin/services <command> [service|all] [options]
+Usage: $CLI_NAME <command> [service|all] [options]
 
 Commands:
   start    Start a service.
@@ -32,11 +33,11 @@ Options:
 Services: ${KNOWN_SERVICES[*]}, or "all"
 
 Examples:
-  pnpm services start all --tmux     # Starts all services in a detached tmux session.
-  pnpm services attach               # Jump into the tmux session to debug interactively.
-  pnpm services start server -d      # Starts just the server via setsid daemon.
-  pnpm services logs server          # Follow the server log file (if started via -d).
-  pnpm services reload server        # Hot-reload configuration without dropping OS process.
+  $CLI_NAME start all --tmux         # Starts all services in a detached tmux session.
+  $CLI_NAME attach                   # Jump into the tmux session to debug interactively.
+  $CLI_NAME start server -d          # Starts just the server via daemon.
+  $CLI_NAME logs server              # Follow the server log file (if started via -d).
+  $CLI_NAME reload server            # Hot-reload configuration without dropping OS process.
 EOF
   exit "${1:-1}"
 }
@@ -156,6 +157,11 @@ start_service() {
   local logfile="$LOG_DIR/$svc.log"
 
   local start_cmd="pnpm dev:$svc"
+  if [ "$svc" = "client" ]; then
+    # Keep the environment loader and the Vite process in one tracked
+    # launcher. This avoids losing the client when the daemon wrapper exits.
+    start_cmd="scripts/dev/start-client.sh"
+  fi
   if [ "$svc" = "site" ]; then
     start_cmd="cd ../site && ./bin/server"
   elif [ "$svc" = "backlog" ]; then

@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Canonical phx-* entrypoint; bin/test remains a compatibility path.
+set -eu
+exec "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/test" "$@"

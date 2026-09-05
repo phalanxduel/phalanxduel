@@ -1,12 +1,12 @@
-.TH PHX-DEMO 1 "2026-09-05" "Phalanx Duel" "Phalanx Duel Local Tooling"
+.TH PHX-DEMO-CTL 1 "2026-09-05" "Phalanx Duel" "Phalanx Duel Local Tooling"
 .SH NAME
-phx-demo \- rehearse the host-native Phalanx Duel demo
+phx-demo-ctl \- rehearse the host-native Phalanx Duel demo
 .SH SYNOPSIS
-.B bin/demo
+.B phx-demo-ctl
 .I command
 .RI [ options ]
 .SH DESCRIPTION
-.B bin/demo
+.B phx-demo-ctl
 starts and inspects the local server, browser client, and admin UI. It expects
 Postgres on the host and does not start Docker or Colima implicitly.
 .SH COMMANDS
@@ -16,6 +16,9 @@ Start the demo services, wait for readiness, and open the cockpit.
 .TP
 .B down
 Stop demo services and the cockpit bridge.
+.TP
+.B restart
+Stop and start the demo services, then wait for readiness.
 .TP
 .B status
 Print a one-shot health snapshot.

@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Canonical phx-* entrypoint; bin/dock remains a compatibility path.
+set -eu
+PHX_CLI_NAME=phx-dock exec "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/dock" "$@"

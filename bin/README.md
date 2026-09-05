@@ -1,7 +1,11 @@
 # Phalanx Duel local tooling
 
-The executable tooling follows the `phx-*` runtime naming convention while
-keeping short, discoverable entrypoints under `bin/`.
+The executable tooling follows the `phx-*` command naming convention used by
+zdots. The canonical commands are `phx-demo-ctl`, `phx-services`, `phx-dock`,
+`phx-check`, `phx-test`, `phx-install-localhost`, and `phx-setup`; the shorter
+`bin/demo`-style paths remain compatibility entrypoints.
+
+Shell completions live in [`completions/`](../completions/README.md).
 
 ## Host-native demo workflow
 
@@ -9,15 +13,15 @@ Host-native development is the default. Postgres must be running locally; the
 demo tools do not start Colima, Docker, or a database container implicitly.
 
 ```bash
-bin/demo up
-bin/demo links --no-open
-bin/demo restart-cockpit
-bin/demo cockpit
-bin/demo logs
-bin/demo down
+phx-demo-ctl up
+phx-demo-ctl links --no-open
+phx-demo-ctl restart-cockpit
+phx-demo-ctl cockpit
+phx-demo-ctl logs
+phx-demo-ctl down
 ```
 
-`bin/demo up` starts the server, browser client, and admin UI, then serves the
+`phx-demo-ctl up` starts the server, browser client, and admin UI, then serves the
 generated cockpit at `https://phalanxduel.localhost/demo/` when the local nginx
 vhost is installed. The direct fallback is `http://127.0.0.1:3333/`. Set
 `PHALANX_DEMO_COCKPIT_PORT` to choose another bridge port. The browser cockpit includes
@@ -27,7 +31,7 @@ alternative clients, documentation/assets, and read-only tails of the local
 
 The generated `quicklinks.html` lives under ignored `.phx/cockpit/`; it is not
 committed. If the generated file or bridge is absent, `/demo/` returns 404.
-After changing cockpit code, use `bin/demo restart-cockpit` to restart only the
+After changing cockpit code, use `phx-demo-ctl restart-cockpit` to restart only the
 loopback bridge while leaving the active game services and match untouched.
 
 The cockpit bridge is also runnable directly:
@@ -43,22 +47,22 @@ It binds only to loopback and exposes `/health` plus capped
 ## Service control
 
 ```bash
-bin/services start all --tmux
-bin/services status
-bin/services logs server
-bin/services stop all
+phx-services start all --tmux
+phx-services status
+phx-services logs server
+phx-services stop all
 ```
 
-Use `bin/services --help` for the complete command and option list. Runtime
+Use `phx-services --help` for the complete command and option list. Runtime
 logs and PID files are kept under `.phx/`; active service/container names use
 the `phx-*` convention.
 
 ## Control plane and container verification
 
-- `bin/phx --help` — unified guide, capabilities, and context commands.
-- `bin/dock --help` — explicit Docker automation/verification entrypoint.
+- `phx --help` — unified guide, capabilities, and context commands.
+- `phx-dock --help` — explicit Docker automation/verification entrypoint.
 
-`bin/dock` is for isolated container verification and requires Docker. It is
+`phx-dock` is for isolated container verification and requires Docker. It is
 not part of the host-native demo path and should not be used to provide local
 Postgres for ordinary development.
 

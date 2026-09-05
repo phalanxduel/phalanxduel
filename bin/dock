@@ -11,16 +11,17 @@
 #
 
 set -eu
+CLI_NAME="${PHX_CLI_NAME:-$(basename "$0")}"
 
 if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
-  echo "Usage: bin/dock <command>"
+  echo "Usage: $CLI_NAME <command>"
   echo ""
   echo "Runs an arbitrary command inside the 'automation' service container."
   echo "Ensures the 'dev' profile is active and removes the container after exit."
   echo ""
   echo "Examples:"
-  echo "  bin/dock pnpm test"
-  echo "  bin/dock bash"
+  echo "  $CLI_NAME pnpm test"
+  echo "  $CLI_NAME bash"
   exit 0
 fi
 

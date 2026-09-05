@@ -1,0 +1,27 @@
+#compdef phx-services
+
+_phx_services() {
+  local -a commands services
+  commands=(
+    'start:start a service'
+    'stop:stop a service'
+    'restart:restart a service'
+    'reload:reload the server'
+    'status:show service status'
+    'logs:tail service logs'
+    'attach:attach to the tmux session'
+  )
+  services=(server client admin site backlog all)
+  _arguments -C \
+    '(-h --help)'{-h,--help}'[show usage]' \
+    '(-d --daemon)'{-d,--daemon}'[run in the background]' \
+    '(-t --tmux)'{-t,--tmux}'[run in tmux]' \
+    '1:command:->command' \
+    '2:service:->service'
+  case "$state" in
+    command) _describe -t commands 'service command' commands ;;
+    service) _describe -t services 'service' services ;;
+  esac
+}
+
+_phx_services "$@"

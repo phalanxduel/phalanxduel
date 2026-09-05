@@ -1,0 +1,16 @@
+#compdef phx
+
+_phx() {
+  local -a commands
+  commands=(
+    'guide:show the agent documentation index'
+    'capabilities:show agent capability vectors'
+    'ctx:extract repository context'
+  )
+  _arguments -C '(-h --help)'{-h,--help}'[show usage]' '1:command:->command'
+  case "$state" in
+    command) _describe -t commands 'phx command' commands ;;
+  esac
+}
+
+_phx "$@"

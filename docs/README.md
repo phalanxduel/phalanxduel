@@ -54,8 +54,9 @@ Welcome to the central documentation hub. This directory contains the canonical 
 | **[Glossary](./reference/glossary.md)** | Definitions of all domain terms |
 
 Executable command man pages live in [`man/`](./man/), with one page per
-focused tooling surface: `phx-demo(1)`, `phx-services(1)`, `phx(1)`, and
-`phx-dock(1)`.
+focused tooling surface: `phx-demo-ctl(1)`, `phx-services(1)`, `phx(1)`, and
+`phx-dock(1)`. Repo-local Zsh completions are in
+[`../completions/`](../completions/README.md).
 
 ## 📜 History & Governance
 

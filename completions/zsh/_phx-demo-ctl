@@ -1,0 +1,26 @@
+#compdef phx-demo-ctl
+
+_phx_demo_ctl() {
+  local -a commands
+  commands=(
+    'up:start server, client, admin, and cockpit'
+    'down:stop the demo services and cockpit'
+    'restart:cleanly restart the demo services'
+    'status:show the service health snapshot'
+    'reset:reset the development rehearsal state'
+    'logs:tail server, client, and admin logs'
+    'links:generate or refresh cockpit quicklinks'
+    'restart-cockpit:restart only the cockpit bridge'
+    'cockpit:run the terminal cockpit'
+  )
+  _arguments -C \
+    '(-h --help)'{-h,--help}'[show usage]' \
+    '--no-open[do not open a browser]' \
+    '1:command:->command' \
+    '*::arg:->args'
+  case "$state" in
+    command) _describe -t commands 'demo command' commands ;;
+  esac
+}
+
+_phx_demo_ctl "$@"

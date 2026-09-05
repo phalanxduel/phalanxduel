@@ -1,0 +1,27 @@
+# Bash completions for the canonical phx-* entrypoints.
+
+_phx_demo_ctl() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local commands="up down restart status reset logs links restart-cockpit cockpit --help -h --no-open"
+  COMPREPLY=( $(compgen -W "$commands" -- "$cur") )
+}
+
+_phx_services() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local commands="start stop restart reload status logs attach --help -h -d --daemon -t --tmux"
+  local services="server client admin site backlog all"
+  if (( COMP_CWORD == 1 )); then
+    COMPREPLY=( $(compgen -W "$commands" -- "$cur") )
+  else
+    COMPREPLY=( $(compgen -W "$services" -- "$cur") )
+  fi
+}
+
+_phx_subcommands() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  COMPREPLY=( $(compgen -W "guide capabilities ctx --help -h" -- "$cur") )
+}
+
+complete -F _phx_demo_ctl phx-demo-ctl
+complete -F _phx_services phx-services
+complete -F _phx_subcommands phx

@@ -7,6 +7,10 @@ This is the one file to read top to bottom before a rehearsal or the real
 thing. Everything it points to already exists in this repo — nothing here
 needs to be built the day of.
 
+The future public-library networking idea is documented separately in
+[`IDEA-public-library-networked-demo.md`](IDEA-public-library-networked-demo.md).
+It is not part of the default local rehearsal yet.
+
 ## What you're bringing
 
 | # | Item | Path | Notes |
@@ -14,7 +18,7 @@ needs to be built the day of.
 | 1 | Slide deck | `output/slides/phalanx-duel-scmc-deck.html` | Open in a browser. Scroll, or the ↑↓ buttons bottom-right. Print-to-PDF for a backup export (one slide per page). |
 | 2 | Printed quickstart | `output/pdf/phalanx-duel-face-to-face-quickstart.pdf` | Two-sided handout. Print one per pair, plus spares. |
 | 3 | Standard decks of cards | *(physical, not in repo)* | One per pair, plus extras — you already told the organizers you'd bring spares. |
-| 4 | Live software demo | `https://play.phalanxduel.localhost` | Requires `bin/demo up` running (see Pre-flight). |
+| 4 | Live software demo | `https://play.phalanxduel.localhost` | Requires `phx-demo-ctl up` running (see Pre-flight). |
 | 5 | Local demo cockpit | `https://phalanxduel.localhost/demo/` | Generated under ignored `.phx/cockpit/`; returns 404 when the cockpit is not running. |
 | 6 | Fallback demo video | `output/video/phalanx-duel-demo.mp4` | Narrated, ~3 min. Play this if the live demo breaks. |
 | 7 | Source references (for the room to see, not memorize) | `docs/gameplay/rules.md`, `shared/src/schema.ts`, `engine/src/combat.ts` | Already cited on-slide (Code · 04). Have the repo open in an editor tab if you want to actually scroll to them live. |
@@ -27,27 +31,30 @@ Install the local nginx vhost once so the demo, admin UI, and generated cockpit
 use the same branded localhost surface:
 
 ```bash
-rtk bin/install-localhost
+rtk phx-install-localhost
 rtk nginx -t
 sudo launchctl kickstart -k system/homebrew.mxcl.nginx
 ```
 
-`bin/install-localhost` publishes the vhost and site export, checks that the
+`phx-install-localhost` publishes the vhost and site export, checks that the
 local TLS certificate covers all three hosts, and prints the reload commands.
-Do not use `sudo brew services restart nginx`; the launchctl command preserves
-Homebrew ownership.
+If nginx reports `Permission denied` for `client_body_temp` or `proxy_temp`,
+run the permission repair commands printed by `bin/install-localhost`, then
+validate and reload nginx. Do not use `sudo brew services restart nginx`; the
+launchctl command preserves Homebrew ownership.
 
 Then start the rehearsal stack:
 
 ```bash
-rtk bin/demo up                    # starts server + client + admin, opens cockpit
+rtk phx-demo-ctl up                # starts server + client + admin, opens cockpit
+rtk phx-demo-ctl restart           # cleanly stop and start the demo services
 ```
 
 Wait for the green "READY" line. The command prints and opens a local
 quicklinks page with the play URL, admin console, health and API links, process
 IDs, logs, source paths, and rehearsal tips. If it
-times out, run `bin/demo status` to see which of app/client isn't up, then
-`bin/demo logs`.
+times out, run `phx-demo-ctl status` to see which of app/client isn't up, then
+`phx-demo-ctl logs`. For a clean rehearsal restart, use `phx-demo-ctl restart`.
 
 The cockpit is served at `https://phalanxduel.localhost/demo/`. It contains
 live service health, match analytics, related demo/doc links, alternative
@@ -57,8 +64,8 @@ the `/demo/` path returns 404. After cockpit-only changes, refresh it without
 interrupting a match:
 
 ```bash
-rtk bin/demo restart-cockpit
-rtk bin/demo links --no-open
+rtk phx-demo-ctl restart-cockpit
+rtk phx-demo-ctl links --no-open
 ```
 
 The admin UI is at `https://admin.phalanxduel.localhost/` when the local nginx
@@ -75,7 +82,7 @@ Then, in your browser, open **two tabs** ahead of time and leave them ready:
 
 Checklist:
 
-- [ ] `bin/demo up` printed READY for app, client, and admin
+- [ ] `phx-demo-ctl up` printed READY for app, client, and admin
 - [ ] `https://play.phalanxduel.localhost` loads and shows the Welcome dialog
 - [ ] Deck tab open, scrolled to slide 1
 - [ ] Printed quickstarts counted out (one per pair + spares)
@@ -83,8 +90,8 @@ Checklist:
 - [ ] `output/video/phalanx-duel-demo.mp4` opens and plays, as a cold backup
 - [ ] Phone/watch or a visible clock for pacing
 
-If anything in that list fails, fix it now — not mid-talk. `bin/demo down`
-then `bin/demo up` again is the reset if the stack gets into a weird state.
+If anything in that list fails, fix it now — not mid-talk. `phx-demo-ctl down`
+then `phx-demo-ctl up` again is the reset if the stack gets into a weird state.
 
 ## Run of show
 
@@ -112,8 +119,8 @@ shorter — the beats and their order don't change, only the minutes per beat.
 
 ## If something breaks
 
-- **Live demo won't load / server died:** `bin/demo status`, then `bin/demo
-  logs` in a spare terminal if you have one; otherwise skip straight to the
+- **Live demo won't load / server died:** `phx-demo-ctl status`, then
+  `phx-demo-ctl logs` in a spare terminal if you have one; otherwise skip straight to the
   fallback video (item 5 above) and keep narrating over it. Don't debug live.
 - **A rule gets disputed during Play:** the printed quickstart
   (`output/pdf/phalanx-duel-face-to-face-quickstart.pdf`) is the source of
@@ -129,7 +136,7 @@ shorter — the beats and their order don't change, only the minutes per beat.
 ## After
 
 ```bash
-bin/demo down
+phx-demo-ctl down
 ```
 
 Share the deck's own closing links: `phalanxduel.com`,

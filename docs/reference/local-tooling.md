@@ -9,17 +9,17 @@ audience: contributors, operators
 # Local Tooling Reference
 
 Phalanx Duel uses host-native development as its primary loop. Docker is an
-explicit verification surface, not an implicit dependency of `bin/demo` or the
+explicit verification surface, not an implicit dependency of `phx-demo-ctl` or the
 local Postgres bootstrap.
 
 ## Command map
 
 | Command | Focus | Default mode |
 | --- | --- | --- |
-| [`bin/demo`](../../bin/demo) | Rehearse the playable stack and open the cockpit | Host-native |
-| [`bin/services`](../../bin/services) | Start, stop, inspect, and tail local services | Host-native |
-| [`bin/phx`](../../bin/phx) | Unified guide, capability, and context control plane | Host-native |
-| [`bin/dock`](../../bin/dock) | Run explicit isolated verification in Docker | Containerized |
+| [`phx-demo-ctl`](../../bin/phx-demo-ctl) | Rehearse the playable stack and open the cockpit | Host-native |
+| [`phx-services`](../../bin/phx-services) | Start, stop, inspect, and tail local services | Host-native |
+| [`phx`](../../bin/phx) | Unified guide, capability, and context control plane | Host-native |
+| [`phx-dock`](../../bin/phx-dock) | Run explicit isolated verification in Docker | Containerized |
 | [`scripts/demo-cockpit-server.mjs`](../../scripts/demo-cockpit-server.mjs) | Serve generated cockpit HTML and safe log tails | Loopback-only |
 
 Every command supports `--help` or documents its supported options in its
@@ -28,10 +28,10 @@ man page. The executable overview is in [`bin/README.md`](../../bin/README.md).
 ## Demo cockpit
 
 ```bash
-bin/demo up
-bin/demo links --no-open
-bin/demo restart-cockpit
-bin/demo cockpit
+phx-demo-ctl up
+phx-demo-ctl links --no-open
+phx-demo-ctl restart-cockpit
+phx-demo-ctl cockpit
 ```
 
 The browser cockpit is served at `https://phalanxduel.localhost/demo/` when the
@@ -75,12 +75,12 @@ package scopes, URLs, and historical references retain their canonical
 
 ## Database and container boundary
 
-`bin/demo` expects host Postgres on the configured local development port. It
+`phx-demo-ctl` expects host Postgres on the configured local development port. It
 does not start Colima or Docker when the host database is unavailable. Follow
 the guarded commands in [`database-environment-isolation.md`](../agents/skills/database-environment-isolation.md)
 for migrations, seeds, and tests.
 
-For containerized verification, use `bin/dock` or the documented Docker
+For containerized verification, use `phx-dock` or the documented Docker
 commands in [`docs/development.md`](../development.md). Those paths are
 deliberate and visible in status output; a host-native cockpit should not
 report missing containers as failures.
@@ -89,7 +89,7 @@ report missing containers as failures.
 
 The concise Unix-style references are under [`docs/man/`](../man/):
 
-- `phx-demo(1)` — local demo rehearsal and cockpit.
+- `phx-demo-ctl(1)` — local demo rehearsal and cockpit.
 - `phx-services(1)` — host-native service lifecycle.
 - `phx(1)` — unified control plane.
 - `phx-dock(1)` — explicit container verification.

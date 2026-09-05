@@ -26,6 +26,7 @@ COCKPIT_BRIDGE_URL="http://127.0.0.1:${COCKPIT_PORT}/"
 COCKPIT_BRANDED_URL="https://phalanxduel.localhost/demo/"
 COCKPIT_URL="${PHALANX_DEMO_COCKPIT_URL:-$COCKPIT_BRANDED_URL}"
 COCKPIT_PID_FILE="$SERVICES_RUN_DIR/cockpit.pid"
+CLI_NAME="${PHX_CLI_NAME:-$(basename "$0")}"
 GO_CLIENT_README="file://$REPO_ROOT/clients/go/duel-cli/README.md"
 SWIFTUI_CLIENT_README="file://$REPO_ROOT/../game-swiftui/README.md"
 if [ -f "$REPO_ROOT/../game-swiftui/README.md" ]; then
@@ -36,11 +37,12 @@ fi
 
 usage() {
   cat <<EOF
-Usage: bin/demo <command> [options]
+Usage: $CLI_NAME <command> [options]
 
 Commands:
   up       Start server + client + admin (daemonized), wait, and open quicklinks.
   down     Stop server + client + admin.
+  restart  Stop and start server + client + admin, wait for READY.
   status   One-shot health snapshot (pnpm dev:status).
   reset    Reseed the dev database to a clean state between rehearsals.
   logs     Tail server + client logs.
@@ -52,11 +54,11 @@ Options:
   --no-open  Print or generate the result without opening a browser.
 
 Examples:
-  bin/demo up       # before the talk: start, wait, and open the cockpit page
-  bin/demo links --no-open
-  bin/demo cockpit  # headed terminal dashboard; Ctrl+C to exit
-  bin/demo reset    # between rehearsals: clean slate
-  bin/demo down     # after: stop everything
+  $CLI_NAME up       # before the talk: start, wait, and open the cockpit page
+  $CLI_NAME links --no-open
+  $CLI_NAME cockpit  # headed terminal dashboard; Ctrl+C to exit
+  $CLI_NAME reset    # between rehearsals: clean slate
+  $CLI_NAME down     # after: stop everything
 EOF
   exit "${1:-1}"
 }
@@ -255,7 +257,7 @@ write_quicklinks() {
     <div class="card launch-card"><a class="surface-link" href="$(html_escape "$CLIENT_URL/")">Raw client ↗</a><small>Direct Vite fallback on port 5173</small></div>
     <div class="card launch-card"><a class="surface-link" href="$(html_escape "$APP_URL/docs")">API command center ↗</a><small>OpenAPI explorer · $(probe_label "$api_code")</small></div>
     <div class="card launch-card"><a class="surface-link" href="http://127.0.0.1:3000/">Grafana LGTM ↗</a><small>Local observability surface, when enabled</small></div>
-    <div class="card launch-card"><a class="surface-link" href="https://o2.localhost/">O2 trace deck ↗</a><small>OpenObserve live traces and logs</small></div>
+    <div class="card launch-card"><a class="surface-link" href="https://o2.localhost/web/dashboards/view?org_identifier=default&amp;dashboard=7501905489362419712&amp;folder=default&amp;tab=default&amp;refresh=Off&amp;period=15m&amp;print=false">O2 dashboard ↗</a><small>OpenObserve Phalanx Duel dashboard · 15m</small></div>
     <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/output/video/phalanx-duel-demo.webm")">Demo reel ↗</a><small>Recorded face-to-face demo asset</small></div>
     <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/output/pdf/phalanx-duel-face-to-face-quickstart.pdf")">Quickstart PDF ↗</a><small>Talk track and rehearsal reference</small></div>
     <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/scripts/video/demo-narration.md")">Demo narration ↗</a><small>Presenter script and scene cues</small></div>
@@ -490,6 +492,16 @@ case "${1:-}" in
     bin/services stop client
     bin/services stop server
     stop_cockpit_server
+    ;;
+  restart)
+    echo "🔄 Restarting demo services..."
+    bin/services stop admin
+    bin/services stop client
+    bin/services stop server
+    bin/services start server -d
+    bin/services start client -d
+    bin/services start admin -d
+    wait_ready
     ;;
   status)
     pnpm dev:status

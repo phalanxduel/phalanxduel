@@ -1,0 +1,7 @@
+#compdef phx-check phx-test phx-install-localhost phx-setup
+
+_phx_simple() {
+  _arguments '(-h --help)'{-h,--help}'[show usage]' '*:argument:_files'
+}
+
+_phx_simple "$@"
