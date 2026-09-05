@@ -185,9 +185,10 @@ write_quicklinks() {
   server_pid=$(service_pid server)
   client_pid=$(service_pid client)
   admin_pid=$(service_pid admin)
-  local o2_dashboard_url
+  local o2_dashboard_url o2_logs_url
   o2_dashboard_url="$O2_URL/web/dashboards/view?org_identifier=default&dashboard=7501905489362419712&folder=default&tab=default&refresh=Off&period=15m&print=false"
-  local esc_git esc_play esc_admin esc_client esc_app_docs esc_grafana esc_o2 esc_go esc_cockpit
+  o2_logs_url="$O2_URL/web/logs?stream_type=logs&stream=default&period=15m&refresh=0&fn_editor=false&defined_schemas=user_defined_schema&org_identifier=default&quick_mode=false&show_histogram=true&logs_visualize_toggle=logs"
+  local esc_git esc_play esc_admin esc_client esc_app_docs esc_grafana esc_o2 esc_o2_logs esc_go esc_cockpit
   local esc_reel esc_pdf esc_narration esc_manifest esc_compat esc_server_log esc_client_log esc_admin_log
   local esc_play_health esc_play_ready esc_app_health esc_app_ready esc_admin_health esc_admin_ready esc_admin_ui esc_app_json
   local label_play label_admin label_app label_api
@@ -198,6 +199,7 @@ write_quicklinks() {
   esc_app_docs=$(html_escape "$APP_URL/docs")
   esc_grafana=$(html_escape "$GRAFANA_URL/")
   esc_o2=$(html_escape "$o2_dashboard_url")
+  esc_o2_logs=$(html_escape "$o2_logs_url")
   esc_go=$(html_escape "$GO_CLIENT_README")
   esc_cockpit=$(html_escape "$COCKPIT_URL")
   esc_reel=$(html_escape "file://$REPO_ROOT/output/video/phalanx-duel-demo.webm")
@@ -303,6 +305,7 @@ write_quicklinks() {
     <div class="card launch-card"><a class="surface-link" href="$esc_app_docs">API command center ↗</a><small>OpenAPI explorer · $label_api</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_grafana">Grafana LGTM ↗</a><small>Local observability surface, when enabled</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_o2">O2 dashboard ↗</a><small>OpenObserve Phalanx Duel dashboard · 15m</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_o2_logs">O2 logs ↗</a><small>OpenObserve default log stream · 15m</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_reel">Demo reel ↗</a><small>Recorded face-to-face demo asset</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_pdf">Quickstart PDF ↗</a><small>Talk track and rehearsal reference</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_narration">Demo narration ↗</a><small>Presenter script and scene cues</small></div>

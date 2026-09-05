@@ -28,6 +28,17 @@ the `phalanxduel` namespace, so the service map can join browser HTTP and
 WebSocket activity with server spans. The collector's spanmetrics connector
 also derives rate, error, and duration data from those spans.
 
+OpenObserve's Logs page does not select a stream from the bare organization
+URL. Use the `default` stream explicitly:
+
+```text
+https://o2.localhost/web/logs?stream_type=logs&stream=default&period=15m&refresh=0&org_identifier=default
+```
+
+If the page says “Select a stream,” choose `default` and run the query. Fresh
+Phalanx Duel filelog records then appear; the receiver starts at the end of the
+local file and does not backfill older lines.
+
 ## Development-only loading boundary
 
 Browser telemetry is enabled only when the client is a Vite development build
