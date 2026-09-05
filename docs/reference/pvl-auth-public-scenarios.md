@@ -64,6 +64,47 @@ This makes the executable boundary visible: Pavel can run the known-good
 surface now, while the missing profile and browse automation remains an
 explicit next slice rather than a green checkmark with no evidence.
 
+## Recommended Pavel sequence
+
+Run the visitor and player journey in this order:
+
+1. Public lobby arrival.
+2. Signup, then login and session restoration.
+3. Own profile and settings.
+4. Public lobby, public match join, and active-match resume.
+5. Rankings, public profiles, achievements, and match history.
+6. Live spectator mode.
+7. Completed-match rewatch and shareable replay steps.
+8. Admin read-only inspection.
+9. Admin destructive actions only after audit evidence and explicit approval.
+
+The machine-readable sequence is in the catalog's `sequence` array. This order
+keeps the visitor path separate from privileged operations and makes spectator
+and replay evidence follow the same match identity established by the player
+journey.
+
+## Spectator and rewatch PV review
+
+The existing implementation has a good foundation: the spectator API returns
+visitor-safe summaries, `watchMatch` uses the authoritative WebSocket path, and
+rewatch reconstructs completed state through the deterministic engine instead
+of trusting browser snapshots. Replay action and step endpoints, comments, and
+social statistics are server-traced.
+
+The next PV implementation slice should add explicit browser surface spans for
+`spectator.watch` and `rewatch.open` / `rewatch.step`, carrying:
+
+```text
+qa.run_id → traceparent → session.id → spectator.id or viewer identity
+         → match.id → replay.step → action/state hash → report evidence
+```
+
+The live spectator path should prove observer redaction and reconnect behavior.
+The rewatch path should prove deterministic state reconstruction, step-link
+reopening, and that social reads/writes remain separate from replay integrity.
+Until those captures exist, the catalog intentionally labels both flows
+`inventory`.
+
 ## Pavel mapping contract
 
 Every scenario has a scenario runner spine even when the current runner is

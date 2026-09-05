@@ -27,6 +27,18 @@
       "scenarioIds": ["public.lobby.standard-user", "public.browse-surfaces.standard-user"]
     }
   ],
+  "sequence": [
+    { "order": 1, "scenarioId": "public.lobby.standard-user", "mode": "automated" },
+    { "order": 2, "scenarioId": "auth.signup.standard-user", "mode": "automated" },
+    { "order": 3, "scenarioId": "auth.login.standard-user", "mode": "automated" },
+    { "order": 4, "scenarioId": "profile.view-own.standard-user", "mode": "inventory" },
+    { "order": 5, "scenarioId": "public.browse-surfaces.standard-user", "mode": "inventory" },
+    { "order": 6, "scenarioId": "match.join-public.standard-user", "mode": "inventory" },
+    { "order": 7, "scenarioId": "match.resume.standard-user", "mode": "inventory" },
+    { "order": 8, "scenarioId": "ranking.browse.standard-user", "mode": "inventory" },
+    { "order": 9, "scenarioId": "spectator.watch-live.standard-user", "mode": "inventory" },
+    { "order": 10, "scenarioId": "spectator.rewatch-match.standard-user", "mode": "inventory" }
+  ],
   "scenarios": [
     {
       "id": "auth.signup.standard-user",
@@ -177,6 +189,177 @@
           "route-by-route browser evidence",
           "CRUD rollup by affected table",
           "service map and trace links"
+        ]
+      }
+    },
+    {
+      "id": "match.join-public.standard-user",
+      "title": "Join a public match",
+      "surface": "public-matchmaking",
+      "status": "inventory",
+      "entrypoint": "/?screen=public_lobby",
+      "runner": "browser-ui",
+      "command": null,
+      "steps": [
+        "Open the public match list as a visitor or signed-in player.",
+        "Choose a joinable match and confirm the player name before joining.",
+        "Confirm the waiting surface shows the correct match identity and opponent state.",
+        "Confirm the match transitions into the game without duplicating the join action."
+      ],
+      "layers": ["browser", "public lobby API", "WebSocket joinMatch", "match actor", "telemetry"],
+      "identities": ["qa.run_id", "traceparent", "session.id", "match.id", "player.id"],
+      "evidence": {
+        "expected": [
+          "join is idempotent from the visitor perspective",
+          "the joined player's projection does not leak the opponent's hidden cards"
+        ],
+        "unknown_until_run": [
+          "join latency and rejected-join traces",
+          "match actor and persistence CRUD rollup"
+        ]
+      }
+    },
+    {
+      "id": "match.resume.standard-user",
+      "title": "Resume an active match",
+      "surface": "authenticated-match-recovery",
+      "status": "inventory",
+      "entrypoint": "/?match=<active-match-id>",
+      "runner": "browser-ui",
+      "command": null,
+      "steps": [
+        "Sign in as a player with an active match.",
+        "Return to the lobby or reload the browser.",
+        "Choose RESUME and confirm the session rejoins the existing match.",
+        "Confirm the authoritative state, turn, player seat, and pending actions are restored."
+      ],
+      "layers": [
+        "browser",
+        "session restoration",
+        "WebSocket rejoinMatch",
+        "match actor",
+        "replay/state hash evidence",
+        "telemetry"
+      ],
+      "identities": [
+        "qa.run_id",
+        "traceparent",
+        "session.id",
+        "ws.reconnect_attempt",
+        "match.id",
+        "player.id"
+      ],
+      "evidence": {
+        "expected": [
+          "rejoin maps to the original player identity",
+          "state hash after resume matches the authoritative state"
+        ],
+        "unknown_until_run": ["reconnect timing and duplicate-action behavior"]
+      }
+    },
+    {
+      "id": "ranking.browse.standard-user",
+      "title": "Browse rankings",
+      "surface": "public-ranking",
+      "status": "inventory",
+      "entrypoint": "/?screen=ladder",
+      "runner": "browser-ui",
+      "command": null,
+      "steps": [
+        "Open the public ladder from the lobby.",
+        "Confirm rankings load with safe public player projections.",
+        "Open a player profile from the ladder and return without losing context.",
+        "Confirm a signed-in player's own rating agrees with the public ranking view."
+      ],
+      "layers": [
+        "browser",
+        "ladder API",
+        "ratings persistence",
+        "profile persistence",
+        "telemetry"
+      ],
+      "identities": ["qa.run_id", "traceparent", "session.id", "profile.id"],
+      "evidence": {
+        "expected": [
+          "ladder response is visitor-safe",
+          "profile navigation preserves the selected player identity"
+        ],
+        "unknown_until_run": ["query timing and ratings CRUD rollup"]
+      }
+    },
+    {
+      "id": "spectator.watch-live.standard-user",
+      "title": "Watch a live match",
+      "surface": "spectator",
+      "status": "inventory",
+      "entrypoint": "/?screen=spectator_lobby",
+      "runner": "browser-ui",
+      "command": null,
+      "steps": [
+        "Open the spectator lobby without joining a match.",
+        "Select an active match and confirm the viewer enters spectator mode.",
+        "Observe state updates, turn changes, spectator count, and public event log.",
+        "Confirm hidden cards and private player actions remain redacted."
+      ],
+      "layers": [
+        "browser",
+        "spectator match list",
+        "WebSocket watchMatch",
+        "observer projection",
+        "event log redaction",
+        "telemetry"
+      ],
+      "identities": ["qa.run_id", "traceparent", "session.id", "spectator.id", "match.id"],
+      "evidence": {
+        "expected": [
+          "spectator identity is distinct from player identity",
+          "observer projection is redacted and trace-correlated",
+          "live updates remain attached to the same match.id"
+        ],
+        "unknown_until_run": ["spectator reconnect and service-map coverage"]
+      }
+    },
+    {
+      "id": "spectator.rewatch-match.standard-user",
+      "title": "Rewatch a completed match",
+      "surface": "rewatch",
+      "status": "inventory",
+      "entrypoint": "/?screen=rewatch&matchId=<completed-match-id>&step=0",
+      "runner": "browser-ui",
+      "command": null,
+      "steps": [
+        "Open a completed match from history or a shared replay link.",
+        "Confirm the initial state and ordered action log load.",
+        "Step forward and play the replay at multiple speeds.",
+        "Copy a step link and reopen it at the same deterministic state.",
+        "Confirm public replay state and social actions do not expose credentials or private data."
+      ],
+      "layers": [
+        "browser",
+        "completed action log",
+        "deterministic engine replay",
+        "observer projection",
+        "social persistence",
+        "telemetry"
+      ],
+      "identities": [
+        "qa.run_id",
+        "traceparent",
+        "session.id",
+        "match.id",
+        "replay.step",
+        "state.hash"
+      ],
+      "evidence": {
+        "expected": [
+          "replay step reconstruction is deterministic",
+          "state hash and action sequence can be mapped to the source match",
+          "share links reopen the same step"
+        ],
+        "unknown_until_run": [
+          "browser replay span with match.id and replay.step attributes",
+          "replay/social CRUD rollup",
+          "Jaeger and OpenObserve attachment"
         ]
       }
     }

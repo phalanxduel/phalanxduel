@@ -41,6 +41,15 @@ const CatalogSchema = z.object({
       }),
     )
     .min(1),
+  sequence: z
+    .array(
+      z.object({
+        order: z.number().int().positive(),
+        scenarioId: z.string().min(1),
+        mode: z.enum(['automated', 'inventory']),
+      }),
+    )
+    .min(1),
   scenarios: z.array(ScenarioSchema).min(1),
 });
 
@@ -56,6 +65,15 @@ for (const workflow of catalog.workflows) {
     }
   }
 }
+const sequenceOrders = catalog.sequence.map((step) => step.order);
+if (new Set(sequenceOrders).size !== sequenceOrders.length) {
+  throw new Error('PVL sequence order values must be unique');
+}
+for (const step of catalog.sequence) {
+  if (!knownIds.has(step.scenarioId)) {
+    throw new Error(`sequence: unknown scenario ${step.scenarioId}`);
+  }
+}
 
 for (const scenario of catalog.scenarios) {
   if (scenario.status === 'inventory' && scenario.command !== null) {
@@ -68,6 +86,7 @@ for (const scenario of catalog.scenarios) {
 
 console.log(`PVL scenario catalog valid: ${catalog.scenarios.length} scenarios`);
 console.log(`PVL workflows valid: ${catalog.workflows.length} automode workflows`);
+console.log(`PVL sequence valid: ${catalog.sequence.length} ordered steps`);
 for (const scenario of catalog.scenarios) {
   console.log(`- ${scenario.id} [${scenario.status}]`);
 }
