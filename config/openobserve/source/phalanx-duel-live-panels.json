@@ -3,6 +3,11 @@
   "organization": "default",
   "stream": "default",
   "captured_at": "2026-09-05",
+  "layout_defaults": {
+    "grid_width": 96,
+    "grid_height": 18,
+    "note": "All live PHX panels use the common full-width 96x18 grid footprint."
+  },
   "panels": [
     {
       "id": "Panel_PHX001",
