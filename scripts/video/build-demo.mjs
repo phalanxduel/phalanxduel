@@ -25,10 +25,26 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '../..');
 const BUILD = join(here, 'build');
 const SEG = join(BUILD, 'seg');
-const NARRATION = join(here, 'demo-narration.md');
 const FOOTAGE = join(BUILD, 'footage.json');
 const OUT_DIR = join(repoRoot, 'output/video');
 const QUICKSTART_PDF = join(repoRoot, 'output/pdf/phalanx-duel-face-to-face-quickstart.pdf');
+const argv = process.argv.slice(2);
+const argValue = (name, fallback) => {
+  const index = argv.indexOf(name);
+  return index >= 0 && argv[index + 1] ? argv[index + 1] : fallback;
+};
+const narrationPath = resolve(argValue('--narration', join(here, 'demo-narration.md')));
+const outputStem = argValue('--output-stem', 'phalanx-duel-demo');
+
+if (argv.includes('--help') || argv.includes('-h')) {
+  console.log(`Usage: node scripts/video/build-demo.mjs [options]
+
+Options:
+  --narration <path>       Narration markdown (default: demo-narration.md)
+  --output-stem <name>     Output basename under output/video/ (default: phalanx-duel-demo)
+`);
+  process.exit(0);
+}
 
 const W = 1280;
 const H = 800;
@@ -47,7 +63,7 @@ if (!existsSync(FOOTAGE)) {
 }
 
 const footage = JSON.parse(await readFile(FOOTAGE, 'utf8'));
-const { cues, front } = parseNarration(await readFile(NARRATION, 'utf8'));
+const { cues, front } = parseNarration(await readFile(narrationPath, 'utf8'));
 
 await rm(SEG, { recursive: true, force: true });
 await mkdir(SEG, { recursive: true });
@@ -176,11 +192,11 @@ await browser.close();
 // concat all segments
 const list = join(BUILD, 'segments.txt');
 await writeFile(list, segFiles.map((p) => `file '${p}'`).join('\n') + '\n');
-const webmOut = join(OUT_DIR, 'phalanx-duel-demo.webm');
+const webmOut = join(OUT_DIR, `${outputStem}.webm`);
 await exec('ffmpeg', ['-y', '-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', webmOut]);
 
 // mp4 for sharing
-const mp4Out = join(OUT_DIR, 'phalanx-duel-demo.mp4');
+const mp4Out = join(OUT_DIR, `${outputStem}.mp4`);
 await exec('ffmpeg', [
   '-y',
   '-i',
@@ -202,10 +218,11 @@ await exec('ffmpeg', [
   mp4Out,
 ]);
 
-await writeFile(join(OUT_DIR, 'phalanx-duel-demo.vtt'), vtt.join('\n') + '\n');
+const vttOut = join(OUT_DIR, `${outputStem}.vtt`);
+await writeFile(vttOut, vtt.join('\n') + '\n');
 
 console.log(`\n[build-demo] ${(timeline / 60).toFixed(1)} min`);
-for (const f of [mp4Out, webmOut, join(OUT_DIR, 'phalanx-duel-demo.vtt')]) console.log(`  ${f}`);
+for (const f of [mp4Out, webmOut, vttOut]) console.log(`  ${f}`);
 
 // ---------------------------------------------------------------- helpers
 

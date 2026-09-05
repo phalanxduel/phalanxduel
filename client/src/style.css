@@ -3623,6 +3623,56 @@ select:focus {
   mix-blend-mode: screen;
 }
 
+/* Damage is a visual consequence of the authoritative HP ratio. The cracks
+   are intentionally quiet: the HP bar and text remain the source of truth. */
+.phx-card.is-damaged .phx-card-layer-surface::before {
+  content: '';
+  position: absolute;
+  inset: 7% 9%;
+  background:
+    linear-gradient(
+      118deg,
+      transparent 0 31%,
+      rgba(255, 238, 194, 0.58) 31.4% 32%,
+      transparent 32.5% 100%
+    ),
+    linear-gradient(
+      72deg,
+      transparent 0 48%,
+      rgba(255, 238, 194, 0.45) 48.4% 49%,
+      transparent 49.5% 100%
+    ),
+    linear-gradient(
+      164deg,
+      transparent 0 57%,
+      rgba(255, 238, 194, 0.38) 57.4% 58%,
+      transparent 58.5% 100%
+    ),
+    linear-gradient(
+      24deg,
+      transparent 0 69%,
+      rgba(255, 238, 194, 0.32) 69.4% 70%,
+      transparent 70.5% 100%
+    );
+  background-size: 100% 100%;
+  mix-blend-mode: screen;
+  opacity: 0.42;
+  pointer-events: none;
+  transform: rotate(-7deg) scale(0.92);
+}
+
+.phx-card.damage-heavy .phx-card-layer-surface::before {
+  opacity: 0.82;
+  filter: drop-shadow(0 0 4px rgba(255, 196, 96, 0.55));
+}
+
+.phx-card.damage-heavy {
+  border-color: rgba(240, 154, 76, 0.5);
+  box-shadow:
+    inset 0 0 18px rgba(240, 154, 76, 0.12),
+    0 0 16px rgba(240, 154, 76, 0.08);
+}
+
 /* A restrained wordmark evokes painted shield bands without replacing the
    familiar card face. It is decorative and never participates in hit testing. */
 .phx-card-layer-surface::after {
@@ -3631,15 +3681,52 @@ select:focus {
   top: 48%;
   left: 0;
   width: 100%;
-  color: rgba(220, 203, 164, 0.12);
+  color: rgba(220, 203, 164, 0.2);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.55rem, 11cqw, 1rem);
+  font-size: clamp(0.7rem, 17cqw, 1.45rem);
   font-weight: 700;
   letter-spacing: 0.16em;
   line-height: 1;
   text-align: center;
   transform: rotate(-18deg);
   white-space: nowrap;
+}
+
+/* The Greek numeral is a large watermark, not a replacement for the familiar
+   Latin rank. It gives each card a monumental center while preserving the
+   readable value, suit, and interaction affordances. */
+.phx-card-rank-greek-hero {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  z-index: -1;
+  display: block;
+  max-width: 90%;
+  overflow: hidden;
+  color: var(--gold);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.8rem, 42cqw, 5.2rem);
+  font-weight: 700;
+  letter-spacing: -0.08em;
+  line-height: 0.8;
+  opacity: 0.17;
+  pointer-events: none;
+  text-align: center;
+  text-shadow:
+    0 0 18px currentColor,
+    0 2px 0 rgba(255, 255, 255, 0.12);
+  transform: translate(-50%, -50%) rotate(-10deg);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.phx-card-rank-greek-hero::after {
+  content: '';
+  position: absolute;
+  inset: -20% -25%;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.35;
+  transform: rotate(32deg);
 }
 
 .phx-card-layer-interaction {
@@ -3660,6 +3747,7 @@ select:focus {
   grid-template-columns: 1fr auto;
   padding: inherit;
   filter: contrast(var(--content-elevation-contrast));
+  isolation: isolate;
 }
 
 /* Battlefield cards: fill grid cell, allow squashing */

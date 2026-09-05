@@ -146,6 +146,12 @@ function getCardClasses({
   if (columnHighlight) classes.push(`col-highlight-${columnHighlight}`);
   if (attackPreview) classes.push(`attack-preview-${attackPreview.toLowerCase()}`);
   if (isFace(actualCard)) classes.push('is-face');
+  if (bCard && bCard.currentHp < actualCard.value) {
+    classes.push('is-damaged');
+    classes.push(
+      bCard.currentHp / Math.max(actualCard.value, 1) <= 0.45 ? 'damage-heavy' : 'damage-light',
+    );
+  }
 
   classes.push(`rank-${actualCard.face.toLowerCase()}`);
   classes.push(`type-${actualCard.type.toLowerCase()}`);
@@ -257,6 +263,7 @@ function PhxCard(props: {
       data-testid={props.testId}
       data-card-variant={variant}
       data-card-intensity={getCardIntensity(actualCard)}
+      data-card-damage={bCard ? `${bCard.currentHp}/${actualCard.value}` : undefined}
       data-card-suit={actualCard.suit}
       data-card-theme={cardSkinId}
       data-qa-attackable={props.isAttackPlayable ? 'true' : undefined}
@@ -267,6 +274,9 @@ function PhxCard(props: {
       <div class="phx-card-layer phx-card-layer-surface" />
       <div class="phx-card-layer phx-card-layer-accents" />
       <div class="phx-card-content">
+        <span class="phx-card-rank-greek-hero" style={{ color }} aria-hidden="true">
+          {greekRankLabel(actualCard.face)}
+        </span>
         <div class="phx-card-rank" style={{ color }}>
           {actualCard.face}
           <span class="phx-card-rank-greek" aria-hidden="true">

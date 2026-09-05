@@ -952,10 +952,38 @@
       server/src/match&#8209;actor.ts &middot; engine/src/combat.ts &middot;
       server/src/event&#8209;bus.ts
     </p>
-    <p class="slide-num">10 / 14</p>
+    <p class="slide-num">10 / 15</p>
   </section>
 
-  <!-- 11 · PHASE LIFECYCLE -->
+  <!-- 11 · SYSTEM PURPOSE -->
+  <section class="slide world-code">
+    <p class="kicker">Code · 03 — The purpose is what it does</p>
+    <h2 class="slide-title" style="color: var(--paper-on-void)">
+      One match. Several safe views of the same truth.
+    </h2>
+    <p class="dek" style="margin-bottom: 1.2rem">
+      Phalanx Duel coordinates intent under pressure, resolves it authoritatively, and preserves the
+      proof. The player, the spectator, and the rewatch viewer are not separate simulations.
+    </p>
+    <div class="flow">
+      <div class="flow-node">Player, visitor,<br />or bot intent</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node">Session +<br />trace context</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node accent">Server +<br />deterministic engine</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node accent">Replay log +<br />state hashes</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node">Player view · spectator view<br />· deterministic rewatch</div>
+    </div>
+    <p class="dek mono" style="font-size: 0.8rem; margin-top: 1.5rem; color: var(--mist)">
+      qa.run_id &rarr; traceparent &rarr; session.id &rarr; match.id &rarr; replay.step &rarr; state
+      hash
+    </p>
+    <p class="slide-num">11 / 15</p>
+  </section>
+
+  <!-- 12 · PHASE LIFECYCLE -->
   <section class="slide world-code">
     <p class="kicker">Code · 03 — Every turn, the same eight phases</p>
     <h2 class="slide-title" style="color: var(--paper-on-void)">
@@ -982,10 +1010,10 @@
     <p class="dek mono" style="font-size: 0.8rem; margin-top: 1.6rem; color: var(--mist)">
       shared/src/schema.ts &middot; TurnPhaseSchema &middot; docs/gameplay/rules.md &sect;4
     </p>
-    <p class="slide-num">11 / 14</p>
+    <p class="slide-num">12 / 15</p>
   </section>
 
-  <!-- 12 · VERIFY IT YOURSELF -->
+  <!-- 13 · VERIFY IT YOURSELF -->
   <section class="slide world-code">
     <p class="kicker">Code · 04 — Try it yourself</p>
     <h2 class="slide-title" style="color: var(--paper-on-void)">
@@ -1024,10 +1052,10 @@ pnpm qa:replay:verify <span class="c-dim"># replay a match, confirm it's identic
         >
       </li>
     </ul>
-    <p class="slide-num">12 / 14</p>
+    <p class="slide-num">13 / 15</p>
   </section>
 
-  <!-- 13 · WHY DETERMINISM -->
+  <!-- 14 · WHY DETERMINISM -->
   <section class="slide world-code">
     <p class="kicker">Code · 05 — Why it's built this way</p>
     <h2 class="slide-title" style="color: var(--paper-on-void)">
@@ -1053,10 +1081,10 @@ pnpm qa:replay:verify <span class="c-dim"># replay a match, confirm it's identic
         >
       </li>
     </ul>
-    <p class="slide-num">13 / 14</p>
+    <p class="slide-num">14 / 15</p>
   </section>
 
-  <!-- 13 · LINKS / BIO / THANKS -->
+  <!-- 15 · LINKS / BIO / THANKS -->
   <section class="slide world-code">
     <p class="kicker">Play along</p>
     <h2 class="slide-title" style="color: var(--paper-on-void)">Nothing to install. Try it now.</h2>
@@ -1092,6 +1120,15 @@ pnpm qa:replay:verify <span class="c-dim"># replay a match, confirm it's identic
         <div class="lbl">This talk</div>
         <div class="val">just3ws.com/phalanx&#8209;duel</div>
       </a>
+      <a
+        class="link-card"
+        href="../../client/public/pvl-system-story.html"
+        target="_blank"
+        rel="noopener"
+      >
+        <div class="lbl">System purpose</div>
+        <div class="val">PVL interaction story</div>
+      </a>
     </div>
     <div class="bio">
       <p>
@@ -1103,7 +1140,7 @@ pnpm qa:replay:verify <span class="c-dim"># replay a match, confirm it's identic
         rules, and verification gates that check behavior across a match's full lifecycle.
       </p>
     </div>
-    <p class="slide-num">14 / 14</p>
+    <p class="slide-num">15 / 15</p>
   </section>
 </div>
 

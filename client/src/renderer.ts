@@ -361,6 +361,13 @@ function renderFloatingCard(state: AppState): void {
     rank.appendChild(greekRank);
   }
   rank.style.color = suitColor(card.suit);
+  if (state.themePhx) {
+    const greekHero = el('span', 'phx-card-rank-greek-hero');
+    greekHero.setAttribute('aria-hidden', 'true');
+    greekHero.textContent = greekRankLabel(card.face);
+    greekHero.style.color = suitColor(card.suit);
+    floatingEl.appendChild(greekHero);
+  }
   floatingEl.appendChild(rank);
 
   const suitEl = el('div', state.themePhx ? 'phx-card-suit' : 'card-pip');
