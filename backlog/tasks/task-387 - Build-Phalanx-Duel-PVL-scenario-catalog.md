@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-09-05 17:22'
-updated_date: '2026-09-05 17:23'
+updated_date: '2026-09-05 17:34'
 labels:
   - observability
   - panoramic-view
@@ -76,4 +76,6 @@ PVL currently produces individual local walkthrough artifacts and correlated tel
 
 <!-- SECTION:NOTES:BEGIN -->
 Created from the requested PVL expansion: project-level catalog, business and gameplay scenario inventory, run history, identity mappings, evidence references, and Inventory/Evaluate/Address analysis. Awaiting Pavel's supported zdots registration contract before wiring the external index.
+
+2026-09-05 @codex: commit c749270 adds per-message W3C traceparent propagation for phx-qa API messages, qaTraceparent handoff into browser automation, safe qa.p1_id/qa.p2_id correlation after server assignment, and PVL transaction-log anchors (player index, msg ID, turn hash, phase digest, state hashes). Pushed to origin/main; pre-push quick verification passed.
 <!-- SECTION:NOTES:END -->
