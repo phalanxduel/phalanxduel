@@ -54,7 +54,7 @@ cross-branch development: `PHALANX_ALLOW_VERSION_MISMATCH=1`.
 ## Prerequisites (building from source)
 
 - Go `1.24.x`
-- A running Phalanx Duel server on `https://play.phalanxduel.localhost` (or a remote URL)
+- A running Phalanx Duel server on `http://localhost:3001` (or a remote URL)
 
 ## Install Go Dependencies
 
@@ -87,7 +87,7 @@ rtk go run . -auto
 Set the `PHALANX_SERVER_URL` environment variable:
 
 ```bash
-PHALANX_SERVER_URL=https://play.phalanxduel.localhost rtk go run .
+PHALANX_SERVER_URL=http://localhost:3001 rtk go run .
 ```
 
 ## CLI Options

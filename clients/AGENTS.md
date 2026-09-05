@@ -92,9 +92,9 @@ these schema families:
 
 ## WebSocket Guidance
 
-The branded local WebSocket endpoint is
-`wss://play.phalanxduel.localhost/ws`. The direct diagnostic endpoint remains
-`ws://127.0.0.1:3001/ws` when bypassing nginx intentionally.
+The default local WebSocket endpoint is `ws://localhost:3001/ws`. The branded
+endpoint `wss://play.phalanxduel.localhost/ws` remains available when a local
+nginx rehearsal explicitly needs TLS and the recorded demo hostname.
 
 Even if a client is primarily REST-generated, it must still model the current
 WebSocket message contracts from `shared/src/schema.ts` and

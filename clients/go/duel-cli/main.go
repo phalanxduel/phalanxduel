@@ -22,7 +22,7 @@ import (
 	phalanx "github.com/phalanxduel/phalanxduel/clients/go/duel-cli/internal/phalanxapi"
 )
 
-const defaultBaseURL = "https://play.phalanxduel.localhost"
+const defaultBaseURL = "http://localhost:3001"
 
 // clientVersion and compatibleSchemaMajor are bumped together with each
 // clients/go/duel-cli/vX.Y.Z release tag. See docs/architecture/versioning.md
