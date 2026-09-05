@@ -13,7 +13,7 @@
       "y": ["count(*)"]
     },
     {
-      "title": "Platinum · latency activity",
+      "title": "PHX · latency activity",
       "type": "line",
       "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(delay_ms) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
       "x": "histogram(_timestamp)",
@@ -21,7 +21,7 @@
       "intent": "Live proof that gameplay and dependency timing records are arriving."
     },
     {
-      "title": "Platinum · action throughput",
+      "title": "PHX · action throughput",
       "type": "line",
       "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(action) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
       "x": "histogram(_timestamp)",
@@ -29,7 +29,7 @@
       "intent": "Gameplay action flow."
     },
     {
-      "title": "Platinum · dependency activity",
+      "title": "PHX · dependency activity",
       "type": "line",
       "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(db_operation) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
       "x": "histogram(_timestamp)",
@@ -37,12 +37,44 @@
       "intent": "Database instrumentation activity."
     },
     {
-      "title": "Platinum · environment mix",
+      "title": "PHX · environment mix",
       "type": "line",
       "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(deployment_environment) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
       "x": "histogram(_timestamp)",
       "y": ["count(deployment_environment)"],
       "intent": "Development-only deployment signal."
+    },
+    {
+      "title": "PHX · error pulse",
+      "type": "line",
+      "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(status_code) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
+      "x": "histogram(_timestamp)",
+      "y": ["count(status_code)"],
+      "intent": "HTTP and span error activity."
+    },
+    {
+      "title": "PHX · browser telemetry",
+      "type": "line",
+      "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(agent_name) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
+      "x": "histogram(_timestamp)",
+      "y": ["count(agent_name)"],
+      "intent": "Browser and automation signal activity; currently no data in the selected window."
+    },
+    {
+      "title": "PHX · match activity",
+      "type": "line",
+      "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(details_cardsdrawn) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
+      "x": "histogram(_timestamp)",
+      "y": ["count(details_cardsdrawn)"],
+      "intent": "Gameplay match activity; currently no data in the selected window."
+    },
+    {
+      "title": "PHX · HTTP status profile",
+      "type": "line",
+      "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(http_status_code) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
+      "x": "histogram(_timestamp)",
+      "y": ["count(http_status_code)"],
+      "intent": "HTTP response profile; currently no data in the selected window."
     }
   ]
 }
