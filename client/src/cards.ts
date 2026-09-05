@@ -40,6 +40,8 @@ const GREEK_NUMERALS: Record<number, string> = {
 const FACE_NUMBERS: Record<string, number> = {
   a: 1,
   ace: 1,
+  t: 10,
+  ten: 10,
   j: 11,
   jack: 11,
   q: 12,
