@@ -11,6 +11,13 @@ test.describe('Visual Regression - UI Integrity', () => {
     // Wait for the dynamic panels to settle
     await page.waitForSelector('[data-testid="public-open-matches-panel"]');
 
+    // Keep the visible guest identity stable so the baseline tests the layout,
+    // not the random name generator.
+    const lobbyNameInput = page.locator('[data-testid="lobby-name-input"]');
+    await lobbyNameInput.fill('VisualQA');
+    await expect(lobbyNameInput).toHaveValue('VisualQA');
+    await page.waitForTimeout(100);
+
     // Remove focus from inputs to hide blinking cursor
     await page.locator('body').click({ position: { x: 0, y: 0 } });
 

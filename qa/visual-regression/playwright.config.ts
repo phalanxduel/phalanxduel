@@ -1,9 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// Selects the project development database locally and the test database in CI.
+// This keeps Playwright from inheriting the ambient `postgresql:///my` shell DB.
 const serverCommand =
-  process.env.CI || process.env.GITHUB_ACTIONS
-    ? 'bash bin/maint/with-tooling-postgres.sh pnpm --filter @phalanxduel/server exec tsx watch src/index.ts'
-    : 'pnpm --filter @phalanxduel/server dev';
+  'bash bin/maint/with-tooling-postgres.sh pnpm --filter @phalanxduel/server exec tsx watch src/index.ts';
 
 export default defineConfig({
   testDir: './tests',

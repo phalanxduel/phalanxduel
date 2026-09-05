@@ -12,6 +12,11 @@ on:
         required: false
         type: boolean
         default: false
+      refresh_visual_snapshots:
+        description: 'Refresh Linux Playwright visual baselines and upload them for review'
+        required: false
+        type: boolean
+        default: false
 
 env:
   REGISTRY: ghcr.io
@@ -112,6 +117,18 @@ jobs:
           corepack pnpm sdk:gen
           corepack pnpm --filter @phalanxduel/server db:migrate
           corepack pnpm verify:ci
+
+      - name: Refresh Linux visual baselines
+        if: always() && inputs.refresh_visual_snapshots == true
+        run: corepack pnpm qa:visual:update
+
+      - name: Upload refreshed Linux visual baselines
+        if: always() && inputs.refresh_visual_snapshots == true
+        uses: actions/upload-artifact@ea165f8d65b6e75c540449e92b4886f43607fa02 # v4
+        with:
+          name: visual-baselines-linux
+          path: qa/visual-regression/tests/visual.spec.ts-snapshots/*-linux.png
+          if-no-files-found: error
 
       - name: Gameplay Trust Gate Summary
         if: always()
