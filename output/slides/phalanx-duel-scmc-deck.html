@@ -245,6 +245,91 @@
     background: rgba(39, 117, 166, 0.08);
   }
 
+  .artifact-strip {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    margin-top: 1.1rem;
+    max-width: 760px;
+  }
+  .artifact-card {
+    position: relative;
+    flex: 0 0 92px;
+    aspect-ratio: 5 / 7;
+    overflow: hidden;
+    border: 2px solid var(--amber);
+    border-radius: 9px;
+    background: #07151d;
+    box-shadow: 0 8px 18px rgba(21, 31, 43, 0.22);
+  }
+  .artifact-card.front {
+    isolation: isolate;
+    background:
+      radial-gradient(circle at 50% 52%, rgba(39, 117, 166, 0.22), transparent 58%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 35%), #102533;
+  }
+  .artifact-card.front::before {
+    content: 'Ιʹ';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    z-index: 0;
+    color: rgba(240, 192, 64, 0.22);
+    font-family: Georgia, serif;
+    font-size: 6rem;
+    font-weight: 700;
+    line-height: 0.7;
+    transform: translate(-50%, -50%) rotate(-10deg);
+  }
+  .artifact-card.front::after {
+    content: 'ΦΑΛΑΓΞ';
+    position: absolute;
+    right: -35%;
+    bottom: 9%;
+    width: 170%;
+    color: rgba(220, 203, 164, 0.18);
+    font-family: Georgia, serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.18em;
+    transform: rotate(-28deg);
+  }
+  .artifact-rank {
+    position: relative;
+    z-index: 2;
+    padding: 0.5rem;
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .artifact-damage {
+    position: absolute;
+    right: -12%;
+    bottom: 0;
+    left: -12%;
+    height: 22%;
+    background:
+      linear-gradient(
+        112deg,
+        transparent 0 42%,
+        rgba(255, 238, 194, 0.68) 43% 44%,
+        transparent 45%
+      ),
+      linear-gradient(72deg, transparent 0 56%, rgba(255, 238, 194, 0.5) 57% 58%, transparent 59%),
+      linear-gradient(180deg, transparent, rgba(198, 91, 61, 0.52));
+    opacity: 0.78;
+  }
+  .artifact-card.back {
+    border-color: rgba(220, 203, 164, 0.82);
+    background: url('../../client/public/images/card-backs/dual-loop.webp') center / cover;
+  }
+  .artifact-caption {
+    max-width: 42ch;
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
   ol.steps,
   ul.list {
     margin: 0;
@@ -695,7 +780,7 @@
       on a four&#8209;column battlefield. The rules in that notebook are still the rules you're
       about to learn.
     </p>
-    <p class="slide-num">2 / 14</p>
+    <p class="slide-num">2 / 15</p>
   </section>
 
   <!-- 3 · GOAL & BOARD -->
@@ -720,7 +805,7 @@
       <div class="cardslot">3</div>
       <div class="cardslot">4</div>
     </div>
-    <p class="slide-num">3 / 14</p>
+    <p class="slide-num">3 / 15</p>
   </section>
 
   <!-- 4 · A TURN -->
@@ -746,7 +831,7 @@
         <span><b>Switch.</b> The defender draws to four, then becomes the attacker.</span>
       </li>
     </ol>
-    <p class="slide-num">4 / 14</p>
+    <p class="slide-num">4 / 15</p>
   </section>
 
   <!-- 5 · RESOLVE AN ATTACK -->
@@ -790,7 +875,7 @@
         <span class="eq">opponent<br />loses 2 LP</span>
       </div>
     </div>
-    <p class="slide-num">5 / 14</p>
+    <p class="slide-num">5 / 15</p>
   </section>
 
   <!-- 6 · THE FOUR SUITS -->
@@ -831,7 +916,7 @@
     >
       docs/gameplay/rules.md &middot; &ldquo;The four suits&rdquo;
     </p>
-    <p class="slide-num">6 / 14</p>
+    <p class="slide-num">6 / 15</p>
   </section>
 
   <!-- 7 · REINFORCE & WIN -->
@@ -865,7 +950,18 @@
         ><span>Running out of cards to draw is not a loss. There is no reshuffle.</span>
       </li>
     </ul>
-    <p class="slide-num">7 / 14</p>
+    <div class="artifact-strip" aria-label="Card visual language">
+      <div class="artifact-card front" aria-hidden="true">
+        <div class="artifact-rank">10 · Ιʹ</div>
+        <div class="artifact-damage"></div>
+      </div>
+      <div class="artifact-card back" aria-hidden="true"></div>
+      <p class="artifact-caption">
+        The glyph is background. The maker's mark is atmosphere. Damage gathers at the impact edge.
+        The back is a theme surface that can become player-owned without changing the rules.
+      </p>
+    </div>
+    <p class="slide-num">7 / 15</p>
   </section>
 
   <!-- 8 · PLAY -->
@@ -882,7 +978,7 @@
       Setup &rarr; a turn &rarr; resolve an attack &rarr; the four suits &rarr; reinforce &rarr;
       win. That's the whole game.
     </p>
-    <p class="slide-num">8 / 14</p>
+    <p class="slide-num">8 / 15</p>
   </section>
 
   <!-- 9 · TRANSITION -->
@@ -920,7 +1016,7 @@
         </div>
       </div>
     </div>
-    <p class="slide-num">9 / 14</p>
+    <p class="slide-num">9 / 15</p>
   </section>
 
   <!-- 10 · ARCHITECTURE -->
@@ -1128,6 +1224,10 @@ pnpm qa:replay:verify <span class="c-dim"># replay a match, confirm it's identic
       >
         <div class="lbl">System purpose</div>
         <div class="val">PVL interaction story</div>
+      </a>
+      <a class="link-card" href="../../output/demo/README.md" target="_blank" rel="noopener">
+        <div class="lbl">Tutorial assets</div>
+        <div class="val">Demo and video index</div>
       </a>
     </div>
     <div class="bio">

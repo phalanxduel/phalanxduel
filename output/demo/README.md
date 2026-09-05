@@ -23,6 +23,7 @@ It is not part of the default local rehearsal yet.
 | 6 | Fallback demo video | `output/video/phalanx-duel-demo.mp4` | Narrated, ~3 min. Play this if the live demo breaks. |
 | 7 | Observability pairing packet | `output/demo/OBSERVABILITY-PAIRING.md` | O2 and Jaeger links, correlation keys, presenter sequence, and recovery cue. |
 | 8 | Source references (for the room to see, not memorize) | `docs/gameplay/rules.md`, `shared/src/schema.ts`, `engine/src/combat.ts` | Already cited on-slide (Code · 04). Have the repo open in an editor tab if you want to actually scroll to them live. |
+| 9 | Visual publication audit | `docs/marketing/visual-publication-audit.md` | Current screenshot, tutorial, demo-video, portfolio, and YouTube recording inventory. |
 
 ## Pre-flight (do this before people arrive)
 
