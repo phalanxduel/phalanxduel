@@ -6,7 +6,7 @@
   "panels": [
     {
       "id": "Panel_PHX001",
-      "title": "Phalanx Duel request rate",
+      "title": "PHX · request rate",
       "type": "line",
       "query": "SELECT histogram(_timestamp) as \"x_axis_1\", count(*) as \"y_axis_1\" FROM \"default\" GROUP BY x_axis_1 ORDER BY x_axis_1 ASC",
       "x": "histogram(_timestamp)",
