@@ -3629,13 +3629,17 @@ select:focus {
 .phx-card.is-damaged .phx-card-layer-surface::before {
   content: '';
   position: absolute;
-  inset: 7% 9%;
+  right: -6%;
+  bottom: -4%;
+  left: -6%;
+  height: 52%;
   background:
+    radial-gradient(ellipse at 50% 100%, rgba(240, 154, 76, 0.22), transparent 58%),
     linear-gradient(
       118deg,
-      transparent 0 31%,
-      rgba(255, 238, 194, 0.58) 31.4% 32%,
-      transparent 32.5% 100%
+      transparent 0 38%,
+      rgba(255, 238, 194, 0.58) 38.4% 39%,
+      transparent 39.5% 100%
     ),
     linear-gradient(
       72deg,
@@ -3659,7 +3663,8 @@ select:focus {
   mix-blend-mode: screen;
   opacity: 0.42;
   pointer-events: none;
-  transform: rotate(-7deg) scale(0.92);
+  transform: rotate(-7deg) scale(0.98);
+  transform-origin: 50% 100%;
 }
 
 .phx-card.damage-heavy .phx-card-layer-surface::before {
@@ -3679,17 +3684,18 @@ select:focus {
 .phx-card-layer-surface::after {
   content: 'ΦΑΛΑΓΞ';
   position: absolute;
-  top: 48%;
-  left: 0;
-  width: 100%;
-  color: rgba(220, 203, 164, 0.24);
+  right: -34%;
+  bottom: 7%;
+  width: 168%;
+  color: rgba(220, 203, 164, 0.1);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.85rem, 23cqw, 1.85rem);
+  font-size: clamp(0.5rem, 11cqw, 1rem);
   font-weight: 700;
-  letter-spacing: 0.22em;
+  filter: blur(0.2px);
+  letter-spacing: 0.42em;
   line-height: 1;
   text-align: center;
-  transform: rotate(-18deg);
+  transform: rotate(-28deg);
   white-space: nowrap;
 }
 
@@ -4277,6 +4283,39 @@ select:focus {
   height: 100%;
   transition: width 0.4s cubic-bezier(0.2, 0, 0, 1);
   filter: saturate(1.1);
+}
+
+@keyframes phx-hp-heartbeat {
+  0%,
+  100% {
+    filter: saturate(1.1) brightness(1);
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+  12% {
+    filter: saturate(1.25) brightness(1.18);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.32);
+  }
+  20% {
+    filter: saturate(1.1) brightness(1);
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+  30% {
+    filter: saturate(1.18) brightness(1.1);
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+  }
+  42%,
+  100% {
+    filter: saturate(1.1) brightness(1);
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.phx-card.damage-light .phx-card-hp-bar {
+  animation: phx-hp-heartbeat 2.8s ease-in-out infinite;
+}
+
+.phx-card.damage-heavy .phx-card-hp-bar {
+  animation: phx-hp-heartbeat 1.35s ease-in-out infinite;
 }
 
 .phx-card-hp-text {
@@ -5434,6 +5473,11 @@ select:focus {
   .spectator-count,
   .phx-modal-content {
     transition: none !important;
+    animation: none !important;
+  }
+
+  .phx-card.damage-light .phx-card-hp-bar,
+  .phx-card.damage-heavy .phx-card-hp-bar {
     animation: none !important;
   }
 
