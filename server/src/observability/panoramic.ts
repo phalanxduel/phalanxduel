@@ -10,6 +10,9 @@ export interface PanoramicRecord {
   trace_id: string;
   span_id: string;
   match_id: string;
+  service_name: 'phx-server';
+  service_namespace: 'phalanxduel';
+  deployment_environment: 'local';
   lane: string;
   kind: string;
   label: string;
@@ -58,6 +61,9 @@ export function buildPanoramicTurnRecords(
     trace_id: traceId,
     span_id: spanId,
     match_id: matchId,
+    service_name: 'phx-server' as const,
+    service_namespace: 'phalanxduel' as const,
+    deployment_environment: 'local' as const,
     sequence_number: entry.sequenceNumber,
     action_type: entry.action.type,
     state_hash_before: entry.stateHashBefore,
@@ -97,6 +103,9 @@ export function buildPanoramicFailureRecord(
     trace_id: traceIdForMatch(matchId),
     span_id: spanIdForSequence(0),
     match_id: matchId,
+    service_name: 'phx-server',
+    service_namespace: 'phalanxduel',
+    deployment_environment: 'local',
     lane: 'state-machine',
     kind: 'action.rejected',
     label: safeLabel(`${actionType} rejected`),

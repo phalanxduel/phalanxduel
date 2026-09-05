@@ -28,6 +28,17 @@ the `phalanxduel` namespace, so the service map can join browser HTTP and
 WebSocket activity with server spans. The collector's spanmetrics connector
 also derives rate, error, and duration data from those spans.
 
+The current O2 topology surface is the Service Catalog:
+
+```text
+https://o2.localhost/web/traces?org_identifier=default&tab=services-catalog
+```
+
+It is a service inventory with RED health data rather than a dedicated graph.
+The cockpit links directly to the catalog and trace search. A future graph can
+be built from the same spans once `peer.service` edges are consistently
+available for browser, server, Postgres, and Redis dependencies.
+
 OpenObserve's Logs page does not select a stream from the bare organization
 URL. Use the `default` stream explicitly:
 

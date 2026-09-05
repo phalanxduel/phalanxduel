@@ -40,6 +40,8 @@ Start with the narrowest key available and carry it through every query:
 | `ws.session_id` / `game.session_id` | One browser or client session |
 | `ws.reconnect_attempt` | Reconnect behavior for the session |
 | `service.name` | `phx-client`, `phx-server`, or a QA runner |
+| `service.namespace` | `phalanxduel` for the game domain |
+| `deployment.environment` | `local` for PVL filelog evidence |
 | `deployment.environment` | Local, test, or production context |
 
 ## Discrete flows to show
@@ -169,5 +171,9 @@ The writer is local/development-only and non-blocking. It never writes player
 names, credentials, tokens, raw game state, or private card collections. A
 rejected action is represented as `status: down` with
 `confidence: observed-failure`; a failed telemetry write cannot fail a turn.
+PVL filelog records identify the emitting service as `phx-server` in the
+`phalanxduel` namespace and carry the local deployment environment, allowing
+O2 service catalog queries to group them with server traces. The collector may
+still normalize resource fields according to the zdots platform policy.
 After changing `.zdots.local`, restart the host collector with
 `rtk otel-collector restart`.
