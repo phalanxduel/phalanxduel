@@ -22,6 +22,7 @@ SOURCE_DIRS=(engine/src server/src client/src shared/src admin/src)
 if ! npx dependency-cruiser \
   --config .dependency-cruiser.json \
   --include-only '^(engine|server|client|shared|admin)/src' \
+  --do-not-follow '(^|/)dist/' \
   "${SOURCE_DIRS[@]}"; then
   echo ""
   echo "❌ ERROR: Architecture boundary violation detected."
