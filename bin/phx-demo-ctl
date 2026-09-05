@@ -27,6 +27,7 @@ PLAY_URL="${PHALANX_DEMO_PLAY_URL:-$CLIENT_URL}"
 READY_TIMEOUT="${PHALANX_DEMO_READY_TIMEOUT:-60}"
 DEMO_RUNTIME_DIR="${PHALANX_DEMO_RUNTIME_DIR:-$REPO_ROOT/.phx/cockpit}"
 QUICKLINKS_FILE="$DEMO_RUNTIME_DIR/quicklinks.html"
+PVL_DIAGRAMS_BASE="$DEMO_RUNTIME_DIR/pvl-diagrams"
 SERVICES_RUN_DIR="$REPO_ROOT/.phx/run"
 SERVICES_LOG_DIR="$REPO_ROOT/.phx/logs"
 COCKPIT_PORT="${PHALANX_DEMO_COCKPIT_PORT:-3333}"
@@ -134,6 +135,13 @@ open_quicklinks() {
   fi
 }
 
+generate_pvl_assets() {
+  mkdir -p "$DEMO_RUNTIME_DIR"
+  # PVL diagrams are local derived artifacts: the catalog is committed, the
+  # rendered graph is intentionally ignored and regenerated for each demo.
+  pnpm exec tsx bin/qa/pvl-diagrams.ts --out "$PVL_DIAGRAMS_BASE" >/dev/null 2>&1 || true
+}
+
 start_cockpit_server() {
   if curl -fsS --max-time 1 "$COCKPIT_BRIDGE_URL/health" >/dev/null 2>&1; then
     return
@@ -172,6 +180,7 @@ stop_cockpit_server() {
 
 write_quicklinks() {
   start_cockpit_server
+  generate_pvl_assets
   mkdir -p "$(dirname "$QUICKLINKS_FILE")"
   COCKPIT_URL=$(cockpit_url)
   local generated_at git_commit app_code play_code admin_code api_code
@@ -195,7 +204,7 @@ write_quicklinks() {
   jaeger_monitor_url="$JAEGER_URL/monitor"
   jaeger_dependencies_url="$JAEGER_URL/dependencies"
   local esc_git esc_play esc_admin esc_client esc_app_docs esc_grafana esc_o2 esc_o2_logs esc_o2_traces esc_o2_services esc_jaeger_search esc_jaeger_monitor esc_jaeger_dependencies esc_go esc_cockpit
-  local esc_reel esc_pdf esc_narration esc_manifest esc_compat esc_server_log esc_client_log esc_admin_log
+  local esc_reel esc_pdf esc_narration esc_manifest esc_compat esc_pvl_md esc_pvl_graph esc_pvl_catalog esc_system_story esc_server_log esc_client_log esc_admin_log
   local esc_play_health esc_play_ready esc_app_health esc_app_ready esc_admin_health esc_admin_ready esc_admin_ui esc_app_json
   local label_play label_admin label_app label_api
   esc_git=$(html_escape "$git_commit")
@@ -218,6 +227,10 @@ write_quicklinks() {
   esc_narration=$(html_escape "file://$REPO_ROOT/scripts/video/demo-narration.md")
   esc_manifest=$(html_escape "file://$REPO_ROOT/config/openobserve/phalanx-duel-dashboard.json")
   esc_compat=$(html_escape "file://$REPO_ROOT/docs/reference/client-compatibility.md")
+  esc_pvl_md=$(html_escape "file://$PVL_DIAGRAMS_BASE.md")
+  esc_pvl_graph=$(html_escape "file://$PVL_DIAGRAMS_BASE.json")
+  esc_pvl_catalog=$(html_escape "file://$REPO_ROOT/qa/scenarios/pvl-auth-public.json")
+  esc_system_story=$(html_escape "file://$REPO_ROOT/client/public/pvl-system-story.html")
   esc_server_log=$(html_escape "file://$SERVICES_LOG_DIR/server.log")
   esc_client_log=$(html_escape "file://$SERVICES_LOG_DIR/client.log")
   esc_admin_log=$(html_escape "file://$SERVICES_LOG_DIR/admin.log")
@@ -329,6 +342,10 @@ write_quicklinks() {
     <div class="card launch-card"><a class="surface-link" href="$esc_go">Go duel CLI ↗</a><small>Alternative client · <code>cd clients/go/duel-cli &amp;&amp; go run .</code></small></div>
     $SWIFTUI_CLIENT_CARD
     <div class="card launch-card"><a class="surface-link" href="$esc_compat">Client compatibility ↗</a><small>Cross-client contract and capability matrix</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_system_story">System purpose ↗</a><small>What Phalanx Duel does across the user journey</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_pvl_md">PVL interaction diagrams ↗</a><small>Generated Mermaid flow, identity, and sequence diagrams</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_pvl_graph">PVL graph model ↗</a><small>Machine-readable nodes, edges, and ordered sequence</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_pvl_catalog">PVL scenario catalog ↗</a><small>Declared standard-user workflows and evidence gaps</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_cockpit">Refresh this cockpit ↗</a><small>Regenerate with <code>phx-demo-ctl links</code></small></div>
   </div>
 
@@ -370,6 +387,14 @@ write_quicklinks() {
     <li>If the branded host is unavailable, use <code>$(html_escape "$CLIENT_URL/")</code> as the local fallback.</li>
     <li>After rehearsal, run <code>phx-demo-ctl reset</code> for a clean seeded database.</li>
   </ol>
+
+  <h2>What the system does</h2>
+  <div class="grid">
+    <div class="card"><strong>Coordinates intent</strong><br>A visitor chooses, joins, watches, or replays. The browser carries that intent into an authenticated or anonymous session.</div>
+    <div class="card"><strong>Authoritatively resolves</strong><br>The server and deterministic engine turn actions into state, turn results, redacted projections, and replayable hashes.</div>
+    <div class="card"><strong>Preserves meaning</strong><br>Every important journey can be followed from scenario runner to trace, match, transaction, state hash, and PVL evidence.</div>
+    <div class="card"><strong>Returns the story</strong><br>Players get a game; spectators get a safe live view; everyone gets a deterministic rewatch instead of an opaque recording.</div>
+  </div>
 
   <h2>Runtime map</h2>
   <div class="grid">

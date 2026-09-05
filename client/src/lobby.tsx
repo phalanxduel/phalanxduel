@@ -3549,6 +3549,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           <a href="https://phalanxduel.com" class="footer-link">
             INTEL
           </a>
+          <a href="/pvl-system-story.html" class="footer-link" target="_blank" rel="noreferrer">
+            SYSTEM / PVL
+          </a>
           <a
             href="?screen=all_achievements"
             class="footer-link"

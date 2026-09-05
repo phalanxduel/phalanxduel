@@ -32,6 +32,17 @@ Plan the covered automode workflows without starting browsers:
 rtk pnpm exec tsx bin/qa/pvl-workflow.ts --mode plan
 ```
 
+Derive diagrams and a graph model from the same catalog:
+
+```bash
+rtk pnpm exec tsx bin/qa/pvl-diagrams.ts
+```
+
+This writes ignored development artifacts under `artifacts/pvl/`:
+`pvl-diagrams.md` for Mermaid-renderable diagrams and `pvl-diagrams.json` for
+PVL tooling. Catalog-derived edges are declared or unknown; a future evidence
+merge can promote them to observed without changing the scenario definition.
+
 Run one workflow when the local host-native server and client are already up:
 
 ```bash

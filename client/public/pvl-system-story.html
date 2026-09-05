@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Phalanx Duel · System purpose</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #f3eee5;
+        --muted: #b7ad9c;
+        --bronze: #c79a55;
+        --blue: #6ed0db;
+        --bg: #111214;
+        --panel: #1b1b1d;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background: radial-gradient(circle at top, #3a3021, transparent 34rem), var(--bg);
+        font:
+          16px/1.6 Georgia,
+          serif;
+      }
+      main {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 3rem 1.25rem 5rem;
+      }
+      .kicker {
+        color: var(--bronze);
+        font:
+          700 0.72rem/1.2 ui-monospace,
+          monospace;
+        letter-spacing: 0.2em;
+      }
+      h1 {
+        margin: 0.5rem 0;
+        font-size: clamp(2.5rem, 8vw, 5.5rem);
+        line-height: 0.98;
+      }
+      h1 span {
+        color: var(--bronze);
+      }
+      .lede {
+        max-width: 760px;
+        color: var(--muted);
+        font-size: 1.2rem;
+      }
+      .purpose {
+        border: 1px solid #c79a5570;
+        border-left: 5px solid var(--bronze);
+        padding: 1.25rem 1.5rem;
+        margin: 2rem 0;
+        background: #c79a5510;
+        font-size: 1.2rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+      }
+      article {
+        padding: 1.25rem;
+        border: 1px solid #ffffff22;
+        border-radius: 0.8rem;
+        background: #ffffff09;
+      }
+      article h2 {
+        margin-top: 0;
+        color: var(--blue);
+        font-size: 1.05rem;
+        letter-spacing: 0.04em;
+      }
+      code {
+        color: var(--bronze);
+        font-family: ui-monospace, monospace;
+      }
+      .flow {
+        display: grid;
+        gap: 0.65rem;
+        margin: 1.5rem 0;
+      }
+      .flow div {
+        padding: 0.8rem 1rem;
+        border: 1px solid #6ed0db55;
+        background: #6ed0db0b;
+        border-radius: 0.5rem;
+      }
+      .flow div:not(:last-child)::after {
+        content: '↓';
+        display: block;
+        color: var(--bronze);
+        text-align: center;
+        margin: 0.35rem 0 -0.45rem;
+      }
+      a {
+        color: var(--blue);
+      }
+      footer {
+        color: var(--muted);
+        margin-top: 3rem;
+        font:
+          0.8rem/1.5 ui-monospace,
+          monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="kicker">ΦΑΛΑΓΞ · SYSTEM PURPOSE · PVL</div>
+      <h1>The purpose of the system is <span>what it does.</span></h1>
+      <p class="lede">
+        Phalanx Duel is a coordination system disguised as a tactical card game: it turns human
+        intent into authoritative state, preserves the causal trail, and returns a legible
+        experience to players, spectators, and operators.
+      </p>
+
+      <div class="purpose">
+        <strong>Its purpose is coordination under pressure.</strong> A player chooses. The line
+        resolves. The system preserves the proof. Another person can watch the same truth live or
+        walk through it later.
+      </div>
+
+      <h2>One interaction, across the strata</h2>
+      <div class="flow">
+        <div>
+          <strong>1 · Experience</strong><br />A visitor arrives, signs in, joins, plays, watches,
+          or rewatches.
+        </div>
+        <div>
+          <strong>2 · Session and edge</strong><br /><code>session.id</code>,
+          <code>traceparent</code>, and viewer/player intent cross the browser boundary.
+        </div>
+        <div>
+          <strong>3 · Authority</strong><br />The server validates the action and the deterministic
+          engine resolves the next state.
+        </div>
+        <div>
+          <strong>4 · Evidence</strong><br /><code>match.id</code>, transaction sequence, action
+          log, state hash, and redacted projection preserve what happened.
+        </div>
+        <div>
+          <strong>5 · Understanding</strong><br />PVL maps the journey into traces, logs, metrics,
+          spectator views, replay steps, and operator reports.
+        </div>
+      </div>
+
+      <h2>What the system does for each person</h2>
+      <section class="grid">
+        <article>
+          <h2>Player</h2>
+          <p>
+            Provides a fair, server-authoritative match with recovery, replay integrity, and a
+            readable tactical line.
+          </p>
+        </article>
+        <article>
+          <h2>Visitor</h2>
+          <p>
+            Provides a low-friction public lobby, rankings, profiles, live matches, and a path into
+            play without operator knowledge.
+          </p>
+        </article>
+        <article>
+          <h2>Spectator</h2>
+          <p>
+            Provides a safe observer projection that follows the live match without leaking private
+            state or becoming a second player.
+          </p>
+        </article>
+        <article>
+          <h2>Operator</h2>
+          <p>
+            Provides a causal map from scenario runner to browser, service, engine, persistence,
+            telemetry, and evidence.
+          </p>
+        </article>
+      </section>
+
+      <h2>PVL's test of truth</h2>
+      <p>
+        If a scenario says a flow exists but no trace, replay, or query evidence confirms it, PVL
+        labels it <strong>unknown</strong>. If the run confirms it, the edge becomes
+        <strong>observed</strong>. The diagram is useful because it makes both the system's behavior
+        and its evidence gaps visible.
+      </p>
+      <p><a href="/">Return to Phalanx Duel ↗</a></p>
+      <footer>
+        Derived from the local PVL scenario catalog · Syntagma: coordination across the line and the
+        timeline.
+      </footer>
+    </main>
+  </body>
+</html>
