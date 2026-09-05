@@ -220,6 +220,22 @@ rtk pnpm qa:playthrough:ui -- --base-url https://play.phalanxduel.com --scenario
 
 Run `rtk pnpm fix` before every commit to ensure the workspace remains hardened and clean.
 
+## Repository executable tools
+
+The `bin/` entrypoints are not package scripts, but they are part of the
+developer-facing tooling contract:
+
+| Tool | Focus | Help |
+| --- | --- | --- |
+| [`bin/demo`](../../bin/demo) | Host-native demo rehearsal and browser cockpit | `bin/demo --help` |
+| [`bin/services`](../../bin/services) | Host-native service lifecycle and logs | `bin/services --help` |
+| [`bin/phx`](../../bin/phx) | Unified guide, capabilities, and context control plane | `bin/phx --help` |
+| [`bin/dock`](../../bin/dock) | Explicit Docker automation and verification | `bin/dock --help` |
+| [`scripts/demo-cockpit-server.mjs`](../../scripts/demo-cockpit-server.mjs) | Loopback cockpit bridge and safe log tails | `node scripts/demo-cockpit-server.mjs --help` |
+
+See the [local tooling reference](./local-tooling.md), [bin README](../../bin/README.md),
+and [`docs/man/`](../man/) for the operational details and focused man pages.
+
 ## deps:prune-store
 
 Mutates the local pnpm store cache. Appropriate in CI and occasional local maintenance — **not for the fast inner loop.**

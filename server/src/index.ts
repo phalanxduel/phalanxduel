@@ -7,8 +7,8 @@ import { resolve } from 'node:path';
 
 // Intercept daemon flag before doing anything else
 if (process.argv.includes('--daemon')) {
-  const outLog = resolve(process.cwd(), 'phalanx-server.out.log');
-  const errLog = resolve(process.cwd(), 'phalanx-server.err.log');
+  const outLog = resolve(process.cwd(), 'phx-server.out.log');
+  const errLog = resolve(process.cwd(), 'phx-server.err.log');
   // eslint-disable-next-line security/detect-non-literal-fs-filename
   const out = openSync(outLog, 'a');
   // eslint-disable-next-line security/detect-non-literal-fs-filename

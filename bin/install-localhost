@@ -3,6 +3,7 @@
 #   https://play.phalanxduel.localhost   (client, once `bin/demo up` is running)
 #   https://admin.phalanxduel.localhost  (admin UI, once `bin/demo up` is running)
 #   https://phalanxduel.localhost        (static site from phalanxduel/site)
+#   https://phalanxduel.localhost/demo/  (generated local cockpit, when running)
 #
 # Installs the project-owned nginx vhost (nginx/phalanxduel.localhost.conf),
 # mirroring just3ws.github.io/bin/install-localhost. Unlike that one, this
@@ -82,4 +83,5 @@ EOF
 echo
 info "Then:  bin/demo up"
 info "       open https://play.phalanxduel.localhost"
+info "       cockpit opens from bin/demo -> https://phalanxduel.localhost/demo/"
 info "       admin opens from the quicklinks page -> https://admin.phalanxduel.localhost"

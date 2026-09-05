@@ -1,0 +1,28 @@
+.TH PHX-DOCK 1 "2026-09-05" "Phalanx Duel" "Phalanx Duel Local Tooling"
+.SH NAME
+phx-dock \- run explicit containerized verification
+.SH SYNOPSIS
+.B bin/dock
+.I command
+.RI [ arguments ]
+.SH DESCRIPTION
+.B bin/dock
+runs a command in the Docker Compose
+.B automation
+service using the dev profile. Docker must already be running. This is for
+isolated verification and automation; it is not the host-native demo or local
+Postgres path.
+.SH OPTIONS
+.TP
+.B -h, --help
+Show usage and exit successfully.
+.SH EXAMPLES
+.EX
+bin/dock pnpm verify:full
+bin/dock pnpm test
+bin/dock bash
+.EE
+.SH SEE ALSO
+.BR phx-demo (1),
+.BR phx-services (1),
+.BR phx (1)

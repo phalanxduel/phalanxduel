@@ -25,7 +25,7 @@ if command -v docker >/dev/null 2>&1; then
 
   set +e
   docker run --rm \
-    --name phalanx-otel-console \
+    --name phx-otel-console \
     -v "$ROOT_DIR:/workspace" \
     -w /workspace \
     -p "$HOST_GRPC_PORT":4317 \

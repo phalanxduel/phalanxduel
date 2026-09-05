@@ -15,15 +15,32 @@ needs to be built the day of.
 | 2 | Printed quickstart | `output/pdf/phalanx-duel-face-to-face-quickstart.pdf` | Two-sided handout. Print one per pair, plus spares. |
 | 3 | Standard decks of cards | *(physical, not in repo)* | One per pair, plus extras — you already told the organizers you'd bring spares. |
 | 4 | Live software demo | `https://play.phalanxduel.localhost` | Requires `bin/demo up` running (see Pre-flight). |
-| 5 | Fallback demo video | `output/video/phalanx-duel-demo.mp4` | Narrated, ~3 min. Play this if the live demo breaks. |
-| 6 | Source references (for the room to see, not memorize) | `docs/gameplay/rules.md`, `shared/src/schema.ts`, `engine/src/combat.ts` | Already cited on-slide (Code · 04). Have the repo open in an editor tab if you want to actually scroll to them live. |
+| 5 | Local demo cockpit | `https://phalanxduel.localhost/demo/` | Generated under ignored `.phx/cockpit/`; returns 404 when the cockpit is not running. |
+| 6 | Fallback demo video | `output/video/phalanx-duel-demo.mp4` | Narrated, ~3 min. Play this if the live demo breaks. |
+| 7 | Source references (for the room to see, not memorize) | `docs/gameplay/rules.md`, `shared/src/schema.ts`, `engine/src/combat.ts` | Already cited on-slide (Code · 04). Have the repo open in an editor tab if you want to actually scroll to them live. |
 
 ## Pre-flight (do this before people arrive)
 
 Run in order, from the repo root:
 
+Install the local nginx vhost once so the demo, admin UI, and generated cockpit
+use the same branded localhost surface:
+
 ```bash
-bin/demo up                    # starts server + client + admin, opens quicklinks
+rtk bin/install-localhost
+rtk nginx -t
+sudo launchctl kickstart -k system/homebrew.mxcl.nginx
+```
+
+`bin/install-localhost` publishes the vhost and site export, checks that the
+local TLS certificate covers all three hosts, and prints the reload commands.
+Do not use `sudo brew services restart nginx`; the launchctl command preserves
+Homebrew ownership.
+
+Then start the rehearsal stack:
+
+```bash
+rtk bin/demo up                    # starts server + client + admin, opens cockpit
 ```
 
 Wait for the green "READY" line. The command prints and opens a local
@@ -31,6 +48,18 @@ quicklinks page with the play URL, admin console, health and API links, process
 IDs, logs, source paths, and rehearsal tips. If it
 times out, run `bin/demo status` to see which of app/client isn't up, then
 `bin/demo logs`.
+
+The cockpit is served at `https://phalanxduel.localhost/demo/`. It contains
+live service health, match analytics, related demo/doc links, alternative
+clients, and formatted log tails. The generated artifact is intentionally not
+committed. If `.phx/cockpit/quicklinks.html` or the cockpit bridge is absent,
+the `/demo/` path returns 404. After cockpit-only changes, refresh it without
+interrupting a match:
+
+```bash
+rtk bin/demo restart-cockpit
+rtk bin/demo links --no-open
+```
 
 The admin UI is at `https://admin.phalanxduel.localhost/` when the local nginx
 vhost is installed. Its local API is on port `3102` and its Vite UI is on port

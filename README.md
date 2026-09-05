@@ -29,7 +29,17 @@ For a guided local rehearsal, run `bin/demo up`. It starts the server, browser
 client, and dedicated admin pair, then writes a local quicklinks page with
 confirmed URLs, health results, PIDs, log paths, source paths, and a short demo
 sequence. Use `bin/demo links --no-open` to refresh it without opening a
-browser, or `bin/demo cockpit` for the interactive terminal dashboard.
+browser, or `bin/demo cockpit` for the interactive terminal dashboard. When the
+local nginx vhost is installed, the generated cockpit is available at
+`https://phalanxduel.localhost/demo/`; otherwise use the direct loopback
+fallback printed by the command.
+
+The executable tooling is documented in the [local tooling README](bin/README.md)
+and the [local tooling reference](docs/reference/local-tooling.md). The
+browser cockpit includes live analytics, related demo/doc links, alternative
+client entrypoints, and formatted local log tails. Docker remains an explicit
+verification path through `bin/dock`; it is not required by the host-native
+demo workflow.
 
 For detailed setup, troubleshooting, and advanced workflows, see the **[Development Guide](docs/development.md)**.
   
@@ -52,6 +62,7 @@ The **[Documentation Wiki](docs/README.md)** is the central entry point for all 
 - **[Development Guide](docs/development.md)** — Local setup, services, and workflows
 - **[Testing & QA](docs/testing.md)** — Running tests, simulations, and playthroughs
 - **[Configuration](docs/configuration.md)** — Environment variables and secrets
+- **[Local tooling](docs/reference/local-tooling.md)** — Demo cockpit, services, `phx-*` naming, and Docker boundary
 - **[Architecture](docs/architecture/principles.md)** — System design and boundaries
 - **[Contributing](CONTRIBUTING.md)** — Workflow, standards, and PR expectations
 

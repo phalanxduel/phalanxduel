@@ -3,65 +3,16 @@
 # because it primarily exports functions meant to be sourced by other scripts 
 # (like with-dev-postgres.sh), preventing premature exits in the parent shell.
 
-ensure_docker_host() {
-  if [ -n "${DOCKER_HOST:-}" ]; then
-    return 0
-  fi
-
-  local colima_socket="${HOME}/.colima/default/docker.sock"
-  if [ -S "$colima_socket" ]; then
-    export DOCKER_HOST="unix://${colima_socket}"
-  fi
-}
-
 ensure_local_postgres_server() {
-  local container_name="${PHALANX_DEV_POSTGRES_CONTAINER:-phalanx-postgres}"
-  local image="${PHALANX_POSTGRES_IMAGE:-pgvector/pgvector:pg17}"
-  local volume="${PHALANX_POSTGRES_VOLUME:-phalanx-postgres-data}"
-
-  ensure_docker_host
 
   if pg_isready -h localhost -p 5432 >/dev/null 2>&1; then
     return 0
   fi
 
-  if ! command -v docker >/dev/null 2>&1 || ! command -v docker-compose >/dev/null 2>&1; then
-    echo "docker-compose is required for local Postgres bootstrapping" >&2
-    exit 1
-  fi
-
-  if docker inspect "$container_name" >/dev/null 2>&1; then
-    local status
-    status="$(docker inspect -f '{{.State.Status}}' "$container_name" 2>/dev/null || true)"
-    if [ "$status" != "running" ]; then
-      docker start "$container_name" >/dev/null
-    fi
-    return 0
-  fi
-
-  local compose_dir compose_file
-  local temp_dir="${PHALANX_POSTGRES_TMPDIR:-/private/tmp}"
-  compose_dir="$(mktemp -d "${temp_dir}/phalanx-postgres.XXXXXX")"
-  compose_file="${compose_dir}/docker-compose.yml"
-  cat >"$compose_file" <<YAML
-services:
-  postgres:
-    image: ${image}
-    container_name: ${container_name}
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-    ports:
-      - '5432:5432'
-    volumes:
-      - ${volume}:/var/lib/postgresql/data
-volumes:
-  ${volume}:
-YAML
-
-  docker-compose -f "$compose_file" up -d postgres >/dev/null
-  rm -rf "$compose_dir"
+  echo "Postgres is not ready on localhost:5432." >&2
+  echo "Start the host-native Postgres service, then rerun this command." >&2
+  echo "Local development does not start Docker or Colima automatically." >&2
+  exit 1
 }
 
 wait_for_postgres() {

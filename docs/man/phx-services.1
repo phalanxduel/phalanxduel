@@ -1,0 +1,45 @@
+.TH PHX-SERVICES 1 "2026-09-05" "Phalanx Duel" "Phalanx Duel Local Tooling"
+.SH NAME
+phx-services \- manage host-native Phalanx Duel services
+.SH SYNOPSIS
+.B bin/services
+.I command
+.RI [ service | all ]
+.RI [ options ]
+.SH DESCRIPTION
+.B bin/services
+controls the server, client, admin, site, and backlog services. Runtime state
+is stored under
+.B .phx/
+and the tmux session is named
+.B phx.
+.SH COMMANDS
+.TP
+.B start, stop, restart
+Change service lifecycle state.
+.TP
+.B reload
+Send SIGHUP to the server.
+.TP
+.B status
+Show service state.
+.TP
+.B logs
+Follow a daemonized service log.
+.TP
+.B attach
+Attach to the phx tmux session.
+.SH OPTIONS
+.TP
+.B -d, --daemon
+Run in the background with logs under .phx/logs/.
+.TP
+.B -t, --tmux
+Run in the detached phx tmux session.
+.TP
+.B -h, --help
+Show usage and exit successfully.
+.SH SEE ALSO
+.BR phx-demo (1),
+.BR phx (1),
+.BR phx-dock (1)

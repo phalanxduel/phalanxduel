@@ -61,7 +61,7 @@ if command -v docker >/dev/null 2>&1; then
 
   set +e
   docker run --rm \
-    --name phalanx-otel-collector \
+    --name phx-otel-collector \
     -e OTEL_UPSTREAM_OTLP_ENDPOINT \
     -e OTELCOL_INTAKE_OTLP_GRPC_ENDPOINT \
     -e OTELCOL_INTAKE_OTLP_HTTP_ENDPOINT \

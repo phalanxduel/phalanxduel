@@ -44,7 +44,7 @@ export function registerHealthRoutes(fastify: FastifyInstance): void {
     const metadata = readBuildMetadata();
     return {
       status: 'ok',
-      service: 'phalanx-admin',
+      service: 'phx-admin',
       timestamp: new Date().toISOString(),
       version: metadata.version,
       build_id: metadata.buildNumber,

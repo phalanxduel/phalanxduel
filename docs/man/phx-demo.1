@@ -1,0 +1,58 @@
+.TH PHX-DEMO 1 "2026-09-05" "Phalanx Duel" "Phalanx Duel Local Tooling"
+.SH NAME
+phx-demo \- rehearse the host-native Phalanx Duel demo
+.SH SYNOPSIS
+.B bin/demo
+.I command
+.RI [ options ]
+.SH DESCRIPTION
+.B bin/demo
+starts and inspects the local server, browser client, and admin UI. It expects
+Postgres on the host and does not start Docker or Colima implicitly.
+.SH COMMANDS
+.TP
+.B up
+Start the demo services, wait for readiness, and open the cockpit.
+.TP
+.B down
+Stop demo services and the cockpit bridge.
+.TP
+.B status
+Print a one-shot health snapshot.
+.TP
+.B reset
+Reset the development rehearsal state.
+.TP
+.B logs
+Tail the local service logs.
+.TP
+.B links
+Generate or refresh the browser cockpit.
+.TP
+.B restart-cockpit
+Restart only the browser cockpit bridge, leaving game services running.
+.TP
+.B cockpit
+Run the interactive terminal dashboard.
+.SH OPTIONS
+.TP
+.B --no-open
+Do not open a browser window.
+.TP
+.B -h, --help
+Show usage and exit successfully.
+.SH ENVIRONMENT
+.TP
+.B PHALANX_DEMO_COCKPIT_PORT
+Cockpit bridge port; defaults to 3333.
+.TP
+.B PHALANX_DEMO_READY_TIMEOUT
+Service readiness timeout; defaults to 60 seconds.
+.SH FILES
+.TP
+.B .phx/logs/
+Host-native service logs and cockpit.log.
+.SH SEE ALSO
+.BR phx-services (1),
+.BR phx (1),
+.BR phx-dock (1)

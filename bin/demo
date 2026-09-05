@@ -17,10 +17,22 @@ ADMIN_UI_URL="http://127.0.0.1:3103"
 # if it's set up on this machine — falls back to the raw dev port otherwise.
 PLAY_URL="https://play.phalanxduel.localhost"
 READY_TIMEOUT="${PHALANX_DEMO_READY_TIMEOUT:-60}"
-DEMO_RUNTIME_DIR="${PHALANX_DEMO_RUNTIME_DIR:-${TMPDIR:-/tmp}/phalanxduel-demo}"
+DEMO_RUNTIME_DIR="${PHALANX_DEMO_RUNTIME_DIR:-$REPO_ROOT/.phx/cockpit}"
 QUICKLINKS_FILE="$DEMO_RUNTIME_DIR/quicklinks.html"
 SERVICES_RUN_DIR="$REPO_ROOT/.phx/run"
 SERVICES_LOG_DIR="$REPO_ROOT/.phx/logs"
+COCKPIT_PORT="${PHALANX_DEMO_COCKPIT_PORT:-3333}"
+COCKPIT_BRIDGE_URL="http://127.0.0.1:${COCKPIT_PORT}/"
+COCKPIT_BRANDED_URL="https://phalanxduel.localhost/demo/"
+COCKPIT_URL="${PHALANX_DEMO_COCKPIT_URL:-$COCKPIT_BRANDED_URL}"
+COCKPIT_PID_FILE="$SERVICES_RUN_DIR/cockpit.pid"
+GO_CLIENT_README="file://$REPO_ROOT/clients/go/duel-cli/README.md"
+SWIFTUI_CLIENT_README="file://$REPO_ROOT/../game-swiftui/README.md"
+if [ -f "$REPO_ROOT/../game-swiftui/README.md" ]; then
+  SWIFTUI_CLIENT_CARD="<div class=\"card launch-card\"><a class=\"surface-link\" href=\"$SWIFTUI_CLIENT_README\">SwiftUI client ↗</a><small>Native client checkout · run <code>pnpm qa:swiftui:proof:watch</code></small></div>"
+else
+  SWIFTUI_CLIENT_CARD=""
+fi
 
 usage() {
   cat <<EOF
@@ -33,6 +45,7 @@ Commands:
   reset    Reseed the dev database to a clean state between rehearsals.
   logs     Tail server + client logs.
   links    Generate the local HTML quicklinks page and open it.
+  restart-cockpit  Restart only the browser cockpit bridge (keeps game services up).
   cockpit  Open the interactive terminal development cockpit.
 
 Options:
@@ -45,8 +58,12 @@ Examples:
   bin/demo reset    # between rehearsals: clean slate
   bin/demo down     # after: stop everything
 EOF
-  exit 1
+  exit "${1:-1}"
 }
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  usage 0
+fi
 
 NO_OPEN=false
 for arg in "$@"; do
@@ -92,18 +109,58 @@ html_escape() {
 }
 
 open_quicklinks() {
+  start_cockpit_server
+  COCKPIT_URL=$(cockpit_url)
   if [ "$NO_OPEN" = "true" ]; then
     return
   fi
   if command -v open >/dev/null 2>&1; then
-    open "$QUICKLINKS_FILE" >/dev/null 2>&1 || true
+    open "$COCKPIT_URL" >/dev/null 2>&1 || true
   else
-    echo "   Browser opener unavailable. Open: $QUICKLINKS_FILE"
+    echo "   Browser opener unavailable. Open: $COCKPIT_URL"
+  fi
+}
+
+start_cockpit_server() {
+  if curl -fsS --max-time 1 "$COCKPIT_BRIDGE_URL/health" >/dev/null 2>&1; then
+    return
+  fi
+  mkdir -p "$SERVICES_RUN_DIR" "$SERVICES_LOG_DIR"
+  (
+    cd "$REPO_ROOT"
+    node scripts/demo-cockpit-server.mjs "$QUICKLINKS_FILE" "$SERVICES_LOG_DIR" "$COCKPIT_PORT" > "$SERVICES_LOG_DIR/cockpit.log" 2>&1 &
+    echo $! > "$COCKPIT_PID_FILE"
+  )
+  for _ in 1 2 3 4 5; do
+    curl -fsS --max-time 1 "$COCKPIT_BRIDGE_URL/health" >/dev/null 2>&1 && return
+    sleep 1
+  done
+  echo "⚠️  Cockpit web server did not become ready. Open the static page: $QUICKLINKS_FILE" >&2
+}
+
+cockpit_url() {
+  if [ -n "${PHALANX_DEMO_COCKPIT_URL:-}" ]; then
+    printf '%s' "$PHALANX_DEMO_COCKPIT_URL"
+  elif curl -kfsS --max-time 1 "$COCKPIT_BRANDED_URL" >/dev/null 2>&1; then
+    printf '%s' "$COCKPIT_BRANDED_URL"
+  else
+    printf '%s' "$COCKPIT_BRIDGE_URL"
+  fi
+}
+
+stop_cockpit_server() {
+  if [ -f "$COCKPIT_PID_FILE" ]; then
+    local pid
+    pid=$(cat "$COCKPIT_PID_FILE")
+    kill "$pid" 2>/dev/null || true
+    rm -f "$COCKPIT_PID_FILE"
   fi
 }
 
 write_quicklinks() {
+  start_cockpit_server
   mkdir -p "$(dirname "$QUICKLINKS_FILE")"
+  COCKPIT_URL=$(cockpit_url)
   local generated_at git_commit app_code play_code admin_code api_code
   generated_at=$(date '+%Y-%m-%d %H:%M:%S %Z')
   git_commit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)
@@ -125,37 +182,119 @@ write_quicklinks() {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Phalanx Duel local demo cockpit</title>
   <style>
-    :root { color-scheme: light dark; font: 16px/1.5 system-ui, sans-serif; }
-    body { max-width: 980px; margin: 0 auto; padding: 2rem; }
+    :root { color-scheme: light dark; font: 16px/1.5 system-ui, sans-serif; --accent: #4f8cff; --good: #2ec27e; --bad: #ff6b6b; --muted: #8993a4; }
+    body { max-width: 1120px; margin: 0 auto; padding: 2rem; background: radial-gradient(circle at top right, #4f8cff18, transparent 35rem); }
     h1 { margin-bottom: .25rem; } h2 { margin-top: 2rem; }
     .meta, small { color: #777; } .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
     .card { border: 1px solid #8885; border-radius: .6rem; padding: 1rem; }
     a { font-weight: 650; } code { overflow-wrap: anywhere; }
     li { margin: .55rem 0; }
+    .analytics-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .metric { border: 1px solid #8885; border-radius: .6rem; padding: 1rem; background: #8881; }
+    .metric strong { display: block; font-size: 2rem; line-height: 1.1; margin-top: .25rem; }
+    .metric small { display: block; }
+    .live-dot { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 .2rem #2ec27e33; margin-right: .4rem; }
+    .chart-card { border: 1px solid #8885; border-radius: .6rem; padding: 1rem; margin-top: 1rem; background: #8881; }
+    .chart-card header { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+    .chart-card svg { width: 100%; height: auto; display: block; margin-top: .75rem; }
+    .legend { color: var(--muted); font-size: .9rem; }
+    .legend span { margin-right: 1rem; }
+    .legend i { display: inline-block; width: .7rem; height: .7rem; border-radius: 50%; margin-right: .3rem; background: var(--accent); }
+    .legend .total i { background: #b276ff; }
+    .status-line { stroke: #8884; stroke-width: 1; }
+    .status-text { fill: currentColor; font: 12px system-ui, sans-serif; }
+    .cockpit-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem; padding: 1.25rem 1.5rem; border: 1px solid #4f8cff66; border-radius: .8rem; background: linear-gradient(135deg, #4f8cff22, #b276ff12 55%, #2ec27e12); box-shadow: 0 1rem 3rem #0002; }
+    .kicker { color: var(--accent); font-size: .75rem; font-weight: 800; letter-spacing: .16em; }
+    .cockpit-header h1 { font-size: clamp(2rem, 5vw, 4rem); letter-spacing: -.05em; margin: .2rem 0; }
+    .cockpit-header h1 span { color: var(--accent); }
+    .cockpit-header p { margin: 0; color: var(--muted); }
+    .cockpit-status { display: grid; gap: .55rem; min-width: 160px; text-align: right; }
+    .live-badge { color: var(--good); font-weight: 800; letter-spacing: .12em; }
+    .cockpit-clock { font-variant-numeric: tabular-nums; font-size: 1.25rem; }
+    .command-rail { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: 1rem 0 2rem; }
+    button { border: 1px solid #4f8cff99; border-radius: .45rem; padding: .55rem .8rem; color: inherit; background: #4f8cff22; cursor: pointer; font: inherit; font-weight: 700; }
+    button:hover { background: #4f8cff44; }
+    .rail-note { color: var(--muted); font-size: .9rem; }
+    .launch-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+    .launch-card { min-height: 7rem; display: flex; flex-direction: column; justify-content: space-between; background: #8881; }
+    .launch-card a { font-size: 1.1rem; }
+    .launch-card small { color: var(--muted); }
+    .log-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .log-card { min-width: 0; border: 1px solid #8885; border-radius: .6rem; padding: 1rem; background: #090d16; color: #d7e2f0; }
+    .log-card header { display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
+    .log-card a { color: #8db6ff; font-size: .85rem; }
+    .log-card pre { height: 14rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; margin: .8rem 0; padding: .75rem; border-radius: .4rem; background: #0008; color: #b8f3d3; font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .log-card small { color: #8993a4; }
   </style>
 </head>
 <body>
-  <h1>Phalanx Duel local demo cockpit</h1>
-  <p class="meta">Generated $generated_at · commit <code>$(html_escape "$git_commit")</code></p>
+  <header class="cockpit-header">
+    <div>
+      <div class="kicker">PHX // LOCAL OPERATIONS</div>
+      <h1>Phalanx Duel <span>Demo Cockpit</span></h1>
+      <p>Launch, observe, and rehearse the local game stack from one command deck.</p>
+      <p class="meta">Generated $generated_at · commit <code>$(html_escape "$git_commit")</code></p>
+    </div>
+    <div class="cockpit-status">
+      <div class="live-badge"><span class="live-dot"></span>LIVE LINK</div>
+      <div class="cockpit-clock" id="cockpit-clock">--:--:--</div>
+      <small>polling every 2 seconds</small>
+    </div>
+  </header>
+  <div class="command-rail">
+    <button id="open-all" type="button">Open all surfaces ↗</button>
+    <button id="refresh-now" type="button">Refresh telemetry</button>
+    <button id="pause-telemetry" type="button">Pause polling</button>
+    <span class="rail-note">Every surface link opens in a new tab.</span>
+  </div>
 
-  <h2>Start here</h2>
-  <div class="grid">
-    <div class="card"><a href="https://play.phalanxduel.localhost/">Play the game</a><br><small>Primary browser demo · $(probe_label "$play_code")</small></div>
-    <div class="card"><a href="https://admin.phalanxduel.localhost/">Admin console</a><br><small>Operator UI · $(probe_label "$admin_code") · login required</small></div>
-    <div class="card"><a href="quicklinks.html">This quicklinks page</a><br><small>Regenerate with <code>bin/demo links</code></small></div>
+  <h2 id="launch">Launch deck</h2>
+  <div class="launch-grid">
+    <div class="card launch-card"><a class="surface-link" href="https://play.phalanxduel.localhost/">Play the game ↗</a><small>Primary browser demo · $(probe_label "$play_code")</small></div>
+    <div class="card launch-card"><a class="surface-link" href="https://admin.phalanxduel.localhost/">Admin console ↗</a><small>Operator UI · $(probe_label "$admin_code") · login required</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$CLIENT_URL/")">Raw client ↗</a><small>Direct Vite fallback on port 5173</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$APP_URL/docs")">API command center ↗</a><small>OpenAPI explorer · $(probe_label "$api_code")</small></div>
+    <div class="card launch-card"><a class="surface-link" href="http://127.0.0.1:3000/">Grafana LGTM ↗</a><small>Local observability surface, when enabled</small></div>
+    <div class="card launch-card"><a class="surface-link" href="https://o2.localhost/">O2 trace deck ↗</a><small>OpenObserve live traces and logs</small></div>
+    <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/output/video/phalanx-duel-demo.webm")">Demo reel ↗</a><small>Recorded face-to-face demo asset</small></div>
+    <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/output/pdf/phalanx-duel-face-to-face-quickstart.pdf")">Quickstart PDF ↗</a><small>Talk track and rehearsal reference</small></div>
+    <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/scripts/video/demo-narration.md")">Demo narration ↗</a><small>Presenter script and scene cues</small></div>
+    <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/config/openobserve/phalanx-duel-dashboard.json")">O2 dashboard manifest ↗</a><small>Versioned observability panels</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$GO_CLIENT_README")">Go duel CLI ↗</a><small>Alternative client · <code>cd clients/go/duel-cli &amp;&amp; go run .</code></small></div>
+    $SWIFTUI_CLIENT_CARD
+    <div class="card launch-card"><a class="surface-link" href="file://$(html_escape "$REPO_ROOT/docs/reference/client-compatibility.md")">Client compatibility ↗</a><small>Cross-client contract and capability matrix</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$(html_escape "$COCKPIT_URL")">Refresh this cockpit ↗</a><small>Regenerate with <code>bin/demo links</code></small></div>
   </div>
 
   <h2>Useful surfaces</h2>
   <ul>
-    <li><a href="https://play.phalanxduel.localhost/health">Branded health</a> · quick liveness check</li>
-    <li><a href="https://play.phalanxduel.localhost/ready">Branded readiness</a> · dependency-aware readiness</li>
-    <li><a href="$(html_escape "$APP_URL/health")">Raw app health</a> · $(probe_label "$app_code")</li>
-    <li><a href="$(html_escape "$ADMIN_API_URL/health")">Raw admin health</a> · API liveness and readiness</li>
-    <li><a href="$(html_escape "$ADMIN_UI_URL/")">Raw admin UI</a> · direct Vite fallback if nginx is unavailable</li>
-    <li><a href="$(html_escape "$APP_URL/docs")">OpenAPI browser</a> · $(probe_label "$api_code")</li>
-    <li><a href="$(html_escape "$APP_URL/docs/json")">OpenAPI JSON</a> · raw API contract</li>
-    <li><a href="https://play.phalanxduel.localhost/">Client through nginx</a> · use this for the demo, not the raw Vite port</li>
+    <li><a class="surface-link" href="https://play.phalanxduel.localhost/health">Branded health</a> · quick liveness check</li>
+    <li><a class="surface-link" href="https://play.phalanxduel.localhost/ready">Branded readiness</a> · dependency-aware readiness</li>
+    <li><a class="surface-link" href="$(html_escape "$APP_URL/health")">Raw app health</a> · $(probe_label "$app_code")</li>
+    <li><a class="surface-link" href="$(html_escape "$APP_URL/ready")">Raw app readiness</a> · database-aware check</li>
+    <li><a class="surface-link" href="$(html_escape "$ADMIN_API_URL/health")">Raw admin health</a> · API liveness and readiness</li>
+    <li><a class="surface-link" href="$(html_escape "$ADMIN_API_URL/ready")">Raw admin readiness</a> · migration/database check</li>
+    <li><a class="surface-link" href="$(html_escape "$ADMIN_UI_URL/")">Raw admin UI</a> · direct Vite fallback if nginx is unavailable</li>
+    <li><a class="surface-link" href="$(html_escape "$APP_URL/docs")">OpenAPI browser</a> · $(probe_label "$api_code")</li>
+    <li><a class="surface-link" href="$(html_escape "$APP_URL/docs/json")">OpenAPI JSON</a> · raw API contract</li>
+    <li><a class="surface-link" href="https://play.phalanxduel.localhost/">Client through nginx</a> · use this for the demo, not the raw Vite port</li>
   </ul>
+
+  <h2><span class="live-dot"></span>Live analytics <small id="analytics-updated">connecting…</small></h2>
+  <div class="analytics-grid" aria-live="polite">
+    <div class="metric"><small>Active matches</small><strong id="metric-active">—</strong><small>currently in progress</small></div>
+    <div class="metric"><small>Total matches</small><strong id="metric-total">—</strong><small>persisted in this environment</small></div>
+    <div class="metric"><small>App latency</small><strong id="metric-app-latency">—</strong><small>health endpoint round trip</small></div>
+    <div class="metric"><small>Admin latency</small><strong id="metric-admin-latency">—</strong><small>health endpoint round trip</small></div>
+  </div>
+  <div class="chart-card">
+    <header><strong>Match activity</strong><span class="legend"><span><i></i>active</span><span class="total"><i></i>total</span></span></header>
+    <svg id="activity-chart" viewBox="0 0 760 220" role="img" aria-label="Live active and total match trend"></svg>
+  </div>
+  <div class="chart-card">
+    <header><strong>Service health</strong><span class="legend">green = reachable · red = unavailable</span></header>
+    <svg id="health-chart" viewBox="0 0 760 170" role="img" aria-label="Live service availability timeline"></svg>
+  </div>
 
   <h2>Demo sequence</h2>
   <ol>
@@ -174,10 +313,137 @@ write_quicklinks() {
   </div>
   <p><strong>Source:</strong> <code>$(html_escape "$REPO_ROOT")</code></p>
   <p><strong>Commands:</strong> <code>bin/demo cockpit</code> for the headed terminal dashboard, <code>bin/demo status</code> for JSON, <code>bin/demo logs</code> for logs, and <code>bin/demo down</code> to stop.</p>
+  <h2 id="logs">Live log deck</h2>
+  <div class="log-grid">
+    <div class="log-card"><header><strong>Server</strong><a class="surface-link" href="file://$(html_escape "$SERVICES_LOG_DIR/server.log")">open file ↗</a></header><pre id="log-server">Connecting to server.log…</pre><small><code>tail -f $SERVICES_LOG_DIR/server.log</code></small></div>
+    <div class="log-card"><header><strong>Client</strong><a class="surface-link" href="file://$(html_escape "$SERVICES_LOG_DIR/client.log")">open file ↗</a></header><pre id="log-client">Connecting to client.log…</pre><small><code>tail -f $SERVICES_LOG_DIR/client.log</code></small></div>
+    <div class="log-card"><header><strong>Admin</strong><a class="surface-link" href="file://$(html_escape "$SERVICES_LOG_DIR/admin.log")">open file ↗</a></header><pre id="log-admin">Connecting to admin.log…</pre><small><code>tail -f $SERVICES_LOG_DIR/admin.log</code></small></div>
+  </div>
+  <script>
+    (function () {
+      var appHealthUrl = "api/probe/app-health";
+      var appStatsUrl = "api/probe/app-stats";
+      var adminHealthUrl = "api/probe/admin-health";
+      var clientUrl = "api/probe/client";
+      var maxPoints = 36;
+      var history = [];
+      var polling = true;
+
+      document.querySelectorAll('a[href]').forEach(function (link) {
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+      });
+
+      function probe(url) {
+        var started = performance.now();
+        return fetch(url, { cache: 'no-store' }).then(function (response) {
+          return response.text().then(function (body) {
+            var data = {};
+            try { data = JSON.parse(body); } catch (_) {}
+            return { ok: response.ok, data: data, ms: Math.round(performance.now() - started) };
+          });
+        }).catch(function () {
+          return { ok: false, data: {}, ms: null };
+        });
+      }
+
+      function setText(id, value) { document.getElementById(id).textContent = value; }
+
+      function refreshLogs() {
+        ['server', 'client', 'admin'].forEach(function (service) {
+          fetch('api/logs/' + service + '?lines=70', { cache: 'no-store' }).then(function (response) { return response.json(); }).then(function (payload) {
+            var element = document.getElementById('log-' + service);
+            element.textContent = payload.lines.join('\n');
+            element.scrollTop = element.scrollHeight;
+          }).catch(function () {
+            document.getElementById('log-' + service).textContent = '[cockpit log bridge unavailable]';
+          });
+        });
+      }
+
+      function linePath(values, max, width, height, top) {
+        if (!values.length) return '';
+        return values.map(function (value, index) {
+          var x = values.length === 1 ? width / 2 : index * width / (values.length - 1);
+          var y = top + height - (value / Math.max(max, 1)) * height;
+          return (index ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+        }).join(' ');
+      }
+
+      function renderActivity() {
+        var svg = document.getElementById('activity-chart');
+        var width = 760;
+        var height = 160;
+        var active = history.map(function (point) { return point.active; });
+        var total = history.map(function (point) { return point.total; });
+        var max = Math.max.apply(null, active.concat(total).concat([1]));
+        var grid = [0, .25, .5, .75, 1].map(function (ratio) {
+          var y = 15 + height - ratio * height;
+          return '<line class="status-line" x1="0" y1="' + y + '" x2="760" y2="' + y + '"></line>';
+        }).join('');
+        svg.innerHTML = grid + '<polyline fill="none" stroke="#4f8cff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="' + linePath(active, max, width, height, 15).replace(/M|L/g, function (match) { return match === 'M' ? '' : ' '; }) + '"></polyline>' + '<polyline fill="none" stroke="#b276ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="' + linePath(total, max, width, height, 15).replace(/M|L/g, function (match) { return match === 'M' ? '' : ' '; }) + '"></polyline>';
+      }
+
+      function renderHealth() {
+        var svg = document.getElementById('health-chart');
+        var services = ['app', 'admin', 'client', 'postgres'];
+        var labels = ['App', 'Admin', 'Client', 'Postgres'];
+        var rowHeight = 32;
+        var left = 90;
+        var plotWidth = 650;
+        var cells = '<line class="status-line" x1="' + left + '" y1="0" x2="' + (left + plotWidth) + '" y2="0"></line>';
+        services.forEach(function (service, row) {
+          cells += '<text class="status-text" x="0" y="' + (row * rowHeight + 21) + '">' + labels[row] + '</text>';
+          history.forEach(function (point, index) {
+            var cellWidth = plotWidth / Math.max(history.length, 1);
+            var color = point[service] ? '#2ec27e' : '#ff6b6b';
+            cells += '<rect x="' + (left + index * cellWidth).toFixed(1) + '" y="' + (row * rowHeight + 5) + '" width="' + Math.max(cellWidth - 1, 2).toFixed(1) + '" height="20" rx="3" fill="' + color + '" opacity=".9"></rect>';
+          });
+        });
+        svg.innerHTML = cells;
+      }
+
+      function refresh() {
+        if (!polling) return;
+        Promise.all([probe(appHealthUrl), probe(appStatsUrl), probe(adminHealthUrl), probe(clientUrl)]).then(function (results) {
+          var app = results[0];
+          var stats = results[1];
+          var admin = results[2];
+          var client = results[3];
+          var active = Number(stats.data.activeMatches || 0);
+          var total = Number(stats.data.totalMatches || 0);
+          history.push({ active: active, total: total, app: app.ok, admin: admin.ok, client: client.ok, postgres: app.ok && stats.ok });
+          if (history.length > maxPoints) history.shift();
+          setText('metric-active', String(active));
+          setText('metric-total', String(total));
+          setText('metric-app-latency', app.ms === null ? 'DOWN' : app.ms + ' ms');
+          setText('metric-admin-latency', admin.ms === null ? 'DOWN' : admin.ms + ' ms');
+          setText('analytics-updated', 'updated ' + new Date().toLocaleTimeString());
+          renderActivity();
+          renderHealth();
+        });
+        refreshLogs();
+      }
+
+      document.getElementById('open-all').addEventListener('click', function () {
+        document.querySelectorAll('.surface-link').forEach(function (link) { window.open(link.href, '_blank', 'noopener'); });
+      });
+      document.getElementById('refresh-now').addEventListener('click', refresh);
+      document.getElementById('pause-telemetry').addEventListener('click', function () {
+        polling = !polling;
+        this.textContent = polling ? 'Pause polling' : 'Resume polling';
+        if (polling) refresh();
+      });
+      window.setInterval(function () { document.getElementById('cockpit-clock').textContent = new Date().toLocaleTimeString(); }, 1000);
+      refresh();
+      window.setInterval(refresh, 2000);
+    }());
+  </script>
 </body>
 </html>
 EOF
-  echo "🔗 Quicklinks: $QUICKLINKS_FILE"
+  echo "🔗 Quicklinks: $COCKPIT_URL"
+  echo "   Static copy: $QUICKLINKS_FILE"
   echo "   Play:       https://play.phalanxduel.localhost/   ($(probe_label "$play_code"))"
   echo "   Admin:      https://admin.phalanxduel.localhost/  ($(probe_label "$admin_code"))"
   echo "   App health: $APP_URL/health                    ($(probe_label "$app_code"))"
@@ -223,6 +489,7 @@ case "${1:-}" in
     bin/services stop admin
     bin/services stop client
     bin/services stop server
+    stop_cockpit_server
     ;;
   status)
     pnpm dev:status
@@ -236,6 +503,10 @@ case "${1:-}" in
     bin/services logs server client admin
     ;;
   links)
+    write_quicklinks
+    ;;
+  restart-cockpit)
+    stop_cockpit_server
     write_quicklinks
     ;;
   cockpit)

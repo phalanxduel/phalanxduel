@@ -267,6 +267,8 @@ async function collectState(): Promise<EnvState> {
     fetchHttp(`http://127.0.0.1:${PORTS.AUTOMATION}/`, 500),
   ]);
 
+  const hostNativeServicesDetected = appH.ok || adminH.ok || clientH.ok;
+
   let hostMeta: any = null;
   try {
     hostMeta = JSON.parse(
@@ -299,11 +301,16 @@ async function collectState(): Promise<EnvState> {
   const runningContainerNames = dockerAvailable
     ? runCmd('docker ps --format "{{.Names}}"').split('\n')
     : [];
-  const collectorContainerRunning = runningContainerNames.includes('phalanx-otel-collector');
+  const dockerized =
+    dockerAvailable &&
+    runningContainerNames.some((name) =>
+      /^phx-(app|admin|client|postgres|automation|otel-collector)$/.test(name),
+    );
+  const collectorContainerRunning = runningContainerNames.includes('phx-otel-collector');
 
   const otelEndpoint =
     dockerAvailable && collectorContainerRunning
-      ? runCmd('docker exec phalanx-app env | grep OTEL_EXPORTER_OTLP_ENDPOINT').split('=')[1] || ''
+      ? runCmd('docker exec phx-app env | grep OTEL_EXPORTER_OTLP_ENDPOINT').split('=')[1] || ''
       : '';
   const isHostCollector =
     otelEndpoint.includes('host.docker.internal') || otelEndpoint.includes('127.0.0.1');
@@ -330,58 +337,53 @@ async function collectState(): Promise<EnvState> {
     collectorType,
     collectorRunning: collectorContainerRunning,
     collectorReachable,
-    logFlow: dockerAvailable ? getLogFlow('phalanx-app') : 'DOCKER DOWN',
+    logFlow: dockerized ? getLogFlow('phx-app') : 'HOST NATIVE',
   };
 
   let containers: ContainerState[] = [];
-  if (dockerAvailable) {
-    const containerNames = [
-      'phalanx-app',
-      'phalanx-admin',
-      'phalanx-client',
-      'phalanx-postgres',
-      'phalanx-automation',
-    ];
+  if (dockerized) {
+    const containerNames = ['phx-app', 'phx-admin', 'phx-client', 'phx-postgres', 'phx-automation'];
     if (collectorType === 'CONTAINER' || collectorContainerRunning) {
-      containerNames.push('phalanx-otel-collector');
+      containerNames.push('phx-otel-collector');
     }
     containers = containerNames.map((name) => getContainer(name));
-  } else {
-    containers = [
-      { name: 'DOCKER DAEMON', status: 'UNREACHABLE', health: 'none', restarts: 0, ready: false },
-    ];
   }
 
-  const appC = containers.find((c) => c.name === 'phalanx-app') || {
+  const appC = containers.find((c) => c.name === 'phx-app') || {
     status: 'missing',
     ready: false,
     health: 'none',
     restarts: 0,
   };
-  const adminC = containers.find((c) => c.name === 'phalanx-admin') || {
+  const adminC = containers.find((c) => c.name === 'phx-admin') || {
     status: 'missing',
     ready: false,
     health: 'none',
     restarts: 0,
   };
-  const clientC = containers.find((c) => c.name === 'phalanx-client') || {
+  const clientC = containers.find((c) => c.name === 'phx-client') || {
     status: 'missing',
     ready: false,
     health: 'none',
     restarts: 0,
   };
-  const pgC = containers.find((c) => c.name === 'phalanx-postgres') || {
+  const pgC = containers.find((c) => c.name === 'phx-postgres') || {
     status: 'missing',
     ready: false,
     health: 'none',
     restarts: 0,
   };
-  const autoC = containers.find((c) => c.name === 'phalanx-automation') || {
+  const autoC = containers.find((c) => c.name === 'phx-automation') || {
     status: 'missing',
     ready: false,
     health: 'none',
     restarts: 0,
   };
+
+  // The primary local workflow is host-native. A listening host Postgres is
+  // healthy even when the optional Docker stack is absent.
+  const hostPostgresReady = portStates.postgres === 'LISTEN';
+  const postgresReady = hostPostgresReady || pgC.ready;
 
   const branch = runCmd('git rev-parse --abbrev-ref HEAD') || 'unknown';
   const commit = runCmd('git rev-parse --short HEAD') || 'unknown';
@@ -421,7 +423,7 @@ async function collectState(): Promise<EnvState> {
   let dependencyError = undefined;
   if (appH.ok && statsH.ok) {
     metricsStatus = 'AVAILABLE';
-  } else if (!pgC.ready) {
+  } else if (!postgresReady) {
     dependencyError = 'Postgres unreachable';
   } else if (!appH.ok) {
     dependencyError = 'App API down';
@@ -456,8 +458,8 @@ async function collectState(): Promise<EnvState> {
       },
       postgres: {
         name: 'Postgres',
-        status: pgC.ready ? 'READY' : 'FAILED',
-        message: pgC.health,
+        status: postgresReady ? 'READY' : 'FAILED',
+        message: hostPostgresReady ? 'HOST' : pgC.health,
         port: PORTS.POSTGRES,
         required: true,
       },
@@ -555,18 +557,6 @@ async function collectState(): Promise<EnvState> {
     });
   };
 
-  if (!dockerAvailable) {
-    addFailure(
-      'Docker',
-      'DAEMON DOWN',
-      0,
-      'REQUIRED',
-      'Cannot manage containers',
-      'Restart Colima',
-      'colima restart',
-    );
-  }
-
   if (!appH.ok)
     addFailure(
       'App',
@@ -574,18 +564,28 @@ async function collectState(): Promise<EnvState> {
       PORTS.APP,
       'REQUIRED',
       'API unavailable',
-      'Check container logs',
-      'docker logs phalanx-app',
+      dockerized ? 'Check container logs' : 'Check host server process',
+      dockerized ? 'docker logs phx-app' : 'bin/services logs server',
     );
-  if (!pgC.ready)
+  if (!adminH.ok)
+    addFailure(
+      'Admin',
+      adminH.status,
+      PORTS.ADMIN,
+      'REQUIRED',
+      'Admin API unavailable',
+      'Check host admin process',
+      'bin/services logs admin',
+    );
+  if (!postgresReady)
     addFailure(
       'Postgres',
-      pgC.health,
+      hostPostgresReady ? 'HOST DOWN' : pgC.health,
       PORTS.POSTGRES,
       'REQUIRED',
       'DB unreachable',
-      'Restart stack',
-      'pnpm docker:up',
+      'Start host-native Postgres',
+      'pg_isready -h localhost -p 5432',
     );
   if (!clientH.ok)
     addFailure(
@@ -594,8 +594,8 @@ async function collectState(): Promise<EnvState> {
       PORTS.CLIENT,
       'REQUIRED',
       'Web UI unavailable',
-      'Check container logs',
-      'docker logs phalanx-client',
+      dockerized ? 'Check container logs' : 'Check host client process',
+      dockerized ? 'docker logs phx-client' : 'bin/services logs client',
     );
 
   if (otel.status === 'FAILED' || (otel.collectorType === 'CONTAINER' && !otel.collectorRunning)) {
@@ -621,6 +621,8 @@ async function collectState(): Promise<EnvState> {
   }
 
   if (
+    dockerized &&
+    !hostNativeServicesDetected &&
     containers.some(
       (c) => c.status === 'missing' || (c.status === 'exited' && !c.name.includes('otel')),
     )
@@ -640,7 +642,7 @@ async function collectState(): Promise<EnvState> {
       priority: 'HIGH',
     });
   }
-  if (!identityMatch) {
+  if (!identityMatch && dockerized) {
     state.recoveryCommands.push({
       label: 'Update Server Container',
       command: 'pnpm docker:up',
@@ -713,7 +715,7 @@ function renderDashboard(state: EnvState): string {
     const restarts = c.restarts > 0 ? ` ${RED}[R:${c.restarts}]${NC}` : '';
     out +=
       padRow(
-        c.name.replace('phalanx-', ''),
+        c.name.replace('phx-', ''),
         `${c.status.toUpperCase()} (${c.health})${restarts}`,
         color,
       ) + '\n';

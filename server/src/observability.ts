@@ -7,7 +7,7 @@ import {
   type Span,
 } from '@opentelemetry/api';
 
-const OTEL_SCOPE = 'phalanx-server';
+const OTEL_SCOPE = 'phx-server';
 
 const tracer = trace.getTracer(OTEL_SCOPE);
 const meter = metrics.getMeter(OTEL_SCOPE);

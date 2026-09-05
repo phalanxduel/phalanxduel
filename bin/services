@@ -22,7 +22,7 @@ Commands:
   reload   Send SIGHUP to trigger hot-reload (server only).
   status   Show current status of all/selected services.
   logs     Tail the background logs of a daemonized service.
-  attach   Attach to the phalanx tmux session interactively.
+  attach   Attach to the phx tmux session interactively.
 
 Options:
   -d, --daemon  Run in the background (output tracked in .phx/logs/).
@@ -38,7 +38,7 @@ Examples:
   pnpm services logs server          # Follow the server log file (if started via -d).
   pnpm services reload server        # Hot-reload configuration without dropping OS process.
 EOF
-  exit 1
+  exit "${1:-1}"
 }
 
 if [ $# -lt 1 ]; then
@@ -58,7 +58,7 @@ for arg in "$@"; do
   elif [ "$arg" = "--tmux" ] || [ "$arg" = "-t" ]; then
     USE_TMUX=true
   elif [ "$arg" = "--help" ] || [ "$arg" = "-h" ]; then
-    usage
+    usage 0
   elif [ -z "$SERVICE" ] && [ "${arg:0:1}" != "-" ]; then
     SERVICE=$arg
   fi
@@ -164,7 +164,7 @@ start_service() {
     # Local demo ports are intentionally isolated from the common 3000 range.
     # Keep this explicit because a shell or dotenv value from an older setup
     # must not silently move the admin API away from the vhost and waiter.
-    start_cmd="PHALANX_ADMIN_PORT=3102 pnpm dev:admin"
+    start_cmd="env PHALANX_ADMIN_PORT=3102 pnpm dev:admin"
   fi
 
   if [ "$USE_TMUX" = "true" ]; then

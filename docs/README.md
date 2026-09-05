@@ -48,9 +48,14 @@ Welcome to the central documentation hub. This directory contains the canonical 
 | Doc | What it covers |
 | :--- | :--- |
 | **[PNPM Scripts](./reference/pnpm-scripts.md)** | Deep dive into all repository scripts |
+| **[Local Tooling](./reference/local-tooling.md)** | Host-native demo cockpit, services, control plane, and Docker verification |
 | **[API Reference](./api/README.md)** | Generated TypeDoc documentation |
 | **[Event Schemas](./api/EVENT_SCHEMAS.md)** | JSON Schema contracts |
 | **[Glossary](./reference/glossary.md)** | Definitions of all domain terms |
+
+Executable command man pages live in [`man/`](./man/), with one page per
+focused tooling surface: `phx-demo(1)`, `phx-services(1)`, `phx(1)`, and
+`phx-dock(1)`.
 
 ## 📜 History & Governance
 

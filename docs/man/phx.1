@@ -1,0 +1,27 @@
+.TH PHX 1 "2026-09-05" "Phalanx Duel" "Phalanx Duel Local Tooling"
+.SH NAME
+phx \- unified Phalanx Duel control plane
+.SH SYNOPSIS
+.B bin/phx
+.RI [ guide | capabilities | ctx ]
+.RI [ arguments ]
+.SH DESCRIPTION
+.B phx
+dispatches the repository's agent and human control-plane commands.
+.SH COMMANDS
+.TP
+.B guide
+Show the agent documentation index.
+.TP
+.B capabilities
+Show capability vectors.
+.TP
+.B ctx
+Extract context for a task.
+.TP
+.B -h, --help
+Show usage and exit successfully.
+.SH SEE ALSO
+.BR phx-demo (1),
+.BR phx-services (1),
+.BR phx-dock (1)

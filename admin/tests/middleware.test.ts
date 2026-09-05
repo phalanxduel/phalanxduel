@@ -87,7 +87,7 @@ describe('Auth middleware', () => {
     const ready = await app.inject({ method: 'GET', url: '/ready' });
 
     expect(health.statusCode).toBe(200);
-    expect(health.json()).toMatchObject({ status: 'ok', service: 'phalanx-admin' });
+    expect(health.json()).toMatchObject({ status: 'ok', service: 'phx-admin' });
     expect(ready.statusCode).toBe(200);
     expect(ready.json()).toMatchObject({ ready: true, database: 'ok' });
     await app.close();

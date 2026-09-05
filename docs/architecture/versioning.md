@@ -136,3 +136,19 @@ Consumers should read:
 
 Reference clients should surface both values separately when they present
 server/version information to operators or developers.
+
+## 7. Cross-Repository Release Alignment
+
+The release-facing semantic version is aligned across the Phalanx Duel sibling
+repositories. For the current release line, the authoritative value is
+`1.5.0`:
+
+| Repository | Release-facing version field |
+| --- | --- |
+| `phalanxduel/game` | workspace package versions and `SCHEMA_VERSION` |
+| `phalanxduel/site` | `package.json` and `_data/meta.yml` |
+| `phalanxduel/game-swiftui` | XcodeGen `MARKETING_VERSION` and generated Xcode project |
+
+Platform-specific build and revision counters remain independent. When the
+game release line changes, update these release-facing fields together and
+verify each sibling repository before tagging or pushing.

@@ -19,7 +19,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.automation
-    container_name: phalanx-automation
+    container_name: phx-automation
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     environment:
@@ -55,7 +55,7 @@ services:
       - /app/mcp/node_modules
       - /app/agents/autonomous-bot/node_modules
     networks:
-      - phalanx
+      - phx
     command: ['tail', '-f', '/dev/null']
 
   # ── Staging profile ─────────────────────────────────────────────────
@@ -66,7 +66,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: phalanx-app
+    container_name: phx-app
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     environment:
@@ -80,7 +80,7 @@ services:
     ports:
       - '3001:3001'
     networks:
-      - phalanx
+      - phx
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3001/health']
       interval: 10s
@@ -97,7 +97,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: phalanx-app
+    container_name: phx-app
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     environment:
@@ -111,7 +111,7 @@ services:
     ports:
       - '3001:3001'
     networks:
-      - phalanx
+      - phx
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3001/health']
       interval: 30s
@@ -126,7 +126,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: phalanx-server
+    container_name: phx-server
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     environment:
@@ -140,7 +140,7 @@ services:
     ports:
       - '3001:3001'
     networks:
-      - phalanx
+      - phx
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3001/health']
       interval: 10s
@@ -152,7 +152,7 @@ services:
     build:
       context: .
       dockerfile: mcp/Dockerfile
-    container_name: phalanx-mcp
+    container_name: phx-mcp
     environment:
       NODE_ENV: production
       APP_ENV: development
@@ -164,14 +164,14 @@ services:
     depends_on:
       - server
     networks:
-      - phalanx
+      - phx
     restart: unless-stopped
 
   # ── Observability & Monitoring ─────────────────────────────────────
 
   pghero:
     image: ankane/pghero
-    container_name: phalanx-pghero
+    container_name: phx-pghero
     environment:
       DATABASE_URL: postgresql://phalanx_dev:phx_dev_local@host.docker.internal:5432/phalanxduel_development # secretlint-disable-line
     ports:
@@ -179,7 +179,7 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     networks:
-      - phalanx
+      - phx
     restart: unless-stopped
 
   # ── AI Agents ──────────────────────────────────────────────────────
@@ -198,20 +198,20 @@ services:
       server:
         condition: service_healthy
     networks:
-      - phalanx
+      - phx
     restart: 'no' # Run to completion for scale tests
 
   ollama:
     image: ollama/ollama
-    container_name: phalanx-ollama
+    container_name: phx-ollama
     ports:
       - '11434:11434'
     volumes:
       - ./volumes/ollama:/root/.ollama
     networks:
-      - phalanx
+      - phx
     restart: unless-stopped
 
 networks:
-  phalanx:
+  phx:
     driver: bridge
