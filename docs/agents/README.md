@@ -47,6 +47,8 @@ For local observability work, use:
 For credential lifecycle work, use the [Phalanx Keymaster Agent](./profiles/keymaster-agent.md)
 and the repository skill at [`.agents/skills/phalanx-keymaster/SKILL.md`](../../.agents/skills/phalanx-keymaster/SKILL.md).
 
+For demo closeout and recorded-demo readiness, use the [Demo Gate Lessons](./demo-gate-lessons.md).
+
 ## Capability Tiers
 
 | Tier | Requires | Unlocks |
