@@ -124,7 +124,7 @@ jobs:
 
       - name: Upload refreshed Linux visual baselines
         if: always() && inputs.refresh_visual_snapshots == true
-        uses: actions/upload-artifact@ea165f8d65b6e75c540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: visual-baselines-linux
           path: qa/visual-regression/tests/visual.spec.ts-snapshots/*-linux.png
