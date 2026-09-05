@@ -26,6 +26,21 @@ Validate it with:
 rtk pnpm exec tsx bin/qa/validate-pvl-scenarios.ts
 ```
 
+Plan the covered automode workflows without starting browsers:
+
+```bash
+rtk pnpm exec tsx bin/qa/pvl-workflow.ts --mode plan
+```
+
+Run one workflow when the local host-native server and client are already up:
+
+```bash
+rtk pnpm exec tsx bin/qa/pvl-workflow.ts --workflow standard-user-auth --mode run
+```
+
+Automode executes only commands on the runner allowlist. Inventory-only
+scenarios are reported and skipped; they are never presented as passing.
+
 ## Initial inventory
 
 | Scenario | Surface | Coverage | Standard-user intent |
@@ -35,6 +50,19 @@ rtk pnpm exec tsx bin/qa/validate-pvl-scenarios.ts
 | `profile.view-own.standard-user` | Authenticated profile | Inventory | Read and update the player's own profile. |
 | `public.lobby.standard-user` | Public lobby | Covered | Arrive, understand the entry points, and start guest play. |
 | `public.browse-surfaces.standard-user` | Public lobby | Inventory | Browse public matches, spectator, ladder, achievements, and profiles. |
+
+## Workflows
+
+The catalog currently defines two automode workflows:
+
+- `standard-user-auth`: runs the covered signup/login journey and reports the
+  profile scenario as inventory-only.
+- `public-surface-smoke`: runs the public lobby smoke and reports the broader
+  browse-surface journey as inventory-only.
+
+This makes the executable boundary visible: Pavel can run the known-good
+surface now, while the missing profile and browse automation remains an
+explicit next slice rather than a green checkmark with no evidence.
 
 ## Pavel mapping contract
 

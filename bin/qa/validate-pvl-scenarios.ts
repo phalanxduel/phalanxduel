@@ -30,6 +30,17 @@ const CatalogSchema = z.object({
     persona: z.literal('standard-user'),
     environment: z.literal('local-development'),
   }),
+  workflows: z
+    .array(
+      z.object({
+        id: z.string().regex(/^[a-z0-9-]+$/),
+        title: z.string().min(1),
+        automode: z.literal('covered'),
+        stopOnFailure: z.boolean(),
+        scenarioIds: z.array(z.string().min(1)).min(1),
+      }),
+    )
+    .min(1),
   scenarios: z.array(ScenarioSchema).min(1),
 });
 
@@ -37,6 +48,14 @@ const path = resolve(process.argv[2] ?? 'qa/scenarios/pvl-auth-public.json');
 const catalog = CatalogSchema.parse(JSON.parse(await readFile(path, 'utf8')));
 const ids = catalog.scenarios.map((scenario) => scenario.id);
 if (new Set(ids).size !== ids.length) throw new Error('Scenario IDs must be unique');
+const knownIds = new Set(ids);
+for (const workflow of catalog.workflows) {
+  for (const scenarioId of workflow.scenarioIds) {
+    if (!knownIds.has(scenarioId)) {
+      throw new Error(`${workflow.id}: unknown scenario ${scenarioId}`);
+    }
+  }
+}
 
 for (const scenario of catalog.scenarios) {
   if (scenario.status === 'inventory' && scenario.command !== null) {
@@ -48,6 +67,7 @@ for (const scenario of catalog.scenarios) {
 }
 
 console.log(`PVL scenario catalog valid: ${catalog.scenarios.length} scenarios`);
+console.log(`PVL workflows valid: ${catalog.workflows.length} automode workflows`);
 for (const scenario of catalog.scenarios) {
   console.log(`- ${scenario.id} [${scenario.status}]`);
 }

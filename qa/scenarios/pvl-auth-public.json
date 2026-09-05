@@ -7,6 +7,26 @@
     "persona": "standard-user",
     "environment": "local-development"
   },
+  "workflows": [
+    {
+      "id": "standard-user-auth",
+      "title": "Standard-user authentication",
+      "automode": "covered",
+      "stopOnFailure": true,
+      "scenarioIds": [
+        "auth.signup.standard-user",
+        "auth.login.standard-user",
+        "profile.view-own.standard-user"
+      ]
+    },
+    {
+      "id": "public-surface-smoke",
+      "title": "Public surface smoke",
+      "automode": "covered",
+      "stopOnFailure": false,
+      "scenarioIds": ["public.lobby.standard-user", "public.browse-surfaces.standard-user"]
+    }
+  ],
   "scenarios": [
     {
       "id": "auth.signup.standard-user",
