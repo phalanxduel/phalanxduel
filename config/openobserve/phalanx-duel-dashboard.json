@@ -1,0 +1,72 @@
+{
+  "name": "Phalanx Duel",
+  "description": "Local Phalanx Duel browser, server, gameplay, WebSocket, and collector view.",
+  "scope": {
+    "stream": "default",
+    "where": "service_namespace = 'phalanxduel'"
+  },
+  "service_map": {
+    "title": "Phalanx Duel service map",
+    "query": "SELECT service_name, peer_service, span_name, count(*) AS requests FROM default WHERE service_namespace = 'phalanxduel' AND peer_service IS NOT NULL GROUP BY service_name, peer_service, span_name ORDER BY requests DESC",
+    "edges": [
+      { "from": "phx-client", "to": "phx-server", "signals": ["HTTP", "WebSocket"] },
+      { "from": "phx-server", "to": "postgres", "signals": ["persistence"] },
+      { "from": "phx-server", "to": "redis", "signals": ["coordination"] }
+    ]
+  },
+  "panels": [
+    {
+      "id": "request-rate",
+      "title": "Request rate by service",
+      "type": "time_series",
+      "query": "SELECT histogram_interval(_timestamp, '1 minute') AS time, service_name, count(*) AS requests FROM default WHERE service_namespace = 'phalanxduel' GROUP BY time, service_name ORDER BY time"
+    },
+    {
+      "id": "error-rate",
+      "title": "Errors by service",
+      "type": "time_series",
+      "query": "SELECT histogram_interval(_timestamp, '1 minute') AS time, service_name, count(*) AS errors FROM default WHERE service_namespace = 'phalanxduel' AND (status_code = 'ERROR' OR level = 'error') GROUP BY time, service_name ORDER BY time"
+    },
+    {
+      "id": "action-latency",
+      "title": "Gameplay action latency",
+      "type": "table",
+      "query": "SELECT action_type, count(*) AS actions, round(avg(duration_ms), 2) AS avg_ms, round(max(duration_ms), 2) AS max_ms FROM default WHERE service_namespace = 'phalanxduel' AND action_type IS NOT NULL GROUP BY action_type ORDER BY actions DESC"
+    },
+    {
+      "id": "match-lifecycle",
+      "title": "Match lifecycle",
+      "type": "time_series",
+      "query": "SELECT histogram_interval(_timestamp, '1 minute') AS time, event, sum(value) AS matches FROM default WHERE service_namespace = 'phalanxduel' AND metric_name = 'match.lifecycle' GROUP BY time, event ORDER BY time"
+    },
+    {
+      "id": "websocket-health",
+      "title": "WebSocket sessions and reconnects",
+      "type": "time_series",
+      "query": "SELECT histogram_interval(_timestamp, '1 minute') AS time, event, count(*) AS events FROM default WHERE service_namespace = 'phalanxduel' AND (span_name = 'ws.session' OR event LIKE 'ws.%') GROUP BY time, event ORDER BY time"
+    },
+    {
+      "id": "browser-events",
+      "title": "Browser lifecycle and gameplay events",
+      "type": "time_series",
+      "query": "SELECT histogram_interval(_timestamp, '1 minute') AS time, event, sum(value) AS events FROM default WHERE service_namespace = 'phalanxduel' AND metric_name = 'phx.client.events' GROUP BY time, event ORDER BY time"
+    },
+    {
+      "id": "active-state",
+      "title": "Active matches and WebSocket connections",
+      "type": "time_series",
+      "query": "SELECT histogram_interval(_timestamp, '1 minute') AS time, metric_name, max(value) AS value FROM default WHERE service_namespace = 'phalanxduel' AND metric_name IN ('system.matches_active', 'system.ws_connections') GROUP BY time, metric_name ORDER BY time"
+    },
+    {
+      "id": "recent-errors",
+      "title": "Recent Phalanx errors",
+      "type": "table",
+      "query": "SELECT _timestamp, service_name, span_name, error_type, message, trace_id FROM default WHERE service_namespace = 'phalanxduel' AND (status_code = 'ERROR' OR level = 'error') ORDER BY _timestamp DESC LIMIT 50"
+    }
+  ],
+  "notes": [
+    "The service map is derived from actual spans and peer.service relationships, not a hand-drawn topology claim.",
+    "Match IDs, session IDs, and QA run IDs belong in trace drill-downs. Keep them out of metric group-by clauses.",
+    "OpenObserve may use generated field names for OTLP metric points. If a panel is empty, inspect one metric record and map its generated field names without changing the scope filter."
+  ]
+}

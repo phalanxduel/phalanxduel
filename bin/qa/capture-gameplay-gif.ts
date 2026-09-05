@@ -152,6 +152,7 @@ async function main(): Promise<void> {
   const browser = await chromium.launch({ headless: false, slowMo: 150 });
   const context = await browser.newContext({
     viewport: { width: 1280, height: 800 },
+    colorScheme: 'dark',
     recordVideo: { dir: VIDEO_TMP, size: { width: 1280, height: 800 } },
   });
 

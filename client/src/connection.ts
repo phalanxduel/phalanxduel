@@ -13,6 +13,7 @@ import {
 import { getToken } from './auth';
 import { getSavedSession } from './state';
 import { createClientUuid } from './uuid';
+import { trackClientEvent } from './analytics';
 
 export interface Connection {
   send(message: OutboundClientMessage): void;
@@ -148,6 +149,7 @@ export function createConnection(
   }
 
   function updateState(state: ConnectionLifecycleState): void {
+    trackClientEvent('connection.state', { state });
     config.onStateChange?.(state);
   }
 
@@ -390,6 +392,7 @@ export function createConnection(
       'game.session.reconnect_scheduled',
       sessionAttrs({ 'ws.reconnect_delay_ms': delayWithJitter }),
     );
+    trackClientEvent('connection.reconnect_scheduled', { attempt: reconnectAttempt });
     setTimeout(() => {
       reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY_MS);
       connect();
@@ -542,6 +545,7 @@ export function createConnection(
         }),
       });
       sendSpan.end();
+      trackClientEvent('message.sent', { message_type: message.type });
 
       if (ws?.readyState === WebSocket.OPEN && !awaitingResync) {
         sendRaw(entry.serialized);

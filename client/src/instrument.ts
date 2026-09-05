@@ -23,7 +23,8 @@ const urlParams = new URLSearchParams(window.location.search);
 const isLocalHost =
   window.location.hostname === 'localhost' ||
   window.location.hostname === '127.0.0.1' ||
-  window.location.hostname === '::1';
+  window.location.hostname === '::1' ||
+  window.location.hostname.endsWith('.localhost');
 const telemetryDisabled =
   urlParams.get('telemetry') === 'off' ||
   urlParams.get('telemetry') === '0' ||
@@ -31,8 +32,14 @@ const telemetryDisabled =
   (window as typeof window & { __PHX_TELEMETRY_DISABLED__?: boolean })
     .__PHX_TELEMETRY_DISABLED__ === true ||
   (!isLocalHost && urlParams.get('telemetry') !== 'on');
-// In development, we point to the host-based collector.
-const OTEL_BASE_URL = urlParams.get('otelBaseUrl')?.trim() || 'http://127.0.0.1:4318';
+// Browser telemetry uses the same-origin proxy on HTTPS local hosts. This
+// avoids mixed-content blocking and keeps the collector bound to loopback.
+const explicitOtelBaseUrl = urlParams.get('otelBaseUrl')?.trim();
+const OTEL_BASE_URL =
+  explicitOtelBaseUrl ||
+  (window.location.protocol === 'https:' && isLocalHost
+    ? `${window.location.origin}/otel`
+    : 'http://127.0.0.1:4318');
 const deploymentEnvironment = import.meta.env.MODE || 'development';
 const serviceInstanceId = `browser:${window.location.host}:${createClientUuid()}`;
 
@@ -84,10 +91,16 @@ registerInstrumentations({
   instrumentations: [
     new (FetchInstrumentation as any)({
       // Propagate trace context to the server
-      propagateTraceHeaderCorsUrls: [/http:\/\/127.0.0.1:3001\/.*/, /http:\/\/127.0.0.1:3001\/.*/],
+      propagateTraceHeaderCorsUrls: [
+        /^https?:\/\/(?:127\.0\.0\.1|localhost)(?::3001)?\/.*/,
+        /^https:\/\/(?:play|admin)\.phalanxduel\.localhost\/.*/,
+      ],
     }),
     new (XMLHttpRequestInstrumentation as any)({
-      propagateTraceHeaderCorsUrls: [/http:\/\/127.0.0.1:3001\/.*/, /http:\/\/127.0.0.1:3001\/.*/],
+      propagateTraceHeaderCorsUrls: [
+        /^https?:\/\/(?:127\.0\.0\.1|localhost)(?::3001)?\/.*/,
+        /^https:\/\/(?:play|admin)\.phalanxduel\.localhost\/.*/,
+      ],
     }),
   ],
 });

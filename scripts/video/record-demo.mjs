@@ -149,6 +149,7 @@ async function fromLive() {
   const browser = await chromium.launch({ headless: true, slowMo: 120 });
   const context = await browser.newContext({
     viewport: { width: W, height: H },
+    colorScheme: 'dark',
     recordVideo: { dir: BUILD, size: { width: W, height: H } },
   });
   await context.addInitScript(() => {

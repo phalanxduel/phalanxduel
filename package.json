@@ -37,6 +37,7 @@
     "quality:status": "tsx scripts/docs/quality-status.ts",
     "docs:build": "pnpm docs:artifacts && typedoc",
     "docs:check": "bash scripts/ci/verify-doc-artifacts.sh",
+    "docs:refresh": "PHALANX_DOCS_REFRESH=true bash scripts/ci/verify-doc-artifacts.sh",
     "docs:dash": "bash scripts/build/generate-docset.sh",
     "docs:demo:build": "node scripts/video/build-demo.mjs",
     "docs:demo:record": "node scripts/video/record-demo.mjs",

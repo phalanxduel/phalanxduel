@@ -12,7 +12,15 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 cd "$ROOT_DIR"
 
-pnpm docs:artifacts
+# Graphviz and Knip can produce harmless machine-dependent layout changes.
+# Refresh only when explicitly requested, where the result can be reviewed and
+# committed. Normal hooks and CI validate the committed artifacts without
+# rewriting them.
+if [ "${PHALANX_DOCS_REFRESH:-}" = "true" ]; then
+  pnpm docs:artifacts
+else
+  echo "Validating committed documentation artifacts without regeneration."
+fi
 
 # 1. Check for modified artifacts
 if ! git diff --exit-code -- \

@@ -107,6 +107,7 @@ async function recordV1Playthrough() {
   try {
     const context = await browser.newContext({
       viewport: VIEWPORT,
+      colorScheme: 'dark',
       deviceScaleFactor: 1,
     });
 

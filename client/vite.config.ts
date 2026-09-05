@@ -44,6 +44,13 @@ export default defineConfig({
         target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:3001',
         changeOrigin: true,
       },
+      // Keep browser OTLP same-origin during local HTTPS development. The
+      // project vhost applies the same route for play.phalanxduel.localhost.
+      '/otel': {
+        target: 'http://127.0.0.1:4318',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/otel/u, ''),
+      },
     },
   },
   build: {
