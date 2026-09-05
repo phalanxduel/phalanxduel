@@ -35,6 +35,7 @@ export class MatchActor {
   private _botConfig: BotConfig | null = null;
   private _botPlayerIndex: number | null = null;
   private _botStrategy: 'random' | 'heuristic' | 'mcts' | null = null;
+  private _qaRunId: string | undefined;
   private currentExecution = Promise.resolve<unknown>(undefined);
   private unsubscribe?: () => void;
   public onStateUpdated?: (result: PhalanxTurnResult) => void | Promise<void>;
@@ -164,6 +165,10 @@ export class MatchActor {
     }
   }
 
+  public setQaRunId(qaRunId: string | undefined): void {
+    if (qaRunId) this._qaRunId = qaRunId;
+  }
+
   async dispatchAction(
     playerId: string,
     action: Action,
@@ -274,7 +279,7 @@ export class MatchActor {
           });
 
           emitPanoramicRecords(
-            buildPanoramicTurnRecords(this.matchId, lastEntry, this._lastEvents),
+            buildPanoramicTurnRecords(this.matchId, lastEntry, this._lastEvents, this._qaRunId),
           );
 
           if (preState.phase !== postState.phase) {
@@ -683,7 +688,14 @@ export class MatchActor {
       await callbacks.onSuccess(result);
       return result;
     } catch (err) {
-      emitPanoramicRecords([buildPanoramicFailureRecord(this.matchId, action.type)]);
+      emitPanoramicRecords([
+        buildPanoramicFailureRecord(
+          this.matchId,
+          action.type,
+          new Date().toISOString(),
+          this._qaRunId,
+        ),
+      ]);
       recordActionRejection(this.matchId, err);
       await callbacks.onError(err);
       throw err;

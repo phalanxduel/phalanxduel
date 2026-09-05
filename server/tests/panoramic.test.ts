@@ -19,22 +19,28 @@ const entry = {
 
 describe('PVL Panoramic View records', () => {
   it('derives stable match and turn correlation fields', () => {
-    const records = buildPanoramicTurnRecords(matchId, entry, [
-      {
-        id: 'event-1',
-        type: 'functional_update',
-        name: 'turn.started',
-        timestamp: entry.timestamp,
-        payload: {},
-        status: 'ok',
-      } as PhalanxEvent,
-    ]);
+    const records = buildPanoramicTurnRecords(
+      matchId,
+      entry,
+      [
+        {
+          id: 'event-1',
+          type: 'functional_update',
+          name: 'turn.started',
+          timestamp: entry.timestamp,
+          payload: {},
+          status: 'ok',
+        } as PhalanxEvent,
+      ],
+      'qa-example-20260905',
+    );
 
     expect(records).toHaveLength(1);
     expect(records[0]).toMatchObject({
       trace_id: '11111111222243338444555555555555',
       span_id: '0000000000000007',
       match_id: matchId,
+      qa_run_id: 'qa-example-20260905',
       service_name: 'phx-server',
       service_namespace: 'phalanxduel',
       deployment_environment: 'local',
@@ -47,9 +53,12 @@ describe('PVL Panoramic View records', () => {
   });
 
   it('marks rejected actions as observed failures without error text', () => {
-    expect(buildPanoramicFailureRecord(matchId, 'attack')).toMatchObject({
+    expect(
+      buildPanoramicFailureRecord(matchId, 'attack', undefined, 'qa-example-20260905'),
+    ).toMatchObject({
       trace_id: '11111111222243338444555555555555',
       match_id: matchId,
+      qa_run_id: 'qa-example-20260905',
       lane: 'state-machine',
       kind: 'action.rejected',
       label: 'attack rejected',

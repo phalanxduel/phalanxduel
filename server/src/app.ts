@@ -1411,6 +1411,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
                               msg.matchId,
                               socketInfo.playerId,
                               action,
+                              msg.telemetry?.qaRunId,
                             );
                             actionsTotal.add(1, { 'action.type': msg.action.type });
                             const durationMs = performance.now() - start;

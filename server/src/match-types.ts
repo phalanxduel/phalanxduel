@@ -176,7 +176,12 @@ export interface IMatchManager {
   updatePlayerIdentity(socket: WebSocket, userId: string, playerName: string): void;
   handleDisconnect(socket: WebSocket): void;
   cleanupMatches(): number;
-  handleAction(matchId: string, playerId: string, action: Action): Promise<PhalanxTurnResult>;
+  handleAction(
+    matchId: string,
+    playerId: string,
+    action: Action,
+    qaRunId?: string,
+  ): Promise<PhalanxTurnResult>;
   cancelMatch(matchId: string, userId: string): Promise<boolean>;
   terminateMatch(matchId: string): Promise<boolean>;
   rollbackMatch(matchId: string, targetSequenceNumber: number): Promise<boolean>;

@@ -189,6 +189,13 @@ EXIT STATUS
 `);
 }
 
+function withQaRunId(url: string, qaRunId: string): string {
+  const nextUrl = new URL(url);
+  nextUrl.searchParams.set('qaRunId', qaRunId);
+  nextUrl.searchParams.set('telemetry', 'on');
+  return nextUrl.toString();
+}
+
 function parseArgs(argv: string[]): CliOptions | null {
   if (argv.includes('--help') || argv.includes('-h')) {
     showHelp();
@@ -537,7 +544,7 @@ async function runOne(
     const isRemote = !opts.baseUrl.includes('localhost') && !opts.baseUrl.includes('127.0.0.1');
     const urlWithSeed = isRemote ? opts.baseUrl : `${opts.baseUrl}/?seed=${baseSeed}`;
 
-    await pageA.goto(urlWithSeed);
+    await pageA.goto(withQaRunId(urlWithSeed, qaRunId));
     await waitForLobbyReady(pageA);
     await pageA.locator('[data-testid="lobby-name-input"]').fill('Bot A');
 
@@ -584,13 +591,13 @@ async function runOne(
       boundMatchId = matchId;
       qaRun.bindMatch(matchId);
 
-      await pageB.goto(opts.baseUrl);
+      await pageB.goto(withQaRunId(opts.baseUrl, qaRunId));
       await waitForLobbyReady(pageB);
       await pageB.locator('[data-testid="lobby-name-input"]').fill('Bot B');
       await pageB.locator('[data-testid="lobby-join-input"]').fill(matchId);
       await pageB.locator('[data-testid="lobby-join-btn"]').click();
 
-      await pageS.goto(`${opts.baseUrl}/?watch=${matchId}`);
+      await pageS.goto(withQaRunId(`${opts.baseUrl}/?watch=${matchId}`, qaRunId));
     }
     const observerPage = isSP ? pageA : pageS;
     await observerPage

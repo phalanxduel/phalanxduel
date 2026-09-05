@@ -10,6 +10,7 @@ export interface PanoramicRecord {
   trace_id: string;
   span_id: string;
   match_id: string;
+  qa_run_id?: string;
   service_name: 'phx-server';
   service_namespace: 'phalanxduel';
   deployment_environment: 'local';
@@ -53,6 +54,7 @@ export function buildPanoramicTurnRecords(
   matchId: string,
   entry: TransactionLogEntry,
   events: PhalanxEvent[],
+  qaRunId?: string,
 ): PanoramicRecord[] {
   const traceId = traceIdForMatch(matchId);
   const spanId = spanIdForSequence(entry.sequenceNumber);
@@ -61,6 +63,7 @@ export function buildPanoramicTurnRecords(
     trace_id: traceId,
     span_id: spanId,
     match_id: matchId,
+    ...(qaRunId ? { qa_run_id: qaRunId } : {}),
     service_name: 'phx-server' as const,
     service_namespace: 'phalanxduel' as const,
     deployment_environment: 'local' as const,
@@ -97,12 +100,14 @@ export function buildPanoramicFailureRecord(
   matchId: string,
   actionType: string,
   timestamp = new Date().toISOString(),
+  qaRunId?: string,
 ): PanoramicRecord {
   return {
     timestamp,
     trace_id: traceIdForMatch(matchId),
     span_id: spanIdForSequence(0),
     match_id: matchId,
+    ...(qaRunId ? { qa_run_id: qaRunId } : {}),
     service_name: 'phx-server',
     service_namespace: 'phalanxduel',
     deployment_environment: 'local',

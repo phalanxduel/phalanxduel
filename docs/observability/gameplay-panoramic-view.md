@@ -159,7 +159,8 @@ export ZDOTS_APP_LOG=/Users/mike/github.com/phalanxduel/game/logs/panoramic.json
 ```
 
 The collector's filelog/app pipeline consumes one JSON object per line. Each
-record includes `timestamp`, `trace_id`, `span_id`, `match_id`, `lane`, `kind`,
+record includes `timestamp`, `trace_id`, `span_id`, `match_id`, optional
+`qa_run_id`, `lane`, `kind`,
 `label`, `status`, `duration_ms`, `source`, and `confidence`, plus safe replay
 metadata such as action type and state hashes. Match IDs are not request trace
 IDs: the match UUID with dashes removed is the stable 32-character

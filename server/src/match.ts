@@ -1368,6 +1368,7 @@ export class LocalMatchManager implements IMatchManager {
     matchId: string,
     playerId: string,
     action: Action,
+    qaRunId?: string,
   ): Promise<PhalanxTurnResult> {
     const actor = this.actors.get(matchId);
     const match = this.matches.get(matchId);
@@ -1381,6 +1382,8 @@ export class LocalMatchManager implements IMatchManager {
     const authorizedPlayers = match.players
       .filter((p): p is PlayerConnection => p !== null)
       .map((p) => ({ playerId: p.playerId, playerIndex: p.playerIndex }));
+
+    actor.setQaRunId(qaRunId);
 
     return actor.dispatchAction(playerId, action, authorizedPlayers, {
       onSuccess: async () => {},
