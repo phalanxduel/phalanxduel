@@ -230,6 +230,7 @@ write_quicklinks() {
   esc_pvl_md=$(html_escape "file://$PVL_DIAGRAMS_BASE.md")
   esc_pvl_graph=$(html_escape "file://$PVL_DIAGRAMS_BASE.json")
   esc_pvl_catalog=$(html_escape "file://$REPO_ROOT/qa/scenarios/pvl-auth-public.json")
+  esc_tech_catalog=$(html_escape "file://$REPO_ROOT/docs/system/TECHNOLOGY_AND_OBSERVABILITY_CATALOG.md")
   esc_system_story=$(html_escape "file://$REPO_ROOT/client/public/pvl-system-story.html")
   esc_server_log=$(html_escape "file://$SERVICES_LOG_DIR/server.log")
   esc_client_log=$(html_escape "file://$SERVICES_LOG_DIR/client.log")
@@ -346,6 +347,7 @@ write_quicklinks() {
     <div class="card launch-card"><a class="surface-link" href="$esc_pvl_md">PVL interaction diagrams ↗</a><small>Generated Mermaid flow, identity, and sequence diagrams</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_pvl_graph">PVL graph model ↗</a><small>Machine-readable nodes, edges, and ordered sequence</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_pvl_catalog">PVL scenario catalog ↗</a><small>Declared standard-user workflows and evidence gaps</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_tech_catalog">Tech &amp; OTel catalog ↗</a><small>Outside-in dependency inventory &amp; OTel cartography</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_cockpit">Refresh this cockpit ↗</a><small>Regenerate with <code>phx-demo-ctl links</code></small></div>
   </div>
 

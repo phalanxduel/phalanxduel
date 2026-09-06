@@ -22,8 +22,9 @@ related:
        (git log): LAN local development endpoints (*.lan.phalanxduel.com);
        refreshed visual design baseline (28 captures in latest catalog);
        narrated demo video generation (output/video/phalanx-duel-demo.mp4/webm);
-       playwright modal bypass fix in capture-gallery.ts; presenter runbook
-       in docs/talks/demo-presentation-runbook.md with PVL context.
+       presenter runbook in docs/talks/demo-presentation-runbook.md;
+       cockpit links audit & canonical outside-in technology and longitudinal
+       observability catalog in docs/system/TECHNOLOGY_AND_OBSERVABILITY_CATALOG.md.
        Open thread: confirm remote CI runs; next engineering priorities
        are TASK-360.03 (browser automation adapter), TASK-385 (CI spend),
        and TASK-387 (PVL scenario catalog).

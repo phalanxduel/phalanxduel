@@ -42,7 +42,8 @@ All cockpit links open in a new tab. The page links to the game client
 (`https://play.phalanxduel.localhost/` or `https://play.lan.phalanxduel.com/`),
 admin UI (`https://admin.phalanxduel.localhost/` or `https://admin.lan.phalanxduel.com/`),
 API docs, OpenObserve and Jaeger observability tools, alternative clients, related docs/assets, and
-the exact local log paths. For a complete presenter guide and talk track, see
+the exact local log paths. For an exhaustive outside-in dependency inventory and longitudinal observability cartography, see
+[`docs/system/TECHNOLOGY_AND_OBSERVABILITY_CATALOG.md`](../system/TECHNOLOGY_AND_OBSERVABILITY_CATALOG.md). For a complete presenter guide and talk track, see
 [`docs/talks/demo-presentation-runbook.md`](../talks/demo-presentation-runbook.md).
 `restart-cockpit` refreshes the bridge without stopping an active game. The generated
 `quicklinks.html` is stored under ignored `.phx/cockpit/`; when that artifact or the bridge is absent, `/demo/`

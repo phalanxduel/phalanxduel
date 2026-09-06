@@ -33,6 +33,7 @@ Welcome to the central documentation hub. This directory contains the canonical 
 | **[Gameplay Assurance](./reference/gameplay-assurance.md)** | Scientific evidence levels, rule traceability, and gap lifecycle |
 | **[Security Strategy](./architecture/security-strategy.md)** | Threat model and security mitigations |
 | **[Audit Trail](./architecture/audit-trail.md)** | Transaction logging and state recovery |
+| **[Technology & Observability Catalog](./system/TECHNOLOGY_AND_OBSERVABILITY_CATALOG.md)** | Exhaustive outside-in dependency inventory and longitudinal OTel cartography |
 | **[Definition of Done](./reference/dod.md)** | Completion checklist and source index |
 
 ## 🚀 Operations
