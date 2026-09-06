@@ -49,7 +49,7 @@ For detailed setup, troubleshooting, and advanced workflows, see the **[Developm
 - **Phalanx Damage Mechanics**: Strategic columnar damage flow and AoE suit effects (♠/♣/♦/♥).
 - **Fog of War**: Real-time hidden state management and strategic face-down card deployment.
 - **Truth Gate QA**: High-entropy property-based testing and automated playthrough verification.
-- **OTel-Native Observability**: Integrated Grafana LGTM stack for deep production visibility.
+- **OTel-Native Observability**: OpenTelemetry collector pipeline streaming directly to OpenObserve and Jaeger.
 
 See the full **[Features Guide](docs/reference/features.md)** for more details.
 

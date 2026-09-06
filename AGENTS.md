@@ -24,7 +24,9 @@ related:
        narrated demo video generation (output/video/phalanx-duel-demo.mp4/webm);
        presenter runbook in docs/talks/demo-presentation-runbook.md;
        cockpit links audit & canonical outside-in technology and longitudinal
-       observability catalog in docs/system/TECHNOLOGY_AND_OBSERVABILITY_CATALOG.md.
+       observability catalog in docs/system/TECHNOLOGY_AND_OBSERVABILITY_CATALOG.md;
+       complete excision of legacy LGTM stack in favor of otel-collector => [o2, jaeger]
+       with 100% (35/35) functional cockpit links.
        Open thread: confirm remote CI runs; next engineering priorities
        are TASK-360.03 (browser automation adapter), TASK-385 (CI spend),
        and TASK-387 (PVL scenario catalog).
@@ -309,10 +311,11 @@ Before pushing, verify the full stack in an isolated container:
 rtk bin/dock pnpm verify:full
 ```
 
-### 3. Observability (LGTM Stack)
-We use a centralized **Grafana LGTM stack** (Loki, Grafana, Tempo, Mimir).
+### 3. Observability Pipeline (OpenTelemetry -> [OpenObserve, Jaeger])
+The legacy LGTM stack has been completely removed in favor of **otel-collector => [OpenObserve (o2), Jaeger]**.
 - **Dev Mode**: Native apps report to the host collector at `http://127.0.0.1:4318`.
 - **Containers**: Use `http://host.docker.internal:4318` to reach the host collector.
+- **Backends**: Longitudinal analytics and RUM flow to OpenObserve (`https://o2.localhost`), distributed traces to Jaeger (`https://jaeger.localhost`).
 
 ### 4. Local GitHub Actions Testing
 Test workflows locally using `act`:

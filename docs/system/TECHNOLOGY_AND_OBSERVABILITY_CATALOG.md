@@ -36,7 +36,6 @@ graph TD
     subgraph L2["Layer 2: Observability Ingestion & Sinks"]
         O2["OpenObserve (o2.localhost)"]
         Jaeger["Jaeger (jaeger.localhost)"]
-        Grafana["Grafana LGTM (localhost:3000 - Standby)"]
         OTelCol["OTel Collector Contrib (:4318 / :4317)"]
     end
 
@@ -104,14 +103,13 @@ graph TD
 
 ### Layer 2: Observability Ingestion & Sinks (The Telemetry Boundary)
 
-*Standardized per [ADR-026](file:///Users/mike/github.com/phalanxduel/game/docs/adr/ADR-026-otel-native-observability-and-sentry-deprecation.md). Sentry and SigNoz are completely removed.*
+*Standardized per [ADR-026](file:///Users/mike/github.com/phalanxduel/game/docs/adr/ADR-026-otel-native-observability-and-sentry-deprecation.md). Sentry, SigNoz, and the legacy Grafana LGTM stack (Loki, Grafana, Tempo, Mimir) have been completely removed from this platform integration in favor of `otel-collector => [OpenObserve (o2), Jaeger]`.*
 
 | Component / Package | Technology | Local Version | Upstream Status | Role & Drift Evaluation |
 |---|---|---|---|---|
 | **OpenObserve (`o2.localhost`)** | OpenObserve (Rust) | `v0.14.x` / 2026 release | **Active Primary (200 OK)** | Primary longitudinal analytics sink. Stores structured logs, RED metrics, and RUM sessions. |
 | **Jaeger (`jaeger.localhost`)** | Jaeger Tracing v2 | `v2.x` | **Active Primary (200 OK)** | Deep trace search, waterfall analysis, service dependency cartography, and cross-span latency attribution. |
-| **Grafana LGTM (`:3000`)** | Grafana, Mimir, Tempo, Loki | Compose cluster profile | **Cold Standby (Offline)** | Standby unified dashboard. Not booted by default in lightweight demo mode; accessible via Compose when enabled. |
-| **OpenTelemetry Collector Contrib** | Golang OTel Collector | Contrib 0.118+ | **Cutting Edge** | Dual intake (`:4318` OTLP/HTTP, `:4317` OTLP/gRPC). Filelog receiver tails `./logs/server.log` with JSON parsing and `trace_parser` correlation. Emits OTLP/HTTP to OpenObserve and Jaeger. |
+| **OpenTelemetry Collector Contrib** | Golang OTel Collector | Contrib 0.118+ | **Cutting Edge** | Dual intake (`:4318` OTLP/HTTP, `:4317` OTLP/gRPC). Filelog receiver tails `./logs/server.log` with JSON parsing and `trace_parser` correlation. Emits OTLP/HTTP directly to OpenObserve and Jaeger. |
 
 ---
 
@@ -238,9 +236,8 @@ A live operational verification was conducted on 2026-09-06:
 
 ### A. Cockpit Links Audit (`https://phalanxduel.localhost/demo/`)
 * **Total Links Audited**: 35 unique URLs.
-* **Functional / Reachable**: **34 / 35 (97.1%)**.
-* **Offline Service**: `http://localhost:3000/` (Grafana LGTM Stack).
-  * *Context*: Grafana is designated as optional/when enabled. Active live monitoring is fully served by OpenObserve (`https://o2.localhost`) and Jaeger (`https://jaeger.localhost`), which both returned HTTP 200 OK.
+* **Functional / Reachable**: **35 / 35 (100%)**.
+* **Zero Dead Links**: With the complete removal of the legacy Grafana LGTM stack (`http://localhost:3000/`) from the launch deck in favor of the active `otel-collector => [o2, jaeger]` pipeline, all 20 HTTP targets returned HTTP 200 OK and all 15 local file targets exist on disk.
 
 ### B. Automated Verification & Gameplay Evidence
 * **Demo Fleet Health**: `overallStatus: HEALTHY` across App (`:3001`), Admin (`:3102`), Client (`:5173`), and Postgres (`:5432`).

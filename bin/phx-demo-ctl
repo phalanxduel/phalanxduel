@@ -34,7 +34,6 @@ COCKPIT_PORT="${PHALANX_DEMO_COCKPIT_PORT:-3333}"
 COCKPIT_BRIDGE_URL="http://127.0.0.1:${COCKPIT_PORT}/"
 COCKPIT_BRANDED_URL="${PHALANX_DEMO_BRANDED_URL:-https://phalanxduel.localhost/demo/}"
 O2_URL="${PHALANX_DEMO_O2_URL:-http://localhost:5080}"
-GRAFANA_URL="${PHALANX_DEMO_GRAFANA_URL:-http://localhost:3000}"
 JAEGER_URL="${PHALANX_DEMO_JAEGER_URL:-https://jaeger.localhost}"
 COCKPIT_URL="${PHALANX_DEMO_COCKPIT_URL:-$COCKPIT_BRANDED_URL}"
 COCKPIT_PID_FILE="$SERVICES_RUN_DIR/cockpit.pid"
@@ -203,8 +202,8 @@ write_quicklinks() {
   jaeger_search_url="$JAEGER_URL/search"
   jaeger_monitor_url="$JAEGER_URL/monitor"
   jaeger_dependencies_url="$JAEGER_URL/dependencies"
-  local esc_git esc_play esc_admin esc_client esc_app_docs esc_grafana esc_o2 esc_o2_logs esc_o2_traces esc_o2_services esc_jaeger_search esc_jaeger_monitor esc_jaeger_dependencies esc_go esc_cockpit
-  local esc_reel esc_pdf esc_narration esc_manifest esc_compat esc_pvl_md esc_pvl_graph esc_pvl_catalog esc_system_story esc_server_log esc_client_log esc_admin_log
+  local esc_git esc_play esc_admin esc_client esc_app_docs esc_o2 esc_o2_logs esc_o2_traces esc_o2_services esc_jaeger_search esc_jaeger_monitor esc_jaeger_dependencies esc_go esc_cockpit
+  local esc_reel esc_pdf esc_narration esc_manifest esc_compat esc_pvl_md esc_pvl_graph esc_pvl_catalog esc_tech_catalog esc_system_story esc_server_log esc_client_log esc_admin_log
   local esc_play_health esc_play_ready esc_app_health esc_app_ready esc_admin_health esc_admin_ready esc_admin_ui esc_app_json
   local label_play label_admin label_app label_api
   esc_git=$(html_escape "$git_commit")
@@ -212,7 +211,6 @@ write_quicklinks() {
   esc_admin=$(html_escape "$ADMIN_URL")
   esc_client=$(html_escape "$CLIENT_URL/")
   esc_app_docs=$(html_escape "$APP_URL/docs")
-  esc_grafana=$(html_escape "$GRAFANA_URL/")
   esc_o2=$(html_escape "$o2_dashboard_url")
   esc_o2_logs=$(html_escape "$o2_logs_url")
   esc_o2_traces=$(html_escape "$o2_traces_url")
@@ -328,7 +326,6 @@ write_quicklinks() {
     <div class="card launch-card"><a class="surface-link" href="$esc_admin">Admin console ↗</a><small>Operator UI · $label_admin · login required</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_client">Raw client ↗</a><small>Direct Vite fallback on port 5173</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_app_docs">API command center ↗</a><small>OpenAPI explorer · $label_api</small></div>
-    <div class="card launch-card"><a class="surface-link" href="$esc_grafana">Grafana LGTM ↗</a><small>Local observability surface, when enabled</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_o2">O2 dashboard ↗</a><small>OpenObserve Phalanx Duel dashboard · 15m</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_o2_logs">O2 logs ↗</a><small>OpenObserve default log stream · 15m</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_o2_traces">O2 traces ↗</a><small>Trace search and span detail</small></div>
