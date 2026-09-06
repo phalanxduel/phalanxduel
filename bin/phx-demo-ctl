@@ -33,18 +33,17 @@ SERVICES_LOG_DIR="$REPO_ROOT/.phx/logs"
 COCKPIT_PORT="${PHALANX_DEMO_COCKPIT_PORT:-3333}"
 COCKPIT_BRIDGE_URL="http://127.0.0.1:${COCKPIT_PORT}/"
 COCKPIT_BRANDED_URL="${PHALANX_DEMO_BRANDED_URL:-https://phalanxduel.localhost/demo/}"
-O2_URL="${PHALANX_DEMO_O2_URL:-http://localhost:5080}"
+if [ -n "${PHALANX_DEMO_O2_URL:-}" ]; then
+  O2_URL="$PHALANX_DEMO_O2_URL"
+elif curl -kfsS --max-time 1 "https://o2.localhost/healthz" >/dev/null 2>&1; then
+  O2_URL="https://o2.localhost"
+else
+  O2_URL="http://localhost:5080"
+fi
 JAEGER_URL="${PHALANX_DEMO_JAEGER_URL:-https://jaeger.localhost}"
 COCKPIT_URL="${PHALANX_DEMO_COCKPIT_URL:-$COCKPIT_BRANDED_URL}"
 COCKPIT_PID_FILE="$SERVICES_RUN_DIR/cockpit.pid"
 CLI_NAME="${PHX_CLI_NAME:-$(basename "$0")}"
-GO_CLIENT_README="file://$REPO_ROOT/clients/go/duel-cli/README.md"
-SWIFTUI_CLIENT_README="file://$REPO_ROOT/../game-swiftui/README.md"
-if [ -f "$REPO_ROOT/../game-swiftui/README.md" ]; then
-  SWIFTUI_CLIENT_CARD="<div class=\"card launch-card\"><a class=\"surface-link\" href=\"$SWIFTUI_CLIENT_README\">SwiftUI client ↗</a><small>Native client checkout · run <code>pnpm qa:swiftui:proof:watch</code></small></div>"
-else
-  SWIFTUI_CLIENT_CARD=""
-fi
 
 usage() {
   cat <<EOF
@@ -218,21 +217,27 @@ write_quicklinks() {
   esc_jaeger_search=$(html_escape "$jaeger_search_url")
   esc_jaeger_monitor=$(html_escape "$jaeger_monitor_url")
   esc_jaeger_dependencies=$(html_escape "$jaeger_dependencies_url")
-  esc_go=$(html_escape "$GO_CLIENT_README")
+  esc_go=$(html_escape "${COCKPIT_URL}view?file=clients/go/duel-cli/README.md")
   esc_cockpit=$(html_escape "$COCKPIT_URL")
-  esc_reel=$(html_escape "file://$REPO_ROOT/output/video/phalanx-duel-demo.webm")
-  esc_pdf=$(html_escape "file://$REPO_ROOT/output/pdf/phalanx-duel-face-to-face-quickstart.pdf")
-  esc_narration=$(html_escape "file://$REPO_ROOT/scripts/video/demo-narration.md")
-  esc_manifest=$(html_escape "file://$REPO_ROOT/config/openobserve/phalanx-duel-dashboard.json")
-  esc_compat=$(html_escape "file://$REPO_ROOT/docs/reference/client-compatibility.md")
-  esc_pvl_md=$(html_escape "file://$PVL_DIAGRAMS_BASE.md")
-  esc_pvl_graph=$(html_escape "file://$PVL_DIAGRAMS_BASE.json")
-  esc_pvl_catalog=$(html_escape "file://$REPO_ROOT/qa/scenarios/pvl-auth-public.json")
-  esc_tech_catalog=$(html_escape "file://$REPO_ROOT/docs/system/TECHNOLOGY_AND_OBSERVABILITY_CATALOG.md")
-  esc_system_story=$(html_escape "file://$REPO_ROOT/client/public/pvl-system-story.html")
-  esc_server_log=$(html_escape "file://$SERVICES_LOG_DIR/server.log")
-  esc_client_log=$(html_escape "file://$SERVICES_LOG_DIR/client.log")
-  esc_admin_log=$(html_escape "file://$SERVICES_LOG_DIR/admin.log")
+  esc_reel=$(html_escape "${COCKPIT_URL}view?file=output/video/phalanx-duel-demo.webm")
+  esc_pdf=$(html_escape "${COCKPIT_URL}view?file=output/pdf/phalanx-duel-face-to-face-quickstart.pdf")
+  esc_narration=$(html_escape "${COCKPIT_URL}view?file=scripts/video/demo-narration.md")
+  esc_manifest=$(html_escape "${COCKPIT_URL}view?file=config/openobserve/phalanx-duel-dashboard.json")
+  esc_compat=$(html_escape "${COCKPIT_URL}view?file=docs/reference/client-compatibility.md")
+  esc_pvl_md=$(html_escape "${COCKPIT_URL}view?file=.phx/cockpit/pvl-diagrams.md")
+  esc_pvl_graph=$(html_escape "${COCKPIT_URL}view?file=.phx/cockpit/pvl-diagrams.json")
+  esc_pvl_catalog=$(html_escape "${COCKPIT_URL}view?file=qa/scenarios/pvl-auth-public.json")
+  esc_tech_catalog=$(html_escape "${COCKPIT_URL}view?file=docs/system/TECHNOLOGY_AND_OBSERVABILITY_CATALOG.md")
+  esc_system_story=$(html_escape "${COCKPIT_URL}view?file=client/public/pvl-system-story.html")
+  esc_server_log=$(html_escape "${COCKPIT_URL}view?file=.phx/logs/server.log")
+  esc_client_log=$(html_escape "${COCKPIT_URL}view?file=.phx/logs/client.log")
+  esc_admin_log=$(html_escape "${COCKPIT_URL}view?file=.phx/logs/admin.log")
+  local swiftui_card=""
+  if [ -f "$REPO_ROOT/../game-swiftui/README.md" ]; then
+    local esc_swiftui
+    esc_swiftui=$(html_escape "${COCKPIT_URL}view?file=../game-swiftui/README.md")
+    swiftui_card="<div class=\"card launch-card\"><a class=\"surface-link\" href=\"$esc_swiftui\">SwiftUI client ↗</a><small>Native client checkout · run <code>pnpm qa:swiftui:proof:watch</code></small></div>"
+  fi
   label_play=$(probe_label "$play_code")
   label_admin=$(probe_label "$admin_code")
   label_app=$(probe_label "$app_code")
@@ -338,7 +343,7 @@ write_quicklinks() {
     <div class="card launch-card"><a class="surface-link" href="$esc_narration">Demo narration ↗</a><small>Presenter script and scene cues</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_manifest">O2 dashboard manifest ↗</a><small>Versioned observability panels</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_go">Go duel CLI ↗</a><small>Alternative client · <code>cd clients/go/duel-cli &amp;&amp; go run .</code></small></div>
-    $SWIFTUI_CLIENT_CARD
+    $swiftui_card
     <div class="card launch-card"><a class="surface-link" href="$esc_compat">Client compatibility ↗</a><small>Cross-client contract and capability matrix</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_system_story">System purpose ↗</a><small>What Phalanx Duel does across the user journey</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_pvl_md">PVL interaction diagrams ↗</a><small>Generated Mermaid flow, identity, and sequence diagrams</small></div>
@@ -405,9 +410,9 @@ write_quicklinks() {
   <p><strong>Commands:</strong> <code>phx-demo-ctl cockpit</code> for the headed terminal dashboard, <code>phx-demo-ctl status</code> for JSON, <code>phx-demo-ctl logs</code> for logs, and <code>phx-demo-ctl down</code> to stop.</p>
   <h2 id="logs">Live log deck</h2>
   <div class="log-grid">
-    <div class="log-card"><header><strong>Server</strong><a class="surface-link" href="file://$(html_escape "$SERVICES_LOG_DIR/server.log")">open file ↗</a></header><pre id="log-server">Connecting to server.log…</pre><small><code>tail -f $SERVICES_LOG_DIR/server.log</code></small></div>
-    <div class="log-card"><header><strong>Client</strong><a class="surface-link" href="file://$(html_escape "$SERVICES_LOG_DIR/client.log")">open file ↗</a></header><pre id="log-client">Connecting to client.log…</pre><small><code>tail -f $SERVICES_LOG_DIR/client.log</code></small></div>
-    <div class="log-card"><header><strong>Admin</strong><a class="surface-link" href="file://$(html_escape "$SERVICES_LOG_DIR/admin.log")">open file ↗</a></header><pre id="log-admin">Connecting to admin.log…</pre><small><code>tail -f $SERVICES_LOG_DIR/admin.log</code></small></div>
+    <div class="log-card"><header><strong>Server</strong><a class="surface-link" href="$esc_server_log">open file ↗</a></header><pre id="log-server">Connecting to server.log…</pre><small><code>tail -f $SERVICES_LOG_DIR/server.log</code></small></div>
+    <div class="log-card"><header><strong>Client</strong><a class="surface-link" href="$esc_client_log">open file ↗</a></header><pre id="log-client">Connecting to client.log…</pre><small><code>tail -f $SERVICES_LOG_DIR/client.log</code></small></div>
+    <div class="log-card"><header><strong>Admin</strong><a class="surface-link" href="$esc_admin_log">open file ↗</a></header><pre id="log-admin">Connecting to admin.log…</pre><small><code>tail -f $SERVICES_LOG_DIR/admin.log</code></small></div>
   </div>
   <script>
     (function () {
