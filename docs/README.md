@@ -39,6 +39,7 @@ Welcome to the central documentation hub. This directory contains the canonical 
 
 | Doc | What it covers |
 | :--- | :--- |
+| **[Demo Runbook](./talks/demo-presentation-runbook.md)** | Presenter runbook, live talk track, and launch checklist |
 | **[Operations Runbook](./ops/runbook.md)** | Triage, deployment, and incident response |
 | **[CI/CD Pipeline](./deployment.md)** | GHA workflows and deployment model |
 | **[Performance SLOs](./ops/slo.md)** | Latency and availability targets |

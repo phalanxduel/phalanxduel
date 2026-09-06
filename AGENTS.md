@@ -11,7 +11,7 @@ related:
 ---
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     CURRENT FOCUS  —  last updated 2026-08-31
+     CURRENT FOCUS  —  last updated 2026-09-06
      Cold-start resume state, canonical for every agent tool. Whoever closes
      a session rewrites this block in place — step one, before the wrap-up.
      Backlog + git log are truth for exact task status / SHAs; if this block
@@ -19,10 +19,14 @@ related:
 
        In flight: verify against Backlog (`backlog/tasks/`) and the most
        recent phalanxduel entry in ~/.config/adots/handoffs/. Recent work
-       (git log): solo-maintainer CI spend reduction; insecure-origin
-       browser session fix (UUID fallback); dependency-audit remediation.
-       Open thread noted in the last Codex handoff: consolidating the
-       browser-gameplay automation adapter (task-360.03).
+       (git log): LAN local development endpoints (*.lan.phalanxduel.com);
+       refreshed visual design baseline (28 captures in latest catalog);
+       narrated demo video generation (output/video/phalanx-duel-demo.mp4/webm);
+       playwright modal bypass fix in capture-gallery.ts; presenter runbook
+       in docs/talks/demo-presentation-runbook.md with PVL context.
+       Open thread: confirm remote CI runs; next engineering priorities
+       are TASK-360.03 (browser automation adapter), TASK-385 (CI spend),
+       and TASK-387 (PVL scenario catalog).
        Deep handoff (local-only, never commit):
          ~/.config/adots/handoffs/YYYY-MM-DD-*phalanx*.md  (or -2 / dated)
 

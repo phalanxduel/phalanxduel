@@ -34,14 +34,18 @@ phx-demo-ctl restart-cockpit
 phx-demo-ctl cockpit
 ```
 
-The browser cockpit is served at `https://phalanxduel.localhost/demo/` when the
-local nginx vhost is installed, with `http://127.0.0.1:3333/` as the direct
+The browser cockpit is served at `https://phalanxduel.localhost/demo/` (or
+`https://lan.phalanxduel.com/demo/` on local Wi-Fi) when the project Nginx
+vhost is installed, with `http://127.0.0.1:3333/` as the direct loopback
 fallback. It refreshes health, match metrics, and service state in real time.
-All cockpit links open in a new tab. The page also links to the game, admin UI,
+All cockpit links open in a new tab. The page links to the game client
+(`https://play.phalanxduel.localhost/` or `https://play.lan.phalanxduel.com/`),
+admin UI (`https://admin.phalanxduel.localhost/` or `https://admin.lan.phalanxduel.com/`),
 API docs, OpenObserve and Jaeger observability tools, alternative clients, related docs/assets, and
-the exact local log paths. `restart-cockpit` refreshes the bridge without
-stopping an active game. The generated `quicklinks.html` is stored under
-ignored `.phx/cockpit/`; when that artifact or the bridge is absent, `/demo/`
+the exact local log paths. For a complete presenter guide and talk track, see
+[`docs/talks/demo-presentation-runbook.md`](../talks/demo-presentation-runbook.md).
+`restart-cockpit` refreshes the bridge without stopping an active game. The generated
+`quicklinks.html` is stored under ignored `.phx/cockpit/`; when that artifact or the bridge is absent, `/demo/`
 returns 404 rather than the site's SPA fallback.
 
 The live log panels poll the loopback-only bridge:
