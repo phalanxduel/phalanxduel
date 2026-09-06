@@ -160,6 +160,13 @@ const LOCAL_DEV_HTTP_ORIGINS = [
   'http://localhost:5173',
   'http://127.0.0.1:3001',
   'http://127.0.0.1:5173',
+  'https://play.phalanxduel.localhost',
+  'https://admin.phalanxduel.localhost',
+  'https://phalanxduel.localhost',
+  'https://play.lan.phalanxduel.com',
+  'https://admin.lan.phalanxduel.com',
+  'https://lan.phalanxduel.com',
+  'https://www.lan.phalanxduel.com',
 ] as const;
 const LOCAL_DEV_CONNECT_SRCS = [
   'http://localhost:3001',
@@ -170,6 +177,16 @@ const LOCAL_DEV_CONNECT_SRCS = [
   'ws://127.0.0.1:3001',
   'ws://localhost:5173',
   'ws://127.0.0.1:5173',
+  'https://play.phalanxduel.localhost',
+  'wss://play.phalanxduel.localhost',
+  'https://admin.phalanxduel.localhost',
+  'wss://admin.phalanxduel.localhost',
+  'https://play.lan.phalanxduel.com',
+  'wss://play.lan.phalanxduel.com',
+  'https://admin.lan.phalanxduel.com',
+  'wss://admin.lan.phalanxduel.com',
+  'https://lan.phalanxduel.com',
+  'wss://lan.phalanxduel.com',
 ] as const;
 
 function isTransportOnlyServerMessage(message: ServerMessage): boolean {

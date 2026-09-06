@@ -27,7 +27,16 @@ export default defineConfig({
       // containers — polling ensures Vite detects file changes on bind mounts.
       usePolling: !!process.env.VITE_HOST,
     },
-    allowedHosts: ['zalewhol.local', 'zalewhol.com', '10.36.1.137', '100.95.136.70'],
+    allowedHosts: [
+      'zalewhol.local',
+      'zalewhol.com',
+      '10.36.1.137',
+      '100.95.136.70',
+      'play.phalanxduel.localhost',
+      '.lan.phalanxduel.com',
+      'lan.phalanxduel.com',
+      'play.lan.phalanxduel.com',
+    ],
     proxy: {
       '/ws': {
         target: proxyTarget.replace(/^http/, 'ws'),
