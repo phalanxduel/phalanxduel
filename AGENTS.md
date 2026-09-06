@@ -25,8 +25,9 @@ related:
        presenter runbook in docs/talks/demo-presentation-runbook.md;
        cockpit links audit & canonical outside-in technology and longitudinal
        observability catalog in docs/system/TECHNOLOGY_AND_OBSERVABILITY_CATALOG.md;
-       complete excision of legacy LGTM stack in favor of otel-collector => [o2, jaeger]
-       with 100% (35/35) functional cockpit links.
+       complete excision of legacy LGTM stack in favor of otel-collector => [o2, jaeger];
+       demo cockpit HTTP bridge (Range/streaming support, 35/35 active endpoints
+       resolving browser file:// navigation blocks).
        Open thread: confirm remote CI runs; next engineering priorities
        are TASK-360.03 (browser automation adapter), TASK-385 (CI spend),
        and TASK-387 (PVL scenario catalog).
