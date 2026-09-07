@@ -353,7 +353,6 @@ Prevent storage exhaustion from test artifacts, playthrough dumps, and log files
 | `CONTRIBUTING.md` | All contributors | Workflow, standards, and PR expectations |
 | `.codex/` | Codex | Skills only — no instruction content |
 | `.gemini/settings.json` | Gemini CLI | MCP server config only — no instruction content |
-| `.serena/project.yml` | Serena | Language server config only — no instruction content |
 
 ## Agent skills
 

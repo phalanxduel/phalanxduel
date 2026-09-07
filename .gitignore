@@ -23,6 +23,7 @@ _site/
 # IDE
 .idea/
 .vscode/
+.serena/
 *.swp
 *.swo
 
