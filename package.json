@@ -64,7 +64,7 @@
     "env:remove:staging": "tsx scripts/maint/sync-secrets.ts remove staging",
     "env:rotate:production": "tsx scripts/maint/sync-secrets.ts rotate production",
     "env:rotate:staging": "tsx scripts/maint/sync-secrets.ts rotate staging",
-    "fix": "bin/maint/fix",
+    "fix": "bin/phx-fix",
     "format": "prettier --write .",
     "generate:artifacts": "pnpm infra:metadata && pnpm --filter @phalanxduel/shared schema:gen && pnpm docs:artifacts",
     "go:clients:check": "bash scripts/ci/check-go-clients.sh",

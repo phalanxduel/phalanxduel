@@ -50,7 +50,7 @@ Baseline capacity targets for the v1.0 release.
 *   **Calculation**: SLO compliance is calculated over a rolling 30-day window.
 *   **Breach Policy**: If the error budget for any SLO is exhausted (< 10% remaining), **Security and Reliability tasks take absolute priority** over new gameplay features.
 *   **Triage**: Any p99 latency spike > 5s triggers immediate investigation in
-    the centralized LGTM dashboards and traces.
+    the OpenObserve dashboards and Jaeger distributed traces.
 
 ---
 

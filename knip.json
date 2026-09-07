@@ -44,6 +44,7 @@
     "bin/qa/bootstrap.zsh",
     "bin/dock",
     "bin/maint/fix",
+    "bin/phx-fix",
     "go",
     "k6",
     "psql",
