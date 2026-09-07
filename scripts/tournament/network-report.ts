@@ -424,6 +424,23 @@ async function main(): Promise<void> {
     targetDomain = args[domainIdx + 1];
   }
 
+  const isTop = args.includes('--top') || args.includes('--watch');
+  if (isTop) {
+    const { TournamentNetworkMonitor } = await import('./network-monitor.js');
+    const intervalIdx = args.indexOf('--interval');
+    const interval = intervalIdx !== -1 ? Number.parseInt(args[intervalIdx + 1], 10) : 2;
+    const daemon = args.includes('--daemon') || args.includes('--background');
+    const once = args.includes('--once');
+    const monitor = new TournamentNetworkMonitor({ intervalSec: interval, daemon });
+    if (once) {
+      const snap = await monitor['collectSnapshot']();
+      process.stdout.write(`${monitor['renderDashboard'](snap)}\n`);
+      return;
+    }
+    await monitor.start();
+    return;
+  }
+
   const isJson = args.includes('--json');
   const isMarkdown = args.includes('--markdown');
 
