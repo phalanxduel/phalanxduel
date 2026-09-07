@@ -54,8 +54,8 @@ Welcome to the central documentation hub. This directory contains the canonical 
 | :--- | :--- |
 | **[PNPM Scripts](./reference/pnpm-scripts.md)** | Deep dive into all repository scripts |
 | **[Local Tooling](./reference/local-tooling.md)** | Host-native demo cockpit, services, control plane, and Docker verification |
-| **[API Reference](./api/README.md)** | Generated TypeDoc documentation |
-| **[Event Schemas](./api/EVENT_SCHEMAS.md)** | JSON Schema contracts |
+| **[OpenAPI Specification](./api/openapi.json)** | REST API OpenAPI 3.0 specification |
+| **[AsyncAPI Specification](./api/asyncapi.yaml)** | Real-time WebSocket AsyncAPI specification |
 | **[Glossary](./reference/glossary.md)** | Definitions of all domain terms |
 
 Executable command man pages live in [`man/`](./man/), with one page per
