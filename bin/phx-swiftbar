@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 # bin/phx-swiftbar — Phalanx Duel host-native demo pulse for SwiftBar.
 #
+# <swiftbar.name>Phalanx Duel Tournament Pulse</swiftbar.name>
+# <swiftbar.version>v1.5.0</swiftbar.version>
+# <swiftbar.author>Phalanx Duel Team</swiftbar.author>
+# <swiftbar.author.github>phalanxduel</swiftbar.author.github>
+# <swiftbar.desc>Live tournament network health, Wi-Fi RF quality, top bandwidth, and connected duelist socket state.</swiftbar.desc>
+# <swiftbar.image>https://raw.githubusercontent.com/phalanxduel/game/main/client/public/images/card-back.svg</swiftbar.image>
+# <swiftbar.dependencies>bash,curl,node,lsof</swiftbar.dependencies>
+# <swiftbar.abouturl>https://github.com/phalanxduel/game</swiftbar.abouturl>
+#
 # Syntagma: the coordination pulse between the phalanx battle line and the
 # zdots platform. Pure local consumption: probes configured demo endpoints,
 # reads ignored .phx runtime/artifact paths, and emits SwiftBar menu syntax.
@@ -201,3 +210,28 @@ echo "Restart demo | bash=$REPO_ROOT/bin/phx-demo-ctl param1=restart terminal=tr
 echo "Tail demo logs | bash=$REPO_ROOT/bin/phx-demo-ctl param1=logs terminal=true"
 echo "Stop demo | bash=$REPO_ROOT/bin/phx-demo-ctl param1=down terminal=true refresh=true"
 echo "Refresh | refresh=true"
+echo "---"
+
+echo "ℹ️ About Phalanx Duel Pulse | size=13"
+build_meta="$REPO_ROOT/build-metadata.json"
+build_id="dev"
+commit_sha="unknown"
+if [[ -r "$build_meta" ]]; then
+  build_id="$(node -e "try { console.log(JSON.parse(require('fs').readFileSync('$build_meta','utf8')).buildNumber || 'dev') } catch { console.log('dev') }" 2>/dev/null || echo "dev")"
+  commit_sha="$(node -e "try { console.log((JSON.parse(require('fs').readFileSync('$build_meta','utf8')).commitSha || '').slice(0,7) || 'unknown') } catch { console.log('unknown') }" 2>/dev/null || echo "unknown")"
+fi
+if [[ "$commit_sha" == "unknown" ]]; then
+  commit_sha="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")"
+fi
+echo "-- Version: v1.5.0 (Build: ${build_id}) | color=gray size=11"
+echo "-- Commit: ${commit_sha} | color=gray size=11"
+echo "-- Architecture: Deterministic TS Engine · Fastify · Vite · OTel | color=gray size=11"
+echo "-- Host LAN IP: ${lan_ip:-127.0.0.1} | color=gray size=11 font=monospace"
+echo "-- ---"
+echo "-- 📖 Tournament Runbook & Playbook | bash=/usr/bin/open param1=\"$REPO_ROOT/docs/ops/TOURNAMENT_RUNBOOK.md\" terminal=false size=11"
+echo "-- 🎮 Open Game Top (phx-top) | bash=$REPO_ROOT/bin/phx-top terminal=true size=11"
+echo "-- 📡 Open Network Top (phx-tournament-top) | bash=$REPO_ROOT/bin/phx-tournament-top terminal=true size=11"
+echo "-- 🩺 Run Diagnostic Checks (phx-tournament-check) | bash=$REPO_ROOT/bin/phx-tournament-check terminal=true size=11"
+echo "-- 📚 Architecture Library SPA | bash=$REPO_ROOT/bin/phx-docs-library param1=--open terminal=false size=11"
+echo "-- 🌐 GitHub Repository (phalanxduel/game) | href=https://github.com/phalanxduel/game size=11"
+

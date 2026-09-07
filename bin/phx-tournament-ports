@@ -1,10 +1,22 @@
 #!/usr/bin/env bash
-# Phalanx Duel Tournament & Demo Ports Accessibility Matrix Check
+# bin/phx-tournament-ports — Phalanx Duel tournament domains & ports accessibility matrix.
+#
+# Inspects process socket listeners, local vs LAN interface binding (0.0.0.0 vs 127.0.0.1),
+# live TCP/HTTP reachability, macOS firewall rules, and prints the accessibility matrix.
+#
 # Usage:
-#   bin/tournament-ports-check          # Print formatted terminal matrix
-#   bin/tournament-ports-check --json   # Output JSON for tooling
+#   phx-tournament-ports          # Print formatted terminal accessibility matrix
+#   phx-tournament-ports --json   # Output raw accessibility probe data as JSON
+#   phx-tournament-ports --help   # Show this help guide
 
 set -euo pipefail
+
+case "${1:-}" in
+  -h|--help)
+    sed -n '2,10p' "$0" | sed 's/^# *//'
+    exit 0
+    ;;
+esac
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"

@@ -35,6 +35,12 @@ related:
        - Aligned `docs/ops/slo.md` (OpenObserve/Jaeger) and `LICENSE-ASSETS` paths.
        - Local firewall inspection (`socketfilterfw`/`pf`), probe block root-cause
          diagnostics, and copy-paste test recipes in `bin/phx-tournament-check`.
+       - Recommended tournament tooling added to `Brewfile` with rich usage tips.
+       - Live game runtime & analytics monitor (`bin/phx-top` / `pnpm top`).
+       - Multi-repo cinematic Gource visualization runner (`bin/phx-gource`).
+       - Tournament Operations Runbook & Playbook (`docs/ops/TOURNAMENT_RUNBOOK.md`).
+       - Fully defined SwiftBar config & interactive About menu for `phalanxduel-pulse`.
+       - Standardized `--help` flags across all `bin/phx-*` operational CLIs.
        Open thread: confirm remote CI runs; next engineering priorities
        are TASK-360.03 (browser automation adapter), TASK-385 (CI spend),
        and TASK-387 (PVL scenario catalog).

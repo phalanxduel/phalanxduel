@@ -114,3 +114,17 @@ brew "socat"
 #   nginx -t
 brew "nginx"
 
+# --- Visualization & Repository Cartography ---
+
+# Gource: Software version control visualization tool.
+# Renders 2D/3D OpenGL tree animations of multi-repo development history.
+# Used by 'bin/phx-gource' to visualize the full cross-repository phalanxduel project history.
+# Tip: Run interactive multi-repo visualization: bin/phx-gource
+# Tip: Export 4K 60fps MP4 video: bin/phx-gource --export
+brew "gource"
+
+# FFmpeg: Multimedia framework for video encoding, streaming, and recording.
+# Used by 'bin/phx-gource' to pipe raw PPM video streams from Gource into H.264/MP4 files.
+brew "ffmpeg"
+
+

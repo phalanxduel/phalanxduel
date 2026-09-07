@@ -1,5 +1,24 @@
 #!/usr/bin/env bash
+# bin/phx-tournament-check — Phalanx Duel tournament networking, DNS & firewall diagnostics.
+#
+# Audits active host LAN IP, DNS resolution, service listeners, macOS Application
+# Firewall status, stealth mode, and outputs copy-paste terminal validation recipes.
+#
+# Usage:
+#   phx-tournament-check               # Run complete diagnostic report in terminal
+#   phx-tournament-check --json        # Output diagnostic data as JSON
+#   phx-tournament-check --md          # Output report formatted in Markdown
+#   phx-tournament-check --domain <d>  # Custom tournament apex domain (default: lan.phalanxduel.com)
+#   phx-tournament-check --help        # Show this help guide
+
 set -euo pipefail
+
+case "${1:-}" in
+  -h|--help)
+    sed -n '2,12p' "$0" | sed 's/^# *//'
+    exit 0
+    ;;
+esac
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"

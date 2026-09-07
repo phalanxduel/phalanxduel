@@ -1,12 +1,24 @@
 #!/usr/bin/env bash
-# Phalanx Duel Tournament Network & Connection Monitor (Top Mode)
+# bin/phx-tournament-top — Phalanx Duel tournament network top & live connection monitor.
+#
+# Live curses-style dashboard displaying Wi-Fi RF quality (RSSI/Noise),
+# bandwidth rate calculations, gateway/cloud ping RTT, and connected duelist sockets.
+#
 # Usage:
-#   bin/tournament-network-top              # Interactive live top dashboard
-#   bin/tournament-network-top --interval 1 # Fast 1-second refresh
-#   bin/tournament-network-top --daemon     # Background daemon mode (JSONL output)
-#   bin/tournament-network-top --once       # Single snapshot
+#   phx-tournament-top              # Interactive live top dashboard
+#   phx-tournament-top --interval 1 # Fast 1-second refresh rate
+#   phx-tournament-top --daemon     # Background daemon mode (JSONL output)
+#   phx-tournament-top --once       # Single snapshot to terminal
+#   phx-tournament-top --help       # Show this help guide
 
 set -euo pipefail
+
+case "${1:-}" in
+  -h|--help)
+    sed -n '2,12p' "$0" | sed 's/^# *//'
+    exit 0
+    ;;
+esac
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"

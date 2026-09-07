@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# bin/phx-gource — Multi-repo cinematic Gource visualization for Phalanx Duel.
+#
+# Usage:
+#   phx-gource                 # Launch interactive 1080p visualization
+#   phx-gource --export        # Render 1080p 60fps MP4 video to output/phalanxduel-history.mp4
+#   phx-gource --export out.mp4# Custom video output path
+#   phx-gource --single        # Visualize current repository (game) only
+#   phx-gource --2k            # Run at 2560x1440 resolution
+#   phx-gource --4k            # Run at 3840x2160 resolution
+#   phx-gource --speed 0.5     # Custom seconds per day (default: 0.25)
+#   phx-gource --help          # Show help guide
+
+set -euo pipefail
+
+case "${1:-}" in
+  -h|--help)
+    sed -n '2,13p' "$0" | sed 's/^# *//'
+    exit 0
+    ;;
+esac
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec bash "${REPO_ROOT}/scripts/visual/run-gource.sh" "$@"

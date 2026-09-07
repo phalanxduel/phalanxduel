@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# bin/phx-top — Phalanx Duel live game runtime & analytics monitor (top)
+#
+# Connects to Fastify game server, queries health, arena statistics,
+# lobby waitlist, and ranked PvP ladder, and tails real-time combat/engine
+# transaction events from logs/panoramic.jsonl.
+#
+# Supports local dev (default), staging (Fly.io), and production (Fly.io) modes.
+#
+# Usage:
+#   phx-top                      # Run in local mode (http://127.0.0.1:3001)
+#   phx-top --mode staging       # Run against Fly.io staging environment
+#   phx-top --mode production    # Run against Fly.io production environment
+#   phx-top --help               # Show this help message
+#
+# Hotkeys inside phx-top:
+#   [m] Switch mode (local <-> staging <-> production)
+#   [r] Force immediate refresh
+#   [c] Clear combat transaction stream
+#   [q] Quit
+
+set -euo pipefail
+
+case "${1:-}" in
+  -h|--help)
+    sed -n '2,17p' "$0" | sed 's/^# *//'
+    exit 0
+    ;;
+esac
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec node --import tsx "${REPO_ROOT}/scripts/ops/game-top.ts" "$@"
