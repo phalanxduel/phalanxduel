@@ -408,7 +408,7 @@ export function testTcpHandshake(
   host: string,
   port: number,
   timeoutMs = 600,
-): Promise<{ ok: boolean; ms: number | null }> {
+): Promise<{ ok: boolean; ms: number | null; error?: string }> {
   return new Promise((resolve) => {
     const start = process.hrtime.bigint();
     const socket = new net.Socket();
@@ -421,14 +421,14 @@ export function testTcpHandshake(
       resolve({ ok: true, ms: Math.round(ms * 10) / 10 });
     });
 
-    socket.on('error', () => {
+    socket.on('error', (err: any) => {
       socket.destroy();
-      resolve({ ok: false, ms: null });
+      resolve({ ok: false, ms: null, error: err?.code || err?.message || 'ECONNREFUSED' });
     });
 
     socket.on('timeout', () => {
       socket.destroy();
-      resolve({ ok: false, ms: null });
+      resolve({ ok: false, ms: null, error: 'ETIMEDOUT' });
     });
   });
 }
@@ -650,23 +650,31 @@ export function renderAccessibilityMatrixTerminal(
 ): string {
   const lines: string[] = [];
 
+  // 30 (Name) + 8 (Port) + 11 (DNS) + 20 (LAN Bind) + 20 (Live Probe) + 22 (Verdict) + 7 (Borders) = 118
   lines.push(
-    '\x1b[1;36m┌──────────────────────────────┬────────┬───────────┬──────────────┬──────────────┬──────────────────────┐\x1b[0m',
+    '\x1b[1;36m┌──────────────────────────────┬────────┬───────────┬────────────────────┬────────────────────┬──────────────────────┐\x1b[0m',
+  );
+  const titleText = 'TOURNAMENT & DEMONSTRATION DOMAINS & PORTS ACCESSIBILITY MATRIX';
+  const titlePadded = titleText.padStart(Math.floor((116 + titleText.length) / 2)).padEnd(116);
+  lines.push(`\x1b[1;36m│${titlePadded}│\x1b[0m`);
+
+  const statusBadge = report.allReady
+    ? '\x1b[1;42m ALL CRITICAL SERVICES READY \x1b[0m'
+    : '\x1b[1;41m ATTENTION REQUIRED \x1b[0m';
+  const statusBadgePlain = report.allReady
+    ? ' ALL CRITICAL SERVICES READY '
+    : ' ATTENTION REQUIRED ';
+  const ipPrefix = ` Active LAN IP: ${report.lanIp.padEnd(16)} Status: `;
+  const padLen = Math.max(0, 116 - ipPrefix.length - statusBadgePlain.length);
+  lines.push(`\x1b[1;36m│\x1b[0m${ipPrefix}${statusBadge}${' '.repeat(padLen)}\x1b[1;36m│\x1b[0m`);
+  lines.push(
+    '\x1b[1;36m├──────────────────────────────┼────────┼───────────┼────────────────────┼────────────────────┼──────────────────────┤\x1b[0m',
   );
   lines.push(
-    '\x1b[1;36m│                    TOURNAMENT & DEMONSTRATION DOMAINS & PORTS ACCESSIBILITY MATRIX                     │\x1b[0m',
+    '\x1b[1;37m│ Service / Target             │ Port   │ DNS Match │ LAN Bind           │ Live Probe         │ Tournament Verdict   │\x1b[0m',
   );
   lines.push(
-    `\x1b[1;36m│ Active LAN IP: \x1b[1;32m${report.lanIp.padEnd(16)}\x1b[1;36m Status: ${report.allReady ? '\x1b[1;42m ALL CRITICAL SERVICES READY \x1b[0m' : '\x1b[1;41m ATTENTION REQUIRED \x1b[0m'}                        \x1b[1;36m│\x1b[0m`,
-  );
-  lines.push(
-    '\x1b[1;36m├──────────────────────────────┼────────┼───────────┼──────────────┼──────────────┼──────────────────────┤\x1b[0m',
-  );
-  lines.push(
-    '\x1b[1;37m│ Service / Target             │ Port   │ DNS Match │ LAN Bind     │ Live Probe   │ Tournament Verdict   │\x1b[0m',
-  );
-  lines.push(
-    '\x1b[1;36m├──────────────────────────────┼────────┼───────────┼──────────────┼──────────────┼──────────────────────┤\x1b[0m',
+    '\x1b[1;36m├──────────────────────────────┼────────┼───────────┼────────────────────┼────────────────────┼──────────────────────┤\x1b[0m',
   );
 
   for (const r of report.results) {
@@ -697,56 +705,82 @@ export function renderAccessibilityMatrixTerminal(
         bindText = '* (LAN Exposed)';
         bindColor = '\x1b[1;32m';
       } else {
-        bindText = '127.0.0.1 (Loc)';
+        bindText = '127.0.0.1 (Local)';
         bindColor = '\x1b[1;33m';
       }
     } else {
-      bindText = 'PORT CLOSED   ';
+      bindText = 'PORT CLOSED';
       bindColor = '\x1b[1;31m';
     }
-    const bindFormatted = `${bindColor}${bindText.padEnd(12).slice(0, 12)}\x1b[0m`;
+    const bindFormatted = `${bindColor}${bindText.padEnd(18).slice(0, 18)}\x1b[0m`;
 
     let probeText = '';
     let probeColor = '';
-    if (r.reachability.httpStatus) {
-      const ms = r.reachability.httpLatencyMs ? `${r.reachability.httpLatencyMs}ms` : '';
-      probeText = `${r.reachability.httpStatus} OK ${ms}`.padEnd(12).slice(0, 12);
+    if (r.reachability.httpStatus && r.reachability.httpStatus < 500) {
+      const ms = r.reachability.httpLatencyMs ? ` (${r.reachability.httpLatencyMs}ms)` : '';
+      probeText = `${r.reachability.httpStatus} OK${ms}`;
       probeColor = '\x1b[1;32m';
+    } else if (r.reachability.httpStatus && r.reachability.httpStatus >= 500) {
+      probeText = `${r.reachability.httpStatus} HTTP ERR`;
+      probeColor = '\x1b[1;31m';
     } else if (r.reachability.lanReachable) {
-      const ms = r.reachability.lanLatencyMs ? `${r.reachability.lanLatencyMs}ms` : '';
-      probeText = `TCP OK ${ms}`.padEnd(12).slice(0, 12);
+      const ms = r.reachability.lanLatencyMs ? ` (${r.reachability.lanLatencyMs}ms)` : '';
+      probeText = `TCP OK${ms}`;
       probeColor = '\x1b[1;32m';
     } else {
-      probeText = 'UNREACHABLE ';
+      // Unreachable with rich, specific context
       probeColor = '\x1b[1;31m';
+      if (r.failureCause === 'LOCAL_BIND_ONLY') {
+        probeText = 'REFUSED (Local)';
+        probeColor = '\x1b[1;33m';
+      } else if (r.failureCause === 'SERVICE_DOWN') {
+        probeText = 'CLOSED (Down)';
+      } else if (r.failureCause === 'FIREWALL_BLOCKED') {
+        probeText = 'FW DROP (Host)';
+      } else if (r.failureCause === 'NETWORK_CLIENT_ISOLATION') {
+        probeText = 'TIMEOUT (AP-Iso)';
+      } else if (r.failureCause === 'DNS_UNRESOLVED') {
+        probeText = 'DNS NXDOMAIN';
+      } else if (r.failureCause === 'DNS_MISMATCH') {
+        probeText = 'IP MISMATCH';
+        probeColor = '\x1b[1;33m';
+      } else if (r.reachability.error === 'ECONNREFUSED') {
+        probeText = 'CONN REFUSED';
+      } else if (r.reachability.error === 'ETIMEDOUT') {
+        probeText = 'TIMED OUT';
+      } else if (r.reachability.error) {
+        probeText = r.reachability.error.slice(0, 18);
+      } else {
+        probeText = 'UNREACHABLE';
+      }
     }
-    const probeFormatted = `${probeColor}${probeText}\x1b[0m`;
+    const probeFormatted = `${probeColor}${probeText.padEnd(18).slice(0, 18)}\x1b[0m`;
 
     let verdictText = '';
     let verdictColor = '';
     if (r.verdict === 'READY') {
-      verdictText = '● ACCESSIBLE (LAN) ';
+      verdictText = '● ACCESSIBLE (LAN)';
       verdictColor = '\x1b[1;32m';
     } else if (r.verdict === 'LOCAL_ONLY') {
       verdictText = '▲ LOCAL ONLY (WARN)';
       verdictColor = '\x1b[1;33m';
     } else if (r.verdict === 'DNS_MISMATCH') {
-      verdictText = '◆ DNS MISMATCH     ';
+      verdictText = '◆ DNS MISMATCH';
       verdictColor = '\x1b[1;33m';
     } else if (r.verdict === 'FIREWALL_BLOCKED') {
-      verdictText = '⛔ FIREWALL BLOCKED ';
+      verdictText = '⛔ FIREWALL BLOCKED';
       verdictColor = '\x1b[1;31m';
     } else if (r.verdict === 'NETWORK_BLOCKED') {
-      verdictText = '⚡ NETWORK BLOCKED  ';
+      verdictText = '⚡ NETWORK BLOCKED';
       verdictColor = '\x1b[1;31m';
     } else if (r.verdict === 'PORT_CLOSED') {
-      verdictText = r.endpoint.isOptional ? '○ OPTIONAL (OFF)   ' : '✖ SERVICE DOWN     ';
+      verdictText = r.endpoint.isOptional ? '○ OPTIONAL (OFF)' : '✖ SERVICE DOWN';
       verdictColor = r.endpoint.isOptional ? '\x1b[2m' : '\x1b[1;31m';
     } else {
-      verdictText = '✖ UNRESOLVED       ';
+      verdictText = '✖ UNRESOLVED';
       verdictColor = '\x1b[1;31m';
     }
-    const verdictFormatted = `${verdictColor}${verdictText}\x1b[0m`;
+    const verdictFormatted = `${verdictColor}${verdictText.padEnd(20).slice(0, 20)}\x1b[0m`;
 
     lines.push(
       `│ ${rawName} │ ${rawPort} │ ${dnsFormatted} │ ${bindFormatted} │ ${probeFormatted} │ ${verdictFormatted} │`,
@@ -754,7 +788,7 @@ export function renderAccessibilityMatrixTerminal(
   }
 
   lines.push(
-    '\x1b[1;36m└──────────────────────────────┴────────┴───────────┴──────────────┴──────────────┴──────────────────────┘\x1b[0m',
+    '\x1b[1;36m└──────────────────────────────┴────────┴───────────┴────────────────────┴────────────────────┴──────────────────────┘\x1b[0m',
   );
 
   if (report.firewall) {
