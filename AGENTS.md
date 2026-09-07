@@ -33,6 +33,8 @@ related:
        - Fixed broken `.husky/pre-merge-commit` hook (`pnpm check:ci` -> `pnpm verify:quick`).
        - Promoted `bin/maint/fix` to canonical `bin/phx-fix` with workspace-pinned binaries.
        - Aligned `docs/ops/slo.md` (OpenObserve/Jaeger) and `LICENSE-ASSETS` paths.
+       - Local firewall inspection (`socketfilterfw`/`pf`), probe block root-cause
+         diagnostics, and copy-paste test recipes in `bin/phx-tournament-check`.
        Open thread: confirm remote CI runs; next engineering priorities
        are TASK-360.03 (browser automation adapter), TASK-385 (CI spend),
        and TASK-387 (PVL scenario catalog).
