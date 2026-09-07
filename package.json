@@ -138,6 +138,7 @@
     "test:coverage:run": "bash scripts/ci/coverage.sh",
     "test:replay": "tsx bin/qa/api-replay-verify.ts",
     "tournament:network": "node --import tsx scripts/tournament/network-report.ts",
+    "tournament:ports": "bash bin/tournament-ports-check",
     "tournament:top": "node --import tsx scripts/tournament/network-monitor.ts",
     "test:run:all": "pnpm --filter @phalanxduel/shared build && pnpm --filter @phalanxduel/engine build && pnpm test:run:shared && pnpm test:run:engine && pnpm test:run:server && pnpm --filter @phalanxduel/client test && pnpm --filter @phalanxduel/admin test && pnpm --filter @phalanxduel/mcp test",
     "test:run:engine": "pnpm --filter @phalanxduel/engine test",

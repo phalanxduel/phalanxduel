@@ -452,6 +452,10 @@ async function main(): Promise<void> {
     console.log(renderMarkdownReport(report));
   } else {
     renderTerminalReport(report);
+    const { runAllEndpointChecks, renderAccessibilityMatrixTerminal } =
+      await import('./endpoint-accessibility.js');
+    const matrix = await runAllEndpointChecks();
+    console.log('\n' + renderAccessibilityMatrixTerminal(matrix));
   }
 
   if (args.includes('--strict')) {

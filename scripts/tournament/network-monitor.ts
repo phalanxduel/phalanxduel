@@ -3,6 +3,7 @@ import * as dns from 'node:dns/promises';
 import * as fs from 'node:fs';
 import * as net from 'node:net';
 import * as os from 'node:os';
+import { runAllEndpointChecks, type EndpointResult } from './endpoint-accessibility.js';
 
 // Ponytail principle: zero external dependencies, native Node and platform tools.
 
@@ -355,7 +356,7 @@ export class TournamentNetworkMonitor {
     const wifi = getWifiInfo(this.primaryIf.name);
 
     // Latency checks
-    const [gatewayLat, cloudLat, serverHealth] = await Promise.all([
+    const [gatewayLat, cloudLat, serverHealth, endpointReport] = await Promise.all([
       this.gatewayIp
         ? checkTcpLatency(this.gatewayIp, 80, 500).then(
             (res) => res ?? checkTcpLatency(this.gatewayIp!, 53, 500),
@@ -363,38 +364,8 @@ export class TournamentNetworkMonitor {
         : Promise.resolve(null),
       checkTcpLatency('1.1.1.1', 53, 600),
       checkHttpLatency('http://127.0.0.1:3001/health', 500),
+      runAllEndpointChecks(),
     ]);
-
-    // Service probes
-    const services = await Promise.all(
-      GAME_SERVICES.map(async (svc) => {
-        if (svc.type === 'http' && svc.path) {
-          const res = await checkHttpLatency(`http://${svc.host}:${svc.port}${svc.path}`, 400);
-          return {
-            ...svc,
-            live: res.ok || res.status > 0,
-            ms: res.ms,
-            status: res.status,
-          };
-        }
-        const ms = await checkTcpLatency(svc.host, svc.port, 400);
-        return { ...svc, live: ms !== null, ms, status: ms !== null ? 200 : 0 };
-      }),
-    );
-
-    // DNS check
-    const dnsStatus = await Promise.all(
-      TOURNAMENT_DOMAINS.map(async (domain) => {
-        try {
-          const resolved = await dns.resolve4(domain);
-          const matches = resolved.includes(this.primaryIf.ip);
-          return { domain, ips: resolved, matches, error: null };
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : String(err);
-          return { domain, ips: [], matches: false, error: message };
-        }
-      }),
-    );
 
     const peers = getConnectedGamePeers();
 
@@ -410,8 +381,7 @@ export class TournamentNetworkMonitor {
         cloudMs: cloudLat,
         serverMs: serverHealth.ms,
       },
-      services,
-      dnsStatus,
+      endpointReport,
       peers,
     };
   }
@@ -474,17 +444,41 @@ export class TournamentNetworkMonitor {
       `\x1b[1;33m [2] LATENCY / RTT\x1b[0m      │  Gateway: ${gwLatStr}  │  Cloud (1.1.1.1): ${cloudLatStr}  │  API Ping: ${srvLatStr}`,
     );
 
-    // Section 3: Local Game Infrastructure
+    // Section 3: Live Tournament Domains & Ports Accessibility Matrix
     lines.push(
       '\x1b[1;36m╟────────────────────────────────────────────────────────────────────────────────────────────╢\x1b[0m',
     );
-    lines.push('\x1b[1;33m [3] GAME SERVICES ON HOST\x1b[0m');
-    for (const svc of snap.services) {
-      const stateBadge = svc.live ? '\x1b[1;42m ONLINE \x1b[0m' : '\x1b[1;41m OFFLINE \x1b[0m';
-      const latInfo = svc.ms !== null ? `(${svc.ms} ms)` : '';
-      lines.push(
-        `     • ${svc.name.padEnd(26)} :${String(svc.port).padEnd(6)} ${stateBadge} ${latInfo}`,
-      );
+    lines.push('\x1b[1;33m [3] TOURNAMENT DOMAINS & PORTS ACCESSIBILITY\x1b[0m');
+    for (const r of snap.endpointReport.results) {
+      const name = r.endpoint.name.padEnd(22).slice(0, 22);
+      const port = `:${r.endpoint.port}`.padEnd(6);
+      const dnsMark =
+        r.dns.status === 'MATCH'
+          ? '\x1b[1;32mDNS✓\x1b[0m'
+          : r.dns.status === 'MISMATCH'
+            ? '\x1b[1;33mDNS≠\x1b[0m'
+            : '\x1b[1;31mDNS✗\x1b[0m';
+      const bindMark = r.listener.lanExposed
+        ? '\x1b[1;32m[LAN]\x1b[0m  '
+        : r.listener.active
+          ? '\x1b[1;33m[LOC]\x1b[0m  '
+          : '\x1b[1;31m[OFF]\x1b[0m  ';
+
+      let probe = '\x1b[1;31mUNREACHABLE\x1b[0m';
+      if (r.reachability.httpStatus) {
+        probe = `\x1b[1;32m${r.reachability.httpStatus} OK\x1b[0m (${r.reachability.httpLatencyMs || 0}ms)`;
+      } else if (r.reachability.lanReachable) {
+        probe = `\x1b[1;32mTCP OK\x1b[0m (${r.reachability.lanLatencyMs || 0}ms)`;
+      }
+
+      let verdict = '\x1b[1;32m● READY\x1b[0m';
+      if (r.verdict === 'LOCAL_ONLY') verdict = '\x1b[1;33m▲ LOCAL-ONLY\x1b[0m';
+      else if (r.verdict === 'DNS_MISMATCH') verdict = '\x1b[1;33m◆ DNS-MISMATCH\x1b[0m';
+      else if (r.verdict === 'PORT_CLOSED')
+        verdict = r.endpoint.isOptional ? '\x1b[2m○ OPTIONAL\x1b[0m' : '\x1b[1;31m✖ DOWN\x1b[0m';
+      else if (r.verdict === 'UNRESOLVED') verdict = '\x1b[1;31m✖ NXDOMAIN\x1b[0m';
+
+      lines.push(`     • ${name} ${port} ${dnsMark} ${bindMark} → ${probe.padEnd(20)} ${verdict}`);
     }
 
     // Section 4: Live Connected Peers / Tournament Players
@@ -514,31 +508,18 @@ export class TournamentNetworkMonitor {
       }
     }
 
-    // Section 5: DNS Records Verification
-    lines.push(
-      '\x1b[1;36m╟────────────────────────────────────────────────────────────────────────────────────────────╢\x1b[0m',
+    // Section 5: Remediation Alerts
+    const remedies = snap.endpointReport.results.filter(
+      (r) => r.remedy && !r.endpoint.isOptional && r.verdict !== 'READY',
     );
-    lines.push('\x1b[1;33m [5] LAN DNS STATUS (*.lan.phalanxduel.com)\x1b[0m');
-    let allDnsMatched = true;
-    for (const d of snap.dnsStatus.slice(0, 3)) {
-      if (d.matches) {
-        lines.push(
-          `     • \x1b[1;32m✓\x1b[0m ${d.domain.padEnd(30)} -> ${d.ips.join(', ')} \x1b[1;32m(MATCHED)\x1b[0m`,
-        );
-      } else {
-        allDnsMatched = false;
-        const note =
-          d.ips.length > 0
-            ? `points to ${d.ips.join(', ')} (expected ${snap.iface.ip})`
-            : 'UNRESOLVED';
-        lines.push(`     • \x1b[1;31m✗\x1b[0m ${d.domain.padEnd(30)} -> \x1b[1;31m${note}\x1b[0m`);
-      }
-    }
-
-    if (!allDnsMatched) {
+    if (remedies.length > 0) {
       lines.push(
-        `\n  \x1b[1;33mACTION REQUIRED:\x1b[0m Set DNS A-record: \x1b[1;37m*.lan.phalanxduel.com  300  IN  A  ${snap.iface.ip}\x1b[0m`,
+        '\x1b[1;36m╟────────────────────────────────────────────────────────────────────────────────────────────╢\x1b[0m',
       );
+      lines.push('  \x1b[1;33m[!] ACTIONS REQUIRED BEFORE DEMO / TOURNAMENT:\x1b[0m');
+      for (const rem of remedies.slice(0, 3)) {
+        lines.push(`   • \x1b[1;37m${rem.endpoint.name}\x1b[0m: ${rem.remedy}`);
+      }
     }
 
     // Footer
