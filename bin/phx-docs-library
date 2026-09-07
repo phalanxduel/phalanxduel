@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Phalanx Duel Documentation & Architecture Library Viewer
+# Usage:
+#   bin/phx-docs-library        # Start interactive docs & topology library on port 3334
+#   bin/phx-docs-library --open # Start and open in default browser
+
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+if [[ "${1:-}" == "--open" ]]; then
+  (sleep 1 && open "http://localhost:3334") &
+fi
+
+exec node --import tsx scripts/docs/serve-library.ts

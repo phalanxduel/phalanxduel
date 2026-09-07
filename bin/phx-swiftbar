@@ -86,12 +86,35 @@ play_code="$(probe "$PLAY_URL/")"
 admin_code="$(probe "$ADMIN_URL/")"
 o2_code="$(probe "$O2_URL/")"
 jaeger_code="$(probe "$JAEGER_URL/")"
+docs_code="$(probe "http://localhost:3334/")"
+
+# Tournament & LAN Live Telemetry (Something Interesting Detection)
+lan_ip="$(ipconfig getifaddr en0 2>/dev/null || ifconfig en0 2>/dev/null | awk '/inet / {print $2; exit}' || true)"
+resolved_ip="$(dscacheutil -q host -a name lan.phalanxduel.com 2>/dev/null | awk '/ip_address/ {print $2; exit}' || true)"
+
+# Count active remote players connected to game ports (:3001, :5173)
+active_sockets="$(lsof -nP -iTCP:3001,5173 -sTCP:ESTABLISHED 2>/dev/null | grep -v '127.0.0.1' | grep -v '\[::1\]' | awk 'END {print NR+0}')"
+total_sockets="$(lsof -nP -iTCP:3001,5173 -sTCP:ESTABLISHED 2>/dev/null | awk 'END {print NR+0}')"
 
 overall="🟢"
 [[ "$app_code" == 000 || "$play_code" == 000 || "$admin_code" == 000 ]] && overall="🟠"
 [[ "$app_code" == 000 && "$play_code" == 000 && "$admin_code" == 000 ]] && overall="🔴"
 
-echo "$overall PHX"
+# SwiftBar dynamic header: surfaces "something interesting" immediately in the menu bar
+if [[ "$active_sockets" -gt 0 ]]; then
+  echo "⚔️ ${active_sockets} Duelists Live | color=#58a6ff"
+elif [[ -n "$lan_ip" && -n "$resolved_ip" && "$lan_ip" != "$resolved_ip" ]]; then
+  echo "⚠️ DNS Mismatch (${lan_ip}) | color=#d29922"
+elif [[ "$overall" == "🔴" ]]; then
+  echo "🔴 PHX Down | color=#f85149"
+elif [[ "$overall" == "🟠" ]]; then
+  echo "🟠 PHX Degraded | color=#d29922"
+elif [[ -n "$lan_ip" ]]; then
+  echo "🟢 PHX · $lan_ip"
+else
+  echo "$overall PHX"
+fi
+
 echo "---"
 echo "Σύνταγμα / Syntagma · Phalanx Duel coordination pulse | size=14"
 echo "Battle line ↔ trace timeline ↔ zdots | color=gray size=11"
@@ -107,6 +130,31 @@ admin_color=red; [[ "$admin_code" != 000 ]] && admin_color=green
 echo "API: $app_state ($app_code) | color=$app_color"
 echo "Client: $play_state ($play_code) | color=$play_color"
 echo "Admin: $admin_state ($admin_code) | color=$admin_color"
+echo "---"
+
+echo "Ἀγών / Agon · Tournament & LAN Status | size=13"
+echo "  Active Host LAN IP: ${lan_ip:-127.0.0.1} | font=monospace"
+if [[ -n "$lan_ip" && "$lan_ip" == "$resolved_ip" ]]; then
+  echo "  DNS: *.lan.phalanxduel.com → $lan_ip (MATCHED) | color=green"
+elif [[ -n "$lan_ip" && -n "$resolved_ip" ]]; then
+  echo "  DNS: *.lan.phalanxduel.com → $resolved_ip (MISMATCH!) | color=orange"
+  echo "  ↳ Action: Update A-record to $lan_ip | color=orange"
+else
+  echo "  DNS: *.lan.phalanxduel.com → UNRESOLVED | color=red"
+fi
+
+duel_badge="gray"; [[ "$active_sockets" -gt 0 ]] && duel_badge="#58a6ff"
+echo "  Duelists: ${active_sockets} remote player sockets (${total_sockets} total) | color=$duel_badge"
+echo "  ---"
+menu_url "  LAN Player Arena ↗" "https://play.lan.phalanxduel.com" "$play_color"
+menu_url "  LAN API Health ↗" "http://${lan_ip:-127.0.0.1}:3001/health" "$app_color"
+docs_color=red; [[ "$docs_code" != 000 ]] && docs_color=green
+menu_url "  Architecture & ERD Library ↗" "http://localhost:3334" "$docs_color"
+echo "  ---"
+echo "  Open Live Top Monitor | bash=$REPO_ROOT/bin/tournament-network-top terminal=true"
+echo "  Verify Ports Accessibility Matrix | bash=$REPO_ROOT/bin/tournament-ports-check terminal=true"
+echo "  Open Documentation Library | bash=$REPO_ROOT/bin/phx-docs-library param1=--open terminal=false"
+echo "  Copy DNS A-Record | bash=/bin/sh param1=-c param2=\"echo '*.lan.phalanxduel.com 300 IN A ${lan_ip:-127.0.0.1}' | pbcopy\" terminal=false"
 echo "---"
 
 echo "Ἀγορά / Agora · live surfaces | size=13"

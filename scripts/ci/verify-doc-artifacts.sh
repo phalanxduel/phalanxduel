@@ -31,7 +31,8 @@ if ! git diff --exit-code -- \
   docs/database/SCHEMA.md \
   docs/system/infrastructure-topology.mmd \
   docs/system/infrastructure-topology.svg \
-  docs/system/INFRASTRUCTURE.md; then
+  docs/system/INFRASTRUCTURE.md \
+  docs/library/index.html; then
   echo >&2
   echo "ERROR: Documentation artifacts are out of date." >&2
   echo "Run 'pnpm docs:artifacts' and commit the updated files." >&2
@@ -47,7 +48,8 @@ UNTRACKED=$(git ls-files --others --exclude-standard -- \
   docs/database/SCHEMA.md \
   docs/system/infrastructure-topology.mmd \
   docs/system/infrastructure-topology.svg \
-  docs/system/INFRASTRUCTURE.md || true)
+  docs/system/INFRASTRUCTURE.md \
+  docs/library/index.html || true)
 
 if [ -n "$UNTRACKED" ]; then
   echo >&2

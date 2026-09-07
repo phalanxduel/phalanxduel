@@ -17,3 +17,4 @@ archive/**
 playwright-report/
 test-results/
 scripts/video/build/
+docs/library/
