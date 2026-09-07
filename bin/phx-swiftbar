@@ -151,8 +151,8 @@ menu_url "  LAN API Health ↗" "http://${lan_ip:-127.0.0.1}:3001/health" "$app_
 docs_color=red; [[ "$docs_code" != 000 ]] && docs_color=green
 menu_url "  Architecture & ERD Library ↗" "http://localhost:3334" "$docs_color"
 echo "  ---"
-echo "  Open Live Top Monitor | bash=$REPO_ROOT/bin/tournament-network-top terminal=true"
-echo "  Verify Ports Accessibility Matrix | bash=$REPO_ROOT/bin/tournament-ports-check terminal=true"
+echo "  Open Live Top Monitor | bash=$REPO_ROOT/bin/phx-tournament-top terminal=true"
+echo "  Verify Ports Accessibility Matrix | bash=$REPO_ROOT/bin/phx-tournament-ports terminal=true"
 echo "  Open Documentation Library | bash=$REPO_ROOT/bin/phx-docs-library param1=--open terminal=false"
 echo "  Copy DNS A-Record | bash=/bin/sh param1=-c param2=\"echo '*.lan.phalanxduel.com 300 IN A ${lan_ip:-127.0.0.1}' | pbcopy\" terminal=false"
 echo "---"

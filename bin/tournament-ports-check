@@ -1,22 +1,3 @@
 #!/usr/bin/env bash
-# Phalanx Duel Tournament & Demo Ports Accessibility Matrix Check
-# Usage:
-#   bin/tournament-ports-check          # Print formatted terminal matrix
-#   bin/tournament-ports-check --json   # Output JSON for tooling
-
-set -euo pipefail
-
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT_DIR"
-
-if [[ "${1:-}" == "--json" ]]; then
-  exec node --import tsx -e '
-    import { runAllEndpointChecks } from "./scripts/tournament/endpoint-accessibility.ts";
-    runAllEndpointChecks().then(res => console.log(JSON.stringify(res, null, 2)));
-  '
-else
-  exec node --import tsx -e '
-    import { runAllEndpointChecks, renderAccessibilityMatrixTerminal } from "./scripts/tournament/endpoint-accessibility.ts";
-    runAllEndpointChecks().then(res => console.log(renderAccessibilityMatrixTerminal(res)));
-  '
-fi
+# Backward-compatibility shim; canonical tool is bin/phx-tournament-ports
+exec "$(dirname "$0")/phx-tournament-ports" "$@"

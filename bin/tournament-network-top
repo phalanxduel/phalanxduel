@@ -1,14 +1,3 @@
 #!/usr/bin/env bash
-# Phalanx Duel Tournament Network & Connection Monitor (Top Mode)
-# Usage:
-#   bin/tournament-network-top              # Interactive live top dashboard
-#   bin/tournament-network-top --interval 1 # Fast 1-second refresh
-#   bin/tournament-network-top --daemon     # Background daemon mode (JSONL output)
-#   bin/tournament-network-top --once       # Single snapshot
-
-set -euo pipefail
-
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT_DIR"
-
-exec node --import tsx scripts/tournament/network-monitor.ts "$@"
+# Backward-compatibility shim; canonical tool is bin/phx-tournament-top
+exec "$(dirname "$0")/phx-tournament-top" "$@"
