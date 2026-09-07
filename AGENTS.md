@@ -45,6 +45,7 @@ related:
        - Tuned Vite/Rolldown build in client/ eliminating dynamic import warnings and optimizing chunk threshold.
        - Authored canonical Full Stack Architecture & Operational Blueprint (docs/architecture/FULL_STACK.md).
        - Verified automated playthrough matrix (12/12) and 24/24 DB isolation guards.
+       - Cleaned root clutter: relocated historical archives, empty backups, experiments, and graphify output under local gitignored artifacts/ and excised from git working branch (-168k lines / 60MB).
        Open thread: confirm remote CI runs; next engineering priorities
        are TASK-360.03 (browser automation adapter), TASK-385 (CI spend),
        and TASK-387 (PVL scenario catalog).

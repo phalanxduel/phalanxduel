@@ -3,7 +3,7 @@
 
 This document establishes the canonical **Presentation Layer Contract** for Phalanx Duel. It abstracts the visual interface away from specific web technologies (HTML/React), defining a universal language of UI objects, state mappings, and interaction rules.
 
-By conforming to this taxonomy, the active browser client can maintain a complete, authentic, and server-compliant gameplay experience. Historical Godot/V2 parity work is archived under `archive/godot-v2-v3/` and is not an active QA target.
+By conforming to this taxonomy, the active browser client can maintain a complete, authentic, and server-compliant gameplay experience. Historical Godot/V2 parity work is archived under `artifacts/archive/godot-v2-v3/` and is not an active QA target.
 
 ---
 
