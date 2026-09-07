@@ -43,7 +43,6 @@
   "ignoreBinaries": [
     "bin/qa/bootstrap.zsh",
     "bin/dock",
-    "bin/maint/fix",
     "bin/phx-fix",
     "go",
     "k6",
@@ -53,7 +52,14 @@
     "flyctl",
     "gh",
     "fly",
-    "docker-compose"
+    "docker-compose",
+    "readlink",
+    "which",
+    "netstat",
+    "networksetup",
+    "lsof",
+    "route",
+    "ip"
   ],
   "ignoreDependencies": [
     "dependency-cruiser",
