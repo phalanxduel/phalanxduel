@@ -18,6 +18,38 @@ export interface EndpointCheck {
   isOptional?: boolean;
 }
 
+export interface FirewallInspection {
+  platform: string;
+  enabled: boolean;
+  blockAll: boolean;
+  stealthMode: boolean;
+  isNodeAllowed: boolean;
+  isNginxAllowed: boolean;
+  totalAppRules: number;
+  blockedApps: string[];
+  allowedApps: string[];
+  summary: string;
+  diagnostics: string[];
+}
+
+export type EndpointVerdict =
+  | 'READY'
+  | 'LOCAL_ONLY'
+  | 'FIREWALL_BLOCKED'
+  | 'NETWORK_BLOCKED'
+  | 'DNS_MISMATCH'
+  | 'PORT_CLOSED'
+  | 'UNRESOLVED';
+
+export type ProbeFailureCause =
+  | 'SERVICE_DOWN'
+  | 'LOCAL_BIND_ONLY'
+  | 'FIREWALL_BLOCKED'
+  | 'NETWORK_CLIENT_ISOLATION'
+  | 'DNS_MISMATCH'
+  | 'DNS_UNRESOLVED'
+  | 'NONE';
+
 export interface EndpointResult {
   endpoint: EndpointCheck;
   dns: {
@@ -41,7 +73,8 @@ export interface EndpointResult {
     httpLatencyMs?: number;
     error?: string;
   };
-  verdict: 'READY' | 'LOCAL_ONLY' | 'DNS_MISMATCH' | 'PORT_CLOSED' | 'UNRESOLVED';
+  verdict: EndpointVerdict;
+  failureCause?: ProbeFailureCause;
   remedy?: string;
 }
 
@@ -181,6 +214,156 @@ export function getActiveLanIp(): string {
   return '127.0.0.1';
 }
 
+export function inspectLocalFirewall(): FirewallInspection {
+  const platform = process.platform;
+  if (platform !== 'darwin') {
+    return {
+      platform,
+      enabled: false,
+      blockAll: false,
+      stealthMode: false,
+      isNodeAllowed: true,
+      isNginxAllowed: true,
+      totalAppRules: 0,
+      blockedApps: [],
+      allowedApps: [],
+      summary: `Non-macOS platform (${platform}); Application Firewall checks skipped`,
+      diagnostics: [`Firewall inspection not active for ${platform}`],
+    };
+  }
+
+  try {
+    const globalOut = execSync(
+      '/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate 2>/dev/null',
+      { encoding: 'utf8' },
+    );
+    const blockAllOut = execSync(
+      '/usr/libexec/ApplicationFirewall/socketfilterfw --getblockall 2>/dev/null',
+      { encoding: 'utf8' },
+    );
+    const stealthOut = execSync(
+      '/usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode 2>/dev/null',
+      { encoding: 'utf8' },
+    );
+
+    let appsOut = '';
+    try {
+      appsOut = execSync('/usr/libexec/ApplicationFirewall/socketfilterfw --listapps 2>/dev/null', {
+        encoding: 'utf8',
+      });
+    } catch {
+      // unprivileged or no custom rules
+    }
+
+    const enabled = /State = 1|enabled/i.test(globalOut);
+    const blockAll = /block all.+enabled|is enabled/i.test(blockAllOut);
+    const stealthMode = /stealth mode.+enabled|is on/i.test(stealthOut);
+
+    const regex =
+      /(\d+)\s*:\s*(.+?)\s*\n\s*\((Allow incoming connections|Block incoming connections)\)/g;
+    const allowedApps: string[] = [];
+    const blockedApps: string[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(appsOut)) !== null) {
+      const appPath = match[2].trim();
+      const isAllowed = match[3].includes('Allow');
+      if (isAllowed) {
+        allowedApps.push(appPath);
+      } else {
+        blockedApps.push(appPath);
+      }
+    }
+
+    let activeNginxPath = '';
+    try {
+      activeNginxPath = execSync(
+        'readlink -f $(which nginx 2>/dev/null) 2>/dev/null || which nginx 2>/dev/null',
+        { encoding: 'utf8' },
+      ).trim();
+    } catch {}
+
+    let activeNodePath = '';
+    try {
+      activeNodePath = execSync('node -e "console.log(process.execPath)" 2>/dev/null', {
+        encoding: 'utf8',
+      }).trim();
+    } catch {}
+
+    const isNodeBlocked = blockedApps.some(
+      (p) => p === activeNodePath || (activeNodePath === '' && p.endsWith('/node')),
+    );
+    const isNginxBlocked = blockedApps.some(
+      (p) => p === activeNginxPath || (activeNginxPath === '' && p.endsWith('/nginx')),
+    );
+
+    const isNodeAllowed = !isNodeBlocked;
+    const isNginxAllowed = !isNginxBlocked;
+
+    const diagnostics: string[] = [];
+    if (!enabled) {
+      diagnostics.push(
+        '🟢 macOS Application Firewall is DISABLED (incoming LAN traffic permitted).',
+      );
+    } else if (blockAll) {
+      diagnostics.push(
+        '🔴 CRITICAL: macOS Application Firewall "Block All Incoming Connections" is ENABLED. All tournament players will be blocked!',
+      );
+    } else {
+      diagnostics.push(
+        '🟢 macOS Application Firewall is ENABLED with selective application filtering.',
+      );
+      if (isNodeAllowed && isNginxAllowed) {
+        diagnostics.push('✅ Both Node.js and Nginx have incoming connections allowed.');
+      } else {
+        if (!isNodeAllowed)
+          diagnostics.push('❌ Node.js is explicitly BLOCKED in Application Firewall.');
+        if (!isNginxAllowed)
+          diagnostics.push('❌ Nginx is explicitly BLOCKED in Application Firewall.');
+      }
+    }
+
+    if (stealthMode) {
+      diagnostics.push(
+        '⚠️ Stealth mode is ON: ICMP ping / echo requests will be dropped by macOS.',
+      );
+    }
+
+    const summary = !enabled
+      ? 'Firewall: Disabled (Allow All)'
+      : blockAll
+        ? 'Firewall: Block All Incoming Connections'
+        : `Firewall: Active (${allowedApps.length} allowed, ${blockedApps.length} blocked)`;
+
+    return {
+      platform,
+      enabled,
+      blockAll,
+      stealthMode,
+      isNodeAllowed,
+      isNginxAllowed,
+      totalAppRules: allowedApps.length + blockedApps.length,
+      blockedApps,
+      allowedApps,
+      summary,
+      diagnostics,
+    };
+  } catch (err: unknown) {
+    return {
+      platform,
+      enabled: false,
+      blockAll: false,
+      stealthMode: false,
+      isNodeAllowed: true,
+      isNginxAllowed: true,
+      totalAppRules: 0,
+      blockedApps: [],
+      allowedApps: [],
+      summary: `Firewall query failed: ${err instanceof Error ? err.message : String(err)}`,
+      diagnostics: ['Unable to inspect socketfilterfw (permissions or missing binary)'],
+    };
+  }
+}
+
 export function getHostListeners(): Map<number, { bind: string; process?: string; pid?: number }> {
   const map = new Map<number, { bind: string; process?: string; pid?: number }>();
   try {
@@ -312,6 +495,7 @@ export async function probeEndpoint(
   ep: EndpointCheck,
   lanIp: string,
   listeners: Map<number, { bind: string; process?: string; pid?: number }>,
+  firewall?: FirewallInspection,
 ): Promise<EndpointResult> {
   const isIp = /^[0-9.]+$/.test(ep.domain);
 
@@ -360,23 +544,44 @@ export async function probeEndpoint(
   }
 
   // 4. Verdict formulation
-  let verdict: EndpointResult['verdict'] = 'READY';
+  let verdict: EndpointVerdict = 'READY';
+  let failureCause: ProbeFailureCause = 'NONE';
   let remedy: string | undefined;
 
-  if (!active && !domainCheck.ok) {
+  if (!active && !domainCheck.ok && !lanCheck.ok) {
     verdict = 'PORT_CLOSED';
+    failureCause = 'SERVICE_DOWN';
     remedy = `Service not listening on port :${ep.port}. Start the service with pnpm services.`;
   } else if (!isIp && dnsStatus === 'UNRESOLVED') {
     verdict = 'UNRESOLVED';
+    failureCause = 'DNS_UNRESOLVED';
     remedy = `DNS cannot resolve ${ep.domain}. Add A-record pointing to ${lanIp}.`;
   } else if (!isIp && dnsStatus === 'MISMATCH') {
     verdict = 'DNS_MISMATCH';
+    failureCause = 'DNS_MISMATCH';
     remedy = `${ep.domain} points to ${resolvedIps.join(', ')}, but local LAN IP is ${lanIp}. Update DNS A-record.`;
   } else if (active && !lanExposed && !lanCheck.ok) {
     verdict = 'LOCAL_ONLY';
-    remedy = `Service on :${ep.port} is bound to ${bind} (127.0.0.1). Restart service with --host 0.0.0.0 to allow LAN tournament players.`;
+    failureCause = 'LOCAL_BIND_ONLY';
+    remedy = `Service on :${ep.port} is bound to 127.0.0.1 (${bind}). Restart service with --host 0.0.0.0 to allow LAN tournament players.`;
+  } else if (active && lanExposed && !lanCheck.ok) {
+    const isFwDropping =
+      firewall?.blockAll ||
+      (firewall?.blockedApps &&
+        listenerInfo?.process &&
+        firewall.blockedApps.some((p) => p.includes(listenerInfo.process!)));
+    if (isFwDropping) {
+      verdict = 'FIREWALL_BLOCKED';
+      failureCause = 'FIREWALL_BLOCKED';
+      remedy = `Service on :${ep.port} is bound to 0.0.0.0, but local OS firewall dropped incoming packets. Check socketfilterfw / pf.`;
+    } else {
+      verdict = 'NETWORK_BLOCKED';
+      failureCause = 'NETWORK_CLIENT_ISOLATION';
+      remedy = `Service on :${ep.port} is bound to 0.0.0.0, but LAN socket connection failed. Verify local subnet and Wi-Fi client isolation.`;
+    }
   } else {
     verdict = 'READY';
+    failureCause = 'NONE';
   }
 
   return {
@@ -403,21 +608,26 @@ export async function probeEndpoint(
       error: httpRes?.error,
     },
     verdict,
+    failureCause,
     remedy,
   };
 }
 
 export async function runAllEndpointChecks(customEndpoints?: EndpointCheck[]): Promise<{
   lanIp: string;
+  firewall: FirewallInspection;
   results: EndpointResult[];
   allReady: boolean;
   criticalMissing: string[];
 }> {
   const lanIp = getActiveLanIp();
   const listeners = getHostListeners();
+  const firewall = inspectLocalFirewall();
   const endpoints = customEndpoints || CANONICAL_TOURNAMENT_ENDPOINTS;
 
-  const results = await Promise.all(endpoints.map((ep) => probeEndpoint(ep, lanIp, listeners)));
+  const results = await Promise.all(
+    endpoints.map((ep) => probeEndpoint(ep, lanIp, listeners, firewall)),
+  );
 
   const criticalMissing: string[] = [];
   for (const r of results) {
@@ -428,6 +638,7 @@ export async function runAllEndpointChecks(customEndpoints?: EndpointCheck[]): P
 
   return {
     lanIp,
+    firewall,
     results,
     allReady: criticalMissing.length === 0,
     criticalMissing,
@@ -522,6 +733,12 @@ export function renderAccessibilityMatrixTerminal(
     } else if (r.verdict === 'DNS_MISMATCH') {
       verdictText = '◆ DNS MISMATCH     ';
       verdictColor = '\x1b[1;33m';
+    } else if (r.verdict === 'FIREWALL_BLOCKED') {
+      verdictText = '⛔ FIREWALL BLOCKED ';
+      verdictColor = '\x1b[1;31m';
+    } else if (r.verdict === 'NETWORK_BLOCKED') {
+      verdictText = '⚡ NETWORK BLOCKED  ';
+      verdictColor = '\x1b[1;31m';
     } else if (r.verdict === 'PORT_CLOSED') {
       verdictText = r.endpoint.isOptional ? '○ OPTIONAL (OFF)   ' : '✖ SERVICE DOWN     ';
       verdictColor = r.endpoint.isOptional ? '\x1b[2m' : '\x1b[1;31m';
@@ -539,6 +756,17 @@ export function renderAccessibilityMatrixTerminal(
   lines.push(
     '\x1b[1;36m└──────────────────────────────┴────────┴───────────┴──────────────┴──────────────┴──────────────────────┘\x1b[0m',
   );
+
+  if (report.firewall) {
+    const fwColor = report.firewall.blockAll
+      ? '\x1b[1;31m'
+      : report.firewall.enabled
+        ? '\x1b[1;32m'
+        : '\x1b[1;33m';
+    lines.push(
+      `\x1b[1;30m[Firewall]\x1b[0m ${fwColor}${report.firewall.summary}\x1b[0m | Stealth: ${report.firewall.stealthMode ? '\x1b[1;33mON\x1b[0m' : 'OFF'} | Inbound Node: ${report.firewall.isNodeAllowed ? '\x1b[1;32mALLOW\x1b[0m' : '\x1b[1;31mBLOCK\x1b[0m'} | Inbound Nginx: ${report.firewall.isNginxAllowed ? '\x1b[1;32mALLOW\x1b[0m' : '\x1b[1;31mBLOCK\x1b[0m'}`,
+    );
+  }
 
   const remedies = report.results.filter(
     (r) => r.remedy && !r.endpoint.isOptional && r.verdict !== 'READY',

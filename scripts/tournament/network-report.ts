@@ -14,6 +14,11 @@ import { execSync } from 'node:child_process';
 import dns from 'node:dns/promises';
 import net from 'node:net';
 import os from 'node:os';
+import {
+  getHostListeners,
+  inspectLocalFirewall,
+  type FirewallInspection,
+} from './endpoint-accessibility.js';
 
 interface InterfaceInfo {
   name: string;
@@ -36,6 +41,7 @@ interface ServiceProbe {
   protocol: 'HTTP' | 'TCP';
   localLive: boolean;
   lanLive: boolean;
+  blockReason?: 'NOT_RUNNING' | 'LOCAL_BIND_ONLY' | 'FIREWALL_BLOCKED' | 'NETWORK_ISOLATED';
   details?: string;
 }
 
@@ -49,6 +55,7 @@ interface NetworkReport {
   dnsServers: string[];
   dnsProbes: DnsProbe[];
   serviceProbes: ServiceProbe[];
+  firewall: FirewallInspection;
   recommendedRecords: Array<{
     name: string;
     type: string;
@@ -56,7 +63,7 @@ interface NetworkReport {
     ttl: number;
     purpose: string;
   }>;
-  overallStatus: 'READY' | 'NEEDS_DNS_UPDATE' | 'SERVICES_DOWN';
+  overallStatus: 'READY' | 'NEEDS_DNS_UPDATE' | 'SERVICES_DOWN' | 'FIREWALL_WARNING';
 }
 
 // ponytail: detect primary default gateway via native OS routing table
@@ -214,17 +221,52 @@ async function runProbes(targetDomain: string): Promise<NetworkReport> {
     { name: 'OTel Collector', port: 4318, path: '', protocol: 'TCP' as const },
   ];
 
+  const firewall = inspectLocalFirewall();
+  const listeners = getHostListeners();
+
   const serviceProbes: ServiceProbe[] = [];
   for (const s of serviceChecks) {
     let localLive = false;
     let lanLive = false;
 
     if (s.protocol === 'HTTP') {
-      localLive = await probeHttp(`http://127.0.0.1:${s.port}${s.path}`);
-      lanLive = await probeHttp(`http://${lanIp}:${s.port}${s.path}`);
+      localLive =
+        (await probeHttp(`http://127.0.0.1:${s.port}${s.path}`)) ||
+        (await probePort('127.0.0.1', s.port));
+      lanLive =
+        (await probeHttp(`http://${lanIp}:${s.port}${s.path}`)) || (await probePort(lanIp, s.port));
     } else {
       localLive = await probePort('127.0.0.1', s.port);
       lanLive = await probePort(lanIp, s.port);
+    }
+
+    const listener = listeners.get(s.port);
+    let blockReason: ServiceProbe['blockReason'];
+    let details: string | undefined;
+
+    if (!localLive && !lanLive) {
+      blockReason = 'NOT_RUNNING';
+      details = 'Service is stopped or not listening on port';
+    } else if (localLive && !lanLive) {
+      const isLanBound =
+        listener &&
+        (listener.bind === '*' ||
+          listener.bind === '0.0.0.0' ||
+          listener.bind === '::' ||
+          listener.bind === lanIp);
+      if (!isLanBound) {
+        blockReason = 'LOCAL_BIND_ONLY';
+        details = `Bound to loopback only (${listener?.bind || '127.0.0.1'}). Restart service with --host 0.0.0.0`;
+      } else if (
+        firewall.blockAll ||
+        (listener?.process && firewall.blockedApps.some((p) => p.includes(listener.process!)))
+      ) {
+        blockReason = 'FIREWALL_BLOCKED';
+        details = 'Listener is 0.0.0.0, but local OS firewall dropped inbound connection';
+      } else {
+        blockReason = 'NETWORK_ISOLATED';
+        details = 'Listener is 0.0.0.0, but LAN probe failed (check Wi-Fi isolation / subnet)';
+      }
     }
 
     serviceProbes.push({
@@ -233,6 +275,8 @@ async function runProbes(targetDomain: string): Promise<NetworkReport> {
       protocol: s.protocol,
       localLive,
       lanLive,
+      blockReason,
+      details,
     });
   }
 
@@ -279,9 +323,12 @@ async function runProbes(targetDomain: string): Promise<NetworkReport> {
   const isServerLive = serviceProbes.some(
     (s) => s.name === 'Fastify Game Server' && (s.localLive || s.lanLive),
   );
+  const isFirewallBlocking = firewall.blockAll || (!firewall.isNodeAllowed && isServerLive);
 
-  let overallStatus: 'READY' | 'NEEDS_DNS_UPDATE' | 'SERVICES_DOWN' = 'READY';
-  if (hasDnsMismatch) {
+  let overallStatus: 'READY' | 'NEEDS_DNS_UPDATE' | 'SERVICES_DOWN' | 'FIREWALL_WARNING' = 'READY';
+  if (isFirewallBlocking) {
+    overallStatus = 'FIREWALL_WARNING';
+  } else if (hasDnsMismatch) {
     overallStatus = 'NEEDS_DNS_UPDATE';
   } else if (!isServerLive) {
     overallStatus = 'SERVICES_DOWN';
@@ -297,6 +344,7 @@ async function runProbes(targetDomain: string): Promise<NetworkReport> {
     dnsServers,
     dnsProbes,
     serviceProbes,
+    firewall,
     recommendedRecords,
     overallStatus,
   };
@@ -330,12 +378,43 @@ function renderTerminalReport(report: NetworkReport): void {
   for (const s of report.serviceProbes) {
     const locIcon = s.localLive ? '✅' : '❌';
     const lanIcon = s.lanLive ? '✅' : '❌';
+    let extra = '';
+    if (s.localLive && !s.lanLive) {
+      if (s.blockReason === 'LOCAL_BIND_ONLY') {
+        extra = ' ⚠️  [BLOCKED: Bound to 127.0.0.1 only]';
+      } else if (s.blockReason === 'FIREWALL_BLOCKED') {
+        extra = ' ⛔ [BLOCKED: Host Firewall dropped connection]';
+      } else if (s.blockReason === 'NETWORK_ISOLATED') {
+        extra = ' ⚡ [BLOCKED: LAN socket failed / AP isolation]';
+      }
+    } else if (!s.localLive && !s.lanLive) {
+      extra = ' ⚪ (Service Down)';
+    }
     console.log(
-      `  ${s.name.padEnd(26, ' ')} [:${s.port}]  Local(127.0.0.1): ${locIcon}  |  LAN(${lanIp}): ${lanIcon}`,
+      `  ${s.name.padEnd(26, ' ')} [:${s.port}]  Local(127.0.0.1): ${locIcon}  |  LAN(${lanIp}): ${lanIcon}${extra}`,
     );
   }
 
-  console.log('\n--- [3. ACTIONABLE DNS A-RECORDS TO CONFIGURE] ---');
+  console.log('\n--- [3. LOCAL FIREWALL & INGRESS RULES] ---');
+  const fw = report.firewall;
+  const fwStatusIcon = fw.blockAll ? '🔴 ' : fw.enabled ? '🟢 ' : '🟡 ';
+  console.log(`  Firewall Status:    ${fwStatusIcon}${fw.summary}`);
+  console.log(
+    `  Stealth Mode:       ${fw.stealthMode ? '⚠️  ON (Drops ICMP Ping & Discovery)' : 'OFF (ICMP echo permitted)'}`,
+  );
+  console.log(
+    `  Node.js Inbound:    ${fw.isNodeAllowed ? '✅ ALLOWED' : '❌ BLOCKED by Firewall'}`,
+  );
+  console.log(
+    `  Nginx Inbound:      ${fw.isNginxAllowed ? '✅ ALLOWED' : '❌ BLOCKED by Firewall'}`,
+  );
+  if (fw.diagnostics.length > 0) {
+    for (const d of fw.diagnostics) {
+      console.log(`  └─ ${d}`);
+    }
+  }
+
+  console.log('\n--- [4. ACTIONABLE DNS A-RECORDS TO CONFIGURE] ---');
   console.log('Set these A records at your DNS provider (e.g. DNSimple / Cloudflare / AdGuard):');
   console.log('');
   console.log('  Record / Subdomain           Type   Value (IP)       TTL   Description');
@@ -348,7 +427,7 @@ function renderTerminalReport(report: NetworkReport): void {
     );
   }
 
-  console.log('\n--- [4. COPY-PASTE ZONE / BIND SYNTAX] ---');
+  console.log('\n--- [5. COPY-PASTE ZONE / BIND SYNTAX] ---');
   for (const r of report.recommendedRecords) {
     console.log(`${r.name.padEnd(30, ' ')} ${r.ttl}  IN  ${r.type}  ${r.value}`);
   }
@@ -360,10 +439,61 @@ function renderTerminalReport(report: NetworkReport): void {
     console.log(
       '  STATUS: ⚠️  DNS UPDATE NEEDED — Update your DNS A records to point to: ' + lanIp,
     );
+  } else if (report.overallStatus === 'FIREWALL_WARNING') {
+    console.log(
+      '  STATUS: ⛔ FIREWALL INTERCEPTION — macOS Firewall is dropping incoming connections',
+    );
   } else {
     console.log('  STATUS: ❌ LOCAL SERVICES DOWN — Start server: pnpm dev:server');
   }
-  console.log('========================================================================\n');
+  console.log('========================================================================');
+
+  console.log('\n--- [6. DIAGNOSTICS & VALIDATION RECIPES (TEST COMMANDS)] ---');
+  console.log(
+    'Use these copy-paste commands to test whether blocks are Local Host vs Firewall vs Venue Wi-Fi:\n',
+  );
+  console.log('  1. Verify Local Loopback Reachability (from this machine):');
+  console.log('     curl -sI http://127.0.0.1:3001/health | head -n 5');
+  console.log('     nc -zv 127.0.0.1 3001\n');
+  console.log('  2. Verify Host LAN IP Reachability (from this machine):');
+  console.log(`     curl -sI http://${lanIp}:3001/health | head -n 5`);
+  console.log(`     nc -zv ${lanIp} 3001\n`);
+  console.log('  3. Verify from External Player/Spectator Device (Phone / Laptop on Venue Wi-Fi):');
+  console.log(`     curl -sI http://${lanIp}:3001/health`);
+  console.log(`     curl -k -sI https://${report.targetDomain}/\n`);
+  console.log('  4. macOS Application Firewall Diagnosis & Remediation:');
+  console.log(
+    '     • View All Rules:        /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate --getblockall --listapps',
+  );
+  console.log(
+    '     • If Block-All is active: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setblockall off',
+  );
+  console.log(
+    '     • Allow Node.js binary:   sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add $(which node) --unblockapp $(which node)',
+  );
+  console.log(
+    '     • Allow Nginx binary:     sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add $(which nginx) --unblockapp $(which nginx)',
+  );
+  console.log(
+    '     • Tournament Bypass Mode: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off\n',
+  );
+  console.log('  5. Detect Wi-Fi AP Client Isolation (Venue Guest Network):');
+  console.log(`     • Ping Default Gateway:   ping -c 2 ${report.gateway || '192.168.1.1'}`);
+  console.log('     • View Peer ARP Cache:    arp -a');
+  console.log(
+    '     • Diagnostic Note: If external players can join Wi-Fi but cannot ping or curl your LAN IP,',
+  );
+  console.log('       the venue AP has Client Isolation turned ON.');
+  console.log(
+    '       Fix: Use a portable travel router (GL.iNet), an iPhone/Android personal hotspot, or a switch.\n',
+  );
+  console.log('  6. Flush Stale DNS Caches:');
+  console.log(
+    '     • macOS:                  sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder',
+  );
+  console.log(
+    '     • iOS / Android:          Toggle Airplane Mode ON for 5 seconds, then turn back OFF.\n',
+  );
 }
 
 function renderMarkdownReport(report: NetworkReport): string {
@@ -394,14 +524,25 @@ function renderMarkdownReport(report: NetworkReport): string {
   lines.push('');
   lines.push('## Local & LAN Service Listeners');
   lines.push('');
-  lines.push('| Service | Port | Protocol | Local (127.0.0.1) | LAN Reachable |');
-  lines.push('|---|:---:|:---:|:---:|:---:|');
+  lines.push(
+    '| Service | Port | Protocol | Local (127.0.0.1) | LAN Reachable | Diagnostic Reason |',
+  );
+  lines.push('|---|:---:|:---:|:---:|:---:|---|');
 
   for (const s of report.serviceProbes) {
+    const reason = s.details || (s.lanLive ? 'Accessible on LAN' : 'Offline');
     lines.push(
-      `| ${s.name} | \`${s.port}\` | ${s.protocol} | ${s.localLive ? '✅ Yes' : '❌ No'} | ${s.lanLive ? '✅ Yes' : '❌ No'} |`,
+      `| ${s.name} | \`${s.port}\` | ${s.protocol} | ${s.localLive ? '✅ Yes' : '❌ No'} | ${s.lanLive ? '✅ Yes' : '❌ No'} | ${reason} |`,
     );
   }
+
+  lines.push('');
+  lines.push('## Local Firewall Status');
+  lines.push('');
+  lines.push(`- **Summary**: ${report.firewall.summary}`);
+  lines.push(`- **Stealth Mode**: ${report.firewall.stealthMode ? 'Enabled' : 'Disabled'}`);
+  lines.push(`- **Node.js Allowed**: ${report.firewall.isNodeAllowed ? '✅ Yes' : '❌ No'}`);
+  lines.push(`- **Nginx Allowed**: ${report.firewall.isNginxAllowed ? '✅ Yes' : '❌ No'}`);
 
   lines.push('');
   lines.push('## Required DNS A-Records');
@@ -410,6 +551,27 @@ function renderMarkdownReport(report: NetworkReport): string {
   for (const r of report.recommendedRecords) {
     lines.push(`${r.name.padEnd(30, ' ')} ${r.ttl}  IN  ${r.type}  ${r.value}`);
   }
+  lines.push('```');
+
+  lines.push('');
+  lines.push('## Troubleshooting & Validation Commands');
+  lines.push('');
+  lines.push('```bash');
+  lines.push('# Test local loopback reachability');
+  lines.push('curl -sI http://127.0.0.1:3001/health | head -n 5');
+  lines.push('nc -zv 127.0.0.1 3001');
+  lines.push('');
+  lines.push('# Test host LAN IP socket');
+  lines.push(`curl -sI http://${lanIp}:3001/health | head -n 5`);
+  lines.push(`nc -zv ${lanIp} 3001`);
+  lines.push('');
+  lines.push('# Inspect macOS Application Firewall');
+  lines.push(
+    '/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate --getblockall --listapps',
+  );
+  lines.push('');
+  lines.push('# Unblock incoming if firewall is dropping traffic');
+  lines.push('sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setblockall off');
   lines.push('```');
 
   return lines.join('\n');
