@@ -12,10 +12,16 @@
       "project": ["src/**/*.ts", "tests/**/*.ts"]
     },
     "server": {
-      "project": ["src/**/*.ts", "tests/**/*.ts"]
+      "entry": [
+        "src/index.ts",
+        "src/ops/reset-admin-password.ts",
+        "scripts/**/*.ts",
+        "tests/perf/**/*.bench.ts"
+      ],
+      "project": ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"]
     },
     "client": {
-      "project": ["src/**/*.ts"]
+      "project": ["src/**/*.ts", "src/**/*.tsx"]
     },
     "admin": {
       "project": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts"]

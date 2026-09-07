@@ -2,31 +2,20 @@
 
 # Knip report
 
-## Unused files (3)
+## Unused exports (1)
 
-| Name                                   | Location                               | Severity |
-| :------------------------------------- | :------------------------------------- | :------- |
-| server/src/ops/reset-admin-password.ts | server/src/ops/reset-admin-password.ts | error    |
-| server/tests/perf/engine.bench.ts      | server/tests/perf/engine.bench.ts      | error    |
-| server/tests/perf/api.bench.ts         | server/tests/perf/api.bench.ts         | error    |
-
-## Unused dependencies (1)
-
-| Name                | Location                 | Severity |
-| :------------------ | :----------------------- | :------- |
-| @phalanxduel/engine | client/package.json:28:6 | error    |
-
-## Unused exports (4)
-
-| Name                 | Location                            | Severity |
-| :------------------- | :---------------------------------- | :------- |
-| redactTransactionLog | server/src/utils/redaction.ts:18:17 | error    |
-| normalizeCardSkinId  | client/src/cosmetics.ts:33:17       | error    |
-| CARD_SKINS           | client/src/cosmetics.ts:12:14       | error    |
-| HUD_PHASE_LABELS     | client/src/constants.ts:7:14        | error    |
+| Name                 \| Location                            | Severity |
+| :------------------- \| :---------------------------------- | :------- |
+| redactTransactionLog \| server/src/utils/redaction.ts:18:17 | error    |
 
 ## Unused exported types (1)
 
-| Name             | Location                                | Severity |
-| :--------------- | :-------------------------------------- | :------- |
-| AchievementStats | server/src/achievements/service.ts:7:18 | error    |
+| Name             \| Location                                | Severity |
+| :--------------- \| :-------------------------------------- | :------- |
+| AchievementStats \| server/src/achievements/service.ts:7:18 | error    |
+
+## Duplicate exports (1)
+
+| Name                                   \| Location             | Severity |
+| :------------------------------------- \| :------------------- | :------- |
+| validateOperativeId\|validatePlayerName | client/src/lobby.tsx | error    |

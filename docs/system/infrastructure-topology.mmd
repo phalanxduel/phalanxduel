@@ -1,0 +1,101 @@
+flowchart TB
+    %% =========================================================================
+    %% External Consumers & Touchpoints
+    %% =========================================================================
+    subgraph Consumers["1. External Consumers & Presentation"]
+        WebClient["Web Client UI\nPreact 10.29 + Vite\n(Browser / RUM)"]
+        AdminUI["Admin Cockpit\nPreact + Vite\n(:5174)"]
+        GoCLI["Go Duel CLI\nGo 1.24 + gorilla/ws\n(Terminal)"]
+        SwiftUI["SwiftUI Client\nmacOS / iOS\n(Native)"]
+        AIAgent["AI Agents & MCP Clients\nClaude · Codex · Gemini\n(stdio / SSE)"]
+    end
+
+    %% =========================================================================
+    %% Edge & Network Perimeter
+    %% =========================================================================
+    subgraph Edge["2. Edge & Routing Perimeter"]
+        DNS["Edge DNS\nDNSimple + AdGuard\n(10.36.1.149)"]
+        Nginx["LAN Reverse Proxy\n*.lan.phalanxduel.com\n(Nginx TLS)"]
+        FlyEdge["Fly.io Anycast Edge\nplay.phalanxduel.com\n(TLS Termination)"]
+    end
+
+    %% =========================================================================
+    %% Production Environment (Fly.io)
+    %% =========================================================================
+    subgraph FlyProduction["3. Production Cloud Infrastructure (Fly.io ord)"]
+        direction TB
+        subgraph FlyMesh["Fly.io Private 6PN WireGuard Mesh"]
+            FlyServer["phalanxduel-server\nFastify 5.8 (Node 24)\n:3001 REST + /ws\n(Auth, Match, Ladder)"]
+            FlyMCP["phalanxduel-mcp-public\nMCP HTTP / SSE Service\n(Engine & Analysis API)"]
+            FlyOTel["otel-collector sidecar\nOTLP gRPC / HTTP\n(:4317 / :4318)"]
+        end
+        NeonDB[("Neon Serverless PostgreSQL\n(Drizzle ORM 0.45)\npgvector + SSL")]
+    end
+
+    %% =========================================================================
+    %% Local Development & Cluster (Host + Docker)
+    %% =========================================================================
+    subgraph LocalInfra["4. Local Hybrid Dev Infrastructure (Host + Docker)"]
+        direction TB
+        subgraph HostNative["Host-Native Runtime (Primary)"]
+            HostServer["Fastify Server\n(:3001)"]
+            HostPostgres[("PostgreSQL 17.4\nphalanx_dev / test\n(:5432)")]
+        end
+        subgraph DockerCluster["Docker Compose Automation & Cluster"]
+            ClusterA["Server Node A\n(:3011)"]
+            ClusterB["Server Node B\n(:3012)"]
+            EventBus["Postgres Event Bus\n(Distributed PubSub)"]
+            PlaywrightQA["Playwright Headless\nAutomation Service"]
+        end
+    end
+
+    %% =========================================================================
+    %% Observability Sinks (OpenObserve + Jaeger)
+    %% =========================================================================
+    subgraph Observability["5. Longitudinal Observability Pipeline"]
+        OTelHost["Host OTel Collector\n(:4318 HTTP / :4317 gRPC)"]
+        OpenObserve["OpenObserve (o2)\nLongitudinal Analytics & RUM\n(https://o2.localhost)"]
+        Jaeger["Jaeger Tracing\nDistributed Spans & DAG\n(https://jaeger.localhost)"]
+    end
+
+    %% Routing connections
+    WebClient -->|"HTTPS / WSS"| Nginx
+    WebClient -->|"HTTPS / WSS"| FlyEdge
+    AdminUI -->|"HTTP :5174"| Nginx
+    GoCLI -->|"TCP / WSS"| Nginx
+    GoCLI -->|"TCP / WSS"| FlyEdge
+    SwiftUI -->|"HTTPS / WSS"| Nginx
+    AIAgent -->|"SSE / HTTP"| FlyEdge
+    AIAgent -->|"stdio"| HostServer
+
+    Nginx --> HostServer
+    FlyEdge --> FlyServer
+    FlyEdge --> FlyMCP
+
+    FlyServer -->|"pgwire (SSL)"| NeonDB
+    FlyServer -->|"OTLP :4318"| FlyOTel
+    FlyMCP -->|"GAME_SERVER_URL"| FlyServer
+    FlyMCP -.->|"DATABASE_URL"| NeonDB
+
+    HostServer -->|"with-dev-postgres.sh"| HostPostgres
+    HostServer -->|"OTLP :4318"| OTelHost
+    ClusterA -->|"Event Sync"| EventBus
+    ClusterB -->|"Event Sync"| EventBus
+    PlaywrightQA -->|"E2E QA"| HostServer
+
+    FlyOTel -->|"Traces / Logs"| OpenObserve
+    OTelHost -->|"Traces"| Jaeger
+    OTelHost -->|"Logs / RUM / Metrics"| OpenObserve
+    WebClient -.->|"RUM Traces"| OTelHost
+
+    classDef edgeClass fill:#e3f2fd,stroke:#1565c0,stroke-width:2px;
+    classDef prodClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px;
+    classDef localClass fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    classDef obsClass fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef clientClass fill:#fbe9e7,stroke:#c62828,stroke-width:2px;
+
+    class Consumers clientClass;
+    class Edge edgeClass;
+    class FlyProduction prodClass;
+    class LocalInfra localClass;
+    class Observability obsClass;

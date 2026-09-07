@@ -1,0 +1,287 @@
+erDiagram
+    users ||--o{ achievements : "user_id"
+    users ||--o{ admin_audit_log : "actor_id"
+    users ||--o{ elo_snapshots : "user_id"
+    users ||--o{ identity_audit_log : "user_id"
+    matches ||--o{ match_actions : "match_id"
+    users ||--o{ match_comments : "user_id"
+    matches ||--o{ match_comments : "match_id"
+    matches ||--o{ match_embeddings : "match_id"
+    users ||--o{ match_favorites : "user_id"
+    matches ||--o{ match_favorites : "match_id"
+    matches ||--o{ match_payloads : "match_id"
+    users ||--o{ match_ratings : "user_id"
+    matches ||--o{ match_ratings : "match_id"
+    matches ||--o{ match_results : "match_id"
+    users ||--o{ match_results : "user_id"
+    users ||--o{ match_results : "opponent_id"
+    users ||--o{ matches : "player_1_id"
+    users ||--o{ matches : "player_2_id"
+    users ||--o{ password_reset_tokens : "user_id"
+    users ||--o{ player_ratings : "user_id"
+    seasons ||--o{ season_archives : "season_id"
+    users ||--o{ season_archives : "user_id"
+    matches ||--o{ transaction_logs : "match_id"
+    users ||--o{ user_entitlements : "user_id"
+    cosmetic_products ||--o{ user_entitlements : "product_id"
+    users ||--o{ user_follows : "follower_id"
+    users ||--o{ user_follows : "following_id"
+
+    achievements {
+        uuid id PK
+        uuid user_id FK
+        text type
+        timestamp awarded_at
+        text match_id
+        jsonb metadata
+    }
+
+    admin_audit_log {
+        uuid id PK
+        uuid actor_id FK
+        text action
+        uuid target_id
+        jsonb metadata
+        timestamp created_at
+    }
+
+    cosmetic_products {
+        uuid id PK
+        text sku UK
+        text name
+        text description
+        text category
+        integer price_cents
+        boolean active
+        timestamp created_at
+    }
+
+    elo_snapshots {
+        uuid id PK
+        uuid user_id FK
+        text category
+        integer elo
+        integer k_factor
+        integer window_days
+        integer matches_in_window
+        integer wins_in_window
+        timestamp computed_at
+    }
+
+    identity_audit_log {
+        uuid id PK
+        uuid user_id FK
+        text action
+        jsonb metadata
+        text ip_address
+        timestamp created_at
+    }
+
+    match_actions {
+        uuid match_id PK FK
+        integer sequence_number PK
+        jsonb action
+        text state_hash_before
+        text state_hash_after
+        text msg_id
+        timestamp created_at
+    }
+
+    match_comments {
+        uuid id PK
+        uuid user_id FK
+        uuid match_id FK
+        integer step
+        text content
+        boolean is_removed
+        timestamp removed_at
+        text removal_reason
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    match_embeddings {
+        uuid match_id PK FK
+        vector embedding
+        text summary
+        integer version
+        jsonb metadata
+        timestamp created_at
+    }
+
+    match_favorites {
+        uuid user_id PK FK
+        uuid match_id PK FK
+        timestamp created_at
+    }
+
+    match_payloads {
+        uuid match_id PK FK
+        jsonb state
+        jsonb action_history
+        jsonb transaction_log
+        jsonb event_log
+        timestamp archived_at
+    }
+
+    match_ratings {
+        uuid user_id PK FK
+        uuid match_id PK FK
+        integer rating
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    match_results {
+        uuid match_id PK FK
+        uuid user_id PK FK
+        uuid opponent_id FK
+        text mode
+        text result
+        integer elo_before
+        integer elo_after
+        integer elo_delta
+        integer glicko_before
+        integer glicko_after
+        integer glicko_rd_before
+        integer glicko_rd_after
+        timestamp created_at
+    }
+
+    matches {
+        uuid id PK
+        uuid player_1_id FK
+        uuid player_2_id FK
+        text visibility
+        text public_status
+        timestamp public_expires_at
+        integer min_public_rating
+        integer max_public_rating
+        integer min_games_played
+        boolean requires_established_rating
+        text player_1_name
+        text player_2_name
+        text player_1_card_skin
+        text player_2_card_skin
+        text bot_strategy
+        boolean is_automated
+        jsonb config
+        jsonb state
+        jsonb action_history
+        jsonb transaction_log
+        jsonb outcome
+        jsonb event_log
+        text event_log_fingerprint
+        text final_state_hash
+        text status
+        timestamp last_action_at
+        text creator_ip
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    password_reset_tokens {
+        uuid id PK
+        uuid user_id FK
+        text token_hash
+        timestamp expires_at
+        timestamp used_at
+        timestamp created_at
+    }
+
+    player_ratings {
+        uuid user_id PK FK
+        text mode PK
+        integer elo_rating
+        integer glicko_rating
+        integer glicko_rating_deviation
+        real glicko_volatility
+        integer games_played
+        integer wins
+        integer losses
+        integer draws
+        integer abandons
+        boolean provisional
+        timestamp last_rated_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    season_archives {
+        uuid id PK
+        uuid season_id FK
+        uuid user_id FK
+        text category
+        integer elo
+        integer rank
+        integer matches_played
+        integer wins
+        timestamp archived_at
+    }
+
+    seasons {
+        uuid id PK
+        integer number UK
+        timestamp started_at
+        timestamp ended_at
+        boolean is_active
+        timestamp created_at
+    }
+
+    transaction_logs {
+        uuid id PK
+        uuid match_id FK
+        integer sequence_number
+        jsonb action
+        text state_hash_before
+        text state_hash_after
+        jsonb events
+        text msg_id
+        timestamp created_at
+    }
+
+    user_entitlements {
+        uuid id PK
+        uuid user_id FK
+        uuid product_id FK
+        text transaction_id UK
+        text platform
+        timestamp granted_at
+    }
+
+    user_follows {
+        uuid follower_id PK FK
+        uuid following_id PK FK
+        timestamp created_at
+    }
+
+    users {
+        uuid id PK
+        text gamertag
+        text gamertag_normalized
+        integer suffix
+        timestamp gamertag_changed_at
+        text email UK
+        text password_hash
+        integer elo
+        text favorite_suit
+        text tagline
+        text avatar_icon
+        timestamp created_at
+        timestamp updated_at
+        boolean email_notifications
+        boolean reminder_notifications
+        timestamp email_verified_at
+        timestamp marketing_consent_at
+        text legal_consent_version
+        boolean is_admin
+        integer matches_created
+        integer successful_starts
+        integer login_failed_attempts
+        timestamp login_locked_until
+        text security_stamp
+        boolean is_disabled
+        text disabled_reason
+        timestamp disabled_at
+        text equipped_card_skin
+    }

@@ -25,7 +25,13 @@ fi
 # 1. Check for modified artifacts
 if ! git diff --exit-code -- \
   docs/system/dependency-graph.svg \
-  docs/system/KNIP_REPORT.md; then
+  docs/system/KNIP_REPORT.md \
+  docs/database/schema-erd.mmd \
+  docs/database/schema-erd.svg \
+  docs/database/SCHEMA.md \
+  docs/system/infrastructure-topology.mmd \
+  docs/system/infrastructure-topology.svg \
+  docs/system/INFRASTRUCTURE.md; then
   echo >&2
   echo "ERROR: Documentation artifacts are out of date." >&2
   echo "Run 'pnpm docs:artifacts' and commit the updated files." >&2
@@ -35,7 +41,13 @@ fi
 # 2. Check for untracked artifacts
 UNTRACKED=$(git ls-files --others --exclude-standard -- \
   docs/system/dependency-graph.svg \
-  docs/system/KNIP_REPORT.md || true)
+  docs/system/KNIP_REPORT.md \
+  docs/database/schema-erd.mmd \
+  docs/database/schema-erd.svg \
+  docs/database/SCHEMA.md \
+  docs/system/infrastructure-topology.mmd \
+  docs/system/infrastructure-topology.svg \
+  docs/system/INFRASTRUCTURE.md || true)
 
 if [ -n "$UNTRACKED" ]; then
   echo >&2

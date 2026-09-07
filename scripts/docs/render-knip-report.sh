@@ -34,6 +34,6 @@ mkdir -p "$(dirname "$OUT_FILE")"
       blank = 1
     }
   ' "$TMP_FILE"
-} | perl -0pe 's/\n+\z/\n/' > "$OUT_FILE"
+} | perl -pe 's/\| ([^|\n]+)\|([^|\n]+) \|/| $1\\|$2 |/g' | perl -0pe 's/\n+\z/\n/' > "$OUT_FILE"
 
 echo "Generated: $OUT_FILE"
