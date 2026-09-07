@@ -11,7 +11,7 @@ related:
 ---
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     CURRENT FOCUS  —  last updated 2026-09-06
+     CURRENT FOCUS  —  last updated 2026-09-07
      Cold-start resume state, canonical for every agent tool. Whoever closes
      a session rewrites this block in place — step one, before the wrap-up.
      Backlog + git log are truth for exact task status / SHAs; if this block
@@ -19,15 +19,20 @@ related:
 
        In flight: verify against Backlog (`backlog/tasks/`) and the most
        recent phalanxduel entry in ~/.config/adots/handoffs/. Recent work
-       (git log): LAN local development endpoints (*.lan.phalanxduel.com);
-       refreshed visual design baseline (28 captures in latest catalog);
-       narrated demo video generation (output/video/phalanx-duel-demo.mp4/webm);
-       presenter runbook in docs/talks/demo-presentation-runbook.md;
-       cockpit links audit & canonical outside-in technology and longitudinal
-       observability catalog in docs/system/TECHNOLOGY_AND_OBSERVABILITY_CATALOG.md;
-       complete excision of legacy LGTM stack in favor of otel-collector => [o2, jaeger];
-       demo cockpit HTTP bridge (Range/streaming support, 35/35 active endpoints
-       resolving browser file:// navigation blocks).
+       (git log):
+       - Database ERD, model annotation, and infrastructure topology tools
+         (`pnpm db:erd`, `pnpm db:annotate`, `pnpm infra:diagram`).
+       - Tournament network diagnostics, real-time top bandwidth/Wi-Fi/socket
+         monitor, and endpoint accessibility tools (`bin/phx-tournament-*`).
+       - Unified architecture & documentation library SPA (`bin/phx-docs-library`).
+       - macOS SwiftBar menu bar integration (`bin/phx-swiftbar`).
+       - Repository hygiene: root directory tidied, canonical `phx-*` namespace
+         enforced across `bin/`, dead test logs and unreferenced files purged.
+       - Excised unused Serena language server, IntelliJ (`.idea`), and Next.js
+         editor artifacts; added `.serena/` to `.gitignore`.
+       - Fixed broken `.husky/pre-merge-commit` hook (`pnpm check:ci` -> `pnpm verify:quick`).
+       - Promoted `bin/maint/fix` to canonical `bin/phx-fix` with workspace-pinned binaries.
+       - Aligned `docs/ops/slo.md` (OpenObserve/Jaeger) and `LICENSE-ASSETS` paths.
        Open thread: confirm remote CI runs; next engineering priorities
        are TASK-360.03 (browser automation adapter), TASK-385 (CI spend),
        and TASK-387 (PVL scenario catalog).
