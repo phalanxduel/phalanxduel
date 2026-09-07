@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'preact/hooks';
 import { formatGamertag } from '@phalanxduel/shared';
 import { setUser, setOperativeId, getState, type AuthUser } from '../state';
 import { setToken, getToken } from '../auth';
+import { getConnection } from '../app-connection';
 
 interface AuthPanelProps {
   onClose: () => void;
@@ -70,7 +71,6 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
         setOperativeId(formatGamertag(data.user.gamertag, data.user.suffix));
         const token = getToken();
         if (token) {
-          const { getConnection } = await import('../app-connection');
           const conn = getConnection();
           if (conn) {
             conn.send({ type: 'authenticate', token } as never);

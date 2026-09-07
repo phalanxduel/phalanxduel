@@ -27,6 +27,8 @@ Welcome to the central documentation hub. This directory contains the canonical 
 
 | Doc | What it covers |
 | :--- | :--- |
+| **[Full Stack Architecture](./architecture/FULL_STACK.md)** | Canonical runtime topology, ports, protocol flows, and verification gates |
+| **[Infrastructure & Deployment Topology](./system/INFRASTRUCTURE.md)** | Hybrid host-native and cloud deployment topology |
 | **[Architecture Principles](./architecture/principles.md)** | Core design, boundaries, and hashing model |
 | **[Domain Glossary](./reference/glossary.md)** | Canonical terminology for the game and system |
 | **[Match Spec](./gameplay/rules.md)** | Detailed technical specification of the game rules |
@@ -40,6 +42,7 @@ Welcome to the central documentation hub. This directory contains the canonical 
 
 | Doc | What it covers |
 | :--- | :--- |
+| **[Tournament Runbook & Playbook](./ops/TOURNAMENT_RUNBOOK.md)** | Complete step-by-step tournament director operations, pre-flights, and emergency playbooks |
 | **[Demo Runbook](./talks/demo-presentation-runbook.md)** | Presenter runbook, live talk track, and launch checklist |
 | **[Operations Runbook](./ops/runbook.md)** | Triage, deployment, and incident response |
 | **[CI/CD Pipeline](./deployment.md)** | GHA workflows and deployment model |

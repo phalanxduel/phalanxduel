@@ -2,8 +2,8 @@ import type { DamageMode, CreateMatchParamsPartial, GameState } from '@phalanxdu
 import { formatGamertag, isGameOver } from '@phalanxduel/shared';
 import { render as preactRender } from 'preact';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import type { renderGame } from './game';
-import type { renderGameOver } from './game-over';
+import { renderGame } from './game';
+import { renderGameOver } from './game-over';
 import { getConnection } from './app-connection';
 import { renderError } from './error-ui';
 import {
@@ -1141,7 +1141,9 @@ function PublicProfileView({ profileId, onClose }: { profileId: string; onClose:
               <div>
                 {isEditingGamertag ? (
                   <form
-                    onSubmit={handleUpdateGamertag}
+                    onSubmit={(e) => {
+                      void handleUpdateGamertag(e);
+                    }}
                     style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;"
                   >
                     <div style="display: flex; gap: 8px; align-items: center;">
@@ -1930,7 +1932,7 @@ function SpectatorLobbyScreen({
             </div>
           )}
           {!historyLoading &&
-            !error &&
+            !historyError &&
             visibleHistory.map((match) => (
               <div
                 class="status-card"
@@ -1983,27 +1985,18 @@ function describeRewatchAction(action: RewatchActionEntry | undefined, step: num
 
 function RewatchGameFrame({ state }: { state: RewatchFrameState }) {
   const boardRef = useRef<HTMLDivElement>(null);
-  const [GameModule, setGameModule] = useState<{
-    renderGame: typeof renderGame;
-    renderGameOver: typeof renderGameOver;
-  } | null>(null);
-
-  useEffect(() => {
-    void Promise.all([import('./game'), import('./game-over')]).then(([gameMod, gameOverMod]) => {
-      setGameModule({ ...gameMod, ...gameOverMod });
-    });
-  }, []);
 
   useEffect(() => {
     const target = boardRef.current;
-    if (!target || !GameModule) return;
+    if (!target) return;
 
+    target.innerHTML = '';
     if (state.gameState && isGameOver(state.gameState)) {
-      GameModule.renderGameOver(target, state);
+      renderGameOver(target, state);
     } else {
-      GameModule.renderGame(target, state);
+      renderGame(target, state);
     }
-  }, [state, GameModule]);
+  }, [state]);
 
   return (
     <div
@@ -2859,7 +2852,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
             actionDisabled={actionControlsDisabled}
             onRefresh={() => {
               void refreshOpenMatches();
-              spectatorLobby.refresh();
+              void spectatorLobby.refresh();
             }}
             onJoin={joinPublicMatch}
             onWatch={(match) => {

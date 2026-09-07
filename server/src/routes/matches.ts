@@ -884,6 +884,7 @@ export function registerMatchLogRoutes(
                 type: 'array',
                 items: {
                   type: 'object',
+                  additionalProperties: true,
                   properties: {
                     sequenceNumber: { type: 'integer' },
                     type: { type: 'string' },

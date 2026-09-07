@@ -67,6 +67,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    chunkSizeWarningLimit: 1000,
     rolldownOptions: {
       onLog(level, log, defaultHandler) {
         // Temporary ignore for upstream protobufjs eval warning.

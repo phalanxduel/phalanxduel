@@ -189,4 +189,45 @@ describe('public completed-match replay API', () => {
     ).toBe(true);
     expect(response.body.matches).toHaveLength(1);
   });
+
+  it('serializes quickDeploy replay state and preserves unredacted action log fields', async () => {
+    const { matchId, playerId: p1Id } = await matchManager.createMatch('Quick Alice', null);
+    const { playerId: p2Id } = await matchManager.joinMatch(matchId, 'Quick Bob', null);
+    const match = await matchManager.getMatch(matchId);
+    const activeIndex = (match?.state?.activePlayerIndex ?? 1) as 0 | 1;
+    const activePlayerId = activeIndex === 0 ? p1Id : p2Id;
+
+    // Apply quick deploy for active player
+    await matchManager.handleAction(matchId, activePlayerId, {
+      type: 'quickDeploy',
+      playerIndex: activeIndex,
+      strategy: 'aggressive',
+      timestamp: '2026-04-30T17:00:00.000Z',
+    });
+
+    // Complete match via forfeit
+    await matchManager.handleAction(matchId, p1Id, {
+      type: 'forfeit',
+      playerIndex: 0,
+      timestamp: '2026-04-30T17:01:00.000Z',
+    });
+
+    // Verify actions endpoint preserves strategy
+    const actionsRes = await request.get(`/api/matches/${matchId}/actions`);
+    expect(actionsRes.status).toBe(200);
+    const qdAction = actionsRes.body.actions.find(
+      (a: { type: string }) => a.type === 'quickDeploy',
+    );
+    expect(qdAction).toBeDefined();
+    expect(qdAction.strategy).toBe('aggressive');
+
+    // Verify replay step with quickDeployStrategies serializes cleanly without Fastify/AJV schema errors
+    const replayRes = await request.get(`/api/matches/${matchId}/replay?step=1`);
+    expect(replayRes.status).toBe(200);
+    expect(replayRes.body.quickDeployStrategies).toEqual([null, 'aggressive']);
+
+    const replayFinal = await request.get(`/api/matches/${matchId}/replay?step=99`);
+    expect(replayFinal.status).toBe(200);
+    expect(replayFinal.body.phase).toBe('gameOver');
+  });
 });

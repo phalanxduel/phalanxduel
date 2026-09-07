@@ -40,7 +40,11 @@ related:
        - Multi-repo cinematic Gource visualization runner (`bin/phx-gource`).
        - Tournament Operations Runbook & Playbook (`docs/ops/TOURNAMENT_RUNBOOK.md`).
        - Fully defined SwiftBar config & interactive About menu for `phalanxduel-pulse`.
-       - Standardized `--help` flags across all `bin/phx-*` operational CLIs.
+       - Fixed match historical rewatch/replay API (fast-json-stringify tuple schemas & action log serialization in server/src/utils/openapi.ts and server/src/routes/matches.ts).
+       - Enhanced client match scrubber and live spectator lobby in client/src/lobby.tsx.
+       - Tuned Vite/Rolldown build in client/ eliminating dynamic import warnings and optimizing chunk threshold.
+       - Authored canonical Full Stack Architecture & Operational Blueprint (docs/architecture/FULL_STACK.md).
+       - Verified automated playthrough matrix (12/12) and 24/24 DB isolation guards.
        Open thread: confirm remote CI runs; next engineering priorities
        are TASK-360.03 (browser automation adapter), TASK-385 (CI spend),
        and TASK-387 (PVL scenario catalog).
