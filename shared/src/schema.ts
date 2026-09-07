@@ -838,6 +838,12 @@ const ActionTransportFieldsSchema = z.object({
     .describe('Client freshness guard for rejecting stale or out-of-order actions.'),
 });
 
+export const BotConfigSchema = z.object({
+  strategy: z.enum(['random', 'heuristic', 'mcts']),
+  seed: z.number().int(),
+  mctsIterations: z.number().int().positive().optional(),
+});
+
 const SystemInitConfigSchema = z.object({
   matchId: z.uuid(),
   players: z.tuple([
@@ -854,6 +860,7 @@ const SystemInitConfigSchema = z.object({
   gameOptions: GameOptionsSchema.optional(),
   drawTimestamp: z.iso.datetime().optional(),
   matchParams: MatchParametersSchema.optional(),
+  botConfig: BotConfigSchema.optional(),
 });
 
 /**

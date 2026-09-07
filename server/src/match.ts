@@ -363,6 +363,9 @@ export class LocalMatchManager implements IMatchManager {
             config: dbMatch.config,
             lifecycleEvents: dbMatch.lifecycleEvents,
             fatalEvents: dbMatch.fatalEvents,
+            botConfig: dbMatch.botConfig,
+            botPlayerIndex: dbMatch.botPlayerIndex,
+            botStrategy: dbMatch.botStrategy,
           });
           actor.onStateUpdated = (result) => this.handleActorStateUpdated(matchId, result);
           this.actors.set(matchId, actor);
@@ -800,8 +803,12 @@ export class LocalMatchManager implements IMatchManager {
         }) as [PlayerConnection | null, PlayerConnection | null];
         match.config = updated.config;
         if (updated.botConfig && updated.botPlayerIndex != null && updated.botStrategy) {
+          const mergedBotConfig =
+            actor.botConfig?.mctsIterations && !updated.botConfig.mctsIterations
+              ? { ...updated.botConfig, mctsIterations: actor.botConfig.mctsIterations }
+              : updated.botConfig;
           actor.configureBotOpponent({
-            botConfig: updated.botConfig,
+            botConfig: mergedBotConfig,
             botPlayerIndex: updated.botPlayerIndex,
             botStrategy: updated.botStrategy,
           });

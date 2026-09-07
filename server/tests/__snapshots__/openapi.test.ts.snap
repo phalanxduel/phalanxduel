@@ -1176,6 +1176,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "type": "null",
                   },
                 ],
+                "enum": [
+                  "defensive",
+                  "aggressive",
+                  "random",
+                  null,
+                ],
+                "type": [
+                  "string",
+                  "null",
+                ],
               },
               {
                 "anyOf": [
@@ -1191,6 +1201,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   {
                     "type": "null",
                   },
+                ],
+                "enum": [
+                  "defensive",
+                  "aggressive",
+                  "random",
+                  null,
+                ],
+                "type": [
+                  "string",
+                  "null",
                 ],
               },
             ],
@@ -1532,6 +1552,34 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         "config": {
                           "additionalProperties": false,
                           "properties": {
+                            "botConfig": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "mctsIterations": {
+                                  "exclusiveMinimum": 0,
+                                  "maximum": 9007199254740991,
+                                  "type": "integer",
+                                },
+                                "seed": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer",
+                                },
+                                "strategy": {
+                                  "enum": [
+                                    "random",
+                                    "heuristic",
+                                    "mcts",
+                                  ],
+                                  "type": "string",
+                                },
+                              },
+                              "required": [
+                                "strategy",
+                                "seed",
+                              ],
+                              "type": "object",
+                            },
                             "drawTimestamp": {
                               "format": "date-time",
                               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -4287,6 +4335,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         "type": "null",
                       },
                     ],
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                      null,
+                    ],
+                    "type": [
+                      "string",
+                      "null",
+                    ],
                   },
                   {
                     "anyOf": [
@@ -4302,6 +4360,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       {
                         "type": "null",
                       },
+                    ],
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                      null,
+                    ],
+                    "type": [
+                      "string",
+                      "null",
                     ],
                   },
                 ],
@@ -4643,6 +4711,34 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "config": {
                               "additionalProperties": false,
                               "properties": {
+                                "botConfig": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "mctsIterations": {
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "seed": {
+                                      "maximum": 9007199254740991,
+                                      "minimum": -9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "strategy": {
+                                      "enum": [
+                                        "random",
+                                        "heuristic",
+                                        "mcts",
+                                      ],
+                                      "type": "string",
+                                    },
+                                  },
+                                  "required": [
+                                    "strategy",
+                                    "seed",
+                                  ],
+                                  "type": "object",
+                                },
                                 "drawTimestamp": {
                                   "format": "date-time",
                                   "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -6729,6 +6825,34 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "config": {
                       "additionalProperties": false,
                       "properties": {
+                        "botConfig": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "mctsIterations": {
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991,
+                              "type": "integer",
+                            },
+                            "seed": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            "strategy": {
+                              "enum": [
+                                "random",
+                                "heuristic",
+                                "mcts",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "strategy",
+                            "seed",
+                          ],
+                          "type": "object",
+                        },
                         "drawTimestamp": {
                           "format": "date-time",
                           "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -8200,6 +8324,34 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "config": {
                     "additionalProperties": false,
                     "properties": {
+                      "botConfig": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "mctsIterations": {
+                            "exclusiveMinimum": 0,
+                            "maximum": 9007199254740991,
+                            "type": "integer",
+                          },
+                          "seed": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer",
+                          },
+                          "strategy": {
+                            "enum": [
+                              "random",
+                              "heuristic",
+                              "mcts",
+                            ],
+                            "type": "string",
+                          },
+                        },
+                        "required": [
+                          "strategy",
+                          "seed",
+                        ],
+                        "type": "object",
+                      },
                       "drawTimestamp": {
                         "format": "date-time",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -9642,6 +9794,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         "type": "null",
                       },
                     ],
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                      null,
+                    ],
+                    "type": [
+                      "string",
+                      "null",
+                    ],
                   },
                   {
                     "anyOf": [
@@ -9657,6 +9819,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       {
                         "type": "null",
                       },
+                    ],
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                      null,
+                    ],
+                    "type": [
+                      "string",
+                      "null",
                     ],
                   },
                 ],
@@ -9998,6 +10170,34 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "config": {
                               "additionalProperties": false,
                               "properties": {
+                                "botConfig": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "mctsIterations": {
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "seed": {
+                                      "maximum": 9007199254740991,
+                                      "minimum": -9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "strategy": {
+                                      "enum": [
+                                        "random",
+                                        "heuristic",
+                                        "mcts",
+                                      ],
+                                      "type": "string",
+                                    },
+                                  },
+                                  "required": [
+                                    "strategy",
+                                    "seed",
+                                  ],
+                                  "type": "object",
+                                },
                                 "drawTimestamp": {
                                   "format": "date-time",
                                   "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -12710,6 +12910,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         "type": "null",
                       },
                     ],
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                      null,
+                    ],
+                    "type": [
+                      "string",
+                      "null",
+                    ],
                   },
                   {
                     "anyOf": [
@@ -12725,6 +12935,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       {
                         "type": "null",
                       },
+                    ],
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                      null,
+                    ],
+                    "type": [
+                      "string",
+                      "null",
                     ],
                   },
                 ],
@@ -13066,6 +13286,34 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "config": {
                               "additionalProperties": false,
                               "properties": {
+                                "botConfig": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "mctsIterations": {
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "seed": {
+                                      "maximum": 9007199254740991,
+                                      "minimum": -9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "strategy": {
+                                      "enum": [
+                                        "random",
+                                        "heuristic",
+                                        "mcts",
+                                      ],
+                                      "type": "string",
+                                    },
+                                  },
+                                  "required": [
+                                    "strategy",
+                                    "seed",
+                                  ],
+                                  "type": "object",
+                                },
                                 "drawTimestamp": {
                                   "format": "date-time",
                                   "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -15195,6 +15443,34 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   "config": {
                     "additionalProperties": false,
                     "properties": {
+                      "botConfig": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "mctsIterations": {
+                            "exclusiveMinimum": 0,
+                            "maximum": 9007199254740991,
+                            "type": "integer",
+                          },
+                          "seed": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer",
+                          },
+                          "strategy": {
+                            "enum": [
+                              "random",
+                              "heuristic",
+                              "mcts",
+                            ],
+                            "type": "string",
+                          },
+                        },
+                        "required": [
+                          "strategy",
+                          "seed",
+                        ],
+                        "type": "object",
+                      },
                       "drawTimestamp": {
                         "format": "date-time",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -16672,6 +16948,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         "type": "null",
                       },
                     ],
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                      null,
+                    ],
+                    "type": [
+                      "string",
+                      "null",
+                    ],
                   },
                   {
                     "anyOf": [
@@ -16687,6 +16973,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       {
                         "type": "null",
                       },
+                    ],
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                      null,
+                    ],
+                    "type": [
+                      "string",
+                      "null",
                     ],
                   },
                 ],
@@ -17028,6 +17324,34 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "config": {
                               "additionalProperties": false,
                               "properties": {
+                                "botConfig": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "mctsIterations": {
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "seed": {
+                                      "maximum": 9007199254740991,
+                                      "minimum": -9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "strategy": {
+                                      "enum": [
+                                        "random",
+                                        "heuristic",
+                                        "mcts",
+                                      ],
+                                      "type": "string",
+                                    },
+                                  },
+                                  "required": [
+                                    "strategy",
+                                    "seed",
+                                  ],
+                                  "type": "object",
+                                },
                                 "drawTimestamp": {
                                   "format": "date-time",
                                   "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -19740,6 +20064,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                         "type": "null",
                       },
                     ],
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                      null,
+                    ],
+                    "type": [
+                      "string",
+                      "null",
+                    ],
                   },
                   {
                     "anyOf": [
@@ -19755,6 +20089,16 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       {
                         "type": "null",
                       },
+                    ],
+                    "enum": [
+                      "defensive",
+                      "aggressive",
+                      "random",
+                      null,
+                    ],
+                    "type": [
+                      "string",
+                      "null",
                     ],
                   },
                 ],
@@ -20096,6 +20440,34 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                             "config": {
                               "additionalProperties": false,
                               "properties": {
+                                "botConfig": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "mctsIterations": {
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "seed": {
+                                      "maximum": 9007199254740991,
+                                      "minimum": -9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "strategy": {
+                                      "enum": [
+                                        "random",
+                                        "heuristic",
+                                        "mcts",
+                                      ],
+                                      "type": "string",
+                                    },
+                                  },
+                                  "required": [
+                                    "strategy",
+                                    "seed",
+                                  ],
+                                  "type": "object",
+                                },
                                 "drawTimestamp": {
                                   "format": "date-time",
                                   "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -22182,6 +22554,34 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "config": {
                       "additionalProperties": false,
                       "properties": {
+                        "botConfig": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "mctsIterations": {
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991,
+                              "type": "integer",
+                            },
+                            "seed": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            "strategy": {
+                              "enum": [
+                                "random",
+                                "heuristic",
+                                "mcts",
+                              ],
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "strategy",
+                            "seed",
+                          ],
+                          "type": "object",
+                        },
                         "drawTimestamp": {
                           "format": "date-time",
                           "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -26955,6 +27355,34 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "config": {
                               "additionalProperties": false,
                               "properties": {
+                                "botConfig": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "mctsIterations": {
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "seed": {
+                                      "maximum": 9007199254740991,
+                                      "minimum": -9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "strategy": {
+                                      "enum": [
+                                        "random",
+                                        "heuristic",
+                                        "mcts",
+                                      ],
+                                      "type": "string",
+                                    },
+                                  },
+                                  "required": [
+                                    "strategy",
+                                    "seed",
+                                  ],
+                                  "type": "object",
+                                },
                                 "drawTimestamp": {
                                   "format": "date-time",
                                   "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -28432,6 +28860,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                   "type": "null",
                                 },
                               ],
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                                null,
+                              ],
+                              "type": [
+                                "string",
+                                "null",
+                              ],
                             },
                             {
                               "anyOf": [
@@ -28447,6 +28885,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 {
                                   "type": "null",
                                 },
+                              ],
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                                null,
+                              ],
+                              "type": [
+                                "string",
+                                "null",
                               ],
                             },
                           ],
@@ -28788,6 +29236,34 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "config": {
                                         "additionalProperties": false,
                                         "properties": {
+                                          "botConfig": {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "mctsIterations": {
+                                                "exclusiveMinimum": 0,
+                                                "maximum": 9007199254740991,
+                                                "type": "integer",
+                                              },
+                                              "seed": {
+                                                "maximum": 9007199254740991,
+                                                "minimum": -9007199254740991,
+                                                "type": "integer",
+                                              },
+                                              "strategy": {
+                                                "enum": [
+                                                  "random",
+                                                  "heuristic",
+                                                  "mcts",
+                                                ],
+                                                "type": "string",
+                                              },
+                                            },
+                                            "required": [
+                                              "strategy",
+                                              "seed",
+                                            ],
+                                            "type": "object",
+                                          },
                                           "drawTimestamp": {
                                             "format": "date-time",
                                             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -31500,6 +31976,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                   "type": "null",
                                 },
                               ],
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                                null,
+                              ],
+                              "type": [
+                                "string",
+                                "null",
+                              ],
                             },
                             {
                               "anyOf": [
@@ -31515,6 +32001,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 {
                                   "type": "null",
                                 },
+                              ],
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                                null,
+                              ],
+                              "type": [
+                                "string",
+                                "null",
                               ],
                             },
                           ],
@@ -31856,6 +32352,34 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "config": {
                                         "additionalProperties": false,
                                         "properties": {
+                                          "botConfig": {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "mctsIterations": {
+                                                "exclusiveMinimum": 0,
+                                                "maximum": 9007199254740991,
+                                                "type": "integer",
+                                              },
+                                              "seed": {
+                                                "maximum": 9007199254740991,
+                                                "minimum": -9007199254740991,
+                                                "type": "integer",
+                                              },
+                                              "strategy": {
+                                                "enum": [
+                                                  "random",
+                                                  "heuristic",
+                                                  "mcts",
+                                                ],
+                                                "type": "string",
+                                              },
+                                            },
+                                            "required": [
+                                              "strategy",
+                                              "seed",
+                                            ],
+                                            "type": "object",
+                                          },
                                           "drawTimestamp": {
                                             "format": "date-time",
                                             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -33942,6 +34466,34 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "config": {
                                 "additionalProperties": false,
                                 "properties": {
+                                  "botConfig": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "mctsIterations": {
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 9007199254740991,
+                                        "type": "integer",
+                                      },
+                                      "seed": {
+                                        "maximum": 9007199254740991,
+                                        "minimum": -9007199254740991,
+                                        "type": "integer",
+                                      },
+                                      "strategy": {
+                                        "enum": [
+                                          "random",
+                                          "heuristic",
+                                          "mcts",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "strategy",
+                                      "seed",
+                                    ],
+                                    "type": "object",
+                                  },
                                   "drawTimestamp": {
                                     "format": "date-time",
                                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -34529,6 +35081,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                   "properties": {
                     "actions": {
                       "items": {
+                        "additionalProperties": true,
                         "properties": {
                           "playerIndex": {
                             "type": "integer",
@@ -35747,6 +36300,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "type": "null",
                             },
                           ],
+                          "enum": [
+                            "defensive",
+                            "aggressive",
+                            "random",
+                            null,
+                          ],
+                          "type": [
+                            "string",
+                            "null",
+                          ],
                         },
                         {
                           "anyOf": [
@@ -35762,6 +36325,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             {
                               "type": "null",
                             },
+                          ],
+                          "enum": [
+                            "defensive",
+                            "aggressive",
+                            "random",
+                            null,
+                          ],
+                          "type": [
+                            "string",
+                            "null",
                           ],
                         },
                       ],
@@ -36103,6 +36676,34 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                   "config": {
                                     "additionalProperties": false,
                                     "properties": {
+                                      "botConfig": {
+                                        "additionalProperties": false,
+                                        "properties": {
+                                          "mctsIterations": {
+                                            "exclusiveMinimum": 0,
+                                            "maximum": 9007199254740991,
+                                            "type": "integer",
+                                          },
+                                          "seed": {
+                                            "maximum": 9007199254740991,
+                                            "minimum": -9007199254740991,
+                                            "type": "integer",
+                                          },
+                                          "strategy": {
+                                            "enum": [
+                                              "random",
+                                              "heuristic",
+                                              "mcts",
+                                            ],
+                                            "type": "string",
+                                          },
+                                        },
+                                        "required": [
+                                          "strategy",
+                                          "seed",
+                                        ],
+                                        "type": "object",
+                                      },
                                       "drawTimestamp": {
                                         "format": "date-time",
                                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -40725,6 +41326,34 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             "config": {
                               "additionalProperties": false,
                               "properties": {
+                                "botConfig": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "mctsIterations": {
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "seed": {
+                                      "maximum": 9007199254740991,
+                                      "minimum": -9007199254740991,
+                                      "type": "integer",
+                                    },
+                                    "strategy": {
+                                      "enum": [
+                                        "random",
+                                        "heuristic",
+                                        "mcts",
+                                      ],
+                                      "type": "string",
+                                    },
+                                  },
+                                  "required": [
+                                    "strategy",
+                                    "seed",
+                                  ],
+                                  "type": "object",
+                                },
                                 "drawTimestamp": {
                                   "format": "date-time",
                                   "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -42202,6 +42831,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                   "type": "null",
                                 },
                               ],
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                                null,
+                              ],
+                              "type": [
+                                "string",
+                                "null",
+                              ],
                             },
                             {
                               "anyOf": [
@@ -42217,6 +42856,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 {
                                   "type": "null",
                                 },
+                              ],
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                                null,
+                              ],
+                              "type": [
+                                "string",
+                                "null",
                               ],
                             },
                           ],
@@ -42558,6 +43207,34 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "config": {
                                         "additionalProperties": false,
                                         "properties": {
+                                          "botConfig": {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "mctsIterations": {
+                                                "exclusiveMinimum": 0,
+                                                "maximum": 9007199254740991,
+                                                "type": "integer",
+                                              },
+                                              "seed": {
+                                                "maximum": 9007199254740991,
+                                                "minimum": -9007199254740991,
+                                                "type": "integer",
+                                              },
+                                              "strategy": {
+                                                "enum": [
+                                                  "random",
+                                                  "heuristic",
+                                                  "mcts",
+                                                ],
+                                                "type": "string",
+                                              },
+                                            },
+                                            "required": [
+                                              "strategy",
+                                              "seed",
+                                            ],
+                                            "type": "object",
+                                          },
                                           "drawTimestamp": {
                                             "format": "date-time",
                                             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -45270,6 +45947,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                   "type": "null",
                                 },
                               ],
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                                null,
+                              ],
+                              "type": [
+                                "string",
+                                "null",
+                              ],
                             },
                             {
                               "anyOf": [
@@ -45285,6 +45972,16 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 {
                                   "type": "null",
                                 },
+                              ],
+                              "enum": [
+                                "defensive",
+                                "aggressive",
+                                "random",
+                                null,
+                              ],
+                              "type": [
+                                "string",
+                                "null",
                               ],
                             },
                           ],
@@ -45626,6 +46323,34 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                       "config": {
                                         "additionalProperties": false,
                                         "properties": {
+                                          "botConfig": {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "mctsIterations": {
+                                                "exclusiveMinimum": 0,
+                                                "maximum": 9007199254740991,
+                                                "type": "integer",
+                                              },
+                                              "seed": {
+                                                "maximum": 9007199254740991,
+                                                "minimum": -9007199254740991,
+                                                "type": "integer",
+                                              },
+                                              "strategy": {
+                                                "enum": [
+                                                  "random",
+                                                  "heuristic",
+                                                  "mcts",
+                                                ],
+                                                "type": "string",
+                                              },
+                                            },
+                                            "required": [
+                                              "strategy",
+                                              "seed",
+                                            ],
+                                            "type": "object",
+                                          },
                                           "drawTimestamp": {
                                             "format": "date-time",
                                             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
@@ -47712,6 +48437,34 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "config": {
                                 "additionalProperties": false,
                                 "properties": {
+                                  "botConfig": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "mctsIterations": {
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 9007199254740991,
+                                        "type": "integer",
+                                      },
+                                      "seed": {
+                                        "maximum": 9007199254740991,
+                                        "minimum": -9007199254740991,
+                                        "type": "integer",
+                                      },
+                                      "strategy": {
+                                        "enum": [
+                                          "random",
+                                          "heuristic",
+                                          "mcts",
+                                        ],
+                                        "type": "string",
+                                      },
+                                    },
+                                    "required": [
+                                      "strategy",
+                                      "seed",
+                                    ],
+                                    "type": "object",
+                                  },
                                   "drawTimestamp": {
                                     "format": "date-time",
                                     "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",

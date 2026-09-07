@@ -566,6 +566,7 @@ export class MatchActor {
         { id: players[1].playerId, name: players[1].playerName },
       ],
       drawTimestamp: createdAtIso,
+      botConfig: this._config?.botConfig ?? (this._botConfig ? { ...this._botConfig } : undefined),
     };
   }
 
