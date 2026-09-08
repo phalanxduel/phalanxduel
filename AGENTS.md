@@ -44,8 +44,10 @@ related:
        - Enhanced client match scrubber and live spectator lobby in client/src/lobby.tsx.
        - Tuned Vite/Rolldown build in client/ eliminating dynamic import warnings and optimizing chunk threshold.
        - Authored canonical Full Stack Architecture & Operational Blueprint (docs/architecture/FULL_STACK.md).
-       - Verified automated playthrough matrix (12/12) and 24/24 DB isolation guards.
        - Cleaned root clutter: relocated historical archives, empty backups, experiments, and graphify output under local gitignored artifacts/ and excised from git working branch (-168k lines / 60MB).
+       - Preserved botConfig through actor init, DB recovery, and event bus sync; defined BotConfigSchema in shared/src/schema.ts (b346f6c).
+       - Synchronized generated schemas (shared/schemas/, shared/src/types.ts) passing verify-schema.sh (028f9c1).
+       - Multi-repo cinematic Gource visualization runner (bin/phx-gource) with --hide-root and multi-repo extraction (game, site, wiki) spanning 33k unified commits.
        Open thread: confirm remote CI runs; next engineering priorities
        are TASK-360.03 (browser automation adapter), TASK-385 (CI spend),
        and TASK-387 (PVL scenario catalog).
