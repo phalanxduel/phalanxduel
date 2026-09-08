@@ -32,6 +32,11 @@ SECONDS_PER_DAY=0.25
 EXPORT_PATH=""
 SINGLE_REPO=false
 
+SAVE_LOG_PATH=""
+SPECIFIED_REPOS=()
+
+LOG_ONLY=false
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -h|--help)
@@ -46,6 +51,29 @@ while [[ $# -gt 0 ]]; do
         EXPORT_PATH="${GAME_DIR}/output/phalanxduel-history.mp4"
         shift 1
       fi
+      ;;
+    --save-log)
+      if [[ "${2:-}" != "" && "${2:-}" != -* ]]; then
+        SAVE_LOG_PATH="$2"
+        shift 2
+      else
+        SAVE_LOG_PATH="${GAME_DIR}/output/phalanxduel-combined.log"
+        shift 1
+      fi
+      ;;
+    --log-only)
+      LOG_ONLY=true
+      if [[ "${2:-}" != "" && "${2:-}" != -* ]]; then
+        SAVE_LOG_PATH="$2"
+        shift 2
+      else
+        SAVE_LOG_PATH="${SAVE_LOG_PATH:-${GAME_DIR}/output/phalanxduel-combined.log}"
+        shift 1
+      fi
+      ;;
+    --repos)
+      IFS=',' read -r -a SPECIFIED_REPOS <<< "$2"
+      shift 2
       ;;
     --single)
       SINGLE_REPO=true
@@ -89,10 +117,12 @@ CAPTIONS_FILE="${TMP_DIR}/captions.txt"
 echo "🎨 [1/3] Extracting repository history..."
 
 REPOS=()
-if [[ "$SINGLE_REPO" == true ]]; then
+if [[ ${#SPECIFIED_REPOS[@]} -gt 0 ]]; then
+  REPOS=("${SPECIFIED_REPOS[@]}")
+elif [[ "$SINGLE_REPO" == true ]]; then
   REPOS=("game")
 else
-  for dir in game game-swiftui site wiki monitor; do
+  for dir in game site wiki game-swiftui monitor; do
     if [[ -d "${PROJECT_ROOT}/${dir}/.git" ]]; then
       REPOS+=("$dir")
     fi
@@ -101,16 +131,31 @@ fi
 
 for repo in "${REPOS[@]}"; do
   repo_path="${PROJECT_ROOT}/${repo}"
+  if [[ ! -d "${repo_path}/.git" ]]; then
+    echo "  ⚠️ Skipping ${repo} (not found at ${repo_path})"
+    continue
+  fi
   echo "  • Processing ${repo}..."
   (
     cd "$repo_path"
     # Dump custom Gource log and prefix file paths with the repo name
-    gource --dump-custom-log - . 2>/dev/null | sed -E "s|^([0-9]+\|[^|]+\|[^|]+\|)/?|\1${repo}/|" >> "${TMP_DIR}/${repo}.log" || true
+    gource --output-custom-log - . 2>/dev/null | sed -E "s#^([^|]+\|[^|]+\|[^|]+\|)/?#\1/${repo}/#" >> "${TMP_DIR}/${repo}.log" || true
   )
 done
 
 echo "🔄 [2/3] Merging and chronological sorting..."
 cat "${TMP_DIR}"/*.log | sort -n > "$CUSTOM_LOG"
+
+if [[ -n "$SAVE_LOG_PATH" ]]; then
+  mkdir -p "$(dirname "$SAVE_LOG_PATH")"
+  cp "$CUSTOM_LOG" "$SAVE_LOG_PATH"
+  echo "💾 Saved combined Gource log to: ${SAVE_LOG_PATH}"
+fi
+
+if [[ "$LOG_ONLY" == true ]]; then
+  echo "✅ Log generation complete."
+  exit 0
+fi
 
 # Milestones Caption Track: highlight major achievements in Phalanx Duel history
 cat << 'EOF' > "$CAPTIONS_FILE"
@@ -163,7 +208,8 @@ GOURCE_OPTS=(
   --caption-colour "FFFFFF"
   --caption-duration 4
   --font-size 18
-  --hide "mouse,progress"
+  --hide "mouse,progress,root"
+  --hide-root
   --stop-at-end
 )
 

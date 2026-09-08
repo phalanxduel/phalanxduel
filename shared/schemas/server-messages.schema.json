@@ -1826,6 +1826,34 @@
                                       "modePassRules"
                                     ],
                                     "additionalProperties": false
+                                  },
+                                  "botConfig": {
+                                    "type": "object",
+                                    "properties": {
+                                      "strategy": {
+                                        "type": "string",
+                                        "enum": [
+                                          "random",
+                                          "heuristic",
+                                          "mcts"
+                                        ]
+                                      },
+                                      "seed": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "mctsIterations": {
+                                        "type": "integer",
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "required": [
+                                      "strategy",
+                                      "seed"
+                                    ],
+                                    "additionalProperties": false
                                   }
                                 },
                                 "required": [
@@ -4814,6 +4842,34 @@
                                       "modePassRules"
                                     ],
                                     "additionalProperties": false
+                                  },
+                                  "botConfig": {
+                                    "type": "object",
+                                    "properties": {
+                                      "strategy": {
+                                        "type": "string",
+                                        "enum": [
+                                          "random",
+                                          "heuristic",
+                                          "mcts"
+                                        ]
+                                      },
+                                      "seed": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "mctsIterations": {
+                                        "type": "integer",
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "required": [
+                                      "strategy",
+                                      "seed"
+                                    ],
+                                    "additionalProperties": false
                                   }
                                 },
                                 "required": [
@@ -6867,6 +6923,34 @@
                             "modeSpecialStart",
                             "initiative",
                             "modePassRules"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "botConfig": {
+                          "type": "object",
+                          "properties": {
+                            "strategy": {
+                              "type": "string",
+                              "enum": [
+                                "random",
+                                "heuristic",
+                                "mcts"
+                              ]
+                            },
+                            "seed": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "mctsIterations": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "strategy",
+                            "seed"
                           ],
                           "additionalProperties": false
                         }
@@ -8658,6 +8742,34 @@
                                       "modePassRules"
                                     ],
                                     "additionalProperties": false
+                                  },
+                                  "botConfig": {
+                                    "type": "object",
+                                    "properties": {
+                                      "strategy": {
+                                        "type": "string",
+                                        "enum": [
+                                          "random",
+                                          "heuristic",
+                                          "mcts"
+                                        ]
+                                      },
+                                      "seed": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "mctsIterations": {
+                                        "type": "integer",
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "required": [
+                                      "strategy",
+                                      "seed"
+                                    ],
+                                    "additionalProperties": false
                                   }
                                 },
                                 "required": [
@@ -11646,6 +11758,34 @@
                                       "modePassRules"
                                     ],
                                     "additionalProperties": false
+                                  },
+                                  "botConfig": {
+                                    "type": "object",
+                                    "properties": {
+                                      "strategy": {
+                                        "type": "string",
+                                        "enum": [
+                                          "random",
+                                          "heuristic",
+                                          "mcts"
+                                        ]
+                                      },
+                                      "seed": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "mctsIterations": {
+                                        "type": "integer",
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "required": [
+                                      "strategy",
+                                      "seed"
+                                    ],
+                                    "additionalProperties": false
                                   }
                                 },
                                 "required": [
@@ -13701,6 +13841,34 @@
                             "modePassRules"
                           ],
                           "additionalProperties": false
+                        },
+                        "botConfig": {
+                          "type": "object",
+                          "properties": {
+                            "strategy": {
+                              "type": "string",
+                              "enum": [
+                                "random",
+                                "heuristic",
+                                "mcts"
+                              ]
+                            },
+                            "seed": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "mctsIterations": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "strategy",
+                            "seed"
+                          ],
+                          "additionalProperties": false
                         }
                       },
                       "required": [
@@ -14492,6 +14660,34 @@
                               "modeSpecialStart",
                               "initiative",
                               "modePassRules"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "botConfig": {
+                            "type": "object",
+                            "properties": {
+                              "strategy": {
+                                "type": "string",
+                                "enum": [
+                                  "random",
+                                  "heuristic",
+                                  "mcts"
+                                ]
+                              },
+                              "seed": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "mctsIterations": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "strategy",
+                              "seed"
                             ],
                             "additionalProperties": false
                           }
@@ -16246,6 +16442,34 @@
                                       "modeSpecialStart",
                                       "initiative",
                                       "modePassRules"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "botConfig": {
+                                    "type": "object",
+                                    "properties": {
+                                      "strategy": {
+                                        "type": "string",
+                                        "enum": [
+                                          "random",
+                                          "heuristic",
+                                          "mcts"
+                                        ]
+                                      },
+                                      "seed": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "mctsIterations": {
+                                        "type": "integer",
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "required": [
+                                      "strategy",
+                                      "seed"
                                     ],
                                     "additionalProperties": false
                                   }
@@ -18315,6 +18539,34 @@
                               "modeSpecialStart",
                               "initiative",
                               "modePassRules"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "botConfig": {
+                            "type": "object",
+                            "properties": {
+                              "strategy": {
+                                "type": "string",
+                                "enum": [
+                                  "random",
+                                  "heuristic",
+                                  "mcts"
+                                ]
+                              },
+                              "seed": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "mctsIterations": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "strategy",
+                              "seed"
                             ],
                             "additionalProperties": false
                           }

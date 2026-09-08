@@ -11,6 +11,7 @@ import type {
   ActionSchema,
   BattlefieldCardSchema,
   BattlefieldSchema,
+  BotConfigSchema,
   CalculationInputSchema,
   CalculationInputSourceSchema,
   CalculationOperatorSchema,
@@ -93,6 +94,7 @@ export type ActionDSL = z.infer<typeof ActionDSLSchema>;
 export type Action = z.infer<typeof ActionSchema>;
 export type BattlefieldCard = z.infer<typeof BattlefieldCardSchema>;
 export type Battlefield = z.infer<typeof BattlefieldSchema>;
+export type BotConfig = z.infer<typeof BotConfigSchema>;
 export type CalculationInput = z.infer<typeof CalculationInputSchema>;
 export type CalculationInputSource = z.infer<typeof CalculationInputSourceSchema>;
 export type CalculationOperator = z.infer<typeof CalculationOperatorSchema>;

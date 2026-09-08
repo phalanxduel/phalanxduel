@@ -3,8 +3,11 @@
 #
 # Usage:
 #   phx-gource                 # Launch interactive 1080p visualization
+#   phx-gource --repos game,site,wiki # Select specific repositories
 #   phx-gource --export        # Render 1080p 60fps MP4 video to output/phalanxduel-history.mp4
 #   phx-gource --export out.mp4# Custom video output path
+#   phx-gource --save-log [log]# Export unified multi-repo log to disk
+#   phx-gource --log-only [log]# Generate combined log without opening Gource GUI
 #   phx-gource --single        # Visualize current repository (game) only
 #   phx-gource --2k            # Run at 2560x1440 resolution
 #   phx-gource --4k            # Run at 3840x2160 resolution
@@ -15,7 +18,7 @@ set -euo pipefail
 
 case "${1:-}" in
   -h|--help)
-    sed -n '2,13p' "$0" | sed 's/^# *//'
+    sed -n '4,15p' "$0" | sed 's/^# *//'
     exit 0
     ;;
 esac
