@@ -11,7 +11,7 @@ related:
 ---
 
 <!-- ═══════════════════════════════════════════════════════════════════════
-     CURRENT FOCUS  —  last updated 2026-09-07
+     CURRENT FOCUS  —  last updated 2026-09-08
      Cold-start resume state, canonical for every agent tool. Whoever closes
      a session rewrites this block in place — step one, before the wrap-up.
      Backlog + git log are truth for exact task status / SHAs; if this block
@@ -20,6 +20,8 @@ related:
        In flight: verify against Backlog (`backlog/tasks/`) and the most
        recent phalanxduel entry in ~/.config/adots/handoffs/. Recent work
        (git log):
+       - TASK-388: Retired Godot source and local archive copies; browser
+         client is the demo path. Recover old source from Git history only.
        - Database ERD, model annotation, and infrastructure topology tools
          (`pnpm db:erd`, `pnpm db:annotate`, `pnpm infra:diagram`).
        - Tournament network diagnostics, real-time top bandwidth/Wi-Fi/socket
@@ -217,9 +219,12 @@ telemetry chain now has landed evidence for browser QA correlation,
 session/reconnect semantics, cross-service topology metadata, and LGTM
 operator-query verification.
 
-**Godot/V2 migration is iceboxed.** Do not use Godot files as the active UI path
-unless Backlog explicitly reactivates that work. The active UI remains the
-browser client.
+**Godot/V2 source is retired and removed from main.** The React browser client
+in `client/` is the active UI and demo path; the TypeScript engine/server remain
+authoritative. Historical Godot Backlog entries are context only, not permission
+to resume migration work. Do not restore Godot source, tooling, or parity gates
+without an explicit human request. Previous source is recoverable from
+`be909aa^:archive/`; no local archive is required for development, QA, or demos.
 
 **Recently completed:**
 
@@ -263,7 +268,7 @@ Backlog before acting on them.
 **Current implementation task:**
 
 No implementation task is pinned here. Use Backlog status as the source of
-truth; Godot/V2 work is iceboxed unless a human explicitly reactivates it.
+truth; Godot/V2 source is retired and requires an explicit human request to restore.
 
 ## Workflow Policy
 

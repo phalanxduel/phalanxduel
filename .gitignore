@@ -101,9 +101,6 @@ CLAUDE.md
 !.agents/skills/phalanx-keymaster/**
 skills-lock.json
 
-# Godot editor cache
-godot/client/.godot/
-
 # Playwright MCP
 .playwright-mcp/
 

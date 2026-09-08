@@ -6,9 +6,10 @@ consistent with `AGENTS.md`.
 
 ## Current UI Context
 
-Godot/V2 migration is iceboxed. Treat the React browser client as the active UI
-and the TypeScript engine/server as the source of truth unless Backlog explicitly
-reactivates Godot/V2 work.
+The React browser client in `client/` is the active UI and demo path, and the
+TypeScript engine/server are the source of truth. Godot/V2 source is retired
+and removed from main. Historical Backlog entries do not authorize restoring it;
+restoration requires an explicit human request. See `AGENTS.md` for recovery.
 
 ### Deterministic Protocol
 
