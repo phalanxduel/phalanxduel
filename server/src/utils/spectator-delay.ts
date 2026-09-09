@@ -54,10 +54,28 @@ export function buildDelayedSpectatorFrame(
     match.state.turnNumber - delayTurns,
     { hashFn: computeStateHash },
   );
-  if (!replay.valid) return null;
+  if (!replay.valid) {
+    console.warn('[SpectatorDelay] Replay reconstruction failed', {
+      matchId: match.matchId,
+      turn: match.state.turnNumber,
+      delayTurns,
+      actionCount: match.actionHistory.length,
+      failedAtIndex: replay.failedAtIndex,
+      error: replay.error,
+    });
+    return null;
+  }
 
   const entry = replay.finalState.transactionLog?.at(-1);
-  if (!entry) return null;
+  if (!entry) {
+    console.warn('[SpectatorDelay] Replay produced no transaction entry', {
+      matchId: match.matchId,
+      turn: match.state.turnNumber,
+      delayTurns,
+      actionCount: match.actionHistory.length,
+    });
+    return null;
+  }
   const events = deriveEventsFromEntry(entry, match.matchId);
   return {
     preState: replay.preState,

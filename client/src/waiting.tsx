@@ -25,8 +25,7 @@ export function WaitingApp({ state }: { state: AppState }) {
     const url = new URL(window.location.href);
     url.searchParams.delete('screen');
     url.searchParams.delete('profile');
-    url.searchParams.set('action', 'watch');
-    url.searchParams.set('match', matchId);
+    url.searchParams.set('watch', matchId);
     return url.toString();
   };
 
