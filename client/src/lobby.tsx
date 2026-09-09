@@ -2570,6 +2570,9 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   const [howToPlayOpen, setHowToPlayOpen] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.has('qaRunId')) return false;
+    // Keep first-visit onboarding to one modal. The welcome dialog links to
+    // the rules; players can reopen help from the footer after dismissing it.
+    if (localStorage.getItem('phx_welcome_v1_seen') === null) return false;
     const stored = localStorage.getItem('phx:helpOpen');
     return stored === null ? true : stored === 'true';
   });
