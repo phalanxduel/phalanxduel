@@ -35,6 +35,7 @@ import {
   isAttackResolution,
   isDeploymentPhase,
   readCombatResolution,
+  isGameOver,
 } from '@phalanxduel/shared';
 import { projectCalculationProvenance, simulateAttack } from '@phalanxduel/engine';
 import type { AttackPreviewVerdict } from '@phalanxduel/engine';
@@ -651,7 +652,9 @@ function PhxInfoBar({
   const canPass =
     state.validActions.some((a) => a.type === 'pass') && (!isReinforce || !hasReinforceActions);
   const canCancel = Boolean(state.selectedAttacker ?? state.selectedDeployCard);
-  const canForfeit = !state.isSpectator && state.validActions.some((a) => a.type === 'forfeit');
+  // Forfeit is available throughout an active player match, even when the
+  // engine's turn-specific valid-action list does not include it.
+  const canForfeit = !state.isSpectator && !isGameOver(gs);
   const quickDeployActions = state.validActions.filter(
     (action): action is Extract<Action, { type: 'quickDeploy' }> => action.type === 'quickDeploy',
   );
