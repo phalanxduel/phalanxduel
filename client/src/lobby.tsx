@@ -1986,6 +1986,7 @@ function describeRewatchAction(action: RewatchActionEntry | undefined, step: num
 function RewatchGameFrame({ state }: { state: RewatchFrameState }) {
   return (
     <div
+      class="rewatch-game-frame"
       style="min-height: 600px"
       data-testid="game-layout"
       data-spectator="true"

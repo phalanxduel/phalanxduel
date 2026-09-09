@@ -2616,6 +2616,17 @@ select:focus {
   --architectural-line: rgba(199, 154, 85, 0.11);
 }
 
+/* Rewatch embeds the arena inside the replay panel instead of the viewport. */
+.rewatch-game-frame {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.rewatch-game-frame .phx-game-layout {
+  height: 600px;
+  min-width: 0;
+}
+
 .phx-game-layout::before,
 .phx-game-layout::after {
   content: '';
@@ -2700,6 +2711,12 @@ select:focus {
       'ticker main sidebar'
       'ticker hud-bottom sidebar';
     grid-template-columns: auto 1fr 380px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .rewatch-game-frame .phx-game-layout {
+    grid-template-columns: 150px minmax(0, 1fr) 260px;
   }
 }
 
