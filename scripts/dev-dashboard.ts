@@ -447,7 +447,7 @@ async function collectState(): Promise<EnvState> {
         required: true,
       },
       admin: {
-        name: 'Admin UI',
+        name: 'Admin API',
         status: adminH.ok ? 'READY' : adminC.ready ? 'STARTING' : 'FAILED',
         message: adminH.status,
         port: PORTS.ADMIN,
