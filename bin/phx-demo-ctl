@@ -21,6 +21,8 @@ load_local_demo_env
 # operator supplied an explicit local override; production never uses this
 # launcher.
 export ADMIN_INTERNAL_TOKEN="${ADMIN_INTERNAL_TOKEN:-phalanx-dev-admin-token}"
+export PHALANX_DEMO_MODE=1
+export PHALANX_DEMO_SKIP_EMAIL_VERIFICATION="${PHALANX_DEMO_SKIP_EMAIL_VERIFICATION:-1}"
 
 CLIENT_URL="${PHALANX_DEMO_CLIENT_URL:-http://localhost:5173}"
 APP_URL="${PHALANX_DEMO_APP_URL:-http://localhost:3001}"

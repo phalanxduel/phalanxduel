@@ -14,6 +14,7 @@ import { sendPasswordResetEmail, sendWelcomeEmail } from '../utils/mailer.js';
 import { UserRepository, type PreferenceUpdate } from '../db/user-repo.js';
 import { ContentFilterService } from '../content-filter.js';
 import { ModerationService } from '../services/moderation-service.js';
+import { isDemoEmailVerificationBypassed } from '../demo-mode.js';
 
 const userRepo = new UserRepository();
 
@@ -223,6 +224,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
                     suffix,
                     email,
                     passwordHash,
+                    emailVerifiedAt: isDemoEmailVerificationBypassed() ? new Date() : null,
                   })
                   .returning({
                     id: users.id,
@@ -230,6 +232,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
                     suffix: users.suffix,
                     email: users.email,
                     elo: users.elo,
+                    emailVerifiedAt: users.emailVerifiedAt,
                   }),
             );
 
@@ -238,9 +241,11 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
           }),
         );
 
-        sendWelcomeEmail(email, gamertag).catch((err: unknown) => {
-          console.error('[Mailer] Async welcome email failed:', err);
-        });
+        if (!isDemoEmailVerificationBypassed()) {
+          sendWelcomeEmail(email, gamertag).catch((err: unknown) => {
+            console.error('[Mailer] Async welcome email failed:', err);
+          });
+        }
 
         const token = fastify.jwt.sign({
           id: user.id,
@@ -258,7 +263,7 @@ export function registerAuthRoutes(fastify: FastifyInstance) {
           token,
           user: {
             ...user,
-            emailVerifiedAt: null,
+            emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
             emailNotifications: true,
             reminderNotifications: true,
             marketingConsentAt: null,
