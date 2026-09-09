@@ -1477,7 +1477,7 @@ export const PhalanxTurnResultSchema = z.object({
 /**
  * Redacted View Model for a specific player or spectator.
  */
-export const CardSkinIdSchema = z.enum(['default', 'dual-loop']);
+export const CardSkinIdSchema = z.enum(['default', 'dual-loop', 'obsidian-heraldry']);
 
 export const PlayerCosmeticsSchema = z.object({
   cardSkinId: CardSkinIdSchema,

@@ -14733,7 +14733,8 @@
                       "type": "string",
                       "enum": [
                         "default",
-                        "dual-loop"
+                        "dual-loop",
+                        "obsidian-heraldry"
                       ]
                     }
                   },
@@ -14749,7 +14750,8 @@
                       "type": "string",
                       "enum": [
                         "default",
-                        "dual-loop"
+                        "dual-loop",
+                        "obsidian-heraldry"
                       ]
                     }
                   },
@@ -18612,7 +18614,8 @@
                       "type": "string",
                       "enum": [
                         "default",
-                        "dual-loop"
+                        "dual-loop",
+                        "obsidian-heraldry"
                       ]
                     }
                   },
@@ -18628,7 +18631,8 @@
                       "type": "string",
                       "enum": [
                         "default",
-                        "dual-loop"
+                        "dual-loop",
+                        "obsidian-heraldry"
                       ]
                     }
                   },

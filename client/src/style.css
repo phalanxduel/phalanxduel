@@ -3534,6 +3534,14 @@ select:focus {
     0 0 18px color-mix(in srgb, var(--card-theme-accent) 45%, transparent);
 }
 
+.phx-card[data-card-theme='obsidian-heraldry'] {
+  --card-accent-soft: rgba(212, 175, 55, 0.16);
+  --card-accent-core: rgba(212, 175, 55, 0.3);
+  --card-outline: rgba(212, 175, 55, 0.3);
+  --card-interaction-glow: rgba(212, 175, 55, 0.28);
+  border-color: rgba(212, 175, 55, 0.34);
+}
+
 .phx-card[data-card-theme='dual-loop'] .phx-card-layer-base {
   background:
     radial-gradient(circle at 68% 22%, rgba(0, 135, 174, 0.2) 0 7%, transparent 8% 100%),

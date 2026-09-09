@@ -23,6 +23,12 @@ export const CARD_SKINS: readonly CardSkinDefinition[] = [
     unlock: 'Complete one match',
     cardBackImage: '/images/card-backs/dual-loop.webp',
   },
+  {
+    id: 'obsidian-heraldry',
+    name: 'Obsidian Heraldry',
+    description: 'Charcoal, gold, and crimson with a premium heraldic finish.',
+    unlock: 'Available',
+  },
 ] as const;
 
 export const DEFAULT_MATCH_COSMETICS: MatchCosmetics = [
