@@ -21,6 +21,7 @@ interface CliOptions {
   maxTurns: number;
   maxActionRetries: number;
   maxIdleMs: number;
+  maxRuntimeMs: number;
   screenshotMode: ScreenshotMode;
   outDir: string;
   headed: boolean;
@@ -150,6 +151,9 @@ OPTIONS
     --max-turns NUMBER
         Hard limit on turns before declaring a draw/stall (default: 140).
 
+    --max-runtime-ms NUMBER
+        Hard wall-clock limit per browser match (default: 120000).
+
     --screenshot-mode turn|action|phase
         When to capture visual artifacts (default: turn).
 
@@ -209,6 +213,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     maxTurns: 140,
     maxActionRetries: 6,
     maxIdleMs: 20000,
+    maxRuntimeMs: 120000,
     screenshotMode: 'turn',
     outDir: 'artifacts/playthrough',
     headed: false,
@@ -268,6 +273,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     if (a === '--max-turns' && v) opts.maxTurns = Math.max(1, Number(v));
     if (a === '--max-action-retries' && v) opts.maxActionRetries = Math.max(1, Number(v));
     if (a === '--max-idle-ms' && v) opts.maxIdleMs = Math.max(1000, Number(v));
+    if (a === '--max-runtime-ms' && v) opts.maxRuntimeMs = Math.max(5000, Number(v));
     if (a === '--screenshot-mode' && v && (v === 'turn' || v === 'action' || v === 'phase'))
       opts.screenshotMode = v;
     if (a === '--out-dir' && v) opts.outDir = v;
@@ -614,6 +620,11 @@ async function runOne(
     await screenshot('start');
 
     while (true) {
+      if (Date.now() - start.getTime() > opts.maxRuntimeMs) {
+        failureReason = 'timeout';
+        failureMessage = `wall-clock limit exceeded (${opts.maxRuntimeMs}ms)`;
+        break;
+      }
       if (
         await observerPage
           .locator('[data-testid="game-over"]')
