@@ -12,6 +12,7 @@ interface MatchRow {
   status: string;
   outcome: { victoryType?: string; winnerName?: string } | null;
   created_at: string;
+  updated_at?: string | null;
   total_turns: number;
   verified_turns: number;
 }
@@ -22,6 +23,7 @@ interface UserRow {
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
+  if (diff < 0) return `clock skew (+${Math.ceil(Math.abs(diff) / 60000)}m)`;
   if (diff < 60000) return `${Math.floor(diff / 1000)}s ago`;
   if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
@@ -177,7 +179,11 @@ export function Dashboard() {
               label: 'Check',
               render: (r) => <IntegrityBadge ok={r.verified_turns === r.total_turns} />,
             },
-            { key: 'created_at', label: 'Ended', render: (r) => timeAgo(r.created_at) },
+            {
+              key: 'created_at',
+              label: 'Ended',
+              render: (r) => timeAgo(r.updated_at ?? r.created_at),
+            },
           ]}
           rows={recentMatches ?? []}
           keyFn={(r) => r.id}

@@ -39,11 +39,25 @@ export function registerMatchRoutes(fastify: FastifyInstance) {
     const parsed = RetentionQuery.safeParse(request.body ?? {});
     if (!parsed.success)
       return reply.status(400).send({ error: 'olderThan must be an ISO timestamp' });
+    // Match history has dependent rows without cascading foreign keys. Delete
+    // the stale graph in one statement so retention cannot leave orphans or
+    // fail with a generic FK error.
     const rows = await db.execute(sql`
-      DELETE FROM matches
-      WHERE status IN ('pending', 'active', 'cancelled')
-        AND COALESCE(updated_at, created_at) < ${parsed.data.olderThan}::timestamptz
-      RETURNING id
+      WITH stale AS MATERIALIZED (
+        SELECT id FROM matches
+        WHERE status IN ('pending', 'active', 'cancelled')
+          AND COALESCE(updated_at, created_at) < ${parsed.data.olderThan}::timestamptz
+      ),
+      a AS (DELETE FROM match_actions x USING stale s WHERE x.match_id = s.id),
+      c AS (DELETE FROM match_comments x USING stale s WHERE x.match_id = s.id),
+      e AS (DELETE FROM match_embeddings x USING stale s WHERE x.match_id = s.id),
+      f AS (DELETE FROM match_favorites x USING stale s WHERE x.match_id = s.id),
+      p AS (DELETE FROM match_payloads x USING stale s WHERE x.match_id = s.id),
+      r AS (DELETE FROM match_ratings x USING stale s WHERE x.match_id = s.id),
+      mr AS (DELETE FROM match_results x USING stale s WHERE x.match_id = s.id),
+      t AS (DELETE FROM transaction_logs x USING stale s WHERE x.match_id = s.id)
+      DELETE FROM matches x USING stale s WHERE x.id = s.id
+      RETURNING x.id
     `);
     await db.execute(sql`
       INSERT INTO admin_audit_log (actor_id, action, metadata)
