@@ -730,7 +730,31 @@ async function runOne(
         }
       } else if (Date.now() - lastProgressAt > opts.maxIdleMs) {
         failureReason = 'stalled';
-        failureMessage = `no visible progress for ${opts.maxIdleMs}ms`;
+        const diagnostics = await Promise.all(
+          (
+            [
+              ['A', pageA],
+              ['B', pageB],
+              ['S', pageS],
+            ] as const
+          ).map(async ([actor, page]) => {
+            const turnIndicator = await page
+              .locator('[data-testid="turn-indicator"]')
+              .textContent()
+              .catch(() => '');
+            const actionButtons = await page
+              .locator('button:not([disabled])')
+              .count()
+              .catch(() => 0);
+            return `${actor}{turn=${(turnIndicator ?? '').trim() || 'unknown'},buttons=${actionButtons}}`;
+          }),
+        );
+        failureMessage = `no visible progress for ${opts.maxIdleMs}ms (${diagnostics.join(' ')})`;
+        await logEvent({
+          at: new Date().toISOString(),
+          type: 'error',
+          detail: `stalled diagnostics ${failureMessage}`,
+        });
         qaRun.recordPattern(
           'stalled_run',
           { 'game.phase': phase, 'game.turn': turn },
