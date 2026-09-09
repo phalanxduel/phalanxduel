@@ -102,7 +102,7 @@ All tournament operational scripts live under the canonical `phx-*` namespace in
 │          ▼                        ▼                       ▼            │
 │  ┌───────────────┐        ┌───────────────┐       ┌─────────────────┐  │
 │  │  Vite Client  │        │Fastify Server │       │  Admin Cockpit  │  │
-│  │  Port 5173    │        │  Port 3001    │       │  Port 5174/3333 │  │
+│  │  Port 5173    │        │  Port 3001    │       │ API 3102 / UI 3103│ │
 │  └───────────────┘        └───────┬───────┘       └─────────────────┘  │
 │                                   │                                    │
 │                                   ▼                                    │
@@ -212,7 +212,7 @@ Alternatively, start services individually if debugging:
 ```bash
 pnpm dev:server               # Starts Fastify on :3001
 pnpm dev:client               # Starts Vite on :5173
-pnpm dev:admin                # Starts Admin UI on :5174
+pnpm dev:admin                # Starts Admin API :3102 and UI :3103
 brew services start nginx     # Starts local Nginx reverse proxy on :80 and :443
 ```
 
@@ -296,7 +296,7 @@ bin/phx-top
 ### Menu Bar: SwiftBar Integration
 Ensure `~/.swiftbar/phalanxduel-pulse.30s.sh` is active.
 - Green: All services healthy and DNS matches LAN IP.
-- Blue (`⚔️ N Duelists Live`): Remote tournament duelists are actively playing.
+- Blue (`⚔️ N Active Matches`): The public spectator endpoint reports active matches.
 - Yellow (`⚠️ DNS Mismatch`): The host changed Wi-Fi networks and DNS A-records must be updated.
 - Red: Critical game service down.
 
