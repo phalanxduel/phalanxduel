@@ -67,7 +67,7 @@ All tournament operational scripts live under the canonical `phx-*` namespace in
 │                                                                        │
 │   [ Player Phone / Tablet ]         [ Player Laptop / Client ]         │
 │               │                                   │                    │
-│   DNS Query: *.lan.phalanxduel.com -> Host LAN IP (e.g. 10.36.1.149)   │
+│   DNS Query: *.lan.phalanxduel.com -> Host LAN IP (e.g. <HOST_LAN_IP>)   │
 │               │                                   │                    │
 │               ▼                                   ▼                    │
 │   HTTPS Port 443 (TLS)                HTTP Port 80 (Redirect/Direct)   │
@@ -137,7 +137,7 @@ bin/phx-tournament-check
 
 Look at the top section:
 ```text
-Active LAN IP:   10.36.1.149 (en0) [Gateway: 10.36.1.1]
+Active LAN IP:   <HOST_LAN_IP> (en0) [Gateway: 10.36.1.1]
 ```
 
 ### Step 4.2: Test for Venue Wi-Fi Client Isolation (CRITICAL)
@@ -151,7 +151,7 @@ To detect if client isolation is active:
    ```
 2. Have a co-organizer or player connect to the same Wi-Fi on their phone and try opening your LAN IP:
    ```bash
-   curl -sI http://10.36.1.149:3001/health
+   curl -sI http://<HOST_LAN_IP>:3001/health
    ```
 3. **If connection times out or fails**: Client Isolation is active on the venue router.
    - **Remedy A**: Use a portable travel router (e.g. GL.iNet) connected to the venue uplink.

@@ -35,7 +35,7 @@ The local stack is wired through Nginx (`nginx/phalanxduel.localhost.conf` $\rig
 | **OpenAPI Docs** | `http://127.0.0.1:3001/docs` | App API route | Port 3001 (Fastify Server) |
 
 ### Demonstrating on Mobile or Audience Devices (LAN)
-- Public DNS and local AdGuard resolve `*.lan.phalanxduel.com` to your host LAN IP (`10.36.1.149`).
+- Public DNS and local AdGuard resolve `*.lan.phalanxduel.com` to your host LAN IP (`<HOST_LAN_IP>`).
 - Connect any phone, tablet, or secondary laptop on your Wi-Fi directly to `https://play.lan.phalanxduel.com`.
 - WebSockets (`wss://play.lan.phalanxduel.com/ws`) tunnel seamlessly through Nginx to the Fastify backend with real-time state synchronization.
 

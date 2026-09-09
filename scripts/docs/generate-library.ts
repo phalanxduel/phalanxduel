@@ -116,11 +116,12 @@ export async function generateLibraryHtml(): Promise<string> {
 
   const tables = parseSchemaMarkdown(schemaMd);
   const routes = parseApiRoutes(apiRoutesTxt);
+  const lanIp = process.env.PHALANX_LAN_IP || '<HOST_LAN_IP>';
   const endpointReport = {
-    lanIp: '10.36.1.149',
+    lanIp,
     results: CANONICAL_TOURNAMENT_ENDPOINTS.map((ep) => ({
       endpoint: ep,
-      dns: { resolvedIps: ['10.36.1.149'], matchesLanIp: true, status: 'MATCH' as const },
+      dns: { resolvedIps: [lanIp], matchesLanIp: true, status: 'MATCH' as const },
       listener: {
         active: true,
         bindAddress: ep.port === 443 || ep.port === 80 || ep.port === 3001 ? '*' : '127.0.0.1',

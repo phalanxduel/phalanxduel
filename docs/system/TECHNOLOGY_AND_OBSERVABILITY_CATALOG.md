@@ -28,7 +28,7 @@ The system is structured into seven concentric rings. Volatile external dependen
 ```mermaid
 graph TD
     subgraph L1["Layer 1: Edge & Network Perimeter"]
-        DNS["Edge DNS (DNSimple + AdGuard 10.36.1.149)"]
+        DNS["Edge DNS (DNSimple + AdGuard <HOST_LAN_IP>)"]
         Nginx["Nginx Reverse Proxy (*.lan.phalanxduel.com)"]
         Fly["Fly.io Cloud + Local Docker Compose"]
     end
@@ -94,7 +94,7 @@ graph TD
 
 | Component | Technology | Project Configuration | Upstream Status & Drift | Architecture & Observability Role |
 |---|---|---|---|---|
-| **Edge DNS** | DNSimple (Public) + AdGuard Home (LAN) | Public `play.phalanxduel.com` (`66.241.124.240`); Local LAN `*.lan.phalanxduel.com` $\rightarrow$ `10.36.1.149` (TTL 60s) | **In Lockstep**: Zero drift. | Directs client ingress to edge termination without public cloud round-trip during local demos. |
+| **Edge DNS** | DNSimple (Public) + AdGuard Home (LAN) | Public `play.phalanxduel.com` (`66.241.124.240`); Local LAN `*.lan.phalanxduel.com` $\rightarrow$ `<HOST_LAN_IP>` (TTL 60s) | **In Lockstep**: Zero drift. | Directs client ingress to edge termination without public cloud round-trip during local demos. |
 | **Edge Proxy / TLS Gateway** | Nginx | 1.27.x (Managed via host `zsvc nginx` & container ingress) | **Current Stable**: No drift. | Terminates TLS, proxies HTTP/2 and WebSocket connections, and provides same-origin `/otel` reverse-proxy to avoid CORS during browser telemetry ingestion. |
 | **Cloud Hosting Tier** | Fly.io (`fly.toml`) | Multi-region deployment, internal private wireguard mesh | **Production Parity**: Monitored via health checks. | Runs the canonical production Docker image with sidecar OpenTelemetry collector. |
 | **Containerization Tier** | Docker & Docker Compose | Docker Engine 27.x, Compose v2 | **Current Stable** | Provides isolated test verification (`bin/dock pnpm verify:full`) and optional multi-node clustering. |

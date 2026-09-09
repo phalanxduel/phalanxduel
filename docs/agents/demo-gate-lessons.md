@@ -34,7 +34,7 @@ localStorage.setItem('phx:helpOpen', 'false');
 ## Presentation LAN topology
 
 To demo Phalanx Duel live across phones, tablets, or audience devices:
-- DNS maps `*.lan.phalanxduel.com` to the host workstation's LAN IP (`10.36.1.149`).
+- DNS maps `*.lan.phalanxduel.com` to the host workstation's LAN IP (`<HOST_LAN_IP>`).
 - Scoping to the `lan` subdomain ensures live production (`play.phalanxduel.com` on Fly.io) is never shadowed.
 - The project Nginx vhost (`nginx/phalanxduel.localhost.conf`) terminates TLS using `zdots-local` certificates and proxies WebSocket upgrades to Fastify.
 - Vite's `server.allowedHosts` must allow `.lan.phalanxduel.com`.

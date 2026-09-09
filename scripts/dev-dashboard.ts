@@ -315,13 +315,17 @@ async function collectState(): Promise<EnvState> {
   const isHostCollector =
     otelEndpoint.includes('host.docker.internal') || otelEndpoint.includes('127.0.0.1');
   const isContainerCollector = otelEndpoint.includes('otel-collector');
+  const collectorReachable = portStates.otel === 'LISTEN';
 
   let collectorType: 'CONTAINER' | 'HOST' | 'DISABLED' = 'DISABLED';
   if (appTelemetry) {
-    collectorType = isContainerCollector ? 'CONTAINER' : isHostCollector ? 'HOST' : 'DISABLED';
+    collectorType = isContainerCollector
+      ? 'CONTAINER'
+      : isHostCollector || (hostNativeServicesDetected && collectorReachable)
+        ? 'HOST'
+        : 'DISABLED';
   }
 
-  const collectorReachable = portStates.otel === 'LISTEN';
   let otelStatus: HealthStatus = 'DISABLED';
   if (appTelemetry) {
     if (collectorType === 'CONTAINER') {

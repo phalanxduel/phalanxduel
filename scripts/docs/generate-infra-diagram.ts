@@ -24,6 +24,7 @@ const ROOT_DIR = path.resolve(SCRIPT_DIR, '../..');
 const OUT_DIR = path.join(ROOT_DIR, 'docs/system');
 
 function buildMermaidDiagram(): string {
+  const lanIp = process.env.PHALANX_LAN_IP || '<HOST_LAN_IP>';
   return `flowchart TB
     %% =========================================================================
     %% External Consumers & Touchpoints
@@ -40,7 +41,7 @@ function buildMermaidDiagram(): string {
     %% Edge & Network Perimeter
     %% =========================================================================
     subgraph Edge["2. Edge & Routing Perimeter"]
-        DNS["Edge DNS\\nDNSimple + AdGuard\\n(10.36.1.149)"]
+        DNS["Edge DNS\\nDNSimple + AdGuard\\n(${lanIp})"]
         Nginx["LAN Reverse Proxy\\n*.lan.phalanxduel.com\\n(Nginx TLS)"]
         FlyEdge["Fly.io Anycast Edge\\nplay.phalanxduel.com\\n(TLS Termination)"]
     end
