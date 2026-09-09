@@ -790,6 +790,26 @@ async function runOne(
       }
 
       if (!activePage) {
+        if (Date.now() - lastProgressAt > opts.maxIdleMs) {
+          failureReason = 'stalled';
+          const turnA = await pageA
+            .locator('[data-testid="turn-indicator"]')
+            .textContent()
+            .catch(() => '');
+          const turnB = await pageB
+            .locator('[data-testid="turn-indicator"]')
+            .textContent()
+            .catch(() => '');
+          failureMessage =
+            `no active player for ${opts.maxIdleMs}ms ` +
+            `(A=${(turnA ?? '').trim() || 'unknown'} B=${(turnB ?? '').trim() || 'unknown'})`;
+          await logEvent({
+            at: new Date().toISOString(),
+            type: 'error',
+            detail: `stalled diagnostics ${failureMessage}`,
+          });
+          break;
+        }
         await observerPage.waitForTimeout(100);
         continue;
       }
