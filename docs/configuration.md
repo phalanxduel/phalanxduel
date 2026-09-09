@@ -76,6 +76,11 @@ own deployment-specific server origins rather than inheriting local URLs.
 For the host-native Panoramic View filelog seam, keep the non-secret override
 in the ignored `.zdots.local` file:
 
+The local `bin/phx-demo-ctl` launcher supplies a deterministic development-only
+`ADMIN_INTERNAL_TOKEN` to the paired game and admin processes when no local
+override is present. Production startup still requires an explicitly managed
+token.
+
 ```bash
 export ZDOTS_APP_LOG=/Users/mike/github.com/phalanxduel/game/logs/panoramic.jsonl
 ```

@@ -16,6 +16,12 @@ cd "$REPO_ROOT"
 source scripts/release/load-release-env.sh --sourced
 load_local_demo_env
 
+# The local demo controller starts both admin and game processes. Give their
+# internal boundary the same deterministic development token unless an
+# operator supplied an explicit local override; production never uses this
+# launcher.
+export ADMIN_INTERNAL_TOKEN="${ADMIN_INTERNAL_TOKEN:-phalanx-dev-admin-token}"
+
 CLIENT_URL="${PHALANX_DEMO_CLIENT_URL:-http://localhost:5173}"
 APP_URL="${PHALANX_DEMO_APP_URL:-http://localhost:3001}"
 ADMIN_API_URL="${PHALANX_DEMO_ADMIN_API_URL:-http://localhost:3102}"
