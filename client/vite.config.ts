@@ -30,9 +30,6 @@ export default defineConfig({
     allowedHosts: [
       '.localhost',
       '.local',
-      'zalewhol.local',
-      'zalewhol.com',
-      '10.36.1.137',
       '100.95.136.70',
       'play.phalanxduel.localhost',
       '.lan.phalanxduel.com',
