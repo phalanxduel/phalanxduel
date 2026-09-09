@@ -10,7 +10,48 @@ const MatchListQuery = z.object({
   limit: z.coerce.number().int().min(1).max(200).default(50),
 });
 
+const RetentionQuery = z.object({
+  olderThan: z.string().datetime({ offset: true }),
+});
+
 export function registerMatchRoutes(fastify: FastifyInstance) {
+  fastify.get<{ Querystring: unknown }>('/admin-api/matches/retention', async (request, reply) => {
+    const admin = await requireAdmin(request, reply);
+    if (!admin) return;
+    const parsed = RetentionQuery.safeParse(request.query ?? {});
+    if (!parsed.success)
+      return reply.status(400).send({ error: 'olderThan must be an ISO timestamp' });
+    const rows = await db.execute(sql`
+      SELECT COUNT(*)::int AS count, MIN(created_at) AS oldest
+      FROM matches
+      WHERE status IN ('pending', 'active', 'cancelled')
+        AND COALESCE(updated_at, created_at) < ${parsed.data.olderThan}::timestamptz
+    `);
+    return reply.send({
+      olderThan: parsed.data.olderThan,
+      eligible: rows[0] ?? { count: 0, oldest: null },
+    });
+  });
+
+  fastify.post<{ Body: unknown }>('/admin-api/matches/retention/purge', async (request, reply) => {
+    const admin = await requireAdmin(request, reply);
+    if (!admin) return;
+    const parsed = RetentionQuery.safeParse(request.body ?? {});
+    if (!parsed.success)
+      return reply.status(400).send({ error: 'olderThan must be an ISO timestamp' });
+    const rows = await db.execute(sql`
+      DELETE FROM matches
+      WHERE status IN ('pending', 'active', 'cancelled')
+        AND COALESCE(updated_at, created_at) < ${parsed.data.olderThan}::timestamptz
+      RETURNING id
+    `);
+    await db.execute(sql`
+      INSERT INTO admin_audit_log (actor_id, action, metadata)
+      VALUES (${admin.id}, 'purge_stale_matches', ${JSON.stringify({ olderThan: parsed.data.olderThan, count: rows.length })}::jsonb)
+    `);
+    return reply.send({ purged: rows.length, olderThan: parsed.data.olderThan });
+  });
+
   fastify.get<{ Querystring: unknown }>('/admin-api/matches', async (request, reply) => {
     const admin = await requireAdmin(request, reply);
     if (!admin) return;
