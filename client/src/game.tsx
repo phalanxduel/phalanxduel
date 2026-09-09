@@ -24,7 +24,6 @@ import { getConnection } from './app-connection';
 import { HelpDialog } from './components/HelpDialog';
 import { OnboardingBriefing } from './components/OnboardingBriefing';
 import { HealthBadge } from './components/HealthBadge';
-import { CopyButton } from './components/CopyButton';
 import { cardLabel, greekRankLabel, suitColor, suitSymbol, isFace } from './cards';
 import { EngagementLog } from './components/EngagementLog';
 import { NarrationTicker } from './components/NarrationTicker';
@@ -41,6 +40,7 @@ import { projectCalculationProvenance, simulateAttack } from '@phalanxduel/engin
 import type { AttackPreviewVerdict } from '@phalanxduel/engine';
 import { PRESENTATION_TIMING } from './presentation-timing';
 import { normalizeCardSkinId } from './cosmetics';
+import { CopyButton } from './components/CopyButton';
 
 type GameScreenState = BaseState & Extract<ScreenState, { screen: 'game' }>;
 
@@ -1105,6 +1105,19 @@ export function GameApp({ state }: { state: AppState }) {
           <span class="spectator-count" data-testid="spectator-count">
             {state.spectatorCount > 0 ? `${state.spectatorCount} watching` : ''}
           </span>
+          {!state.isSpectator && state.matchId && (
+            <CopyButton
+              label="Invite Spectators"
+              getValue={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('screen');
+                url.searchParams.delete('profile');
+                url.searchParams.set('action', 'watch');
+                url.searchParams.set('match', state.matchId ?? '');
+                return url.toString();
+              }}
+            />
+          )}
         </div>
         <div
           class={`phx-turn-status ${isMyTurn && !state.isSpectator ? 'color-gold status-my-turn' : 'status-opp-turn'} ${state.isSpectator ? 'status-spectator' : ''}`}
