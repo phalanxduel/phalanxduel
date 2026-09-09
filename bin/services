@@ -130,8 +130,8 @@ is_running_tmux() {
 
 service_port() {
   case "$1" in
-    server) echo 3001 ;;
-    client) echo 5173 ;;
+    server) echo "${PHALANX_SERVER_PORT:-3001}" ;;
+    client) echo "${PHALANX_CLIENT_PORT:-5173}" ;;
     admin) echo "${PHALANX_ADMIN_PORT:-3102}" ;;
     *) echo "" ;;
   esac
@@ -178,7 +178,7 @@ start_service() {
     # Local demo ports are intentionally isolated from the common 3000 range.
     # Keep this explicit because a shell or dotenv value from an older setup
     # must not silently move the admin API away from the vhost and waiter.
-    start_cmd="env PHALANX_ADMIN_PORT=3102 pnpm dev:admin"
+    start_cmd="env PHALANX_ADMIN_PORT=${PHALANX_ADMIN_PORT:-3102} pnpm dev:admin"
   fi
 
   if [ "$USE_TMUX" = "true" ]; then

@@ -22,13 +22,13 @@ const __dirname = path.dirname(__filename);
 const REFRESH_INTERVAL_MS = 2000;
 const PROBE_TIMEOUT_MS = 2000;
 const PORTS = {
-  APP: 3001,
+  APP: Number(process.env.PHALANX_SERVER_PORT ?? 3001),
   ADMIN: Number(process.env.PHALANX_ADMIN_PORT ?? 3102),
   ADMIN_UI: Number(process.env.PHALANX_ADMIN_UI_PORT ?? 3103),
-  CLIENT: 5173,
-  POSTGRES: 5432,
-  OTEL_HTTP: 4318,
-  OTEL_HEALTH: 13133,
+  CLIENT: Number(process.env.PHALANX_CLIENT_PORT ?? 5173),
+  POSTGRES: Number(process.env.PHALANX_POSTGRES_PORT ?? 5432),
+  OTEL_HTTP: Number(process.env.PHALANX_OTEL_PORT ?? 4318),
+  OTEL_HEALTH: Number(process.env.PHALANX_OTEL_HEALTH_PORT ?? 13133),
   AUTOMATION: 6080,
 };
 

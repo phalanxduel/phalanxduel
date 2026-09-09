@@ -25,10 +25,11 @@ export PHALANX_DEMO_MODE=1
 export PHALANX_DEMO_SKIP_EMAIL_VERIFICATION="${PHALANX_DEMO_SKIP_EMAIL_VERIFICATION:-1}"
 export SPECTATOR_DELAY_TURNS="${SPECTATOR_DELAY_TURNS:-0}"
 
-CLIENT_URL="${PHALANX_DEMO_CLIENT_URL:-http://localhost:5173}"
-APP_URL="${PHALANX_DEMO_APP_URL:-http://localhost:3001}"
-ADMIN_API_URL="${PHALANX_DEMO_ADMIN_API_URL:-http://localhost:3102}"
-ADMIN_UI_URL="${PHALANX_DEMO_ADMIN_UI_URL:-http://localhost:3103}"
+DEMO_HOST="${PHALANX_DEMO_HOST:-localhost}"
+CLIENT_URL="${PHALANX_DEMO_CLIENT_URL:-http://${DEMO_HOST}:${PHALANX_CLIENT_PORT:-5173}}"
+APP_URL="${PHALANX_DEMO_APP_URL:-http://${DEMO_HOST}:${PHALANX_SERVER_PORT:-3001}}"
+ADMIN_API_URL="${PHALANX_DEMO_ADMIN_API_URL:-http://${DEMO_HOST}:${PHALANX_ADMIN_PORT:-3102}}"
+ADMIN_UI_URL="${PHALANX_DEMO_ADMIN_UI_URL:-http://${DEMO_HOST}:${PHALANX_ADMIN_UI_PORT:-3103}}"
 ADMIN_URL="${PHALANX_DEMO_ADMIN_URL:-$ADMIN_UI_URL}"
 # The branded URL from nginx/phalanxduel.localhost.conf (bin/install-localhost),
 # if it's set up on this machine — falls back to the raw dev port otherwise.
@@ -100,7 +101,7 @@ service_pid() {
   if [ -f "$SERVICES_RUN_DIR/$service.pid" ]; then
     cat "$SERVICES_RUN_DIR/$service.pid"
   else
-    lsof -nP -tiTCP:"$(case "$service" in server) echo 3001;; client) echo 5173;; admin) echo 3102;; esac)" -sTCP:LISTEN 2>/dev/null | head -1 || true
+    lsof -nP -tiTCP:"$(case "$service" in server) echo "${PHALANX_SERVER_PORT:-3001}";; client) echo "${PHALANX_CLIENT_PORT:-5173}";; admin) echo "${PHALANX_ADMIN_PORT:-3102}";; esac)" -sTCP:LISTEN 2>/dev/null | head -1 || true
   fi
 }
 

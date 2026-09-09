@@ -15,6 +15,11 @@ retired.
 | `GAME_SERVER_INTERNAL_URL` | local game server | Private game origin (required for admin in production) |
 | `ADMIN_INTERNAL_TOKEN` | none | Shared admin-to-game bearer token (required in production) |
 | `PHALANX_SERVER_PORT`| `3001` | HTTP listen port |
+| `PHALANX_CLIENT_PORT` | `5173` | Vite client port used by local tooling |
+| `PHALANX_ADMIN_PORT` | `3102` | Admin API port |
+| `PHALANX_ADMIN_UI_PORT` | `3103` | Admin Vite UI port |
+| `PHALANX_POSTGRES_PORT` | `5432` | Host Postgres port used by diagnostics |
+| `PHALANX_DEMO_HOST` | `localhost` | Hostname used to build local demo URLs |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://127.0.0.1:4318` | OTLP collector intake |
 | `ZDOTS_APP_LOG` | none | Local-only JSONL path for match-scoped Panoramic View filelog evidence |
 | `PHALANX_DEMO_JAEGER_URL` | `https://jaeger.localhost` | Local demo cockpit Jaeger Search, dependency graph, and Monitor links |
