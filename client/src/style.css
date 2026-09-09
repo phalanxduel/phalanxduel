@@ -3520,6 +3520,20 @@ select:focus {
   border-color: rgba(184, 132, 47, 0.28);
 }
 
+/* Neon Relay is the default demo skin: keep interaction edges legible on
+   compact mobile cards while preserving the existing suit colors. */
+.phx-card[data-card-theme='default'] {
+  --card-theme-accent: var(--neon-blue);
+  --card-theme-accent-alt: #e879f9;
+}
+
+.phx-card[data-card-theme='default'].selected,
+.phx-card[data-card-theme='default'].valid-target:hover {
+  box-shadow:
+    0 0 0 1px var(--card-theme-accent),
+    0 0 18px color-mix(in srgb, var(--card-theme-accent) 45%, transparent);
+}
+
 .phx-card[data-card-theme='dual-loop'] .phx-card-layer-base {
   background:
     radial-gradient(circle at 68% 22%, rgba(0, 135, 174, 0.2) 0 7%, transparent 8% 100%),

@@ -12,8 +12,8 @@ export interface CardSkinDefinition {
 export const CARD_SKINS: readonly CardSkinDefinition[] = [
   {
     id: 'default',
-    name: 'Standard Issue',
-    description: 'The neutral Phalanx field treatment.',
+    name: 'Neon Relay',
+    description: 'Electric cyan and magenta relay signals tuned for fast browser play.',
     unlock: 'Available',
   },
   {
