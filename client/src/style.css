@@ -2623,7 +2623,8 @@ select:focus {
 }
 
 .rewatch-game-frame .phx-game-layout {
-  height: 600px;
+  height: calc(100dvh - 16rem);
+  min-height: 0;
   min-width: 0;
 }
 
