@@ -28,6 +28,8 @@ export default defineConfig({
       usePolling: !!process.env.VITE_HOST,
     },
     allowedHosts: [
+      '.localhost',
+      '.local',
       'zalewhol.local',
       'zalewhol.com',
       '10.36.1.137',
@@ -38,6 +40,10 @@ export default defineConfig({
       'play.lan.phalanxduel.com',
     ],
     proxy: {
+      '/rum': {
+        target: 'http://127.0.0.1:5080',
+        changeOrigin: true,
+      },
       '/ws': {
         target: proxyTarget.replace(/^http/, 'ws'),
         ws: true,

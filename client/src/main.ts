@@ -1,3 +1,5 @@
+import 'preact/debug';
+
 import './instrument.js';
 import './style.css';
 import { createConnection } from './connection';

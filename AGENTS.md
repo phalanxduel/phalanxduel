@@ -20,6 +20,8 @@ related:
        In flight: verify against Backlog (`backlog/tasks/`) and the most
        recent phalanxduel entry in ~/.config/adots/handoffs/. Recent work
        (git log):
+       - TASK-389: Localhost and LAN client hosts load Preact debug hooks
+         before app startup; setup is in docs/development.md.
        - TASK-388: Retired Godot source and local archive copies; browser
          client is the demo path. Recover old source from Git history only.
        - Database ERD, model annotation, and infrastructure topology tools

@@ -21,31 +21,21 @@ import { openobserveLogs } from '@openobserve/browser-logs';
 import { openobserveRum } from '@openobserve/browser-rum';
 import { createClientUuid } from './uuid';
 import { recordWebVital } from './analytics';
+import { isLocalTelemetryHost } from './telemetry-config';
 
 const urlParams = new URLSearchParams(window.location.search);
-const isLocalHost =
-  window.location.hostname === 'localhost' ||
-  window.location.hostname === '127.0.0.1' ||
-  window.location.hostname === '::1' ||
-  window.location.hostname.endsWith('.localhost');
-const isDevelopmentBuild = import.meta.env.DEV;
+const isLocalHost = isLocalTelemetryHost(window.location.hostname);
 const telemetryDisabled =
   urlParams.get('telemetry') === 'off' ||
   urlParams.get('telemetry') === '0' ||
   localStorage.getItem('phx_telemetry_disabled') === '1' ||
   (window as typeof window & { __PHX_TELEMETRY_DISABLED__?: boolean })
     .__PHX_TELEMETRY_DISABLED__ === true ||
-  !isDevelopmentBuild ||
   !isLocalHost;
-// Browser telemetry uses the same-origin proxy on HTTPS local hosts. This
-// avoids mixed-content blocking and keeps the collector bound to loopback.
+// Same-origin intake also works from LAN devices, where loopback is not the server.
 const explicitOtelBaseUrl = urlParams.get('otelBaseUrl')?.trim();
-const OTEL_BASE_URL =
-  explicitOtelBaseUrl ||
-  (window.location.protocol === 'https:' && isLocalHost
-    ? `${window.location.origin}/otel`
-    : 'http://127.0.0.1:4318');
-const deploymentEnvironment = import.meta.env.MODE || 'development';
+const OTEL_BASE_URL = explicitOtelBaseUrl || `${window.location.origin}/otel`;
+const deploymentEnvironment = isLocalHost ? 'development' : import.meta.env.MODE;
 const serviceInstanceId = `browser:${window.location.host}:${createClientUuid()}`;
 const openObserveRumToken = import.meta.env.VITE_PHX_RUM_TOKEN?.trim();
 
@@ -62,12 +52,12 @@ if (!telemetryDisabled) {
     const openObserveOptions = {
       clientToken: openObserveRumToken,
       applicationId: 'phx-client',
-      site: 'o2.localhost',
+      site: window.location.host,
       service: 'phx-client',
       env: 'development',
       version: __APP_VERSION__,
       organizationIdentifier: 'default',
-      insecureHTTP: false,
+      insecureHTTP: window.location.protocol === 'http:',
       apiVersion: 'v1',
     } as const;
 
@@ -130,9 +120,8 @@ if (!telemetryDisabled) {
 }
 
 if (!telemetryDisabled) {
-  // 3. Register automatic instrumentations only for local development.
-  // This keeps production builds from adding propagation hooks or emitting
-  // browser telemetry, even when a query string tries to opt in.
+  // Local demo hosts report telemetry regardless of build mode. Public hosts
+  // remain disabled even when a query string tries to opt in.
   registerInstrumentations({
     instrumentations: [
       new (FetchInstrumentation as any)({

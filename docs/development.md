@@ -63,6 +63,21 @@ rtk bin/dock pnpm test
 rtk bin/dock pnpm verify:full
 ```
 
+## Preact Browser DevTools
+
+Install the [Preact DevTools browser extension](https://preactjs.github.io/preact-devtools/)
+for Chrome, Firefox, or Edge. Start `rtk pnpm dev:client`, open the local client,
+then open the browser developer tools and select the **Preact** panel. Reload
+the page after installing or enabling the extension.
+
+The entry loads `preact/debug` before the app on `localhost`, `*.localhost`,
+`lan.phalanxduel.com`, and `*.lan.phalanxduel.com`, enabling component inspection
+and Preact runtime warnings. This applies to development and production builds.
+Other hosts (including `play.phalanxduel.com` and raw IP addresses) do not load
+the debug module. Production builds include it as a separate lazy-loaded chunk.
+The component tree covers Preact-rendered UI; use the browser Elements panel for
+imperatively rendered DOM. The existing Alt+D wireframe overlay is separate.
+
 ## Local Configuration
 
 Copy the example environment files and update them as needed:
@@ -94,6 +109,39 @@ rtk pnpm infra:otel:collector
 ```
 
 The application is configured to export to `http://127.0.0.1:4318` by default.
+
+Browser telemetry treats `localhost`, `*.localhost`, `*.local`,
+`lan.phalanxduel.com`, and `*.lan.phalanxduel.com` as local development/demo
+hosts, including optimized builds. Loopback IPs are also supported. Public
+hosts stay disabled; `?telemetry=off` remains an explicit opt-out.
+
+The browser uses same-origin `/otel` (collector → OpenObserve and Jaeger) and
+`/rum` (OpenObserve RUM, logs, and replay). Vite and the project nginx vhost
+proxy these paths to the host services, so LAN devices never send telemetry
+to their own loopback address. RUM still requires `VITE_PHX_RUM_TOKEN` at build
+or dev-server startup; keep the token out of source and logs.
+
+The shared host collector CORS allowlist lives in
+`~/.config/zsh/etc/otel-collector.yaml`. Wildcard RUM CORS is restricted to
+the same local hostname families in
+`~/.config/zsh/etc/nginx/servers/zdots.conf` (`/rum/` only); OpenObserve's
+native allowlist supports exact origins. HTTP and HTTPS with optional ports
+are supported. After changes, install the nginx vhosts, run
+`rtk zsvc reload nginx`, and run `rtk zsvc restart otel` for collector changes.
+
+Check a browser preflight without exposing any token:
+
+```bash
+rtk curl -i -X OPTIONS https://o2.localhost/rum/v1/default/rum \
+  -H 'Origin: https://play.lan.phalanxduel.com' \
+  -H 'Access-Control-Request-Method: POST' \
+  -H 'Access-Control-Request-Headers: content-type'
+```
+
+Expect `Access-Control-Allow-Origin` to match the supplied local origin.
+An unrelated origin such as `https://example.com` must receive no allow-origin
+header. Jaeger receives traces through the collector; its UI needs no browser
+ingestion CORS configuration.
 
 ### Database Monitoring (PgHero)
 
