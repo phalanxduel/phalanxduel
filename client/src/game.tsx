@@ -1054,7 +1054,19 @@ export function GameApp({ state }: { state: AppState }) {
   const [helpOpen, setHelpOpen] = useState(false);
   if (state.screen !== 'game') return null;
   const gs = state.gameState;
-  if (!gs) return null;
+  if (!gs) {
+    if (!state.isSpectator) return null;
+    return (
+      <div class="phx-game-layout phx-spectator-waiting" data-testid="spectator-waiting">
+        <div class="phx-spectator-waiting-card">
+          <span class="phx-spectator-waiting-kicker">SPECTATOR_STREAM</span>
+          <h2>Waiting for delayed frame<span class="phx-waiting-dots">…</span></h2>
+          <p>The live match is connected. Replay-safe frames appear after the three-turn delay.</p>
+          <p class="phx-spectator-waiting-hint">Stay on this page; the board will populate automatically.</p>
+        </div>
+      </div>
+    );
+  }
 
   const myIdx = state.isSpectator ? 0 : (state.playerIndex ?? 0);
   const oppIdx = myIdx === 0 ? 1 : 0;
