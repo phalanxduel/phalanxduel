@@ -19,6 +19,19 @@ retired.
 | `ZDOTS_APP_LOG` | none | Local-only JSONL path for match-scoped Panoramic View filelog evidence |
 | `PHALANX_DEMO_JAEGER_URL` | `https://jaeger.localhost` | Local demo cockpit Jaeger Search, dependency graph, and Monitor links |
 
+When `observability-mode lan` is enabled in zdots, point the demo cockpit and
+SwiftBar at the protected reverse-proxy hostname instead of loopback services:
+
+```bash
+export PHALANX_DEMO_O2_URL=https://observability.lan.phalanxduel.com
+export PHALANX_DEMO_JAEGER_URL=https://observability.lan.phalanxduel.com/jaeger
+```
+
+Keep the default `.localhost` values for `LOCAL_ONLY`. Do not configure the
+collector, OpenObserve, or Jaeger ports as participant-facing URLs; game
+browser telemetry continues to use `/otel/` and `/rum/` on the
+`play.lan.phalanxduel.com` route.
+
 For a full list of supported variables, see [Environment Variables Reference](./reference/environment-variables.md).
 
 ## Secret Management Flow
