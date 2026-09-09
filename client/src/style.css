@@ -1515,6 +1515,23 @@ select:focus {
   }
 }
 
+@media (max-width: 640px) {
+  .lobby {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  .lobby .status-card.phx-header-status {
+    width: 100%;
+    box-sizing: border-box;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-inline: 0.5rem;
+  }
+  .lobby .phx-header-btn {
+    max-width: 100%;
+  }
+}
+
 /* ── Waiting Screen ──────────────────────────── */
 
 .waiting {
