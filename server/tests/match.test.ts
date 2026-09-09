@@ -11,6 +11,8 @@ describe('LocalMatchManager', () => {
   let manager: LocalMatchManager;
 
   beforeEach(() => {
+    // Keep server tests deterministic even when a local demo shell exports 0.
+    process.env.SPECTATOR_DELAY_TURNS = '3';
     const store = new Map<string, MatchInstance>();
     const mockRepo = {
       saveMatch: vi.fn(async (m) => {
