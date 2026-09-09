@@ -2,4 +2,9 @@
 # Probe liveness and readiness; do not report configured state as health.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-exec "$ROOT/node_modules/.bin/tsx" "$ROOT/scripts/health-check.ts" "${1:-local}"
+target="${1:-local}"
+if [ "${2:-}" = "--observability" ]; then
+  "$ROOT/node_modules/.bin/tsx" "$ROOT/scripts/health-check.ts" "$target"
+  exec "$ROOT/bin/phx-observability-check"
+fi
+exec "$ROOT/node_modules/.bin/tsx" "$ROOT/scripts/health-check.ts" "$target"
