@@ -37,6 +37,7 @@ export function Dashboard() {
   const { data: recentMatches } = useApi<MatchRow[]>(
     '/admin-api/matches?status=completed&limit=20',
   );
+  const { data: matchInventory } = useApi<MatchRow[]>('/admin-api/matches?status=all&limit=200');
   const { data: users } = useApi<UserRow[]>('/admin-api/users?limit=1');
   const [, setTick] = useState(0);
   const [retentionDays, setRetentionDays] = useState(7);
@@ -86,6 +87,10 @@ export function Dashboard() {
           (recentMatches.filter((m) => m.bot_strategy).length / recentMatches.length) * 100,
         )
       : 0;
+  const matchCounts = (matchInventory ?? []).reduce<Record<string, number>>((counts, match) => {
+    counts[match.status] = (counts[match.status] ?? 0) + 1;
+    return counts;
+  }, {});
 
   return (
     <div class="page">
@@ -101,6 +106,14 @@ export function Dashboard() {
         <StatBadge label="Today's Matches" value={todayCount} />
         <StatBadge label="Total Users" value={users?.length ?? '...'} />
         <StatBadge label="Bot Match %" value={`${botPct}%`} color="var(--blue)" />
+      </div>
+
+      <div class="stat-grid" aria-label="Match status counts">
+        <StatBadge label="Pending" value={matchCounts.pending ?? 0} />
+        <StatBadge label="Active" value={matchCounts.active ?? 0} color="var(--green)" />
+        <StatBadge label="Completed" value={matchCounts.completed ?? 0} />
+        <StatBadge label="Cancelled" value={matchCounts.cancelled ?? 0} />
+        <StatBadge label="Terminated" value={matchCounts.terminated ?? 0} />
       </div>
 
       <div class="card" style={{ marginBottom: '16px' }}>
