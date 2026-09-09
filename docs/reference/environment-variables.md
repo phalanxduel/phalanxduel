@@ -29,6 +29,7 @@ Duel runtime and observability workflow.
 | `PHALANX_DEMO_JAEGER_URL` | Demo cockpit | `https://jaeger.localhost` | no | Jaeger Search, dependency graph, and Monitor links |
 | `PHALANX_DEMO_MODE` | Demo auth | unset | no | Explicit local demo switch; required for demo email-verification bypass |
 | `PHALANX_DEMO_SKIP_EMAIL_VERIFICATION` | Demo auth | unset | no | Auto-verify registrations only when demo mode and `APP_ENV=local` are active |
+| `SPECTATOR_DELAY_TURNS` | Spectator policy | `0` local, `3` otherwise | no | Redacted spectator frame delay; `0` is immediate and values 2+ are delayed |
 
 `phx-demo-ctl` and `phx-swiftbar` read `observability-mode status` when it is
 available. In `LAN` mode, unset URL overrides resolve to

@@ -11,6 +11,12 @@ import type { MatchInstance } from '../match-types.js';
 export const MINIMUM_SPECTATOR_DELAY_TURNS = 2;
 export const DEFAULT_SPECTATOR_DELAY_TURNS = 3;
 
+export function spectatorDelayTurns(): number {
+  const configured = Number.parseInt(process.env.SPECTATOR_DELAY_TURNS ?? '', 10);
+  if (Number.isFinite(configured) && configured >= 0) return configured;
+  return process.env.APP_ENV === 'local' ? 0 : DEFAULT_SPECTATOR_DELAY_TURNS;
+}
+
 export interface SpectatorFrame {
   preState: GameState;
   postState: GameState;
@@ -25,12 +31,22 @@ export interface SpectatorFrame {
  */
 export function buildDelayedSpectatorFrame(
   match: MatchInstance,
-  delayTurns = DEFAULT_SPECTATOR_DELAY_TURNS,
+  delayTurns = spectatorDelayTurns(),
 ): SpectatorFrame | null {
-  if (delayTurns < MINIMUM_SPECTATOR_DELAY_TURNS) {
+  if (delayTurns > 0 && delayTurns < MINIMUM_SPECTATOR_DELAY_TURNS) {
     throw new Error(`spectator delay must be at least ${MINIMUM_SPECTATOR_DELAY_TURNS} turns`);
   }
   if (!match.state || !match.config) return null;
+
+  if (delayTurns === 0) {
+    const action = match.actionHistory.at(-1) ?? { type: 'system:init', timestamp: new Date().toISOString() };
+    return {
+      preState: match.lastPreState ?? match.state,
+      postState: match.state,
+      action,
+      events: match.lastEvents ?? [],
+    };
+  }
 
   const replay = replayGameAtOrBeforeTurn(
     match.config,

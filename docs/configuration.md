@@ -76,6 +76,10 @@ The demo controller enables `PHALANX_DEMO_MODE=1` and defaults
 sign in without email delivery. The server honors this only when `APP_ENV=local`;
 staging and production always retain normal email verification. Disable it by
 setting the variable to `0` or by running the server outside `bin/phx-demo-ctl`.
+
+Spectator delivery defaults to an immediate redacted frame in local mode and a
+three-turn delay elsewhere. Set `SPECTATOR_DELAY_TURNS=2` or `3` for a delayed
+LAN/tournament view; set it to `0` only for trusted demos.
 These are non-secret URL overrides for rehearsal surfaces; they are not loaded
 by production deployment tooling. Production and staging should provide their
 own deployment-specific server origins rather than inheriting local URLs.
