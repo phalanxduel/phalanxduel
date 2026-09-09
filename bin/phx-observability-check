@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# List and verify every Phalanx Duel observability endpoint and access path.
+set -euo pipefail
+
+mode="$(observability-mode status 2>/dev/null || printf 'LOCAL')"
+base="https://o2.localhost"
+if [[ "$mode" == LAN ]]; then base="https://observability.lan.phalanxduel.com"; fi
+
+failures=0
+check() {
+  local label="$1" url="$2" code
+  code="$(curl -ksS --max-time 5 -o /dev/null -w '%{http_code}' "$url" || true)"
+  local access='reverse-proxy'
+  [[ "$url" == http://127.* || "$url" == http://localhost:* ]] && access='loopback'
+  case "$code" in
+    2*|3*|401|403) printf '%-22s %-46s %-12s PASS (%s)\n' "$label" "$url" "$access" "$code" ;;
+    *) printf '%-22s %-46s %-12s FAIL (%s)\n' "$label" "$url" "$access" "$code"; failures=$((failures + 1)) ;;
+  esac
+}
+
+printf 'Phalanx Duel observability surface: %s\n\n' "$mode"
+printf '%-22s %-46s %-12s %s\n' 'Endpoint' 'URL' 'Access' 'Status'
+printf '%-22s %-46s %-12s %s\n' '--------' '---' '------' '------'
+
+check 'OpenObserve UI' "$base/"
+if [[ "$mode" == LAN ]]; then
+  check 'Jaeger UI' "$base/jaeger/"
+  check 'Game OTLP proxy' 'https://play.lan.phalanxduel.com/otel/'
+  check 'Game RUM proxy' 'https://play.lan.phalanxduel.com/rum/'
+else
+  check 'Local OpenObserve' 'https://o2.localhost/healthz'
+fi
+
+printf '\nPrivate backend listeners (loopback only):\n'
+check 'OTel Collector' 'http://127.0.0.1:4318/'
+check 'OpenObserve backend' 'http://127.0.0.1:5080/healthz'
+check 'Jaeger backend' 'http://127.0.0.1:16686/'
+printf '  OTel Collector   127.0.0.1:4318  intake for traces and metrics\n'
+printf '  OpenObserve      127.0.0.1:5080  logs, metrics, and RUM storage\n'
+printf '  Jaeger           127.0.0.1:16686 trace UI backend\n'
+printf '\nLAN access policy: only observability.lan.phalanxduel.com and the play host\n'
+printf '(/otel/ and /rum/) are exposed by nginx in LAN mode.\n'
+exit "$failures"

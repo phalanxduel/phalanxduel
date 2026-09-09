@@ -33,6 +33,10 @@ alternative clients, documentation/assets, and read-only tails of the local
 ## SwiftBar menu-bar pulse
 
 `bin/phx-swiftbar` emits a read-only Phalanx Duel menu-bar pulse for SwiftBar.
+
+`bin/phx-observability-check` verifies the active Local or Tournament
+observability surface through HTTPS reverse-proxy routes without probing
+private telemetry ports.
 It is the local Syntagma coordination surface: demo health, game/admin/API
 links, OpenObserve and Jaeger, recent PVL scenario evidence, local log paths,
 and safe demo controls. It does not inspect databases, secrets, containers, or

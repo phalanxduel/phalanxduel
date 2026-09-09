@@ -14,6 +14,14 @@ related:
 
 This runbook is the canonical, step-by-step operational manual for hosting local or regional Phalanx Duel tournaments and live demonstrations. It covers pre-flight network configuration, service startup, pre-game diagnostic checks, dual-screen command center monitoring, player onboarding, troubleshooting, and post-tournament teardown.
 
+## Observability surface check
+
+Run `bin/phx-observability-check` to list browser-facing and loopback
+observability endpoints with their access class and live HTTP status.
+`LOCAL_ONLY` for the private collector, OpenObserve, or Jaeger listener is
+expected; those ports must remain loopback-bound. In `LAN` mode, the
+reverse-proxy rows are the participant-facing checks.
+
 ---
 
 ## 1. Quick Reference Commands
