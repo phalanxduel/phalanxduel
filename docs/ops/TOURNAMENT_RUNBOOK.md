@@ -26,6 +26,25 @@ reverse-proxy rows are the participant-facing checks.
 
 ## 1. Quick Reference Commands
 
+### Demo readiness gate
+
+Run this sequence immediately before opening the tournament to participants:
+
+```bash
+rtk bin/phx-demo-ctl restart --no-open
+rtk bin/phx-healthcheck localhost:3001 --observability
+rtk bin/phx-observability-check
+rtk bin/phx-demo-ctl status
+rtk pnpm qa:mobile
+```
+
+Proceed when API, Admin, client, Postgres, and required observability checks are
+healthy. For a full mobile PVP rehearsal, use the bounded browser runner with
+`--max-runtime-ms 120000`; short 30-second runs are useful only for startup and
+action-loop smoke checks. Keep the Admin status-count cards visible during the
+event so pending, active, completed, cancelled, and terminated totals are
+immediately observable.
+
 ### Observability mode
 
 Enable the protected LAN observability proxy before a venue demo:

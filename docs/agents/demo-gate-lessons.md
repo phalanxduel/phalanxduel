@@ -4,6 +4,16 @@ These are durable operating lessons for agents preparing a recorded Phalanx Duel
 
 ## Stable landing checklist
 
+### Tournament launch sequence
+
+- [ ] `rtk bin/phx-demo-ctl restart --no-open`
+- [ ] `rtk bin/phx-healthcheck localhost:3001 --observability`
+- [ ] `rtk bin/phx-observability-check`
+- [ ] `rtk bin/phx-demo-ctl status` reports a matching live build and all required services READY.
+- [ ] `rtk pnpm qa:mobile` passes.
+- [ ] For a full phone-width PVP rehearsal, run the documented 120-second browser command in [Testing & QA](../testing.md).
+- [ ] Open the Admin dashboard and confirm match-state counts are plausible before inviting players.
+
 The demo is not considered green until all of these are true:
 
 - Host-native Postgres is running and project commands select `phalanxduel_development` through `bin/maint/with-dev-postgres.sh` or `bin/maint/with-tooling-postgres.sh`.
