@@ -2,9 +2,11 @@
 # List and verify every Phalanx Duel observability endpoint and access path.
 set -euo pipefail
 
-mode="$(observability-mode status 2>/dev/null || printf 'LOCAL')"
+raw_mode="$(observability-mode status 2>/dev/null || printf 'LOCAL_ONLY')"
+mode="LOCAL_ONLY"
+[[ "$raw_mode" == LAN || "$raw_mode" == LAN_MODE ]] && mode="LAN_MODE"
 base="https://o2.localhost"
-if [[ "$mode" == LAN ]]; then base="https://observability.lan.phalanxduel.com"; fi
+[[ "$mode" == LAN_MODE ]] && base="https://observability.lan.phalanxduel.com"
 
 failures=0
 check() {
@@ -24,18 +26,20 @@ check_options() {
     -H 'Origin: https://play.lan.phalanxduel.com' \
     -H 'Access-Control-Request-Method: POST' \
     -H 'Access-Control-Request-Headers: content-type' "$url" || true)"
+  local access='reverse-proxy'
+  [[ "$url" == http://127.* || "$url" == http://localhost:* ]] && access='loopback'
   case "$code" in
-    2*|3*|401|403) printf '%-22s %-46s %-12s PASS (%s)\n' "$label" "$url" reverse-proxy "$code" ;;
-    *) printf '%-22s %-46s %-12s FAIL (%s)\n' "$label" "$url" reverse-proxy "$code"; failures=$((failures + 1)) ;;
+    2*|3*|401|403) printf '%-22s %-46s %-12s PASS (%s)\n' "$label" "$url" "$access" "$code" ;;
+    *) printf '%-22s %-46s %-12s FAIL (%s)\n' "$label" "$url" "$access" "$code"; failures=$((failures + 1)) ;;
   esac
 }
 
-printf 'Phalanx Duel observability surface: %s\n\n' "$mode"
+printf 'Phalanx Duel observability level: %s\n\n' "$mode"
 printf '%-22s %-46s %-12s %s\n' 'Endpoint' 'URL' 'Access' 'Status'
 printf '%-22s %-46s %-12s %s\n' '--------' '---' '------' '------'
 
 check 'OpenObserve UI' "$base/"
-if [[ "$mode" == LAN ]]; then
+if [[ "$mode" == LAN_MODE ]]; then
   check 'Jaeger UI' "$base/jaeger/"
   check_options 'Game OTLP proxy' 'https://play.lan.phalanxduel.com/otel/v1/traces'
   check 'Game RUM proxy' 'https://play.lan.phalanxduel.com/rum/'
@@ -52,4 +56,9 @@ printf '  OpenObserve      127.0.0.1:5080  logs, metrics, and RUM storage\n'
 printf '  Jaeger           127.0.0.1:16686 trace UI backend\n'
 printf '\nLAN access policy: only observability.lan.phalanxduel.com and the play host\n'
 printf '(/otel/ and /rum/) are exposed by nginx in LAN mode.\n'
+if [[ "$mode" == LOCAL_ONLY ]]; then
+  printf 'LOCAL_ONLY context: LAN reverse-proxy endpoints are intentionally not tested.\n'
+else
+  printf 'LAN_MODE context: reverse-proxy endpoints are required; private listeners stay loopback-only.\n'
+fi
 exit "$failures"
