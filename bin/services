@@ -132,7 +132,7 @@ service_port() {
   case "$1" in
     server) echo 3001 ;;
     client) echo 5173 ;;
-    admin) echo 3102 ;;
+    admin) echo "${PHALANX_ADMIN_PORT:-3102}" ;;
     *) echo "" ;;
   esac
 }
