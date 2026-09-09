@@ -1072,7 +1072,9 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "type": ["string", "null"],
+                "enum": ["defensive", "aggressive", "random", null]
               },
               {
                 "anyOf": [
@@ -1084,7 +1086,9 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "type": ["string", "null"],
+                "enum": ["defensive", "aggressive", "random", null]
               }
             ],
             "minItems": 2,
@@ -1886,6 +1890,27 @@
                                 "initiative",
                                 "modePassRules"
                               ],
+                              "additionalProperties": false
+                            },
+                            "botConfig": {
+                              "type": "object",
+                              "properties": {
+                                "strategy": {
+                                  "type": "string",
+                                  "enum": ["random", "heuristic", "mcts"]
+                                },
+                                "seed": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "mctsIterations": {
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": ["strategy", "seed"],
                               "additionalProperties": false
                             }
                           },
@@ -3661,7 +3686,9 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "type": ["string", "null"],
+                    "enum": ["defensive", "aggressive", "random", null]
                   },
                   {
                     "anyOf": [
@@ -3673,7 +3700,9 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "type": ["string", "null"],
+                    "enum": ["defensive", "aggressive", "random", null]
                   }
                 ],
                 "minItems": 2,
@@ -4482,6 +4511,27 @@
                                     "initiative",
                                     "modePassRules"
                                   ],
+                                  "additionalProperties": false
+                                },
+                                "botConfig": {
+                                  "type": "object",
+                                  "properties": {
+                                    "strategy": {
+                                      "type": "string",
+                                      "enum": ["random", "heuristic", "mcts"]
+                                    },
+                                    "seed": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "mctsIterations": {
+                                      "type": "integer",
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": ["strategy", "seed"],
                                   "additionalProperties": false
                                 }
                               },
@@ -6268,7 +6318,9 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "type": ["string", "null"],
+                    "enum": ["defensive", "aggressive", "random", null]
                   },
                   {
                     "anyOf": [
@@ -6280,7 +6332,9 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "type": ["string", "null"],
+                    "enum": ["defensive", "aggressive", "random", null]
                   }
                 ],
                 "minItems": 2,
@@ -7089,6 +7143,27 @@
                                     "initiative",
                                     "modePassRules"
                                   ],
+                                  "additionalProperties": false
+                                },
+                                "botConfig": {
+                                  "type": "object",
+                                  "properties": {
+                                    "strategy": {
+                                      "type": "string",
+                                      "enum": ["random", "heuristic", "mcts"]
+                                    },
+                                    "seed": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "mctsIterations": {
+                                      "type": "integer",
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": ["strategy", "seed"],
                                   "additionalProperties": false
                                 }
                               },
@@ -8904,6 +8979,27 @@
                           "initiative",
                           "modePassRules"
                         ],
+                        "additionalProperties": false
+                      },
+                      "botConfig": {
+                        "type": "object",
+                        "properties": {
+                          "strategy": {
+                            "type": "string",
+                            "enum": ["random", "heuristic", "mcts"]
+                          },
+                          "seed": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "mctsIterations": {
+                            "type": "integer",
+                            "exclusiveMinimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": ["strategy", "seed"],
                         "additionalProperties": false
                       }
                     },
@@ -9666,7 +9762,9 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "type": ["string", "null"],
+                    "enum": ["defensive", "aggressive", "random", null]
                   },
                   {
                     "anyOf": [
@@ -9678,7 +9776,9 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "type": ["string", "null"],
+                    "enum": ["defensive", "aggressive", "random", null]
                   }
                 ],
                 "minItems": 2,
@@ -10487,6 +10587,27 @@
                                     "initiative",
                                     "modePassRules"
                                   ],
+                                  "additionalProperties": false
+                                },
+                                "botConfig": {
+                                  "type": "object",
+                                  "properties": {
+                                    "strategy": {
+                                      "type": "string",
+                                      "enum": ["random", "heuristic", "mcts"]
+                                    },
+                                    "seed": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "mctsIterations": {
+                                      "type": "integer",
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": ["strategy", "seed"],
                                   "additionalProperties": false
                                 }
                               },
@@ -12317,6 +12438,27 @@
                             "modePassRules"
                           ],
                           "additionalProperties": false
+                        },
+                        "botConfig": {
+                          "type": "object",
+                          "properties": {
+                            "strategy": {
+                              "type": "string",
+                              "enum": ["random", "heuristic", "mcts"]
+                            },
+                            "seed": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "mctsIterations": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": ["strategy", "seed"],
+                          "additionalProperties": false
                         }
                       },
                       "required": ["matchId", "players", "rngSeed"],
@@ -12987,7 +13129,9 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "type": ["string", "null"],
+                    "enum": ["defensive", "aggressive", "random", null]
                   },
                   {
                     "anyOf": [
@@ -12999,7 +13143,9 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "type": ["string", "null"],
+                    "enum": ["defensive", "aggressive", "random", null]
                   }
                 ],
                 "minItems": 2,
@@ -13808,6 +13954,27 @@
                                     "initiative",
                                     "modePassRules"
                                   ],
+                                  "additionalProperties": false
+                                },
+                                "botConfig": {
+                                  "type": "object",
+                                  "properties": {
+                                    "strategy": {
+                                      "type": "string",
+                                      "enum": ["random", "heuristic", "mcts"]
+                                    },
+                                    "seed": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "mctsIterations": {
+                                      "type": "integer",
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": ["strategy", "seed"],
                                   "additionalProperties": false
                                 }
                               },
@@ -15594,7 +15761,9 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "type": ["string", "null"],
+                    "enum": ["defensive", "aggressive", "random", null]
                   },
                   {
                     "anyOf": [
@@ -15606,7 +15775,9 @@
                       {
                         "type": "null"
                       }
-                    ]
+                    ],
+                    "type": ["string", "null"],
+                    "enum": ["defensive", "aggressive", "random", null]
                   }
                 ],
                 "minItems": 2,
@@ -16415,6 +16586,27 @@
                                     "initiative",
                                     "modePassRules"
                                   ],
+                                  "additionalProperties": false
+                                },
+                                "botConfig": {
+                                  "type": "object",
+                                  "properties": {
+                                    "strategy": {
+                                      "type": "string",
+                                      "enum": ["random", "heuristic", "mcts"]
+                                    },
+                                    "seed": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "mctsIterations": {
+                                      "type": "integer",
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": ["strategy", "seed"],
                                   "additionalProperties": false
                                 }
                               },
@@ -18231,6 +18423,27 @@
                           "modePassRules"
                         ],
                         "additionalProperties": false
+                      },
+                      "botConfig": {
+                        "type": "object",
+                        "properties": {
+                          "strategy": {
+                            "type": "string",
+                            "enum": ["random", "heuristic", "mcts"]
+                          },
+                          "seed": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "mctsIterations": {
+                            "type": "integer",
+                            "exclusiveMinimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": ["strategy", "seed"],
+                        "additionalProperties": false
                       }
                     },
                     "required": ["matchId", "players", "rngSeed"],
@@ -18914,6 +19127,27 @@
                             "initiative",
                             "modePassRules"
                           ],
+                          "additionalProperties": false
+                        },
+                        "botConfig": {
+                          "type": "object",
+                          "properties": {
+                            "strategy": {
+                              "type": "string",
+                              "enum": ["random", "heuristic", "mcts"]
+                            },
+                            "seed": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "mctsIterations": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": ["strategy", "seed"],
                           "additionalProperties": false
                         }
                       },
@@ -22974,6 +23208,7 @@
                       "type": "array",
                       "items": {
                         "type": "object",
+                        "additionalProperties": true,
                         "properties": {
                           "sequenceNumber": {
                             "type": "integer"
@@ -23673,7 +23908,9 @@
                             {
                               "type": "null"
                             }
-                          ]
+                          ],
+                          "type": ["string", "null"],
+                          "enum": ["defensive", "aggressive", "random", null]
                         },
                         {
                           "anyOf": [
@@ -23685,7 +23922,9 @@
                             {
                               "type": "null"
                             }
-                          ]
+                          ],
+                          "type": ["string", "null"],
+                          "enum": ["defensive", "aggressive", "random", null]
                         }
                       ],
                       "minItems": 2,
@@ -24500,6 +24739,27 @@
                                           "initiative",
                                           "modePassRules"
                                         ],
+                                        "additionalProperties": false
+                                      },
+                                      "botConfig": {
+                                        "type": "object",
+                                        "properties": {
+                                          "strategy": {
+                                            "type": "string",
+                                            "enum": ["random", "heuristic", "mcts"]
+                                          },
+                                          "seed": {
+                                            "type": "integer",
+                                            "minimum": -9007199254740991,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "mctsIterations": {
+                                            "type": "integer",
+                                            "exclusiveMinimum": 0,
+                                            "maximum": 9007199254740991
+                                          }
+                                        },
+                                        "required": ["strategy", "seed"],
                                         "additionalProperties": false
                                       }
                                     },
@@ -26405,7 +26665,9 @@
                                 {
                                   "type": "null"
                                 }
-                              ]
+                              ],
+                              "type": ["string", "null"],
+                              "enum": ["defensive", "aggressive", "random", null]
                             },
                             {
                               "anyOf": [
@@ -26417,7 +26679,9 @@
                                 {
                                   "type": "null"
                                 }
-                              ]
+                              ],
+                              "type": ["string", "null"],
+                              "enum": ["defensive", "aggressive", "random", null]
                             }
                           ],
                           "minItems": 2,
@@ -27232,6 +27496,27 @@
                                               "initiative",
                                               "modePassRules"
                                             ],
+                                            "additionalProperties": false
+                                          },
+                                          "botConfig": {
+                                            "type": "object",
+                                            "properties": {
+                                              "strategy": {
+                                                "type": "string",
+                                                "enum": ["random", "heuristic", "mcts"]
+                                              },
+                                              "seed": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                              },
+                                              "mctsIterations": {
+                                                "type": "integer",
+                                                "exclusiveMinimum": 0,
+                                                "maximum": 9007199254740991
+                                              }
+                                            },
+                                            "required": ["strategy", "seed"],
                                             "additionalProperties": false
                                           }
                                         },
@@ -29053,7 +29338,9 @@
                                 {
                                   "type": "null"
                                 }
-                              ]
+                              ],
+                              "type": ["string", "null"],
+                              "enum": ["defensive", "aggressive", "random", null]
                             },
                             {
                               "anyOf": [
@@ -29065,7 +29352,9 @@
                                 {
                                   "type": "null"
                                 }
-                              ]
+                              ],
+                              "type": ["string", "null"],
+                              "enum": ["defensive", "aggressive", "random", null]
                             }
                           ],
                           "minItems": 2,
@@ -29880,6 +30169,27 @@
                                               "initiative",
                                               "modePassRules"
                                             ],
+                                            "additionalProperties": false
+                                          },
+                                          "botConfig": {
+                                            "type": "object",
+                                            "properties": {
+                                              "strategy": {
+                                                "type": "string",
+                                                "enum": ["random", "heuristic", "mcts"]
+                                              },
+                                              "seed": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                              },
+                                              "mctsIterations": {
+                                                "type": "integer",
+                                                "exclusiveMinimum": 0,
+                                                "maximum": 9007199254740991
+                                              }
+                                            },
+                                            "required": ["strategy", "seed"],
                                             "additionalProperties": false
                                           }
                                         },
@@ -31734,6 +32044,27 @@
                                     "modePassRules"
                                   ],
                                   "additionalProperties": false
+                                },
+                                "botConfig": {
+                                  "type": "object",
+                                  "properties": {
+                                    "strategy": {
+                                      "type": "string",
+                                      "enum": ["random", "heuristic", "mcts"]
+                                    },
+                                    "seed": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "mctsIterations": {
+                                      "type": "integer",
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": ["strategy", "seed"],
+                                  "additionalProperties": false
                                 }
                               },
                               "required": ["matchId", "players", "rngSeed"],
@@ -32432,6 +32763,27 @@
                                       "initiative",
                                       "modePassRules"
                                     ],
+                                    "additionalProperties": false
+                                  },
+                                  "botConfig": {
+                                    "type": "object",
+                                    "properties": {
+                                      "strategy": {
+                                        "type": "string",
+                                        "enum": ["random", "heuristic", "mcts"]
+                                      },
+                                      "seed": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "mctsIterations": {
+                                        "type": "integer",
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "required": ["strategy", "seed"],
                                     "additionalProperties": false
                                   }
                                 },
@@ -33234,7 +33586,9 @@
                                 {
                                   "type": "null"
                                 }
-                              ]
+                              ],
+                              "type": ["string", "null"],
+                              "enum": ["defensive", "aggressive", "random", null]
                             },
                             {
                               "anyOf": [
@@ -33246,7 +33600,9 @@
                                 {
                                   "type": "null"
                                 }
-                              ]
+                              ],
+                              "type": ["string", "null"],
+                              "enum": ["defensive", "aggressive", "random", null]
                             }
                           ],
                           "minItems": 2,
@@ -34061,6 +34417,27 @@
                                               "initiative",
                                               "modePassRules"
                                             ],
+                                            "additionalProperties": false
+                                          },
+                                          "botConfig": {
+                                            "type": "object",
+                                            "properties": {
+                                              "strategy": {
+                                                "type": "string",
+                                                "enum": ["random", "heuristic", "mcts"]
+                                              },
+                                              "seed": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                              },
+                                              "mctsIterations": {
+                                                "type": "integer",
+                                                "exclusiveMinimum": 0,
+                                                "maximum": 9007199254740991
+                                              }
+                                            },
+                                            "required": ["strategy", "seed"],
                                             "additionalProperties": false
                                           }
                                         },
@@ -35882,7 +36259,9 @@
                                 {
                                   "type": "null"
                                 }
-                              ]
+                              ],
+                              "type": ["string", "null"],
+                              "enum": ["defensive", "aggressive", "random", null]
                             },
                             {
                               "anyOf": [
@@ -35894,7 +36273,9 @@
                                 {
                                   "type": "null"
                                 }
-                              ]
+                              ],
+                              "type": ["string", "null"],
+                              "enum": ["defensive", "aggressive", "random", null]
                             }
                           ],
                           "minItems": 2,
@@ -36709,6 +37090,27 @@
                                               "initiative",
                                               "modePassRules"
                                             ],
+                                            "additionalProperties": false
+                                          },
+                                          "botConfig": {
+                                            "type": "object",
+                                            "properties": {
+                                              "strategy": {
+                                                "type": "string",
+                                                "enum": ["random", "heuristic", "mcts"]
+                                              },
+                                              "seed": {
+                                                "type": "integer",
+                                                "minimum": -9007199254740991,
+                                                "maximum": 9007199254740991
+                                              },
+                                              "mctsIterations": {
+                                                "type": "integer",
+                                                "exclusiveMinimum": 0,
+                                                "maximum": 9007199254740991
+                                              }
+                                            },
+                                            "required": ["strategy", "seed"],
                                             "additionalProperties": false
                                           }
                                         },
@@ -38563,6 +38965,27 @@
                                     "modePassRules"
                                   ],
                                   "additionalProperties": false
+                                },
+                                "botConfig": {
+                                  "type": "object",
+                                  "properties": {
+                                    "strategy": {
+                                      "type": "string",
+                                      "enum": ["random", "heuristic", "mcts"]
+                                    },
+                                    "seed": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "mctsIterations": {
+                                      "type": "integer",
+                                      "exclusiveMinimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": ["strategy", "seed"],
+                                  "additionalProperties": false
                                 }
                               },
                               "required": ["matchId", "players", "rngSeed"],
@@ -39261,6 +39684,27 @@
                                       "initiative",
                                       "modePassRules"
                                     ],
+                                    "additionalProperties": false
+                                  },
+                                  "botConfig": {
+                                    "type": "object",
+                                    "properties": {
+                                      "strategy": {
+                                        "type": "string",
+                                        "enum": ["random", "heuristic", "mcts"]
+                                      },
+                                      "seed": {
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "mctsIterations": {
+                                        "type": "integer",
+                                        "exclusiveMinimum": 0,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "required": ["strategy", "seed"],
                                     "additionalProperties": false
                                   }
                                 },

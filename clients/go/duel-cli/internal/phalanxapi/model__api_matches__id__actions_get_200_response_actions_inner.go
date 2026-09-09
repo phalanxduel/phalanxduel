@@ -13,7 +13,6 @@ package phalanx
 import (
 	"encoding/json"
 	"time"
-	"bytes"
 	"fmt"
 )
 
@@ -28,6 +27,7 @@ type ApiMatchesIdActionsGet200ResponseActionsInner struct {
 	Timestamp time.Time `json:"timestamp"`
 	StateHashBefore string `json:"stateHashBefore"`
 	StateHashAfter string `json:"stateHashAfter"`
+	AdditionalProperties map[string]interface{}
 }
 
 type _ApiMatchesIdActionsGet200ResponseActionsInner ApiMatchesIdActionsGet200ResponseActionsInner
@@ -215,6 +215,11 @@ func (o ApiMatchesIdActionsGet200ResponseActionsInner) ToMap() (map[string]inter
 	toSerialize["timestamp"] = o.Timestamp
 	toSerialize["stateHashBefore"] = o.StateHashBefore
 	toSerialize["stateHashAfter"] = o.StateHashAfter
+
+	for key, value := range o.AdditionalProperties {
+		toSerialize[key] = value
+	}
+
 	return toSerialize, nil
 }
 
@@ -247,15 +252,25 @@ func (o *ApiMatchesIdActionsGet200ResponseActionsInner) UnmarshalJSON(data []byt
 
 	varApiMatchesIdActionsGet200ResponseActionsInner := _ApiMatchesIdActionsGet200ResponseActionsInner{}
 
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varApiMatchesIdActionsGet200ResponseActionsInner)
+	err = json.Unmarshal(data, &varApiMatchesIdActionsGet200ResponseActionsInner)
 
 	if err != nil {
 		return err
 	}
 
 	*o = ApiMatchesIdActionsGet200ResponseActionsInner(varApiMatchesIdActionsGet200ResponseActionsInner)
+
+	additionalProperties := make(map[string]interface{})
+
+	if err = json.Unmarshal(data, &additionalProperties); err == nil {
+		delete(additionalProperties, "sequenceNumber")
+		delete(additionalProperties, "type")
+		delete(additionalProperties, "playerIndex")
+		delete(additionalProperties, "timestamp")
+		delete(additionalProperties, "stateHashBefore")
+		delete(additionalProperties, "stateHashAfter")
+		o.AdditionalProperties = additionalProperties
+	}
 
 	return err
 }

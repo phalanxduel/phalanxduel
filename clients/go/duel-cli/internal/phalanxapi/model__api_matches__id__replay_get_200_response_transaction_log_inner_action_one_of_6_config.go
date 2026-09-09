@@ -28,6 +28,7 @@ type ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6Config struc
 	GameOptions *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6ConfigGameOptions `json:"gameOptions,omitempty"`
 	DrawTimestamp *time.Time `json:"drawTimestamp,omitempty" validate:"regexp=^(?:(?:\\\\d\\\\d[2468][048]|\\\\d\\\\d[13579][26]|\\\\d\\\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\\\d|30)|(?:02)-(?:0[1-9]|1\\\\d|2[0-8])))T(?:(?:[01]\\\\d|2[0-3]):[0-5]\\\\d(?::[0-5]\\\\d(?:\\\\.\\\\d+)?)?(?:Z))$"`
 	MatchParams *ApiMatchesIdReplayGet200ResponseParams `json:"matchParams,omitempty"`
+	BotConfig *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6ConfigBotConfig `json:"botConfig,omitempty"`
 }
 
 type _ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6Config ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6Config
@@ -220,6 +221,38 @@ func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6Config) 
 	o.MatchParams = &v
 }
 
+// GetBotConfig returns the BotConfig field value if set, zero value otherwise.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6Config) GetBotConfig() ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6ConfigBotConfig {
+	if o == nil || IsNil(o.BotConfig) {
+		var ret ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6ConfigBotConfig
+		return ret
+	}
+	return *o.BotConfig
+}
+
+// GetBotConfigOk returns a tuple with the BotConfig field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6Config) GetBotConfigOk() (*ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6ConfigBotConfig, bool) {
+	if o == nil || IsNil(o.BotConfig) {
+		return nil, false
+	}
+	return o.BotConfig, true
+}
+
+// HasBotConfig returns a boolean if a field has been set.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6Config) HasBotConfig() bool {
+	if o != nil && !IsNil(o.BotConfig) {
+		return true
+	}
+
+	return false
+}
+
+// SetBotConfig gets a reference to the given ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6ConfigBotConfig and assigns it to the BotConfig field.
+func (o *ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6Config) SetBotConfig(v ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6ConfigBotConfig) {
+	o.BotConfig = &v
+}
+
 func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6Config) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -241,6 +274,9 @@ func (o ApiMatchesIdReplayGet200ResponseTransactionLogInnerActionOneOf6Config) T
 	}
 	if !IsNil(o.MatchParams) {
 		toSerialize["matchParams"] = o.MatchParams
+	}
+	if !IsNil(o.BotConfig) {
+		toSerialize["botConfig"] = o.BotConfig
 	}
 	return toSerialize, nil
 }

@@ -96,7 +96,7 @@ func NewConfiguration() *Configuration {
 		Debug:            false,
 		Servers:          ServerConfigurations{
 			{
-				URL: "http://127.0.0.1:3001",
+				URL: "http://localhost:3001",
 				Description: "Local Development Server",
 			},
 			{
