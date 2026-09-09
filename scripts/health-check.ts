@@ -30,6 +30,7 @@ interface HealthStatus {
 
 interface ReadinessStatus {
   ready: boolean;
+  database?: 'ok' | 'unhealthy';
   timestamp: string;
 }
 
@@ -215,6 +216,7 @@ function printReport(
     console.log(
       `║   ${readyEmoji} Status: ${readyStatus.padEnd(10)} | HTTP ${readinessResult.statusCode}${' '.repeat(31)}║`,
     );
+    console.log(`║   Database: ${readiness.database === 'ok' ? '✅ LIVE' : '❌ UNHEALTHY'}${' '.repeat(48)}║`);
     console.log(`║   Response Time: ${readinessResult.responseTime}ms${' '.repeat(42)}║`);
   } else {
     console.log(`║   ❌ ERROR: ${readinessResult.error || 'Unknown error'}`.padEnd(62) + '║');
