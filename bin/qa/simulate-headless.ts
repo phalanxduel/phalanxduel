@@ -25,6 +25,7 @@ interface CliOptions {
   screenshotMode: ScreenshotMode;
   outDir: string;
   headed: boolean;
+  mobile: boolean;
   damageModes: DamageMode[];
   startingLifepoints: number[];
   p1: PlayerType;
@@ -180,6 +181,9 @@ OPTIONS
     --headed
         Run browsers in visible mode (default: headless).
 
+    --mobile
+        Use an iPhone-sized viewport for player and spectator contexts.
+
     --viewer-index NUMBER
         0 for P1, 1 for P2. Generates replay from that player's perspective.
         Omit to generate replay from a spectator's perspective (default: null).
@@ -217,6 +221,7 @@ function parseArgs(argv: string[]): CliOptions | null {
     screenshotMode: 'turn',
     outDir: 'artifacts/playthrough',
     headed: false,
+    mobile: false,
     damageModes: ['classic'],
     startingLifepoints: [20],
     p1: 'human',
@@ -278,6 +283,7 @@ function parseArgs(argv: string[]): CliOptions | null {
       opts.screenshotMode = v;
     if (a === '--out-dir' && v) opts.outDir = v;
     if (a === '--headed') opts.headed = true;
+    if (a === '--mobile') opts.mobile = true;
     if (a === '--p1' && v && isPlayerType(v)) opts.p1 = v;
     if (a === '--p2' && v && isPlayerType(v)) opts.p2 = v;
     if (a === '--quick-start') opts.quickStart = true;
@@ -454,9 +460,18 @@ async function runOne(
   };
 
   const browser = await playwright.chromium.launch({ headless: !opts.headed });
-  const contextA = await (browser as { newContext: () => Promise<unknown> }).newContext();
-  const contextB = await (browser as { newContext: () => Promise<unknown> }).newContext();
-  const contextS = await (browser as { newContext: () => Promise<unknown> }).newContext();
+  const contextOptions = opts.mobile
+    ? { viewport: { width: 390, height: 844 }, isMobile: true }
+    : {};
+  const contextA = await (browser as { newContext: (o?: unknown) => Promise<unknown> }).newContext(
+    contextOptions,
+  );
+  const contextB = await (browser as { newContext: (o?: unknown) => Promise<unknown> }).newContext(
+    contextOptions,
+  );
+  const contextS = await (browser as { newContext: (o?: unknown) => Promise<unknown> }).newContext(
+    contextOptions,
+  );
 
   // Dismiss first-visit overlays so they don't intercept lobby interactions.
   const dismissOverlays = async (ctx: unknown) => {
