@@ -483,6 +483,11 @@ async function runOne(
   ] as const) {
     p.on('console', (msg) => {
       const text = `[${actor}] [${msg.type()}] ${msg.text()} (${msg.location().url})`;
+      // Guest playthroughs intentionally probe the session endpoint before
+      // signing in; keep that expected 401 out of the failure aggregate.
+      if (msg.type() === 'error' && /401 \(Unauthorized\).*\/api\/auth\/me/.test(text)) {
+        return;
+      }
       consoleErrors.push(text);
       if (msg.type() === 'error') {
         console.error(text);
