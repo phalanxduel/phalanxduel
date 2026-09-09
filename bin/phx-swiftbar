@@ -158,7 +158,7 @@ echo "  ---"
 menu_url "  LAN Player Arena ↗" "https://play.lan.phalanxduel.com" "$play_color"
 menu_url "  LAN API Health ↗" "http://${lan_ip:-127.0.0.1}:3001/health" "$app_color"
 docs_color=red; [[ "$docs_code" != 000 ]] && docs_color=green
-menu_url "  Architecture & ERD Library ↗" "http://localhost:3334" "$docs_color"
+echo "  Architecture & ERD Library ↗ | bash=$REPO_ROOT/bin/phx-docs-library param1=--open terminal=false refresh=true color=$docs_color"
 echo "  ---"
 echo "  Open Live Top Monitor | bash=$REPO_ROOT/bin/phx-tournament-top terminal=true"
 echo "  Verify Ports Accessibility Matrix | bash=$REPO_ROOT/bin/phx-tournament-ports terminal=true"
@@ -234,4 +234,3 @@ echo "-- 📡 Open Network Top (phx-tournament-top) | bash=$REPO_ROOT/bin/phx-to
 echo "-- 🩺 Run Diagnostic Checks (phx-tournament-check) | bash=$REPO_ROOT/bin/phx-tournament-check terminal=true size=11"
 echo "-- 📚 Architecture Library SPA | bash=$REPO_ROOT/bin/phx-docs-library param1=--open terminal=false size=11"
 echo "-- 🌐 GitHub Repository (phalanxduel/game) | href=https://github.com/phalanxduel/game size=11"
-
