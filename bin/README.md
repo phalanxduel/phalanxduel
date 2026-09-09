@@ -33,6 +33,9 @@ alternative clients, documentation/assets, and read-only tails of the local
 ## SwiftBar menu-bar pulse
 
 `bin/phx-swiftbar` emits a read-only Phalanx Duel menu-bar pulse for SwiftBar.
+When remote player sockets are active, the live-count header is clickable and
+opens the configured admin URL (`PHALANX_DEMO_ADMIN_URL`) for active-match
+inspection.
 
 `bin/phx-observability-check` verifies the active Local or Tournament
 observability surface through HTTPS reverse-proxy routes without probing

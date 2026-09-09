@@ -116,7 +116,7 @@ overall="🟢"
 
 # SwiftBar dynamic header: surfaces "something interesting" immediately in the menu bar
 if [[ "$active_sockets" -gt 0 ]]; then
-  echo "⚔️ ${active_sockets} Duelists Live | color=#58a6ff"
+  echo "⚔️ ${active_sockets} Duelists Live | href=${ADMIN_URL} color=#58a6ff"
 elif [[ -n "$lan_ip" && -n "$resolved_ip" && "$lan_ip" != "$resolved_ip" ]]; then
   echo "⚠️ DNS Mismatch (${lan_ip}) | color=#d29922"
 elif [[ "$overall" == "🔴" ]]; then
