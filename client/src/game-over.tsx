@@ -138,6 +138,20 @@ function MatchStats({ gs, winnerIndex }: { gs: GameState; winnerIndex: number | 
   );
 }
 
+function downloadTranscript(gs: GameState): void {
+  const payload = JSON.stringify(
+    { matchId: gs.matchId, outcome: gs.outcome, transactionLog: gs.transactionLog ?? [] },
+    null,
+    2,
+  );
+  const url = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `phalanx-duel-${gs.matchId ?? 'match'}-transcript.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
 export function GameOverApp({ state }: { state: AppState }) {
   if (state.screen !== 'gameOver') return null;
   const gs = state.gameState;
@@ -182,6 +196,16 @@ export function GameOverApp({ state }: { state: AppState }) {
             }
           />
         )}
+        {gs && (
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-testid="download-transcript-btn"
+            onClick={() => downloadTranscript(gs)}
+          >
+            DOWNLOAD TRANSCRIPT
+          </button>
+        )}
         <button
           type="button"
           class="btn btn-primary"
@@ -189,6 +213,14 @@ export function GameOverApp({ state }: { state: AppState }) {
           onClick={resetToLobby}
         >
           Play Again
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-testid="return-lobby-btn"
+          onClick={resetToLobby}
+        >
+          Return to Lobby
         </button>
       </div>
     </div>
