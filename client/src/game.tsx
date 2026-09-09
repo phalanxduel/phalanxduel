@@ -1053,6 +1053,7 @@ function OpponentHand({ count, cardSkinId }: { count: number; cardSkinId: CardSk
   );
 }
 
+// eslint-disable-next-line complexity -- the arena view coordinates phase-specific HUD surfaces.
 export function GameApp({ state }: { state: AppState }) {
   const [helpOpen, setHelpOpen] = useState(false);
   if (state.screen !== 'game') return null;
