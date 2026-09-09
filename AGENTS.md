@@ -60,7 +60,7 @@ related:
 
      Close ritual: rewrite this block + commit; write the deep handoff for
      anything unfinished. Reference impl: wwworkremote/core's
-     docs/agents/session-handoff.md.
+     docs/tutorials/ai-agent-workflow.md.
      ═══════════════════════════════════════════════════════════════════════ -->
 
 <!-- backlog-instructions v1 -->
