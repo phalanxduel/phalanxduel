@@ -2,6 +2,15 @@
 # Probe liveness and readiness; do not report configured state as health.
 set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
+  cat <<'EOF'
+Usage: bin/phx-healthcheck [environment|host:port] [--observability]
+
+Probe /health, /ready, and database status. Add --observability to also probe
+OTel, OpenObserve, Jaeger, and the active LAN/LOCAL_ONLY surface.
+EOF
+  exit 0
+fi
 target="${1:-local}"
 if [ "${2:-}" = "--observability" ]; then
   "$ROOT/node_modules/.bin/tsx" "$ROOT/scripts/health-check.ts" "$target"

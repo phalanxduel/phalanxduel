@@ -10,6 +10,8 @@ The demo is not considered green until all of these are true:
 - No command inherits the ambient `postgresql:///my` database, and local app work does not start Docker or Colima.
 - `pnpm verify:quick` passes.
 - `pnpm qa:playthrough:verify` passes with 12/12 scenarios.
+- `bin/phx-healthcheck localhost:3001 --observability` reports app, database,
+  OTel, OpenObserve, and Jaeger as healthy.
 - `pnpm qa:visual:run` passes with 3/3 scenarios.
 - The worktree is clean, `main` is pushed, and the final push-triggered Pipeline and Code Quality runs are green. In-progress CI is not green.
 

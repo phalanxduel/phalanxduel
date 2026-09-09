@@ -1,0 +1,15 @@
+.TH PHX-HEALTHCHECK 1 "2026-09-09" "Phalanx Duel" "Phalanx Duel Local Tooling"
+.SH NAME
+phx-healthcheck \- probe application, database, and observability health
+.SH SYNOPSIS
+.B bin/phx-healthcheck
+.RI [ environment | host:port ]
+.RI [ --observability ]
+.SH DESCRIPTION
+Performs live HTTP probes against /health and /ready and reports database status.
+With --observability, it also runs the complete observability surface check.
+.SH EXAMPLES
+.B bin/phx-healthcheck localhost:3001 --observability
+.SH SEE ALSO
+.BR phx (1),
+.BR phx-demo-ctl (1)

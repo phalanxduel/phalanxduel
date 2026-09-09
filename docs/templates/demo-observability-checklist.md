@@ -15,6 +15,8 @@ needs telemetry evidence. Keep it local and redact identifiers before sharing.
 - Collector healthy: [ ]
 - O2 healthy: [ ]
 - Jaeger healthy: [ ]
+- Combined probe: `bin/phx-healthcheck localhost:3001 --observability`
+- Database reported LIVE: [ ]
 
 ## Trail
 
@@ -41,3 +43,4 @@ needs telemetry evidence. Keep it local and redact identifiers before sharing.
 - [ ] No player IDs or email addresses recorded.
 - [ ] Local `*.localhost` links only.
 - [ ] Production telemetry was not changed.
+- [ ] The combined healthcheck was run immediately before the demo.
