@@ -1050,7 +1050,7 @@ function OpponentHand({ count, cardSkinId }: { count: number; cardSkinId: CardSk
   );
 }
 
-function GameApp({ state }: { state: AppState }) {
+export function GameApp({ state }: { state: AppState }) {
   const [helpOpen, setHelpOpen] = useState(false);
   if (state.screen !== 'game') return null;
   const gs = state.gameState;

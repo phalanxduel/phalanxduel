@@ -138,7 +138,7 @@ function MatchStats({ gs, winnerIndex }: { gs: GameState; winnerIndex: number | 
   );
 }
 
-function GameOverApp({ state }: { state: AppState }) {
+export function GameOverApp({ state }: { state: AppState }) {
   if (state.screen !== 'gameOver') return null;
   const gs = state.gameState;
   const outcome = gs?.outcome;

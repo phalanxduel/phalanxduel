@@ -2,8 +2,8 @@ import type { DamageMode, CreateMatchParamsPartial, GameState } from '@phalanxdu
 import { formatGamertag, isGameOver } from '@phalanxduel/shared';
 import { render as preactRender } from 'preact';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { renderGame } from './game';
-import { renderGameOver } from './game-over';
+import { GameApp } from './game';
+import { GameOverApp } from './game-over';
 import { getConnection } from './app-connection';
 import { renderError } from './error-ui';
 import {
@@ -1984,28 +1984,19 @@ function describeRewatchAction(action: RewatchActionEntry | undefined, step: num
 }
 
 function RewatchGameFrame({ state }: { state: RewatchFrameState }) {
-  const boardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const target = boardRef.current;
-    if (!target) return;
-
-    target.innerHTML = '';
-    if (state.gameState && isGameOver(state.gameState)) {
-      renderGameOver(target, state);
-    } else {
-      renderGame(target, state);
-    }
-  }, [state]);
-
   return (
     <div
-      ref={boardRef}
       style="min-height: 600px"
       data-testid="game-layout"
       data-spectator="true"
       data-rewatch="true"
-    />
+    >
+      {state.gameState && isGameOver(state.gameState) ? (
+        <GameOverApp state={state} />
+      ) : (
+        <GameApp state={state} />
+      )}
+    </div>
   );
 }
 
