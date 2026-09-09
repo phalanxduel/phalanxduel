@@ -3080,7 +3080,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
                         );
                       }}
                     >
-                      PRIVATE_MATCH
+                      {listPublicly ? 'PUBLIC_MATCH' : 'PRIVATE_MATCH'}
                     </a>
                     <a
                       id="phx-lobby-public-lobby"
