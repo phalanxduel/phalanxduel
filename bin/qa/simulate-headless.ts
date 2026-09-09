@@ -153,7 +153,12 @@ OPTIONS
         Hard limit on turns before declaring a draw/stall (default: 140).
 
     --max-runtime-ms NUMBER
-        Hard wall-clock limit per browser match (default: 120000).
+        Hard wall-clock limit per browser match (default: 120000; override with
+        PHX_QA_MAX_RUNTIME_MS).
+
+    --max-idle-ms NUMBER
+        Time without a visible state/action transition before declaring a stall
+        (default: 20000; override with PHX_QA_MAX_IDLE_MS).
 
     --screenshot-mode turn|action|phase
         When to capture visual artifacts (default: turn).
@@ -211,13 +216,18 @@ function parseArgs(argv: string[]): CliOptions | null {
     return null;
   }
 
+  const configuredNumber = (name: string, fallback: number, minimum: number): number => {
+    const value = Number(process.env[name]);
+    return Number.isFinite(value) ? Math.max(minimum, Math.trunc(value)) : fallback;
+  };
+
   const opts: CliOptions = {
     baseUrl: 'http://127.0.0.1:5173',
     batch: 1,
     maxTurns: 140,
     maxActionRetries: 6,
-    maxIdleMs: 20000,
-    maxRuntimeMs: 120000,
+    maxIdleMs: configuredNumber('PHX_QA_MAX_IDLE_MS', 20000, 1000),
+    maxRuntimeMs: configuredNumber('PHX_QA_MAX_RUNTIME_MS', 120000, 5000),
     screenshotMode: 'turn',
     outDir: 'artifacts/playthrough',
     headed: false,

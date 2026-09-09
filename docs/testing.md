@@ -62,6 +62,14 @@ rtk pnpm exec tsx bin/qa/simulate-headless.ts \
 rtk pnpm qa:mobile
 ```
 
+For repeatable demo profiles, configure the safety bounds through the
+environment; CLI flags override them for a single run:
+
+```bash
+export PHX_QA_MAX_RUNTIME_MS=120000
+export PHX_QA_MAX_IDLE_MS=15000
+```
+
 The runner writes `manifest.json`, `events.ndjson`, screenshots, and (for a
 failure) `console-errors.log` below `artifacts/playthrough-head2head/`. A
 `stalled` result includes each browser's turn indicator and enabled-button
