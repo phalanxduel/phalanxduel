@@ -798,8 +798,10 @@ async function runOne(
       let success = false;
       let retryCount = 0;
       const maxRetries = opts.maxActionRetries || 6;
+      const actionDeadline = Date.now() + Math.min(opts.maxIdleMs, 15_000);
 
       while (!success && retryCount < maxRetries) {
+        if (Date.now() >= actionDeadline) break;
         // 1. Check for UI Error Banners (Action Rejection or Disconnect)
         const errorBanner = await activePage.$('.error-banner');
         if (errorBanner) {
