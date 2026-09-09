@@ -33,14 +33,18 @@ SERVICES_LOG_DIR="$REPO_ROOT/.phx/logs"
 COCKPIT_PORT="${PHALANX_DEMO_COCKPIT_PORT:-3333}"
 COCKPIT_BRIDGE_URL="http://127.0.0.1:${COCKPIT_PORT}/"
 COCKPIT_BRANDED_URL="${PHALANX_DEMO_BRANDED_URL:-https://phalanxduel.localhost/demo/}"
+OBSERVABILITY_MODE="$(observability-mode status 2>/dev/null || printf 'LOCAL')"
 if [ -n "${PHALANX_DEMO_O2_URL:-}" ]; then
   O2_URL="$PHALANX_DEMO_O2_URL"
+elif [ "$OBSERVABILITY_MODE" = "LAN" ]; then
+  O2_URL="https://observability.lan.phalanxduel.com"
 elif curl -kfsS --max-time 1 "https://o2.localhost/healthz" >/dev/null 2>&1; then
   O2_URL="https://o2.localhost"
 else
   O2_URL="http://localhost:5080"
 fi
 JAEGER_URL="${PHALANX_DEMO_JAEGER_URL:-https://jaeger.localhost}"
+[ "$OBSERVABILITY_MODE" = "LAN" ] && [ -z "${PHALANX_DEMO_JAEGER_URL:-}" ] && JAEGER_URL="https://observability.lan.phalanxduel.com/jaeger"
 COCKPIT_URL="${PHALANX_DEMO_COCKPIT_URL:-$COCKPIT_BRANDED_URL}"
 COCKPIT_PID_FILE="$SERVICES_RUN_DIR/cockpit.pid"
 CLI_NAME="${PHX_CLI_NAME:-$(basename "$0")}"

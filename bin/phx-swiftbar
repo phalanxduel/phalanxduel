@@ -57,6 +57,11 @@ COCKPIT_URL="${PHALANX_DEMO_COCKPIT_URL:-http://127.0.0.1:${PHALANX_DEMO_COCKPIT
 PLAY_URL="${PHALANX_DEMO_PLAY_URL:-$CLIENT_URL}"
 O2_URL="${PHALANX_DEMO_O2_URL:-https://o2.localhost}"
 JAEGER_URL="${PHALANX_DEMO_JAEGER_URL:-https://jaeger.localhost}"
+OBSERVABILITY_MODE="$(observability-mode status 2>/dev/null || printf 'LOCAL')"
+if [[ "$OBSERVABILITY_MODE" == "LAN" ]]; then
+  [[ -n "${PHALANX_DEMO_O2_URL:-}" ]] || O2_URL="https://observability.lan.phalanxduel.com"
+  [[ -n "${PHALANX_DEMO_JAEGER_URL:-}" ]] || JAEGER_URL="https://observability.lan.phalanxduel.com/jaeger"
+fi
 LOG_DIR="${REPO_ROOT}/.phx/logs"
 ARTIFACT_DIR="${REPO_ROOT}/artifacts"
 

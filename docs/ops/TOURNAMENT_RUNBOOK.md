@@ -18,6 +18,24 @@ This runbook is the canonical, step-by-step operational manual for hosting local
 
 ## 1. Quick Reference Commands
 
+### Observability mode
+
+Enable the protected LAN observability proxy before a venue demo:
+
+```bash
+observability-mode lan
+nginx-regen-certs
+nginx-ctl validate
+nginx-ctl reload
+observability-mode status
+bin/phx-demo-ctl up
+```
+
+When status reports `LAN`, `phx-demo-ctl` and SwiftBar use
+`observability.lan.phalanxduel.com` for operator links. Return to
+`observability-mode local` after the event. Game telemetry remains on
+`/otel/` and `/rum/` at the play host; raw telemetry ports stay private.
+
 All tournament operational scripts live under the canonical `phx-*` namespace in `bin/`:
 
 | Command | Purpose |
