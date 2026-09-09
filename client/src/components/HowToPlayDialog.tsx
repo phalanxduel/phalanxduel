@@ -10,11 +10,14 @@ export function HowToPlayDialog({ onClose }: HowToPlayDialogProps) {
 
   useEffect(() => {
     primaryActionRef.current?.focus();
+    if (typeof window === 'undefined') return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    return () => {
+      if (typeof window !== 'undefined') window.removeEventListener('keydown', onKeyDown);
+    };
   }, [onClose]);
 
   return (
