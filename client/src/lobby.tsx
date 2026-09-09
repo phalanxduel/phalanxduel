@@ -2207,7 +2207,7 @@ function RewatchScreen({
 
   return (
     <div class="lobby" style="min-height: 80vh; padding: 2rem;">
-      <div class="hud-panel" style="max-width: 1280px; margin: 0 auto; width: 100%;">
+      <div class="hud-panel" style="max-width: none; margin: 0 auto; width: 100%;">
         <div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 16px;">
           <div>
             <h1 class="title" style="font-size: 2rem;">
