@@ -350,6 +350,25 @@ async function waitForLobbyReady(page: PageLike): Promise<void> {
   });
 }
 
+async function gotoWithRetry(page: PageLike, url: string, attempts = 6): Promise<void> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = (await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: 30_000,
+      })) as { status?: () => number } | undefined;
+      const status = response?.status?.();
+      if (status === undefined || status < 500) return;
+      lastError = new Error(`HTTP ${status}`);
+    } catch (error) {
+      lastError = error;
+    }
+    await page.waitForTimeout(Math.min(1000 * 2 ** (attempt - 1), 8000));
+  }
+  throw lastError instanceof Error ? lastError : new Error(`unable to load ${url}`);
+}
+
 function parseWinnerName(outcomeText: string | null): string | undefined {
   if (!outcomeText) return undefined;
   const cleaned = outcomeText.trim();
@@ -571,7 +590,7 @@ async function runOne(
     const isRemote = !opts.baseUrl.includes('localhost') && !opts.baseUrl.includes('127.0.0.1');
     const urlWithSeed = isRemote ? opts.baseUrl : `${opts.baseUrl}/?seed=${baseSeed}`;
 
-    await pageA.goto(withQaRunId(urlWithSeed, qaRunId, qaRun.traceparent));
+    await gotoWithRetry(pageA, withQaRunId(urlWithSeed, qaRunId, qaRun.traceparent));
     await waitForLobbyReady(pageA);
     await pageA.locator('[data-testid="lobby-name-input"]').fill('Bot A');
 
@@ -618,13 +637,14 @@ async function runOne(
       boundMatchId = matchId;
       qaRun.bindMatch(matchId);
 
-      await pageB.goto(withQaRunId(opts.baseUrl, qaRunId, qaRun.traceparent));
+      await gotoWithRetry(pageB, withQaRunId(opts.baseUrl, qaRunId, qaRun.traceparent));
       await waitForLobbyReady(pageB);
       await pageB.locator('[data-testid="lobby-name-input"]').fill('Bot B');
       await pageB.locator('[data-testid="lobby-join-input"]').fill(matchId);
       await pageB.locator('[data-testid="lobby-join-btn"]').click();
 
-      await pageS.goto(
+      await gotoWithRetry(
+        pageS,
         withQaRunId(`${opts.baseUrl}/?watch=${matchId}`, qaRunId, qaRun.traceparent),
       );
     }
