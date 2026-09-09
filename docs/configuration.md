@@ -18,6 +18,7 @@ retired.
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://127.0.0.1:4318` | OTLP collector intake |
 | `ZDOTS_APP_LOG` | none | Local-only JSONL path for match-scoped Panoramic View filelog evidence |
 | `PHALANX_DEMO_JAEGER_URL` | `https://jaeger.localhost` | Local demo cockpit Jaeger Search, dependency graph, and Monitor links |
+| `PHALANX_DEMO_SKIP_EMAIL_VERIFICATION` | unset | With `PHALANX_DEMO_MODE=1`, auto-verifies demo registrations; local only |
 
 When `observability-mode lan` is enabled in zdots, point the demo cockpit and
 SwiftBar at the protected reverse-proxy hostname instead of loopback services:
@@ -69,6 +70,12 @@ defaults. The committed `.env.example` provides safe host-native localhost
 defaults for
 the browser, API, admin, cockpit, OpenObserve, and Grafana endpoints. The local
 demo controller loads only `PHALANX_DEMO_*` settings from the root `.env.local`.
+
+The demo controller enables `PHALANX_DEMO_MODE=1` and defaults
+`PHALANX_DEMO_SKIP_EMAIL_VERIFICATION=1`, so newly registered demo accounts can
+sign in without email delivery. The server honors this only when `APP_ENV=local`;
+staging and production always retain normal email verification. Disable it by
+setting the variable to `0` or by running the server outside `bin/phx-demo-ctl`.
 These are non-secret URL overrides for rehearsal surfaces; they are not loaded
 by production deployment tooling. Production and staging should provide their
 own deployment-specific server origins rather than inheriting local URLs.

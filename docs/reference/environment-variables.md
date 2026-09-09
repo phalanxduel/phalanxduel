@@ -27,6 +27,8 @@ Duel runtime and observability workflow.
 | `PHALANX_DEMO_O2_URL` | Demo cockpit | `http://localhost:5080` | no | OpenObserve UI/API link |
 | `PHALANX_DEMO_GRAFANA_URL` | Demo cockpit | `http://localhost:3000` | no | Optional legacy Grafana link |
 | `PHALANX_DEMO_JAEGER_URL` | Demo cockpit | `https://jaeger.localhost` | no | Jaeger Search, dependency graph, and Monitor links |
+| `PHALANX_DEMO_MODE` | Demo auth | unset | no | Explicit local demo switch; required for demo email-verification bypass |
+| `PHALANX_DEMO_SKIP_EMAIL_VERIFICATION` | Demo auth | unset | no | Auto-verify registrations only when demo mode and `APP_ENV=local` are active |
 
 `phx-demo-ctl` and `phx-swiftbar` read `observability-mode status` when it is
 available. In `LAN` mode, unset URL overrides resolve to
