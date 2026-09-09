@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { useApi } from '../hooks/useApi.js';
+import { apiPost, useApi } from '../hooks/useApi.js';
 import { StatBadge } from '../components/StatBadge.js';
 import { DataTable } from '../components/DataTable.js';
 import { IntegrityBadge } from '../components/IntegrityBadge.js';
@@ -28,6 +28,8 @@ function timeAgo(iso: string): string {
   return `${Math.floor(diff / 86400000)}d ago`;
 }
 
+// Dashboard intentionally composes several independent live panels.
+// eslint-disable-next-line complexity
 export function Dashboard() {
   const { data: activeMatches } = useApi<MatchRow[]>('/admin-api/matches?status=active');
   const { data: recentMatches } = useApi<MatchRow[]>(
@@ -35,6 +37,33 @@ export function Dashboard() {
   );
   const { data: users } = useApi<UserRow[]>('/admin-api/users?limit=1');
   const [, setTick] = useState(0);
+  const [retentionDays, setRetentionDays] = useState(7);
+  const [purging, setPurging] = useState(false);
+  const [retentionMessage, setRetentionMessage] = useState<string | null>(null);
+  const olderThan = new Date(Date.now() - retentionDays * 86400000).toISOString();
+  const { data: retention } = useApi<{ eligible: { count: number; oldest: string | null } }>(
+    `/admin-api/matches/retention?olderThan=${encodeURIComponent(olderThan)}`,
+    [retentionDays],
+  );
+
+  const purgeStale = async () => {
+    if (
+      !confirm(
+        `Delete ${retention?.eligible.count ?? 0} incomplete or cancelled matches older than ${retentionDays} days?`,
+      )
+    )
+      return;
+    setPurging(true);
+    setRetentionMessage(null);
+    const { data, error } = await apiPost<{ purged: number }>(
+      '/admin-api/matches/retention/purge',
+      {
+        olderThan,
+      },
+    );
+    setPurging(false);
+    setRetentionMessage(error ?? `Purged ${data?.purged ?? 0} matches.`);
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -70,6 +99,35 @@ export function Dashboard() {
         <StatBadge label="Today's Matches" value={todayCount} />
         <StatBadge label="Total Users" value={users?.length ?? '...'} />
         <StatBadge label="Bot Match %" value={`${botPct}%`} color="var(--blue)" />
+      </div>
+
+      <div class="card" style={{ marginBottom: '16px' }}>
+        <div class="card-title">Match Retention</div>
+        <p class="muted">
+          Preview and remove stale incomplete, active, or cancelled matches. Completed history is
+          always protected.
+        </p>
+        <div style={{ display: 'flex', alignItems: 'end', gap: '12px', flexWrap: 'wrap' }}>
+          <div class="form-group" style={{ marginBottom: 0 }}>
+            <label for="retention-days">Older than (days)</label>
+            <input
+              id="retention-days"
+              type="number"
+              min="1"
+              max="3650"
+              value={retentionDays}
+              onInput={(e) => setRetentionDays(Number((e.target as HTMLInputElement).value) || 1)}
+            />
+          </div>
+          <button
+            class="danger"
+            disabled={purging || !retention?.eligible.count}
+            onClick={() => void purgeStale()}
+          >
+            {purging ? 'Purging…' : `Purge ${retention?.eligible.count ?? '…'} matches`}
+          </button>
+          {retentionMessage && <span class="muted">{retentionMessage}</span>}
+        </div>
       </div>
 
       <div class="card" style={{ marginBottom: '16px' }}>
