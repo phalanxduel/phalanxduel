@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Probe liveness and readiness; do not report configured state as health.
+set -eu
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+exec "$ROOT/node_modules/.bin/tsx" "$ROOT/scripts/health-check.ts" "${1:-local}"
