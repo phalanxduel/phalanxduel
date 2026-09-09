@@ -47,6 +47,29 @@ rtk pnpm qa:playthrough:ui -- --scenario guest-pvp
 rtk pnpm qa:playthrough:ui -- --scenario guest-pvp --spectator
 ```
 
+For a direct three-browser run (player A, player B, and spectator), use the
+headless runner. The `--mobile` flag uses a 390×844 phone viewport; bounded
+runs are recommended for demos so a stalled action produces an artifact rather
+than waiting indefinitely:
+
+```bash
+# Start the host-native server and client first, then run mobile PVP
+rtk pnpm exec tsx bin/qa/simulate-headless.ts \
+  --mobile --p1 human --p2 human --starting-lp 1 \
+  --max-runtime-ms 90000 --max-turns 20 --batch 1
+
+# Run the responsive lobby smoke test (Playwright starts/reuses local services)
+rtk pnpm qa:mobile
+```
+
+The runner writes `manifest.json`, `events.ndjson`, screenshots, and (for a
+failure) `console-errors.log` below `artifacts/playthrough-head2head/`. A
+`stalled` result includes each browser's turn indicator and enabled-button
+count; inspect the final `error` event before diagnosing the server or client.
+If startup returns a transient 5xx, navigation retries automatically. Ensure
+Postgres is accepting connections (`rtk pg_isready -h localhost -p 5432`) and
+the app health endpoint responds (`rtk curl -fsS http://127.0.0.1:3001/health`).
+
 > **Note on Locators:** All UI automation locators MUST use semantic `data-component` tags as defined in `docs/system/UI_COMPONENT_TAXONOMY.md`. Do not use brittle class names or DOM-coupled selectors.
 
 ### 3.5 Visual Design Baseline Capture
