@@ -41,6 +41,30 @@ client entrypoints, and formatted local log tails. Docker remains an explicit
 verification path through `bin/dock`; it is not required by the host-native
 demo workflow.
 
+### Fastest clone-to-demo path
+
+After installing Node 24, pnpm, and host Postgres, run:
+
+```bash
+git clone https://github.com/phalanxduel/game.git
+cd game
+rtk pnpm install
+rtk pnpm qa:setup
+rtk bin/phx-demo-ctl up
+```
+
+The controller waits for API, client, admin, and database readiness and prints
+the exact URLs to open. Verify the stack with:
+
+```bash
+rtk bin/phx-healthcheck localhost:3001 --observability
+```
+
+If startup reports a database problem, confirm the host service with
+`rtk pg_isready -h localhost -p 5432`, then retry `rtk bin/phx-demo-ctl up`.
+Use `rtk bin/phx-demo-ctl status` for process state and
+`rtk bin/phx-demo-ctl logs` for service logs.
+
 For detailed setup, troubleshooting, and advanced workflows, see the **[Development Guide](docs/development.md)**.
   
 ## ✨ Feature Highlights
