@@ -39,7 +39,10 @@ export function buildDelayedSpectatorFrame(
   if (!match.state || !match.config) return null;
 
   if (delayTurns === 0) {
-    const action = match.actionHistory.at(-1) ?? { type: 'system:init', timestamp: new Date().toISOString() };
+    const action = match.actionHistory.at(-1) ?? {
+      type: 'system:init',
+      timestamp: new Date().toISOString(),
+    };
     return {
       preState: match.lastPreState ?? match.state,
       postState: match.state,
