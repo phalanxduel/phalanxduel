@@ -2,11 +2,10 @@
 # List and verify every Phalanx Duel observability endpoint and access path.
 set -euo pipefail
 
-raw_mode="$(observability-mode status 2>/dev/null || printf 'LOCAL_ONLY')"
-mode="LOCAL_ONLY"
-[[ "$raw_mode" == LAN || "$raw_mode" == LAN_MODE ]] && mode="LAN_MODE"
+mode="$(observability-mode status 2>/dev/null || printf 'LOCAL_ONLY')"
+[[ "$mode" == LOCAL ]] && mode="LOCAL_ONLY"
 base="https://o2.localhost"
-[[ "$mode" == LAN_MODE ]] && base="https://observability.lan.phalanxduel.com"
+[[ "$mode" == LAN ]] && base="https://observability.lan.phalanxduel.com"
 
 failures=0
 check() {
@@ -39,7 +38,7 @@ printf '%-22s %-46s %-12s %s\n' 'Endpoint' 'URL' 'Access' 'Status'
 printf '%-22s %-46s %-12s %s\n' '--------' '---' '------' '------'
 
 check 'OpenObserve UI' "$base/"
-if [[ "$mode" == LAN_MODE ]]; then
+if [[ "$mode" == LAN ]]; then
   check 'Jaeger UI' "$base/jaeger/"
   check_options 'Game OTLP proxy' 'https://play.lan.phalanxduel.com/otel/v1/traces'
   check 'Game RUM proxy' 'https://play.lan.phalanxduel.com/rum/'
@@ -59,6 +58,6 @@ printf '(/otel/ and /rum/) are exposed by nginx in LAN mode.\n'
 if [[ "$mode" == LOCAL_ONLY ]]; then
   printf 'LOCAL_ONLY context: LAN reverse-proxy endpoints are intentionally not tested.\n'
 else
-  printf 'LAN_MODE context: reverse-proxy endpoints are required; private listeners stay loopback-only.\n'
+  printf 'LAN context: reverse-proxy endpoints are required; private listeners stay loopback-only.\n'
 fi
 exit "$failures"
