@@ -1,7 +1,7 @@
 # SCMC Talk — Demo Directory & Rehearsal Script
 
 **Phalanx Duel: An Analog Game, Ported to Digital with AI-Assisted Development**
-Software Craftsmanship McHenry County · September 9, 2026
+Software Craftsmanship McHenry County · September 15, 2026
 
 This is the one file to read top to bottom before a rehearsal or the real
 thing. Everything it points to already exists in this repo — nothing here
