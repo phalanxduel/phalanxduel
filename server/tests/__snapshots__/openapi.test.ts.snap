@@ -3381,6 +3381,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "enum": [
                       "default",
                       "dual-loop",
+                      "obsidian-heraldry",
                     ],
                     "type": "string",
                   },
@@ -3397,6 +3398,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "enum": [
                       "default",
                       "dual-loop",
+                      "obsidian-heraldry",
                     ],
                     "type": "string",
                   },
@@ -15937,6 +15939,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "enum": [
                       "default",
                       "dual-loop",
+                      "obsidian-heraldry",
                     ],
                     "type": "string",
                   },
@@ -15953,6 +15956,7 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                     "enum": [
                       "default",
                       "dual-loop",
+                      "obsidian-heraldry",
                     ],
                     "type": "string",
                   },
@@ -27849,6 +27853,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "enum": [
                                 "default",
                                 "dual-loop",
+                                "obsidian-heraldry",
                               ],
                               "type": "string",
                             },
@@ -27865,6 +27870,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "enum": [
                                 "default",
                                 "dual-loop",
+                                "obsidian-heraldry",
                               ],
                               "type": "string",
                             },
@@ -41820,6 +41826,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "enum": [
                                 "default",
                                 "dual-loop",
+                                "obsidian-heraldry",
                               ],
                               "type": "string",
                             },
@@ -41836,6 +41843,7 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                               "enum": [
                                 "default",
                                 "dual-loop",
+                                "obsidian-heraldry",
                               ],
                               "type": "string",
                             },

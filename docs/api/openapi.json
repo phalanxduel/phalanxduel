@@ -12493,7 +12493,7 @@
                 "properties": {
                   "cardSkinId": {
                     "type": "string",
-                    "enum": ["default", "dual-loop"]
+                    "enum": ["default", "dual-loop", "obsidian-heraldry"]
                   }
                 },
                 "required": ["cardSkinId"],
@@ -12504,7 +12504,7 @@
                 "properties": {
                   "cardSkinId": {
                     "type": "string",
-                    "enum": ["default", "dual-loop"]
+                    "enum": ["default", "dual-loop", "obsidian-heraldry"]
                   }
                 },
                 "required": ["cardSkinId"],
@@ -19183,7 +19183,7 @@
                 "properties": {
                   "cardSkinId": {
                     "type": "string",
-                    "enum": ["default", "dual-loop"]
+                    "enum": ["default", "dual-loop", "obsidian-heraldry"]
                   }
                 },
                 "required": ["cardSkinId"],
@@ -19194,7 +19194,7 @@
                 "properties": {
                   "cardSkinId": {
                     "type": "string",
-                    "enum": ["default", "dual-loop"]
+                    "enum": ["default", "dual-loop", "obsidian-heraldry"]
                   }
                 },
                 "required": ["cardSkinId"],
@@ -32819,7 +32819,7 @@
                           "properties": {
                             "cardSkinId": {
                               "type": "string",
-                              "enum": ["default", "dual-loop"]
+                              "enum": ["default", "dual-loop", "obsidian-heraldry"]
                             }
                           },
                           "required": ["cardSkinId"],
@@ -32830,7 +32830,7 @@
                           "properties": {
                             "cardSkinId": {
                               "type": "string",
-                              "enum": ["default", "dual-loop"]
+                              "enum": ["default", "dual-loop", "obsidian-heraldry"]
                             }
                           },
                           "required": ["cardSkinId"],
@@ -39740,7 +39740,7 @@
                           "properties": {
                             "cardSkinId": {
                               "type": "string",
-                              "enum": ["default", "dual-loop"]
+                              "enum": ["default", "dual-loop", "obsidian-heraldry"]
                             }
                           },
                           "required": ["cardSkinId"],
@@ -39751,7 +39751,7 @@
                           "properties": {
                             "cardSkinId": {
                               "type": "string",
-                              "enum": ["default", "dual-loop"]
+                              "enum": ["default", "dual-loop", "obsidian-heraldry"]
                             }
                           },
                           "required": ["cardSkinId"],

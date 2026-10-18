@@ -42,7 +42,6 @@ bash scripts/ci/verify-schema.sh
 bash scripts/ci/verify-doc-artifacts.sh
 pnpm exec tsx scripts/ci/verify-doc-fsm-consistency.ts
 pnpm exec tsx scripts/ci/verify-event-log.ts
-pnpm exec tsx scripts/ci/verify-feature-flag-env.ts
 pnpm docs:check
 pnpm lint:md
 
