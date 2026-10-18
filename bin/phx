@@ -120,6 +120,131 @@ cmd_version() {
   echo "  Observability: OpenTelemetry -> OpenObserve + Jaeger"
 }
 
+cmd_man() {
+  local target="${1:-phx}"
+  case "$target" in
+    phx|ctl) target="phx" ;;
+    services|svc) target="phx-services" ;;
+    dock) target="phx-dock" ;;
+    demo|cockpit) target="phx-demo-ctl" ;;
+    health|healthcheck) target="phx-healthcheck" ;;
+    datalake|lake) target="phx-datalake" ;;
+    *)
+      if [[ ! "$target" =~ ^phx- ]]; then
+        target="phx-${target}"
+      fi
+      ;;
+  esac
+
+  local man_file="${REPO_ROOT}/docs/man/${target}.1"
+  if [[ ! -f "$man_file" ]]; then
+    man_file="${REPO_ROOT}/docs/man/phx.1"
+  fi
+
+  if command -v mandoc >/dev/null 2>&1; then
+    mandoc -Tutf8 "$man_file" | ${PAGER:-less -R}
+  elif command -v man >/dev/null 2>&1; then
+    man "$man_file"
+  else
+    cat "$man_file"
+  fi
+}
+
+cmd_skills() {
+  local action="${1:-list}"
+  local skill_name="${2:-}"
+  local skills_dir="${REPO_ROOT}/.agents/skills"
+
+  case "$action" in
+    list)
+      echo "🧠 Phalanx Duel Specialized Agent Skills (.agents/skills/):"
+      echo ""
+      for skill in "$skills_dir"/*; do
+        if [[ -d "$skill" && -f "$skill/SKILL.md" ]]; then
+          local sname=$(basename "$skill")
+          local desc=$(grep -m1 '^description:' "$skill/SKILL.md" 2>/dev/null | sed -E 's/^description:\s*["'"'"']?//; s/["'"'"']?$//' || echo "")
+          printf "  • \033[1;36m%-32s\033[0m %s\n" "$sname" "${desc:0:75}"
+        fi
+      done
+      echo ""
+      echo "Use 'phx skills show <name>' to view full instructions."
+      ;;
+    show|info)
+      if [[ -z "$skill_name" ]]; then
+        echo "Error: Skill name required. Example: phx skills show phalanx-db-safe-ops" >&2
+        exit 1
+      fi
+      local skill_file="$skills_dir/$skill_name/SKILL.md"
+      if [[ -f "$skill_file" ]]; then
+        if command -v glow >/dev/null 2>&1; then
+          glow "$skill_file"
+        else
+          cat "$skill_file"
+        fi
+      else
+        echo "Skill '$skill_name' not found in $skills_dir." >&2
+        exit 1
+      fi
+      ;;
+    audit)
+      echo "🔍 Auditing .agents/skills/ for compliance..."
+      local pass=0
+      local fail=0
+      for skill in "$skills_dir"/*; do
+        if [[ -d "$skill" ]]; then
+          local sname=$(basename "$skill")
+          if [[ ! -f "$skill/SKILL.md" ]]; then
+            echo "  ❌ $sname: Missing SKILL.md"
+            fail=$((fail + 1))
+          else
+            local has_desc=$(grep -c '^description:' "$skill/SKILL.md" || true)
+            if [[ $has_desc -eq 0 ]]; then
+              echo "  ⚠️ $sname: Missing description in SKILL.md"
+              fail=$((fail + 1))
+            else
+              echo "  ✅ $sname"
+              pass=$((pass + 1))
+            fi
+          fi
+        fi
+      done
+      echo ""
+      echo "Results: $pass valid skills, $fail warnings/errors."
+      ;;
+    *)
+      echo "Usage: phx skills {list|show <name>|audit}"
+      exit 1
+      ;;
+  esac
+}
+
+cmd_agent() {
+  local subcmd="${1:-audit}"
+  if [[ $# -gt 0 ]]; then shift; fi
+  case "$subcmd" in
+    audit)
+      exec pnpm exec tsx "${REPO_ROOT}/scripts/agent-audit.ts" "$@"
+      ;;
+    guide)
+      exec pnpm exec tsx "${REPO_ROOT}/scripts/phx/guide.ts" "$@"
+      ;;
+    capabilities|caps)
+      exec pnpm exec tsx "${REPO_ROOT}/scripts/phx/capabilities.ts" "$@"
+      ;;
+    ctx)
+      exec pnpm exec tsx "${REPO_ROOT}/scripts/phx/ctx.ts" "$@"
+      ;;
+    -h|--help)
+      echo "Usage: phx agent {audit|guide|capabilities|ctx} [args]"
+      exit 0
+      ;;
+    *)
+      echo "Unknown agent command: $subcmd (expected audit, guide, capabilities, ctx)" >&2
+      exit 1
+      ;;
+  esac
+}
+
 cmd_completion() {
   local target_shell="${1:-zsh}"
   if [[ "$target_shell" == "zsh" ]]; then
@@ -324,15 +449,26 @@ case "$CMD" in
     exec "${BIN_DIR}/phx-swiftbar" "$@"
     ;;
 
-  # Agent & Context Layer
+  # Agent & Skills Layer
+  skills|skill)
+    cmd_skills "$@"
+    ;;
+  agent|agents)
+    cmd_agent "$@"
+    ;;
   guide)
     exec pnpm exec tsx "${REPO_ROOT}/scripts/phx/guide.ts" "$@"
     ;;
-  capabilities)
+  capabilities|caps)
     exec pnpm exec tsx "${REPO_ROOT}/scripts/phx/capabilities.ts" "$@"
     ;;
   ctx)
     exec pnpm exec tsx "${REPO_ROOT}/scripts/phx/ctx.ts" "$@"
+    ;;
+
+  # Manual pages (mandoc / man)
+  man|manual)
+    cmd_man "$@"
     ;;
 
   # Dynamic plugin fallback: phx <foo> -> bin/phx-<foo>

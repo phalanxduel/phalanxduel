@@ -1,0 +1,35 @@
+.TH PHX-DATALAKE 1 "2026-10-18" "Phalanx Duel" "Phalanx Duel Analytics"
+.SH NAME
+phx-datalake \- multi-repository engineering datalake for Phalanx Duel
+.SH SYNOPSIS
+.B phx datalake
+.I command
+.RI [ arguments ]
+.SH DESCRIPTION
+.B phx-datalake
+operates the local DuckDB and Apache Parquet engineering datalake. It ingests
+commit histories, file churn, tasks, ADRs, and dependencies across all repositories
+in the phalanxduel GitHub organization into a 3-tier Medallion architecture
+(Bronze JSONL -> Silver Parquet -> Gold DuckDB).
+.SH COMMANDS
+.TP
+.B build
+Ingest multi-repo histories and compile Silver Parquet & Gold DuckDB views.
+.TP
+.B query <sql> [--json|--csv]
+Execute an ad-hoc SQL query against the Gold analytical DuckDB database.
+.TP
+.B summary
+Display top-level summary KPIs (total commits, authors, lines added/deleted).
+.TP
+.B tables
+List all Silver Parquet tables and Gold analytical views.
+.TP
+.B report
+Output the full automatically-generated markdown analytics report.
+.TP
+.B shell
+Launch the interactive DuckDB terminal shell on phalanx_datalake.duckdb.
+.SH SEE ALSO
+.BR phx (1),
+.BR duckdb (1)

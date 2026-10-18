@@ -67,6 +67,10 @@ related:
        - Refactored and unified platform tooling into `bin/phx` and `bin/phx-ctl` (inspired by
          `zdots-ctl` and `kubectl`), inverting canonical implementations to `bin/phx-*` with backward-compatible
          shims in `bin/*`.
+       - Engineered universal multicall CLI architecture and symlink network in `bin/` (zero duplicate wrappers)
+         with built-in `mandoc` viewer (`phx man`), specialized skills manager (`phx skills list|show|audit`),
+         agent subcommands (`phx agent audit|guide|capabilities|ctx`), and environment doctor (`phx doctor`).
+       - Passed all verification and playability gates (`pnpm verify:quick`, `pnpm qa:playthrough:verify`).
        - Production deployment note: GHCR image build succeeded and pushed to Fly registry;
          release creation halted by Fly.io (status 403 overdue invoices on account
          mike-hall-120). Live production apps remain healthy on release 445-1.

@@ -1,27 +1,110 @@
-.TH PHX 1 "2026-09-05" "Phalanx Duel" "Phalanx Duel Local Tooling"
+.TH PHX 1 "2026-10-18" "Phalanx Duel" "Phalanx Duel Local Tooling"
 .SH NAME
-phx \- unified Phalanx Duel control plane
+phx \- unified Phalanx Duel control plane & multicall CLI
 .SH SYNOPSIS
-.B bin/phx
-.RI [ guide | capabilities | ctx ]
-.RI [ arguments ]
+.B phx
+.I command
+.RI [ subcommand ]
+.RI [ options ]
+.br
+.B phx-ctl
+.I command
+.RI [ options ]
 .SH DESCRIPTION
 .B phx
-dispatches the repository's agent and human control-plane commands.
-.SH COMMANDS
+is the central control plane for Phalanx Duel, inspired by
+.BR zdots-ctl
+and
+.BR kubectl .
+It operates as a multicall binary: invoking it directly or through namespaced symlinks
+.RB ( phx-check ,
+.BR phx-top ,
+.BR phx-services ,
+etc.) routes seamlessly to the canonical implementations.
+.SH COMMAND CATEGORIES
+.SS Platform & Services
 .TP
-.B guide
-Show the agent documentation index.
+.B up, down, restart
+Start, stop, or restart all local services in a detached tmux session.
 .TP
-.B capabilities
-Show capability vectors.
+.B status, logs
+Query service lifecycle state or tail active background service logs.
 .TP
-.B ctx
-Extract context for a task.
+.B services [command]
+Full service manager for server, client, admin, and background daemons.
 .TP
-.B -h, --help
-Show usage and exit successfully.
+.B setup
+Automate the initial environment bootstrap from git clone to ready.
+.TP
+.B fix
+Execute repository workspace fixers and deduplication scripts.
+.TP
+.B install-localhost
+Install and configure the project-owned Nginx vhost for *.localhost.
+.SS Diagnostics & Verification
+.TP
+.B check
+Run the unified multi-phase system check (Build, Lint, DB Guards, Types, Tests).
+.TP
+.B test
+Run standardized Vitest, Playwright, or unit test suites.
+.TP
+.B health
+Probe API /health, /ready, and database connectivity.
+.TP
+.B top
+Interactive curses-style game runtime and combat transaction monitor.
+.TP
+.B doctor
+Audit system runtimes, Node, pnpm, Python, DuckDB, Docker, and ports.
+.TP
+.B o11y
+Verify OpenTelemetry Collector, OpenObserve, and Jaeger routes.
+.TP
+.B dock [command]
+Run commands inside an isolated Docker automation container.
+.SS Tournament & Network
+.TP
+.B tournament check
+Inspect LAN host IP, firewall rules, listener sockets, and DNS mappings.
+.TP
+.B tournament top
+Real-time Wi-Fi RF quality, packet rate, and player socket monitor.
+.TP
+.B tournament ports
+Audit active tournament listener ports across the local host.
+.SS Analytics & Datalake
+.TP
+.B datalake [build|query|summary|tables|shell]
+Operate the multi-repository DuckDB and Apache Parquet engineering datalake.
+.TP
+.B docs
+Build and serve the architecture documentation library SPA on port 3334.
+.TP
+.B gource
+Render multi-repo cinematic 3D git repository visual history.
+.SS Agent & Skills
+.TP
+.B skills [list|show|audit]
+Inspect and audit specialized agent skills (.agents/skills/).
+.TP
+.B agent [audit|guide|capabilities|ctx]
+Agent integration audit, capabilities inspection, and context extraction.
+.SS Platform Meta
+.TP
+.B version
+Display platform version, build ID, and git commit hash.
+.TP
+.B man [command]
+Render terminal manual page using mandoc or man.
+.TP
+.B completion [bash|zsh]
+Generate shell auto-completion scripts.
 .SH SEE ALSO
-.BR phx-demo (1),
 .BR phx-services (1),
-.BR phx-dock (1)
+.BR phx-demo-ctl (1),
+.BR phx-healthcheck (1),
+.BR phx-dock (1),
+.BR mandoc (1)
+.SH AUTHORS
+Phalanx Duel is maintained by Mike Hall <mike@just3ws.com> and contributors.
