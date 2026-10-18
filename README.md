@@ -77,17 +77,25 @@ For detailed setup, troubleshooting, and advanced workflows, see the **[Developm
 
 See the full **[Features Guide](docs/reference/features.md)** for more details.
 
-## 📖 Documentation
+## 📖 Documentation & Architecture
 
 The **[Documentation Wiki](docs/README.md)** is the central entry point for all project knowledge.
+
+### Canonical Blueprints & Visual Cartography
+- **[Full Stack Architecture & Operational Blueprint](docs/architecture/FULL_STACK.md)** — Canonical runtime topology, ports, protocol flows, and verification gates
+- **[Database Schema ERD (SVG)](docs/database/schema-erd.svg)** — Interactive visual entity-relationship diagram ([Mermaid](docs/database/schema-erd.mmd) & [Model Catalog](docs/database/SCHEMA.md))
+- **[Infrastructure & Deployment Topology (SVG)](docs/system/infrastructure-topology.svg)** — Complete hybrid host-native and cloud deployment topology
+- **[Module Dependency Graph (SVG)](docs/system/dependency-graph.svg)** — Workspace package boundaries and architectural trust isolation
+- **[Documentation Library SPA](docs/library/index.html)** — Self-contained documentation reader (serve via `bin/phx-docs-library`)
 
 ### Key Entry Points
 - **[How to Play](docs/gameplay/how-to-play.md)** — Game rules and mechanics
 - **[Development Guide](docs/development.md)** — Local setup, services, and workflows
 - **[Testing & QA](docs/testing.md)** — Running tests, simulations, and playthroughs
 - **[Configuration](docs/configuration.md)** — Environment variables and secrets
-- **[Local tooling](docs/reference/local-tooling.md)** — Demo cockpit, services, `phx-*` naming, and Docker boundary
-- **[Architecture](docs/architecture/principles.md)** — System design and boundaries
+- **[Local Tooling](docs/reference/local-tooling.md)** — Demo cockpit, services, `phx-*` naming, and Docker boundary
+- **[Architecture Principles](docs/architecture/principles.md)** — System design and boundaries
+- **[Tournament Operations Runbook](docs/ops/TOURNAMENT_RUNBOOK.md)** — Tournament director operations and network checklists
 - **[Contributing](CONTRIBUTING.md)** — Workflow, standards, and PR expectations
 
 Generated QA, playthrough, and presentation captures are local evidence rather than source code and are excluded from Git. Public site media required for builds is maintained in the [site repository](https://github.com/phalanxduel/phalanxduel.github.io); large local captures may be stored on external project storage.
@@ -96,16 +104,35 @@ Generated QA, playthrough, and presentation captures are local evidence rather t
 
 ![System Architecture](docs/system/system-architecture.png)
 
-| Package | Role |
+| Package / Directory | Role |
 |---|---|
-| `shared/` | Data contracts, Zod schemas, and hashing |
-| `engine/` | Pure deterministic rules engine (no I/O) |
-| `server/` | Authoritative Fastify & WebSocket server |
-| `client/` | Vite-powered Web UI |
-| `sdk/` | Generated API client libraries (Go, TS) |
-| `mcp/` | MCP server for AI-agent access — tiered by env var |
-| `docs/` | Canonical documentation tree |
-| `backlog/` | Active task management and decisions |
+| `shared/` | Shared data contracts, Zod schemas, hashes, and protocol types |
+| `engine/` | Pure deterministic rules engine (zero I/O, Single Source of Truth) |
+| `server/` | Authoritative Fastify & WebSocket server with append-only ledger |
+| `client/` | Responsive Preact/Vite browser client and spectator suite |
+| `admin/` | Dedicated operational admin SPA and match intervention tools |
+| `agents/` | Autonomous AI duelist bots, MCTS heuristics, and benchmark drivers |
+| `clients/` | External client implementations (`clients/go/duel-cli`) |
+| `sdk/` | Generated client SDKs (`sdk/go`, `sdk/ts`) |
+| `mcp/` | Model Context Protocol servers for AI-agent gameplay and analysis |
+| `bin/` | Canonical operational toolchain (`phx-*`) and verification runners |
+| `docs/` | Canonical documentation tree, architecture blueprints, and diagrams |
+| `backlog/` | Active task management, architectural decisions, and DAG tracking |
+
+## 🛠️ Canonical Operational Toolchain
+
+Phalanx Duel provides host-native operational and diagnostic CLIs under `bin/`:
+
+| Tool | Command | Description |
+|---|---|---|
+| **Demo Control Plane** | `bin/phx-demo-ctl up` | Starts the full local stack (server, client, admin) with health verification |
+| **Unified Check** | `bin/check` / `pnpm check` | Runs full build, lint, typecheck, test, and doc artifact verification |
+| **Playability Gate** | `pnpm qa:playthrough:verify` | Verifies end-to-end automated gameplay playthroughs with zero anomalies |
+| **Runtime Monitor** | `bin/phx-top` / `pnpm top` | Live terminal monitor tracking active matches, players, and system health |
+| **Network Diagnostics** | `bin/phx-tournament-check` | Tests tournament venue firewall rules, socket handshakes, and ports |
+| **Menu Bar Pulse** | `bin/phx-swiftbar` | macOS SwiftBar integration for live duelist and network status |
+| **Doc Library** | `bin/phx-docs-library` | Serves the unified documentation and architecture library locally |
+| **Cinematic Timeline** | `bin/phx-gource` | Visualizes the multi-repo development history via Gource |
 
 See **[Architecture Principles](docs/architecture/principles.md)** for design decisions and constraints.
 
