@@ -1,4 +1,41 @@
 #!/usr/bin/env sh
-# Canonical phx-* entrypoint; bin/dock remains a compatibility path.
+# bin/dock — TASK-170
+#
+# Runs an arbitrary command inside the 'automation' service container.
+# Ensures the 'dev' profile is active and removes the container after exit.
+#
+# Usage:
+#   bin/dock pnpm test
+#   bin/dock pnpm verify:full
+#   bin/dock bash
+#
+
 set -eu
-PHX_CLI_NAME=phx-dock exec "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/dock" "$@"
+CLI_NAME="${PHX_CLI_NAME:-$(basename "$0")}"
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  echo "Usage: $CLI_NAME <command>"
+  echo ""
+  echo "Runs an arbitrary command inside the 'automation' service container."
+  echo "Ensures the 'dev' profile is active and removes the container after exit."
+  echo ""
+  echo "Examples:"
+  echo "  $CLI_NAME pnpm test"
+  echo "  $CLI_NAME bash"
+  exit 0
+fi
+
+# Ensure we are in the repo root
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT_DIR"
+
+# Check if docker is running
+if ! docker info >/dev/null 2>&1; then
+  echo "❌ Docker is not running. Please start Colima or Docker Desktop."
+  exit 1
+fi
+
+# Run the command with rtk prefix if available (passed through if not)
+# We use --rm to keep the host clean.
+# We use --profile dev to ensure the automation service is available.
+exec rtk docker-compose --profile dev run --rm automation "$@"

@@ -1,34 +1,182 @@
 #!/usr/bin/env bash
-# phx - Unified Phalanx Duel Control Plane
-set -eu
+# phx — Phalanx Duel Unified Control Plane
+# Inspired by kubectl and zdots-ctl.
+set -euo pipefail
 
-CMD="${1:-guide}"
+BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${BIN_DIR}/.." && pwd)"
+
+show_help() {
+  cat << 'EOF'
+Usage: phx <command> [subcommand] [options]
+
+Phalanx Duel Unified Control Plane (inspired by zdots-ctl & kubectl)
+
+Platform & Services:
+  services [cmd]    Manage local services (start, stop, restart, status, logs)
+  up                Start all services in background tmux session
+  down              Stop all background services
+  setup             Automate environment onboarding from git clone to dev
+  install-localhost Install project-owned nginx vhost for local domains
+  fix               Run workspace repository fixers and deduplication
+
+Diagnostics & Verification:
+  check [args]      Run unified build, lint, typecheck, and test gate
+  test [args]       Run standardized test suites (vitest, playwright, unit)
+  health [args]     Probe local or staging/production API & DB health
+  top [args]        Live game runtime & analytics monitor
+  o11y [args]       Verify OpenTelemetry, Jaeger, and OpenObserve routes
+  dock [cmd]        Execute command inside isolated Docker container
+
+Tournament & Network:
+  tournament check  Inspect LAN interface, firewall, and port accessibility
+  tournament top    Real-time bandwidth, socket, and Wi-Fi monitor
+  tournament ports  Verify active tournament listener ports
+
+Analytics & Datalake:
+  datalake [cmd]    Build, query, or summarize multi-repo DuckDB datalake
+  docs [cmd]        Build and serve architecture documentation library SPA
+  gource [options]  Multi-repo cinematic 3D git visualization
+
+Demo & Automation:
+  demo [cmd]        Launch and control multi-service demo cockpit
+  swiftbar [cmd]    Manage macOS SwiftBar menu bar pulse integration
+
+Agent & Context (MCP):
+  guide             Agent documentation index
+  capabilities      Show agent capability vectors
+  ctx               Context extraction tool for AI agents
+
+Run 'phx <command> --help' for command-specific options.
+EOF
+}
+
+if [[ $# -eq 0 ]]; then
+  show_help
+  exit 0
+fi
+
+CMD="$1"
 shift || true
 
 case "$CMD" in
-  guide)
-    pnpm exec tsx scripts/phx/guide.ts "$@"
-    ;;
-  capabilities)
-    pnpm exec tsx scripts/phx/capabilities.ts "$@"
-    ;;
-  ctx)
-    pnpm exec tsx scripts/phx/ctx.ts "$@"
-    ;;
-  -h|--help)
-    echo "Usage: phx {guide|capabilities|ctx} [args]"
-    echo ""
-    echo "Unified Phalanx Duel Control Plane for agent/human interaction."
-    echo ""
-    echo "Commands:"
-    echo "  guide         Agent documentation index"
-    echo "  capabilities  Show agent capability vectors"
-    echo "  ctx           Context extraction tool"
+  -h|--help|help)
+    show_help
     exit 0
     ;;
+
+  # Platform & Services
+  up)
+    exec "${BIN_DIR}/phx-services" start "$@"
+    ;;
+  down)
+    exec "${BIN_DIR}/phx-services" stop "$@"
+    ;;
+  status)
+    exec "${BIN_DIR}/phx-services" status "$@"
+    ;;
+  logs)
+    exec "${BIN_DIR}/phx-services" logs "$@"
+    ;;
+  restart)
+    exec "${BIN_DIR}/phx-services" restart "$@"
+    ;;
+  services)
+    exec "${BIN_DIR}/phx-services" "$@"
+    ;;
+  setup)
+    exec "${BIN_DIR}/phx-setup" "$@"
+    ;;
+  fix)
+    exec "${BIN_DIR}/phx-fix" "$@"
+    ;;
+  install-localhost)
+    exec "${BIN_DIR}/phx-install-localhost" "$@"
+    ;;
+
+  # Diagnostics & Verification
+  check)
+    exec "${BIN_DIR}/phx-check" "$@"
+    ;;
+  test)
+    exec "${BIN_DIR}/phx-test" "$@"
+    ;;
+  health|healthcheck)
+    exec "${BIN_DIR}/phx-healthcheck" "$@"
+    ;;
+  top)
+    exec "${BIN_DIR}/phx-top" "$@"
+    ;;
+  o11y|observability|observability-check)
+    exec "${BIN_DIR}/phx-observability-check" "$@"
+    ;;
+  dock)
+    exec "${BIN_DIR}/phx-dock" "$@"
+    ;;
+
+  # Tournament & Network
+  tournament)
+    SUBCMD="${1:-check}"
+    if [[ $# -gt 0 ]]; then shift; fi
+    case "$SUBCMD" in
+      check)
+        exec "${BIN_DIR}/phx-tournament-check" "$@"
+        ;;
+      top)
+        exec "${BIN_DIR}/phx-tournament-top" "$@"
+        ;;
+      ports)
+        exec "${BIN_DIR}/phx-tournament-ports" "$@"
+        ;;
+      -h|--help)
+        echo "Usage: phx tournament {check|top|ports} [args]"
+        exit 0
+        ;;
+      *)
+        echo "Unknown tournament command: $SUBCMD (expected check, top, ports)" >&2
+        exit 1
+        ;;
+    esac
+    ;;
+
+  # Analytics & Datalake
+  datalake)
+    exec "${BIN_DIR}/phx-datalake" "$@"
+    ;;
+  docs|docs-library)
+    exec "${BIN_DIR}/phx-docs-library" "$@"
+    ;;
+  gource)
+    exec "${BIN_DIR}/phx-gource" "$@"
+    ;;
+
+  # Demo & Cockpit
+  demo|demo-ctl)
+    exec "${BIN_DIR}/phx-demo-ctl" "$@"
+    ;;
+  swiftbar)
+    exec "${BIN_DIR}/phx-swiftbar" "$@"
+    ;;
+
+  # Agent & Context Layer
+  guide)
+    exec pnpm exec tsx "${REPO_ROOT}/scripts/phx/guide.ts" "$@"
+    ;;
+  capabilities)
+    exec pnpm exec tsx "${REPO_ROOT}/scripts/phx/capabilities.ts" "$@"
+    ;;
+  ctx)
+    exec pnpm exec tsx "${REPO_ROOT}/scripts/phx/ctx.ts" "$@"
+    ;;
+
+  # Dynamic plugin fallback: phx <foo> -> bin/phx-<foo>
   *)
-    echo "Usage: phx {guide|capabilities|ctx} [args]"
-    echo "Run 'phx --help' for more info."
-    exit 1
+    if [[ -x "${BIN_DIR}/phx-${CMD}" ]]; then
+      exec "${BIN_DIR}/phx-${CMD}" "$@"
+    else
+      echo "Unknown command: phx $CMD" >&2
+      echo "Run 'phx --help' for available commands." >&2
+      exit 1
+    fi
     ;;
 esac

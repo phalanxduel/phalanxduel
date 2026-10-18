@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+"""
+Phalanx Duel Datalake CLI.
+Query, build, and inspect the multi-repository engineering datalake.
+"""
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+CURRENT_DIR = Path(__file__).resolve().parent
+LAKE_ROOT = CURRENT_DIR.parent
+GAME_ROOT = LAKE_ROOT.parent
+
+# Add LAKE_ROOT to sys.path
+sys.path.insert(0, str(LAKE_ROOT))
+
+from pipeline.lake_builder import build_datalake
+
+DUCKDB_PATH = LAKE_ROOT / "data" / "gold" / "phalanx_datalake.duckdb"
+REPORT_PATH = LAKE_ROOT / "reports" / "DATALAKE_REPORT.md"
+CATALOG_PATH = LAKE_ROOT / "data" / "gold" / "datalake_catalog.json"
+
+def ensure_lake_exists() -> None:
+    if not DUCKDB_PATH.exists():
+        print("⚠️ Datalake database not found. Building datalake first...\n")
+        build_datalake()
+
+def cmd_build(args):
+    print("🏗️ Building Phalanx Duel Datalake...")
+    build_datalake()
+
+def cmd_query(args):
+    ensure_lake_exists()
+    import duckdb
+
+    query = args.sql
+    con = duckdb.connect(str(DUCKDB_PATH), read_only=True)
+    try:
+        rel = con.sql(query)
+        if args.json:
+            rows = rel.fetchall()
+            cols = [desc[0] for desc in rel.description]
+            result = [dict(zip(cols, row)) for row in rows]
+            print(json.dumps(result, indent=2, default=str))
+        elif args.csv:
+            import io
+            print(rel.df().to_csv(index=False))
+        else:
+            rel.show()
+    except Exception as e:
+        print(f"❌ Query error: {e}", file=sys.stderr)
+        sys.exit(1)
+    finally:
+        con.close()
+
+def cmd_tables(args):
+    ensure_lake_exists()
+    import duckdb
+    con = duckdb.connect(str(DUCKDB_PATH), read_only=True)
+    print("\n📊 Phalanx Duel Datalake Tables & Views:\n")
+    con.sql("SHOW TABLES").show()
+    con.close()
+
+def cmd_summary(args):
+    ensure_lake_exists()
+    if CATALOG_PATH.exists():
+        data = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
+        print("\n📈 Phalanx Duel Datalake Summary KPIs:")
+        print(f"  • Total Repositories : {data.get('total_repos')}")
+        print(f"  • Total Commits      : {data.get('total_commits'):,}")
+        print(f"  • Unique Authors     : {data.get('total_unique_authors')}")
+        print(f"  • Historical Span    : {data.get('earliest_commit')} to {data.get('latest_commit')}")
+        print(f"  • Total Lines Added  : +{data.get('total_lines_inserted'):,}")
+        print(f"  • Total Lines Deleted: -{data.get('total_lines_deleted'):,}")
+        print(f"  • Last Built At      : {data.get('built_at')}")
+        print(f"  • Build Duration     : {data.get('build_duration_sec')}s\n")
+    else:
+        cmd_query(argparse.Namespace(sql="SELECT * FROM gold_org_summary", json=False, csv=False))
+
+def cmd_report(args):
+    if REPORT_PATH.exists():
+        print(REPORT_PATH.read_text(encoding="utf-8"))
+    else:
+        ensure_lake_exists()
+        if REPORT_PATH.exists():
+            print(REPORT_PATH.read_text(encoding="utf-8"))
+
+def cmd_shell(args):
+    ensure_lake_exists()
+    duckdb_bin = "/opt/homebrew/bin/duckdb"
+    if not Path(duckdb_bin).exists():
+        duckdb_bin = "duckdb"
+    cmd = [duckdb_bin, "-dark-mode", str(DUCKDB_PATH)]
+    try:
+        subprocess.run(cmd)
+    except KeyboardInterrupt:
+        pass
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="phx-datalake",
+        description="Phalanx Duel Multi-Repository Datalake CLI",
+    )
+    subparsers = parser.add_subparsers(dest="command", help="Subcommand to execute")
+
+    # build
+    parser_build = subparsers.add_parser("build", help="Extract and build Bronze/Silver/Gold datalake")
+
+    # query
+    parser_query = subparsers.add_parser("query", help="Execute SQL against the datalake")
+    parser_query.add_argument("sql", help="SQL query string")
+    parser_query.add_argument("--json", action="store_true", help="Output as JSON array")
+    parser_query.add_argument("--csv", action="store_true", help="Output as CSV")
+
+    # tables
+    parser_tables = subparsers.add_parser("tables", help="List all tables and views in the datalake")
+
+    # summary
+    parser_summary = subparsers.add_parser("summary", help="Display top-level summary KPIs")
+
+    # report
+    parser_report = subparsers.add_parser("report", help="Display full Markdown analytical report")
+
+    # shell
+    parser_shell = subparsers.add_parser("shell", help="Open interactive DuckDB shell")
+
+    args = parser.parse_args()
+    if not args.command:
+        parser.print_help()
+        sys.exit(0)
+
+    dispatch = {
+        "build": cmd_build,
+        "query": cmd_query,
+        "tables": cmd_tables,
+        "summary": cmd_summary,
+        "report": cmd_report,
+        "shell": cmd_shell,
+    }
+
+    dispatch[args.command](args)
+
+if __name__ == "__main__":
+    main()

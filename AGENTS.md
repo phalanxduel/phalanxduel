@@ -61,6 +61,12 @@ related:
          and Docker Build and Push (pushed to GHCR).
        - Extracted codebase AST into global Graphify index (+14,554 nodes) and generated
          interactive HTML and D3 tree visualizations.
+       - Constructed the multi-repository Medallion Engineering Datalake (`datalake/`, `bin/phx-datalake`,
+         `pnpm datalake:*`), ingesting 3,151 commits, 56k file edits, 169 tasks, and 31 ADRs across
+         8 organization repositories into DuckDB and Parquet tables.
+       - Refactored and unified platform tooling into `bin/phx` and `bin/phx-ctl` (inspired by
+         `zdots-ctl` and `kubectl`), inverting canonical implementations to `bin/phx-*` with backward-compatible
+         shims in `bin/*`.
        - Production deployment note: GHCR image build succeeded and pushed to Fly registry;
          release creation halted by Fly.io (status 403 overdue invoices on account
          mike-hall-120). Live production apps remain healthy on release 445-1.

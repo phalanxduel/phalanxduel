@@ -1,10 +1,14 @@
 # Phalanx Duel local tooling
 
-The executable tooling follows the `phx-*` command naming convention used by
-zdots. The canonical commands are `phx-demo-ctl`, `phx-services`, `phx-dock`,
-`phx-check`, `phx-test`, `phx-install-localhost`, and `phx-setup`; the shorter
-The `phx-*` names are the only supported entrypoints; use `bin/phx-demo-ctl`
-for the local demo controller.
+The executable tooling follows the canonical `phx-*` command namespace and unified control plane model inspired by `zdots-ctl` and `kubectl`.
+
+The primary entrypoint is `bin/phx` (or `bin/phx-ctl`), which routes to all platform commands:
+
+```bash
+phx <command> [subcommand] [options]
+```
+
+Every tool also exists as an individual canonical executable under `bin/phx-*` (`phx-services`, `phx-check`, `phx-test`, `phx-dock`, `phx-top`, `phx-datalake`, etc.). Short names (`bin/check`, `bin/test`, `bin/services`) are lightweight shims forwarding to the canonical implementation.
 
 Shell completions live in [`completions/`](../completions/README.md).
 
