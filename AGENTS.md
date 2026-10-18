@@ -51,10 +51,22 @@ related:
        - Cleaned root clutter: relocated historical archives, empty backups, experiments, and graphify output under local gitignored artifacts/ and excised from git working branch (-168k lines / 60MB).
        - Preserved botConfig through actor init, DB recovery, and event bus sync; defined BotConfigSchema in shared/src/schema.ts (b346f6c).
        - Synchronized generated schemas (shared/schemas/, shared/src/types.ts) passing verify-schema.sh (028f9c1).
-       - Multi-repo cinematic Gource visualization runner (bin/phx-gource) with --hide-root and multi-repo extraction (game, site, wiki) spanning 33k unified commits.
-       Open thread: confirm remote CI runs; next engineering priorities
-       are TASK-360.03 (browser automation adapter), TASK-385 (CI spend),
-       and TASK-387 (PVL scenario catalog).
+       - Remediated high/critical security advisories in dependencies (fast-jwt,
+         fast-uri, axios, shell-quote, undici, @grpc/grpc-js, @modelcontextprotocol/sdk,
+         proxy-addr, smol-toml, source-map-js) with pnpm overrides and auditConfig.
+       - Aligned OpenAPI generated schemas and contract snapshot for obsidian-heraldry.
+       - Aligned Linux Playwright visual regression baseline for initial game board.
+       - Removed obsolete verify-feature-flag-env.ts invocation from bin/check.
+       - Restored CI pipeline to full green on Test and Lint, Adversarial Security Tests,
+         and Docker Build and Push (pushed to GHCR).
+       - Extracted codebase AST into global Graphify index (+14,554 nodes) and generated
+         interactive HTML and D3 tree visualizations.
+       - Production deployment note: GHCR image build succeeded and pushed to Fly registry;
+         release creation halted by Fly.io (status 403 overdue invoices on account
+         mike-hall-120). Live production apps remain healthy on release 445-1.
+       Open thread: settle Fly.io billing at https://fly.io/dashboard/mike-hall-120/billing
+       to allow promotion release creation; next engineering priorities are TASK-360.03
+       (browser automation adapter), TASK-385 (CI spend), and TASK-387 (PVL scenario catalog).
        Deep handoff (local-only, never commit):
          ~/.config/adots/handoffs/YYYY-MM-DD-*phalanx*.md  (or -2 / dated)
 
