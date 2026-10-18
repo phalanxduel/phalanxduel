@@ -1,3 +1,1 @@
-#!/usr/bin/env bash
-# Backward-compatibility shim; canonical tool is bin/phx-check
-exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/phx-check" "$@"
+phx

@@ -1,3 +1,1 @@
-#!/usr/bin/env bash
-# Backward-compatibility shim; canonical tool is bin/phx-tournament-ports
-exec "$(dirname "$0")/phx-tournament-ports" "$@"
+phx

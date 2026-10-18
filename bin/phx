@@ -1,21 +1,40 @@
 #!/usr/bin/env bash
-# phx — Phalanx Duel Unified Control Plane
+# phx — Phalanx Duel Unified Control Plane & Multicall CLI
 # Inspired by kubectl and zdots-ctl.
 set -euo pipefail
 
 BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${BIN_DIR}/.." && pwd)"
 
+# Multicall entrypoint detection (like BusyBox or Git)
+CALLER="$(basename "$0")"
+
+# If invoked as a symlink or alias other than 'phx' or 'phx-ctl'
+if [[ "$CALLER" != "phx" && "$CALLER" != "phx-ctl" ]]; then
+  CMD="${CALLER#phx-}"
+  case "$CMD" in
+    tournament-network-check) CMD="tournament-check" ;;
+    tournament-network-top) CMD="tournament-top" ;;
+    tournament-ports-check) CMD="tournament-ports" ;;
+    health) CMD="healthcheck" ;;
+  esac
+  set -- "$CMD" "$@"
+fi
+
 show_help() {
   cat << 'EOF'
 Usage: phx <command> [subcommand] [options]
+       phx-ctl <command> [options]
 
 Phalanx Duel Unified Control Plane (inspired by zdots-ctl & kubectl)
 
 Platform & Services:
-  services [cmd]    Manage local services (start, stop, restart, status, logs)
+  services [cmd]    Manage local background services (start, stop, restart, status, logs)
   up                Start all services in background tmux session
   down              Stop all background services
+  restart           Restart all background services
+  status            Show status of running background services
+  logs [service]    Tail logs for background services
   setup             Automate environment onboarding from git clone to dev
   install-localhost Install project-owned nginx vhost for local domains
   fix               Run workspace repository fixers and deduplication
@@ -24,9 +43,10 @@ Diagnostics & Verification:
   check [args]      Run unified build, lint, typecheck, and test gate
   test [args]       Run standardized test suites (vitest, playwright, unit)
   health [args]     Probe local or staging/production API & DB health
-  top [args]        Live game runtime & analytics monitor
+  top [args]        Live game runtime & analytics monitor (interactive top)
+  doctor            Audit system dependencies, runtimes, and local services
   o11y [args]       Verify OpenTelemetry, Jaeger, and OpenObserve routes
-  dock [cmd]        Execute command inside isolated Docker container
+  dock [cmd]        Execute command inside isolated Docker automation container
 
 Tournament & Network:
   tournament check  Inspect LAN interface, firewall, and port accessibility
@@ -47,8 +67,104 @@ Agent & Context (MCP):
   capabilities      Show agent capability vectors
   ctx               Context extraction tool for AI agents
 
+Platform Meta:
+  version           Display platform version, build ID, and git commit
+  completion [sh]   Generate shell completion script (bash or zsh)
+
 Run 'phx <command> --help' for command-specific options.
 EOF
+}
+
+cmd_doctor() {
+  echo "🩺 Checking Phalanx Duel system dependencies and environment..."
+  echo ""
+  echo -n "  • Node.js      : "
+  command -v node >/dev/null && node --version || echo "MISSING"
+  echo -n "  • pnpm         : "
+  command -v pnpm >/dev/null && pnpm --version || echo "MISSING"
+  echo -n "  • Python 3     : "
+  command -v python3 >/dev/null && python3 --version || echo "MISSING"
+  echo -n "  • DuckDB       : "
+  command -v duckdb >/dev/null && duckdb --version 2>/dev/null | head -n 1 || echo "OPTIONAL / NOT ON PATH"
+  echo -n "  • Docker       : "
+  docker info >/dev/null 2>&1 && echo "RUNNING" || echo "NOT RUNNING (optional for host-native)"
+  echo -n "  • Postgres DB  : "
+  if psql -h 127.0.0.1 -U phalanx_dev -d phalanxduel_development -c '\q' 2>/dev/null; then
+    echo "CONNECTED (phalanxduel_development)"
+  else
+    echo "NOT REACHABLE (run 'phx services start postgres' or start host Postgres)"
+  fi
+  echo -n "  • Game Server  : "
+  curl -s http://127.0.0.1:3001/health >/dev/null 2>&1 && echo "ONLINE (port 3001)" || echo "OFFLINE"
+  echo -n "  • Web Client   : "
+  if curl -s http://127.0.0.1:5173 >/dev/null 2>&1 || curl -s http://127.0.0.1:3000 >/dev/null 2>&1; then
+    echo "ONLINE"
+  else
+    echo "OFFLINE"
+  fi
+  echo -n "  • OTel Col     : "
+  curl -s http://127.0.0.1:4318 >/dev/null 2>&1 && echo "LISTENING (port 4318)" || echo "OFFLINE"
+  echo ""
+  echo "✅ Doctor inspection completed."
+}
+
+cmd_version() {
+  local version build_id commit
+  version=$(node -p "require('${REPO_ROOT}/package.json').version" 2>/dev/null || echo "1.5.0")
+  build_id=$(node -p "require('${REPO_ROOT}/package.json').buildNumber" 2>/dev/null || echo "3")
+  commit=$(git -C "${REPO_ROOT}" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+  echo "Phalanx Duel Control Plane (phx)"
+  echo "  Version      : v${version} (build ${build_id})"
+  echo "  Commit       : ${commit}"
+  echo "  Engine Stack : Pure TypeScript Deterministic Engine"
+  echo "  Observability: OpenTelemetry -> OpenObserve + Jaeger"
+}
+
+cmd_completion() {
+  local target_shell="${1:-zsh}"
+  if [[ "$target_shell" == "zsh" ]]; then
+    cat << 'EOF'
+#compdef phx phx-ctl
+
+_phx() {
+  local -a commands
+  commands=(
+    'up:Start background services'
+    'down:Stop background services'
+    'restart:Restart background services'
+    'status:Check services status'
+    'logs:Tail service logs'
+    'services:Service manager'
+    'check:Run build, lint, typecheck, test gate'
+    'test:Run test suites'
+    'health:Probe API & DB health'
+    'top:Live game runtime monitor'
+    'doctor:Environment health and dependency audit'
+    'version:Display platform version & build'
+    'tournament:Tournament network diagnostics'
+    'datalake:Query and build DuckDB datalake'
+    'docs:Architecture & documentation library'
+    'gource:Multi-repo cinematic 3D git visualization'
+    'demo:Demo cockpit launcher'
+    'swiftbar:SwiftBar pulse integration'
+    'guide:Agent documentation guide'
+    'capabilities:Show agent capability vectors'
+    'ctx:Context extraction tool'
+  )
+  _describe 'command' commands
+}
+_phx "$@"
+EOF
+  else
+    cat << 'EOF'
+_phx_completions() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local commands="up down restart status logs services check test health top doctor version tournament datalake docs gource demo swiftbar guide capabilities ctx"
+  COMPREPLY=($(compgen -W "$commands" -- "$cur"))
+}
+complete -F _phx_completions phx phx-ctl
+EOF
+  fi
 }
 
 if [[ $# -eq 0 ]]; then
@@ -59,9 +175,34 @@ fi
 CMD="$1"
 shift || true
 
+# Global alias normalization
+case "$CMD" in
+  svc) CMD="services" ;;
+  tourn) CMD="tournament" ;;
+  data|lake) CMD="datalake" ;;
+  o11y|observability) CMD="observability-check" ;;
+  lib) CMD="docs-library" ;;
+  health) CMD="healthcheck" ;;
+esac
+
 case "$CMD" in
   -h|--help|help)
     show_help
+    exit 0
+    ;;
+
+  version|--version|-v)
+    cmd_version
+    exit 0
+    ;;
+
+  doctor)
+    cmd_doctor
+    exit 0
+    ;;
+
+  completion)
+    cmd_completion "$@"
     exit 0
     ;;
 
@@ -101,13 +242,26 @@ case "$CMD" in
   test)
     exec "${BIN_DIR}/phx-test" "$@"
     ;;
-  health|healthcheck)
-    exec "${BIN_DIR}/phx-healthcheck" "$@"
+  healthcheck)
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+      echo "Usage: phx health [environment|host:port] [--observability]"
+      exit 0
+    fi
+    target="${1:-local}"
+    if [[ "${2:-}" == "--observability" ]]; then
+      node --import tsx "${REPO_ROOT}/scripts/health-check.ts" "$target"
+      exec "${BIN_DIR}/phx-observability-check"
+    fi
+    exec node --import tsx "${REPO_ROOT}/scripts/health-check.ts" "$target"
     ;;
   top)
-    exec "${BIN_DIR}/phx-top" "$@"
+    if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+      echo "Usage: phx top [--mode local|staging|production]"
+      exit 0
+    fi
+    exec node --import tsx "${REPO_ROOT}/scripts/ops/game-top.ts" "$@"
     ;;
-  o11y|observability|observability-check)
+  observability-check)
     exec "${BIN_DIR}/phx-observability-check" "$@"
     ;;
   dock)
@@ -120,13 +274,13 @@ case "$CMD" in
     if [[ $# -gt 0 ]]; then shift; fi
     case "$SUBCMD" in
       check)
-        exec "${BIN_DIR}/phx-tournament-check" "$@"
+        exec node --import tsx "${REPO_ROOT}/scripts/tournament/network-report.ts" "$@"
         ;;
       top)
-        exec "${BIN_DIR}/phx-tournament-top" "$@"
+        exec node --import tsx "${REPO_ROOT}/scripts/tournament/network-monitor.ts" "$@"
         ;;
       ports)
-        exec "${BIN_DIR}/phx-tournament-ports" "$@"
+        exec node --import tsx "${REPO_ROOT}/scripts/tournament/port-inspector.ts" "$@"
         ;;
       -h|--help)
         echo "Usage: phx tournament {check|top|ports} [args]"
@@ -138,16 +292,28 @@ case "$CMD" in
         ;;
     esac
     ;;
+  tournament-check)
+    exec node --import tsx "${REPO_ROOT}/scripts/tournament/network-report.ts" "$@"
+    ;;
+  tournament-top)
+    exec node --import tsx "${REPO_ROOT}/scripts/tournament/network-monitor.ts" "$@"
+    ;;
+  tournament-ports)
+    exec node --import tsx "${REPO_ROOT}/scripts/tournament/port-inspector.ts" "$@"
+    ;;
 
   # Analytics & Datalake
   datalake)
-    exec "${BIN_DIR}/phx-datalake" "$@"
+    exec python3 "${REPO_ROOT}/datalake/bin/phx-datalake" "$@"
     ;;
   docs|docs-library)
-    exec "${BIN_DIR}/phx-docs-library" "$@"
+    if [[ "${1:-}" == "--open" ]]; then
+      (sleep 1 && open "http://localhost:3334") &
+    fi
+    exec node --import tsx "${REPO_ROOT}/scripts/docs/serve-library.ts"
     ;;
   gource)
-    exec "${BIN_DIR}/phx-gource" "$@"
+    exec bash "${REPO_ROOT}/scripts/visual/run-gource.sh" "$@"
     ;;
 
   # Demo & Cockpit
@@ -171,7 +337,7 @@ case "$CMD" in
 
   # Dynamic plugin fallback: phx <foo> -> bin/phx-<foo>
   *)
-    if [[ -x "${BIN_DIR}/phx-${CMD}" ]]; then
+    if [[ -x "${BIN_DIR}/phx-${CMD}" && "${BIN_DIR}/phx-${CMD}" != "${BIN_DIR}/phx" ]]; then
       exec "${BIN_DIR}/phx-${CMD}" "$@"
     else
       echo "Unknown command: phx $CMD" >&2

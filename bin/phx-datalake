@@ -1,6 +1,1 @@
-#!/usr/bin/env bash
-# bin/phx-datalake — Multi-repository engineering datalake for Phalanx Duel.
-set -euo pipefail
-
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-exec python3 "${REPO_ROOT}/datalake/bin/phx-datalake" "$@"
+phx
