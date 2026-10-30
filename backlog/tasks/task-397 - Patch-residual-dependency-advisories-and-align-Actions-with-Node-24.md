@@ -1,11 +1,11 @@
 ---
 id: TASK-397
 title: Patch residual dependency advisories and align Actions with Node 24
-status: In Progress
+status: Verification
 assignee:
   - '@codex'
 created_date: '2026-10-30T20:04:00Z'
-updated_date: '2026-10-30T20:19:00Z'
+updated_date: '2026-10-30T20:33:00Z'
 labels: []
 dependencies: []
 references:
@@ -31,7 +31,7 @@ Clear currently reported low and moderate npm advisories using compatible patche
 - [x] #1 `pnpm audit --audit-level low` reports no untriaged advisories, with any blocked advisory documented and explicitly scoped.
 - [x] #2 GitHub workflow action pins implicated in Node 20 runtime warnings are updated to verified Node 24-compatible releases without changing workflow inputs or deployment behavior.
 - [x] #3 Lockfile is consistent with package manifests and overrides.
-- [ ] #4 Focused validation and the repository quick verification pass; CI results are recorded.
+- [x] #4 Focused validation and the repository quick verification pass; CI results are recorded.
 <!-- AC:END -->
 
 ## Definition of Done
@@ -65,4 +65,19 @@ At task start, `auditConfig` suppressed GHSA-vfj7-8cjw-p6xm / CVE-2026-93687 for
 After the first push, GitHub Dependabot's dependency snapshot identified one additional stale path missed by the npm audit endpoint: brace-expansion 5.0.9 (<5.0.12) through minimatch. Raised the override floor to >=5.0.12 and refreshed/installed the lockfile; `pnpm why brace-expansion` confirms 5.0.12 and a fresh `pnpm audit --audit-level low` remains clean. Final commit and CI verification for this last patch are pending.
 
 After the brace-expansion patch, `pnpm verify:quick` passed build, lint/actionlint, database isolation, typecheck, docs verification, and formatting. The first pushed revision's remote adversarial job passed; its pipeline Test and Lint job was still queued when the final brace-expansion fix was prepared. A fresh pipeline run for the final commit will provide authoritative remote verification.
+
+Final pushed revision `887912bc` CI: Dependency Audit and GHA Pinning Audit passed; Test and Lint passed in 6m39s; Adversarial Security Tests passed; GHCR Build and Push passed. Production promotion alone failed at Fly release creation due the account overdue-invoice 403, so no Fly release was created. The current GitHub dependency graph SBOM reports brace-expansion 5.0.12 (the first patched version) and `pnpm audit --audit-level low` reports no known vulnerabilities. Dependabot alert #249 remains open with its 2026-10-18 update timestamp despite the graph reporting the patched version; treating it as stale metadata, not dismissing it manually. Game and admin readiness rechecked after CI and both returned ready/database OK. Task is ready for review.
 <!-- SECTION:NOTES:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: Codex
+created: 2026-10-30T20:33:00Z
+
+---
+
+Verification note: CI checks for dependency audit and action SHA pinning passed on `887912bc`; no package audit findings remain and the dependency graph reports patched brace-expansion 5.0.12. Dependabot alert #249 remains open against stale metadata and was not manually dismissed. The unrelated production promotion step failed due Fly billing; no release was created.
+
+---
+<!-- COMMENTS:END -->
