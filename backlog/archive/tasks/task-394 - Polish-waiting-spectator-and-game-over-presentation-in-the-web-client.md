@@ -1,5 +1,5 @@
 ---
-id: TASK-175
+id: TASK-394
 title: 'Polish waiting, spectator, and game-over presentation in the web client'
 status: To Do
 assignee: []

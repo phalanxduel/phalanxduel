@@ -1,5 +1,5 @@
 ---
-id: TASK-177
+id: TASK-396
 title: 'Workstream: Browser Game UI/UX Polish'
 status: To Do
 assignee: []

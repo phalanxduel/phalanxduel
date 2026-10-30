@@ -1,5 +1,5 @@
 ---
-id: TASK-176
+id: TASK-395
 title: Polish browser feedback and reconnect affordances in the web client
 status: To Do
 assignee: []
