@@ -256,7 +256,7 @@
       "axios": ">=1.20.0",
       "basic-ftp": ">=6.2.1",
       "body-parser": ">=2.4.0",
-      "brace-expansion": ">=5.0.7",
+      "brace-expansion": ">=5.0.12",
       "browserslist": ">=4.28.7",
       "esbuild@<=0.28.0": "0.28.1",
       "fast-jwt": ">=6.3.1",
