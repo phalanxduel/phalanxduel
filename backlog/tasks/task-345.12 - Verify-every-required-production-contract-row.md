@@ -1,11 +1,11 @@
 ---
 id: TASK-345.12
 title: Verify every required production contract row
-status: Verification
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-10-30T21:16:00Z'
-updated_date: '2026-10-30T21:19:00Z'
+updated_date: '2026-10-30T21:36:00Z'
 labels: []
 dependencies: []
 documentation:
@@ -34,10 +34,10 @@ The production support contract classifies the immutable release, rollback, and 
 <!-- DOD:BEGIN -->
 - [x] #1 Code builds without errors (pnpm build)
 - [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
-- [ ] #3 All unit and integration tests pass (pnpm test:run:all)
-- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
-- [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
-- [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
+- [x] #3 All unit and integration tests pass (pnpm test:run:all)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
+- [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
 
 ## Implementation Plan
@@ -55,6 +55,10 @@ The production support contract classifies the immutable release, rollback, and 
 Context Hunter L1 micro-brief: the nearest pattern is the explicit OPTIONAL_IDS/RETIRED_IDS inventory and classification loop in scripts/ci/verify-production-contract.ts; no independent parser test exists. The contract's Required rows are 001-010 and 012. Main risk was another silent count/list omission, so the verifier now compares its explicit expected IDs with IDs parsed from Required matrix rows.
 
 Local validation: pnpm verify:production-contract passes and reports 11 required subsystems; pnpm exec prettier --check scripts/ci/verify-production-contract.ts passes; pnpm verify:quick passes build, lint/actionlint, DB isolation, typecheck, docs validation, Markdown lint, and formatting. git diff --check passes. Awaiting remote CI for this commit.
+
+Hosted pipeline 41130866249: Test and Lint, Adversarial Security Tests, and Build and Push passed; SDK publication skipped. Promote: Production failed at the known Fly billing gate. No production release was created.
+
+Additional validation passed: schema:gen produced 8 schemas/81 types and schema:check reported up to date; docs:artifacts completed through with-tooling-postgres.sh without changing tracked files; rules:check passed FSM/event/rule checks and all 2,355,388 combat reference cases.
 <!-- SECTION:NOTES:END -->
 
 ## Comments
@@ -67,4 +71,18 @@ created: 2026-10-30T21:19:00Z
 The production-contract verifier now explicitly covers PD-PROD-012 and asserts its required-ID inventory exactly matches Required rows parsed from docs/ops/production-support-contract.md. Local focused and quick checks pass. No production config changed; production OTel/MCP remain blocked on Fly/account operations.
 
 ---
+
+created: 2026-10-30T21:36:00Z
+
+---
+
+Final verification: hosted run 41130866249 passed Test and Lint, Adversarial Security Tests, and Build and Push. Production promotion alone failed at Fly. Local production-contract verifier covers all 11 Required rows and the repository quick, schema, documentation artifact, and rules checks pass.
+
+---
 <!-- COMMENTS:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Updated the production-contract verifier to cover all 11 required rows, including PD-PROD-012, and compare the expected inventory against Required rows parsed from the canonical contract. Focused verification, quick checks, schema/doc/rules validation, and hosted Test and Lint, Adversarial Security, and Build and Push passed. Production promotion remains blocked by the known Fly billing 403; no production configuration changed.
+<!-- SECTION:FINAL_SUMMARY:END -->
