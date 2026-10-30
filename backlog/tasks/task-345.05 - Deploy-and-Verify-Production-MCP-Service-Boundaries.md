@@ -3,8 +3,8 @@ id: TASK-345.05
 title: Deploy and Verify Production MCP Service Boundaries
 status: To Do
 assignee: []
-created_date: '2026-07-14 00:17'
-updated_date: '2026-07-14 00:17'
+created_date: 2026-07-14 00:17
+updated_date: '2026-10-30T13:43:00Z'
 labels:
   - production
   - mcp
@@ -46,3 +46,16 @@ Deliver the documented agentic production surface or formally retire it from the
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: Codex
+created: 2026-10-30T13:43:00Z
+
+---
+
+2026-10-30 operations audit: the public MCP health hostname failed DNS resolution (`curl` exit 6). Read-only Fly app status inspection could not proceed because the Fly CLI session has expired. This task remains To Do; resolve the deployment/access blocker through the approved Fly account path, then verify public tool inventory and private admin boundary against docs/ops/production-support-contract.md. No credentials were accessed or changed.
+
+---
+<!-- COMMENTS:END -->

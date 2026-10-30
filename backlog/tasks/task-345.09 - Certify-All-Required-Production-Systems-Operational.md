@@ -1,10 +1,10 @@
 ---
 id: TASK-345.09
 title: Certify All Required Production Systems Operational
-status: Done
+status: To Do
 assignee: []
-created_date: '2026-07-14 00:17'
-updated_date: '2026-07-22 14:36'
+created_date: 2026-07-14 00:17
+updated_date: '2026-10-30T13:43:00Z'
 labels:
   - production
   - release
@@ -45,3 +45,25 @@ Run the final operational certification after all remediation slices land. Produ
 - [ ] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [ ] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: Codex
+created: 2026-10-30T13:43:00Z
+
+---
+
+2026-10-30 operations audit: the production support contract still records PD-PROD-006 (OTel) as FAIL and requires all 14 required subsystems to pass before whole-system certification. The required MCP endpoint `https://phalanxduel-mcp-public.fly.dev/health` could not resolve during this audit; Fly app status inspection was blocked because the Fly CLI session has expired. Production game and dedicated admin `/health` and `/ready` passed on release 445-1; production site returned 200. The pipeline for the current source passed Test and Lint, Adversarial Security Tests, and Build and Push, but production promotion failed with Fly.io 403 overdue invoices. The task's dependency tree also contains multiple unfinished prerequisites. Reopening this certification task to To Do; no certification criteria were demonstrated. See docs/ops/production-support-contract.md and TASK-345.05.
+
+---
+
+author: Codex
+created: 2026-10-30T13:43:00Z
+
+---
+
+Correction to the audit note above: the support matrix currently has 11 Required rows (PD-PROD-001 through PD-PROD-010, plus PD-PROD-012), not 14. The certification gap and task status are unchanged.
+
+---
+<!-- COMMENTS:END -->

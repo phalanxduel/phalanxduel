@@ -1,11 +1,11 @@
 ---
 id: TASK-384
 title: Remediate CI dependency audit vulnerabilities
-status: In Progress
+status: Done
 assignee:
   - '@codex'
 created_date: 2026-08-30 22:59
-updated_date: '2026-10-30T09:43:00Z'
+updated_date: '2026-10-30T13:42:00Z'
 labels:
   - security
   - dependencies
@@ -42,7 +42,7 @@ Resolve the dependency vulnerabilities currently failing the GitHub Actions audi
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 CI dependency audit passes at --audit-level=high
+- [x] #1 CI dependency audit passes at --audit-level=high
 - [x] #2 find-my-way, @fastify/static, undici, fast-uri, js-yaml, nanoid, postcss, and all other reported high-severity paths are upgraded or explicitly remediated
 - [x] #3 Full repository verification and affected package tests pass
 - [x] #4 Lockfile and dependency documentation remain consistent
@@ -53,7 +53,7 @@ Resolve the dependency vulnerabilities currently failing the GitHub Actions audi
 - [x] #1 Code builds without errors (pnpm build)
 - [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
 - [x] #3 All unit and integration tests pass (pnpm test:run:all)
-- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
 - [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
@@ -85,4 +85,12 @@ Finalization: all four acceptance criteria are supported by remote audit workflo
 2026-10-30 health follow-up: GitHub Dependabot initially showed six high alerts (Vite 8.1.2, markdown-it 14.3.0, follow-redirects 1.16.0, plus a stale direct undici declaration). Updated constraints and direct undici to 7.30.1. Registry audit then exposed two current high paths: Zod <4.6.6 and body-parser <2.4.0; raised overrides to patched ranges. Resolved versions: Vite 8.3.5, markdown-it 15.0.3, follow-redirects 1.16.2, undici 7.30.1, Zod 4.6.7. Registry audit: 32 findings, 0 high/critical (4 low, 28 moderate).
 
 Verification after security updates: pnpm check passed quick build/lint/typecheck/docs plus 1,280 tests (163 shared, 422 engine, 401 server, 4 migrations, 267 client, 15 admin, 8 MCP). pnpm rules:check passed FSM consistency, event-log coverage, evidence for 71 rules, and exhaustive combat reference verification (2,355,388 cases). pnpm docs:artifacts completed under with-tooling-postgres.sh; only KNIP_REPORT.md changed. Registry pnpm audit --audit-level high exited 0 with 0 high/critical (32 total: 4 low, 28 moderate). OpenAPI snapshot and 8 shared schema artifacts regenerated; updated Zod date-time pattern matches runtime z.iso.datetime() (without seconds rejected, with seconds accepted).
+
+Remote CI evidence: https://github.com/phalanxduel/phalanxduel/actions/runs/41035729412 — Test and Lint success (dependency audit success), Adversarial Security Tests success, Build and Push success; Promote: Production failed with Fly.io 403 overdue invoices. Dependabot now reports no open high-severity alerts.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Updated package metadata and lockfile to patched Vite, markdown-it, follow-redirects, undici, Zod, and body-parser versions, eliminating all high/critical registry audit findings. Regenerated shared JSON schemas, OpenAPI snapshot, and the affected docs artifact. Local `pnpm check` passed with 1,280 tests; `pnpm rules:check`, schema consistency, docs artifacts, and registry audit passed. GitHub run 41035729412 passed Test and Lint (including dependency audit), Adversarial Security Tests, and Build and Push. Production promotion failed with Fly.io HTTP 403 due overdue invoices; existing production remains healthy on build 445-1. 32 low/moderate advisories remain.
+<!-- SECTION:FINAL_SUMMARY:END -->
