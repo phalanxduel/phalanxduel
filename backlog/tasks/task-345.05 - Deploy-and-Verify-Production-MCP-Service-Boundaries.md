@@ -4,7 +4,7 @@ title: Deploy and Verify Production MCP Service Boundaries
 status: To Do
 assignee: []
 created_date: 2026-07-14 00:17
-updated_date: '2026-10-30T13:43:00Z'
+updated_date: '2026-10-30T21:15:00Z'
 labels:
   - production
   - mcp
@@ -56,6 +56,14 @@ created: 2026-10-30T13:43:00Z
 ---
 
 2026-10-30 operations audit: the public MCP health hostname failed DNS resolution (`curl` exit 6). Read-only Fly app status inspection could not proceed because the Fly CLI session has expired. This task remains To Do; resolve the deployment/access blocker through the approved Fly account path, then verify public tool inventory and private admin boundary against docs/ops/production-support-contract.md. No credentials were accessed or changed.
+
+---
+
+created: 2026-10-30T21:15:00Z
+
+---
+
+2026-10-30 recheck: the support contract's canonical public MCP Fly hostname phalanxduel-mcp-public.fly.dev failed DNS resolution for /health and /mcp probes (curl exit 6). The unrelated mcp.phalanxduel.com alias is not present in active repo configuration. Fly CLI/account access and deployment remain unavailable due the billing block; no credentials were accessed and no service configuration was mutated.
 
 ---
 <!-- COMMENTS:END -->

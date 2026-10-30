@@ -4,8 +4,8 @@ title: Repair Production OTel Collector Topology
 status: To Do
 assignee:
   - '@codex'
-created_date: '2026-07-14 00:17'
-updated_date: '2026-07-14 00:52'
+created_date: 2026-07-14 00:17
+updated_date: '2026-10-30T21:15:00Z'
 labels:
   - production
   - observability
@@ -14,8 +14,8 @@ dependencies:
   - TASK-345.04
   - TASK-345.11
 references:
-  - 'https://fly.io/docs/launch/processes/'
-  - 'https://fly.io/docs/networking/private-networking/'
+  - https://fly.io/docs/launch/processes/
+  - https://fly.io/docs/networking/private-networking/
 documentation:
   - fly.production.toml
   - otel-collector.fly.yaml
@@ -57,6 +57,18 @@ Replace the invalid localhost assumption between separate Fly Machines with a su
 <!-- SECTION:NOTES:BEGIN -->
 Paused by explicit user direction on 2026-07-14 in favor of a stable week-end production posture. Live validation found two independent blockers: collector v0.153.0 rejects the deprecated `logging` exporter and the configured LGTM upstream is unreachable from Fly. TASK-345.11 contains the deliberate fail-open containment; resume this repair only after that stable baseline is complete and an accessible centralized LGTM upstream is confirmed.
 <!-- SECTION:NOTES:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+created: 2026-10-30T21:15:00Z
+
+---
+
+2026-10-30 recheck: local zdots OTel collector, OpenObserve, and Jaeger health are green, but production reports observability.otel_active=false under the deliberate containment configuration. No live Fly collector/exporter topology was changed. Restoring PD-PROD-006 still requires validating the production collector and reachable authenticated upstream, then a Fly deployment and correlated production trace proof; the current overdue-invoice 403 prevents that deployment.
+
+---
+<!-- COMMENTS:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->

@@ -27,14 +27,24 @@ const PRODUCTION_ORIGIN = 'https://play.phalanxduel.com';
 const PRODUCTION_WS_HOST = 'play.phalanxduel.com';
 const PRODUCTION_APP = 'phalanxduel-production';
 const ADMIN_APP = 'phalanxduel-admin';
-const REQUIRED_IDS = Array.from(
-  { length: 10 },
-  (_, index) => `PD-PROD-${String(index + 1).padStart(3, '0')}`,
-);
+const REQUIRED_IDS = [
+  ...Array.from({ length: 10 }, (_, index) => `PD-PROD-${String(index + 1).padStart(3, '0')}`),
+  'PD-PROD-012',
+];
 const OPTIONAL_IDS = ['PD-PROD-011', 'PD-PROD-013'];
 const RETIRED_IDS = ['PD-PROD-014', 'PD-PROD-015', 'PD-PROD-016'];
 
+const CONTRACT_REQUIRED_IDS = [
+  ...contract.matchAll(/^\|\s*`(PD-PROD-\d{3})`\s*\|\s*Required\s*\|/gmu),
+].map(([, id]) => id);
+
 console.log('==> Verifying canonical production support contract...');
+
+assert.deepEqual(
+  REQUIRED_IDS,
+  CONTRACT_REQUIRED_IDS,
+  'Verifier required subsystem inventory must exactly match the support contract',
+);
 
 for (const [classification, ids] of [
   ['Required', REQUIRED_IDS],

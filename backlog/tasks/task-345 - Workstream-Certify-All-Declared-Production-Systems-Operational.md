@@ -1,11 +1,11 @@
 ---
 id: TASK-345
 title: 'Workstream: Certify All Declared Production Systems Operational'
-status: Done
+status: To Do
 assignee:
   - codex
-created_date: '2026-07-14 00:16'
-updated_date: '2026-07-22 14:36'
+created_date: 2026-07-14 00:16
+updated_date: '2026-10-30T21:15:00Z'
 labels:
   - production
   - operations
@@ -13,9 +13,9 @@ labels:
   - reliability
 dependencies: []
 references:
-  - 'https://fly.io/docs/launch/processes/'
-  - 'https://fly.io/docs/networking/private-networking/'
-  - 'https://fly.io/docs/apps/app-availability/'
+  - https://fly.io/docs/launch/processes/
+  - https://fly.io/docs/networking/private-networking/
+  - https://fly.io/docs/apps/app-availability/
 documentation:
   - docs/ops/runbook.md
   - docs/ops/deployment-checklist.md
@@ -58,6 +58,18 @@ Approved workstream sequence:
 
 Execution is sequential where dependencies require it. No production mutations occur without locally verified configuration/code and an explicit operator-safe release step. Owners: Codex begins TASK-345.04; remaining subtasks are unassigned until active.
 <!-- SECTION:PLAN:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+created: 2026-10-30T21:15:00Z
+
+---
+
+2026-10-30 production recheck: game and admin /health and /ready returned HTTP 200; readiness was database=ok. Local zdots OTel collector, OpenObserve, and Jaeger report healthy. Production game still reports observability.otel_active=false under the documented containment posture. The support contract's canonical public MCP host (phalanxduel-mcp-public.fly.dev) fails DNS resolution. The latest production pipeline could not promote because Fly returned 403 for overdue invoices. Reopening parent from stale Done to To Do: required certification criteria are unchecked and child tasks remain To Do; no whole-system certification is claimed.
+
+---
+<!-- COMMENTS:END -->
 
 ## Definition of Done
 <!-- DOD:BEGIN -->
