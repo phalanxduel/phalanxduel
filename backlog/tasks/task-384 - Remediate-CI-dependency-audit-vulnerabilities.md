@@ -1,26 +1,34 @@
 ---
 id: TASK-384
 title: Remediate CI dependency audit vulnerabilities
-status: Done
+status: In Progress
 assignee:
   - '@codex'
-created_date: '2026-08-30 22:59'
-updated_date: '2026-08-31 06:35'
+created_date: 2026-08-30 22:59
+updated_date: '2026-10-30T09:43:00Z'
 labels:
   - security
   - dependencies
   - ci
 dependencies: []
 references:
-  - 'https://github.com/phalanxduel/phalanxduel/security/dependabot'
+  - https://github.com/phalanxduel/phalanxduel/security/dependabot
 documentation:
   - docs/development.md
   - docs/testing.md
 modified_files:
   - package.json
-  - admin/package.json
-  - server/package.json
   - pnpm-lock.yaml
+  - shared/schemas/client-messages.schema.json
+  - shared/schemas/event.schema.json
+  - shared/schemas/game-state.schema.json
+  - shared/schemas/gameplay-trajectory.schema.json
+  - shared/schemas/match-event-log.schema.json
+  - shared/schemas/run-evidence.schema.json
+  - shared/schemas/server-messages.schema.json
+  - shared/schemas/turn-result.schema.json
+  - server/tests/__snapshots__/openapi.test.ts.snap
+  - docs/system/KNIP_REPORT.md
 priority: high
 type: chore
 ordinal: 258800
@@ -34,7 +42,7 @@ Resolve the dependency vulnerabilities currently failing the GitHub Actions audi
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 CI dependency audit passes at --audit-level=high
+- [ ] #1 CI dependency audit passes at --audit-level=high
 - [x] #2 find-my-way, @fastify/static, undici, fast-uri, js-yaml, nanoid, postcss, and all other reported high-severity paths are upgraded or explicitly remediated
 - [x] #3 Full repository verification and affected package tests pass
 - [x] #4 Lockfile and dependency documentation remain consistent
@@ -45,10 +53,19 @@ Resolve the dependency vulnerabilities currently failing the GitHub Actions audi
 - [x] #1 Code builds without errors (pnpm build)
 - [x] #2 Linting and typechecking pass (pnpm lint and pnpm typecheck)
 - [x] #3 All unit and integration tests pass (pnpm test:run:all)
-- [x] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
+- [ ] #4 API schemas and types are re-generated and verified (pnpm schema:gen and scripts/ci/verify-schema.sh)
 - [x] #5 Documentation artifacts are updated (pnpm docs:artifacts)
 - [x] #6 Automated verification scripts pass (FSM consistency and event log coverage)
 <!-- DOD:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Raise the package.json direct undici version and pnpm overrides to patched ranges for Vite, markdown-it, follow-redirects, Zod, and body-parser; regenerate pnpm-lock.yaml.
+2. Regenerate shared JSON Schema artifacts and refresh the OpenAPI snapshot where Zod's patched ISO datetime generation changed the documented regex. Confirm the regex matches runtime parsing.
+3. Run pnpm audit --audit-level high, pnpm check, and the schema consistency check after committing generated artifacts.
+4. Push the remediation, inspect current Dependabot alerts and the new Actions pipeline, then close only after CI confirms the audit and required checks pass.
+<!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
 
@@ -64,10 +81,8 @@ Remote workflow 33341346452 reduced the audit from 9 high findings to one high f
 After the final override: pnpm check passed, including 163 shared, 422 engine, 402 server plus migrations, 237 client, 15 admin, and 8 MCP tests.
 
 Finalization: all four acceptance criteria are supported by remote audit workflow 33341657092 and local full verification. All Definition of Done checks completed.
+
+2026-10-30 health follow-up: GitHub Dependabot initially showed six high alerts (Vite 8.1.2, markdown-it 14.3.0, follow-redirects 1.16.0, plus a stale direct undici declaration). Updated constraints and direct undici to 7.30.1. Registry audit then exposed two current high paths: Zod <4.6.6 and body-parser <2.4.0; raised overrides to patched ranges. Resolved versions: Vite 8.3.5, markdown-it 15.0.3, follow-redirects 1.16.2, undici 7.30.1, Zod 4.6.7. Registry audit: 32 findings, 0 high/critical (4 low, 28 moderate).
+
+Verification after security updates: pnpm check passed quick build/lint/typecheck/docs plus 1,280 tests (163 shared, 422 engine, 401 server, 4 migrations, 267 client, 15 admin, 8 MCP). pnpm rules:check passed FSM consistency, event-log coverage, evidence for 71 rules, and exhaustive combat reference verification (2,355,388 cases). pnpm docs:artifacts completed under with-tooling-postgres.sh; only KNIP_REPORT.md changed. Registry pnpm audit --audit-level high exited 0 with 0 high/critical (32 total: 4 low, 28 moderate). OpenAPI snapshot and 8 shared schema artifacts regenerated; updated Zod date-time pattern matches runtime z.iso.datetime() (without seconds rejected, with seconds accepted).
 <!-- SECTION:NOTES:END -->
-
-## Final Summary
-
-<!-- SECTION:FINAL_SUMMARY:BEGIN -->
-Remediated the high-severity dependency audit paths by upgrading direct @fastify/static and adding narrowly scoped/root overrides for find-my-way, fast-uri, nanoid, postcss, js-yaml, undici, and ip-address. Remote workflow 33341657092 confirmed the dependency audit and adversarial security jobs pass; local commit/pre-push verification also passed build, lint, typecheck, full test/coverage suites, schema, docs, rules, replay, playability, and visual gates. The only later Pipeline failure was unrelated test-lane lifecycle flakiness on the separate CI-cost commit.
-<!-- SECTION:FINAL_SUMMARY:END -->

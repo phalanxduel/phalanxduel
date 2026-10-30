@@ -2,6 +2,12 @@
 
 # Knip report
 
+## Unlisted binaries (1)
+
+| Name             \| Location     | Severity |
+| :--------------- \| :----------- | :------- |
+| bin/phx-datalake \| package.json | error    |
+
 ## Unused exports (1)
 
 | Name                 \| Location                            | Severity |
