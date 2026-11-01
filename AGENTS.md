@@ -1,8 +1,8 @@
 ---
 title: "AI Agent Instructions"
-description: "RTK shell command prefix rule and AI collaboration expectations. Applies to all agents: Claude, Codex, Gemini, Copilot."
+description: "Canonical development, safety, and collaboration guidance for coding agents."
 status: active
-updated: "2026-05-22"
+updated: "2026-10-31"
 audience: agent
 related:
   - docs/tutorials/ai-agent-workflow.md
@@ -10,80 +10,7 @@ related:
   - docs/system/AI_COLLABORATION.md
 ---
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     CURRENT FOCUS  —  last updated 2026-09-08
-     Cold-start resume state, canonical for every agent tool. Whoever closes
-     a session rewrites this block in place — step one, before the wrap-up.
-     Backlog + git log are truth for exact task status / SHAs; if this block
-     contradicts them, trust them and fix the block.
 
-       In flight: verify against Backlog (`backlog/tasks/`) and the most
-       recent phalanxduel entry in ~/.config/adots/handoffs/. Recent work
-       (git log):
-       - TASK-389: Localhost and LAN client hosts load Preact debug hooks
-         before app startup; setup is in docs/development.md.
-       - TASK-388: Retired Godot source and local archive copies; browser
-         client is the demo path. Recover old source from Git history only.
-       - Database ERD, model annotation, and infrastructure topology tools
-         (`pnpm db:erd`, `pnpm db:annotate`, `pnpm infra:diagram`).
-       - Tournament network diagnostics, real-time top bandwidth/Wi-Fi/socket
-         monitor, and endpoint accessibility tools (`bin/phx-tournament-*`).
-       - Unified architecture & documentation library SPA (`bin/phx-docs-library`).
-       - macOS SwiftBar menu bar integration (`bin/phx-swiftbar`).
-       - Repository hygiene: root directory tidied, canonical `phx-*` namespace
-         enforced across `bin/`, dead test logs and unreferenced files purged.
-       - Excised unused Serena language server, IntelliJ (`.idea`), and Next.js
-         editor artifacts; added `.serena/` to `.gitignore`.
-       - Fixed broken `.husky/pre-merge-commit` hook (`pnpm check:ci` -> `pnpm verify:quick`).
-       - Promoted `bin/maint/fix` to canonical `bin/phx-fix` with workspace-pinned binaries.
-       - Aligned `docs/ops/slo.md` (OpenObserve/Jaeger) and `LICENSE-ASSETS` paths.
-       - Local firewall inspection (`socketfilterfw`/`pf`), probe block root-cause
-         diagnostics, and copy-paste test recipes in `bin/phx-tournament-check`.
-       - Recommended tournament tooling added to `Brewfile` with rich usage tips.
-       - Live game runtime & analytics monitor (`bin/phx-top` / `pnpm top`).
-       - Multi-repo cinematic Gource visualization runner (`bin/phx-gource`).
-       - Tournament Operations Runbook & Playbook (`docs/ops/TOURNAMENT_RUNBOOK.md`).
-       - Fully defined SwiftBar config & interactive About menu for `phalanxduel-pulse`.
-       - Fixed match historical rewatch/replay API (fast-json-stringify tuple schemas & action log serialization in server/src/utils/openapi.ts and server/src/routes/matches.ts).
-       - Enhanced client match scrubber and live spectator lobby in client/src/lobby.tsx.
-       - Tuned Vite/Rolldown build in client/ eliminating dynamic import warnings and optimizing chunk threshold.
-       - Authored canonical Full Stack Architecture & Operational Blueprint (docs/architecture/FULL_STACK.md).
-       - Cleaned root clutter: relocated historical archives, empty backups, experiments, and graphify output under local gitignored artifacts/ and excised from git working branch (-168k lines / 60MB).
-       - Preserved botConfig through actor init, DB recovery, and event bus sync; defined BotConfigSchema in shared/src/schema.ts (b346f6c).
-       - Synchronized generated schemas (shared/schemas/, shared/src/types.ts) passing verify-schema.sh (028f9c1).
-       - Remediated high/critical security advisories in dependencies (fast-jwt,
-         fast-uri, axios, shell-quote, undici, @grpc/grpc-js, @modelcontextprotocol/sdk,
-         proxy-addr, smol-toml, source-map-js) with pnpm overrides and auditConfig.
-       - Aligned OpenAPI generated schemas and contract snapshot for obsidian-heraldry.
-       - Aligned Linux Playwright visual regression baseline for initial game board.
-       - Removed obsolete verify-feature-flag-env.ts invocation from bin/check.
-       - Restored CI pipeline to full green on Test and Lint, Adversarial Security Tests,
-         and Docker Build and Push (pushed to GHCR).
-       - Extracted codebase AST into global Graphify index (+14,554 nodes) and generated
-         interactive HTML and D3 tree visualizations.
-       - Constructed the multi-repository Medallion Engineering Datalake (`datalake/`, `bin/phx-datalake`,
-         `pnpm datalake:*`), ingesting 3,151 commits, 56k file edits, 169 tasks, and 31 ADRs across
-         8 organization repositories into DuckDB and Parquet tables.
-       - Refactored and unified platform tooling into `bin/phx` and `bin/phx-ctl` (inspired by
-         `zdots-ctl` and `kubectl`), inverting canonical implementations to `bin/phx-*` with backward-compatible
-         shims in `bin/*`.
-       - Engineered universal multicall CLI architecture and symlink network in `bin/` (zero duplicate wrappers)
-         with built-in `mandoc` viewer (`phx man`), specialized skills manager (`phx skills list|show|audit`),
-         agent subcommands (`phx agent audit|guide|capabilities|ctx`), and environment doctor (`phx doctor`).
-       - Passed all verification and playability gates (`pnpm verify:quick`, `pnpm qa:playthrough:verify`).
-       - Production deployment note: GHCR image build succeeded and pushed to Fly registry;
-         release creation halted by Fly.io (status 403 overdue invoices on account
-         mike-hall-120). Live production apps remain healthy on release 445-1.
-       Open thread: settle Fly.io billing at https://fly.io/dashboard/mike-hall-120/billing
-       to allow promotion release creation; next engineering priorities are TASK-360.03
-       (browser automation adapter), TASK-385 (CI spend), and TASK-387 (PVL scenario catalog).
-       Deep handoff (local-only, never commit):
-         ~/.config/adots/handoffs/YYYY-MM-DD-*phalanx*.md  (or -2 / dated)
-
-     Close ritual: rewrite this block + commit; write the deep handoff for
-     anything unfinished. Reference impl: wwworkremote/core's
-     docs/tutorials/ai-agent-workflow.md.
-     ═══════════════════════════════════════════════════════════════════════ -->
 
 <!-- backlog-instructions v1 -->
 <CRITICAL_INSTRUCTION>
@@ -385,23 +312,16 @@ Prevent storage exhaustion from test artifacts, playthrough dumps, and log files
 
 ## 🏗️ Repository Architecture
 
-| File | Tool | Purpose |
-|------|------|---------|
-| `AGENTS.md` | All agents | Canonical: RTK rule, backlog workflow pointer, collaboration policy |
-| `bin/` | Operational Scripts | `check`, `test`, `maint/`, `qa/` |
-| `CLAUDE.md` | Claude Code | Local ignored Claude-specific overlay for active UI context; must not contradict `AGENTS.md` |
-| `CODEX.md` | Codex | Codex-specific overlay for active UI context and deterministic protocol reminders; must not contradict `AGENTS.md` |
-| `GEMINI.md` | Gemini | Gemini-specific overlay for RTK usage and context; must not contradict `AGENTS.md` |
-| `.github/copilot-instructions.md` | GitHub Copilot | Pointers to canonical docs (AGENTS.md, DoD, RULES.md) |
-| `.github/instructions/trust-boundaries.instructions.md` | GitHub Copilot (scoped) | Trust boundary reminders for engine/server/shared/rules changes |
-| `docs/development.md` | All agents | Repo-local setup, services, and common developer workflows |
-| `docs/testing.md` | All agents | Strategy and commands for all test layers |
-| `docs/configuration.md` | All agents | Environment variables and secret management |
-| `docs/tutorials/ai-agent-workflow.md` | All agents | Repo-local Backlog.md workflow: task lifecycle, WIP limits, branching |
-| `.agents/skills/ci-cd-manager/` | All agents | Standardized workflow for commits, pushes, and monitoring GHA runs |
-| `CONTRIBUTING.md` | All contributors | Workflow, standards, and PR expectations |
-| `.codex/` | Codex | Skills only — no instruction content |
-| `.gemini/settings.json` | Gemini CLI | MCP server config only — no instruction content |
+| File | Purpose |
+|------|---------|
+| `AGENTS.md` | Canonical instructions for all coding agents. |
+| `docs/development.md` | Setup, services, and developer workflows. |
+| `docs/testing.md` | Test strategy and commands. |
+| `docs/configuration.md` | Environment variables and secret management. |
+| `docs/tutorials/ai-agent-workflow.md` | Backlog lifecycle, WIP limits, and branching. |
+| `.github/copilot-instructions.md` and `.github/instructions/` | Copilot-specific loading and scoped trust boundaries. |
+| `.gemini/settings.json` | Gemini CLI MCP configuration. |
+| `.codex/` | Codex skills; shared instructions remain in this file. |
 
 ## Agent skills
 

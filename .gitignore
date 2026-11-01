@@ -60,10 +60,6 @@ docs/api/*
 dashing.json
 sdk/
 
-# Claude Code
-.claude/settings.local.json
-CLAUDE.md
-
 # Agent skills & tools
 .agents/*
 !.agents/skills/
