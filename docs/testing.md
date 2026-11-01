@@ -160,11 +160,15 @@ rtk pnpm test:coverage:run
 
 ## GitHub Actions cost baseline
 
-The normal `main` push and pull-request pipeline runs the gameplay, adversarial
-server-authority, dependency-audit, build, contract, replay, and visual gates.
-SDK artifact publication is not part of every run because it is not required to
-validate or deploy the application. To publish SDK artifacts intentionally,
-manually dispatch the `Pipeline` workflow and enable `publish_sdks`.
+Normal pushes and pull requests run the locked dependency install and
+`pnpm verify:quick`. This sanity lane does not start Postgres or Playwright
+containers and does not run full gameplay or visual suites.
+
+Full database, adversarial, dependency-audit, and release checks run only when a
+maintainer manually dispatches the `Pipeline` workflow. Set `publish_image` to
+build a tested GHCR image; set `promote_production` to request production
+promotion, which still waits for the protected environment approval. SDK
+artifact publication is optional through `publish_sdks`.
 
 Issue stale-processing and Gemini scheduled triage are also manual-only. This
 keeps recurring maintenance and external AI usage opt-in for the solo

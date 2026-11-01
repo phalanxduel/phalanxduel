@@ -9,17 +9,20 @@ environment.
 
 ## 1. Pipeline Overview
 
-The pipeline is designed for **high fidelity and safety**. It builds and pushes
-a GHCR image on `main`, then the manually approved production job promotes that
-tested image to Fly.io with `fly.production.toml`.
+Routine pushes and pull requests run lightweight sanity checks. A maintainer
+manually dispatches the full release pipeline to run database and adversarial
+checks, build a content-addressed GHCR image, and optionally request production
+promotion.
 
 ```mermaid
 graph TD
     Dev[Local Development] --> Husky[Husky Hooks]
     Husky --> PR[Pull Request]
-    PR --> CI[CI Gate: Test, Audit, and Adversarial Security]
+    PR --> CI[CI Gate: verify:quick]
     CI --> Merge[Merge to Main]
-    Merge --> Build[Build Production Image]
+    Merge --> Dispatch[Manual Release Dispatch]
+    Dispatch --> Full[Full Tests and Adversarial Checks]
+    Full --> Build[Build Production Image]
     Build --> GHCR[(GHCR Registry)]
     GHCR --> Manual[Manual Production Approval Gate]
     Manual --> Production[Promote: Production]
@@ -43,18 +46,19 @@ We use **Husky** and **lint-staged** to ensure that only quality code is committ
 
 ---
 
-## 3. Phase 2: Pull Request (The Gate)
+## 3. Phase 2: Pull Request and Main Push (Sanity)
 
-On every PR to `main`, GitHub Actions triggers the **Test Job**.
-
-- **Goal**: Verify that the changes are compatible with the integrated codebase.
-- **Requirements**: All tests, linting, and typechecks must pass. The PR cannot be merged if this stage fails.
+GitHub Actions runs the locked dependency install and `pnpm verify:quick` on
+pull requests and pushes to `main`. The lane checks build, lint, types, docs,
+and database-isolation guards without starting a database or browser container.
 
 ---
 
-## 4. Phase 3: Main Branch (The Artifact)
+## 4. Phase 3: Manual Release (The Artifact)
 
-Once merged into `main`, the pipeline switches to **Artifact Production**.
+After merge, a maintainer manually dispatches `Pipeline` and enables
+`publish_image`. The workflow runs full tests, dependency and adversarial
+checks before creating a release artifact.
 
 ### Build and Push (`build` job)
 - A production Docker image is built using the canonical `Dockerfile`.
@@ -66,7 +70,7 @@ Once merged into `main`, the pipeline switches to **Artifact Production**.
 ### Runtime Deployment Path
 
 - `.github/workflows/pipeline.yml` builds and pushes a content-addressed GHCR
-  image from the verified Git SHA.
+  image from the verified Git SHA only when `publish_image` is enabled.
 - A maintainer approves the production environment.
 - The workflow pulls and locally tags that tested image, then deploys it to
   `phalanxduel-production` and `phalanxduel-admin` with
@@ -79,10 +83,11 @@ Once merged into `main`, the pipeline switches to **Artifact Production**.
 
 ## 5. Phase 4: Production (The Promotion)
 
-Production releases are **never automatic**. They require manual approval after
-the test, adversarial-security, and image-build jobs succeed. SDK artifact
-publication is optional and runs only when a maintainer manually dispatches the
-pipeline with `publish_sdks` enabled.
+Production releases are **never automatic**. A maintainer must manually enable
+`publish_image` and `promote_production`; the protected production environment
+then requires its existing approval after full tests, adversarial checks, and
+image build succeed. SDK artifact publication is optional through
+`publish_sdks`.
 
 ### Promotion Gate
 - **Manual Approval**: A maintainer must explicitly click **"Approve and Deploy"** in the GitHub Actions Environment UI.

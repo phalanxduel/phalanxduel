@@ -264,9 +264,9 @@ All active game development, debugging, and the core inner loop happens **native
 This eliminates the "container burn" and provides the fastest feedback cycle.
 
 ### 2. Containerized Automation & Verification
-Docker is reserved for **isolated verification** and **automated QA**.
-- **Automation Service**: All non-trivial CLI tasks (lint, heavy tests) can run inside the `automation` container via `bin/dock`.
-- **GHA/act**: Continuous integration and local GitHub Action simulations run in containers to ensure deployment parity.
+Docker is reserved for **isolated verification**, **release builds**, and **automated QA**.
+- **Automation Service**: Heavy local checks can run inside the `automation` container via `bin/dock` when needed.
+- **GHA/act**: Push and pull-request CI runs `verify:quick` without Postgres or Playwright containers. Full database, adversarial, and release checks run only through an explicit pipeline dispatch.
 
 ### 3. Production Parity
 The `Dockerfile` in the root is the **canonical production environment**. All staging and production deployments use this image.
@@ -283,7 +283,7 @@ rtk pnpm check
 (Runs Build → Lint → Typecheck → Test natively)
 
 ### 2. Containerized Verification
-Before pushing, verify the full stack in an isolated container:
+Routine pushes use the fast host-native gate. Before a production release, dispatch the full verification and release pipeline; it runs the isolated database and adversarial checks before building an image:
 ```bash
 rtk bin/dock pnpm verify:full
 ```

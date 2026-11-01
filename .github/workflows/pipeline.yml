@@ -12,6 +12,16 @@ on:
         required: false
         type: boolean
         default: false
+      publish_image:
+        description: 'Build and publish a release image after full verification'
+        required: false
+        type: boolean
+        default: false
+      promote_production:
+        description: 'Promote the verified release image after environment approval'
+        required: false
+        type: boolean
+        default: false
       refresh_visual_snapshots:
         description: 'Refresh Linux Playwright visual baselines and upload them for review'
         required: false
@@ -30,12 +40,33 @@ concurrency:
 
 permissions:
   contents: read
-  packages: write
-  security-events: write
 
 jobs:
+  sanity:
+    name: Sanity Checks
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: 24.22.2
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install locked dependencies
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Run lightweight verification
+        run: corepack pnpm verify:quick
+
   test:
     name: Test and Lint
+    if: github.event_name == 'workflow_dispatch'
     # [Agent Guidance] This job enforces the 'Playability Gate' (AGENTS.md).
     # It proves the game is playable and testable via CI checks and UI playthroughs.
     runs-on: ubuntu-24.04
@@ -66,7 +97,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
-          node-version: 24
+          node-version: 24.22.2
 
       - name: Setup Go
         uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
@@ -170,6 +201,7 @@ jobs:
 
   adversarial:
     name: Adversarial Security Tests
+    if: github.event_name == 'workflow_dispatch'
     # [Agent Guidance] This job enforces 'Database Environment Isolation' (AGENTS.md).
     # It ensures the server authority properly rejects spoofed inputs against a real Postgres container.
     runs-on: ubuntu-24.04
@@ -196,7 +228,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
-          node-version: 24
+          node-version: 24.22.2
 
       - name: Enable Corepack
         run: corepack enable
@@ -255,7 +287,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
-          node-version: 24
+          node-version: 24.22.2
 
       - name: Setup Go
         uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
@@ -295,8 +327,11 @@ jobs:
   build:
     name: Build and Push
     needs: [test, adversarial]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_image == true
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
     outputs:
       image_tag: ${{ steps.meta.outputs.version }}
       image_ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
@@ -340,7 +375,11 @@ jobs:
   promote-production:
     name: 'Promote: Production'
     needs: [build]
+    if: github.event_name == 'workflow_dispatch' && inputs.promote_production == true
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: read
     environment:
       name: production
       url: https://play.phalanxduel.com
