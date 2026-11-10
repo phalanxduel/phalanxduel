@@ -39,8 +39,17 @@ updates:
         versions: ['>=9.8.2']
       - dependency-name: '@opentelemetry/api'
         versions: ['>=1.10.0']
+      # The 0.223 OTel line imports API.logs, which is absent from the supported API 1.9 line.
+      # SDK 2.8+ also needs a coordinated telemetry compatibility check before updating.
       - dependency-name: '@opentelemetry/*'
-        versions: ['>=0.300.0 <1.0.0']
+        versions: ['>=0.217.0 <1.0.0']
+      - dependency-name: '@opentelemetry/sdk-*'
+        versions: ['>=2.8.0 <3.0.0']
+      # Major upgrades need coordinated compiler, coverage, and test-runner migrations.
+      - dependency-name: 'typescript'
+        versions: ['>=7.0.0']
+      - dependency-name: '@vitest/coverage-v8'
+        versions: ['>=5.0.0']
 
     groups:
       npm-minor-patch:
