@@ -25,8 +25,9 @@ Gemini authentication regression checks, and validation of the deployed
 collector configuration using the exact collector image from the Dockerfile.
 
 Dependabot npm pull requests also run a low-severity dependency audit and the
-shared, engine, client, admin, and MCP unit suites. These checks use no database.
-Database-backed tests and browser QA remain part of explicit release verification.
+shared, engine, client, admin, and MCP unit suites. After those checks pass, a
+separate dependency job runs server tests sequentially against an ephemeral
+PostgreSQL 17 test database. Browser QA remains part of explicit release verification.
 
 Routine runs do not publish SDKs, build production images, or deploy. Workflow
 concurrency cancels superseded runs for the same ref.

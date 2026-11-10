@@ -61,9 +61,6 @@ jobs:
       - name: Install locked dependencies
         run: corepack pnpm install --frozen-lockfile
 
-      - name: Resolve security patch metadata
-        run: npm view re2js@2.8.7 dist --json
-
       - name: Run lightweight verification
         run: corepack pnpm verify:quick
 
@@ -88,6 +85,50 @@ jobs:
           corepack pnpm --filter @phalanxduel/client test
           corepack pnpm --filter @phalanxduel/admin test
           corepack pnpm --filter @phalanxduel/mcp test
+
+  dependency-server:
+    name: Dependency Server Tests
+    needs: [sanity]
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'dependabot/npm_and_yarn/')
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: phalanxduel_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://phalanx_test:phx_test_local@localhost:5432/phalanxduel_test # secretlint-disable-line
+      OTEL_SDK_DISABLED: 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.22.2
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install locked dependencies
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Build server dependencies
+        run: |
+          corepack pnpm --filter @phalanxduel/shared build
+          corepack pnpm --filter @phalanxduel/engine build
+
+      - name: Test server with isolated PostgreSQL
+        run: corepack pnpm test:run:server
 
   test:
     name: Test and Lint

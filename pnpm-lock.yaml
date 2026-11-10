@@ -5585,7 +5585,7 @@ packages:
     engines: {node: '>= 0.10'}
 
   re2js@2.8.7:
-    resolution: {tarball: https://registry.npmjs.org/re2js/-/re2js-2.8.7.tgz}
+    resolution: {integrity: sha512-bRSL/vn3KAmlGfGNoVpcsBXLaVvl6AbuvMMWbz0m3vBj60nj+p2/biozfBUOSBP+5XTduF6mr6IO/ZVjmqqkVQ==}
     engines: {node: '>=18.0.0'}
 
   readable-stream@3.6.2:
