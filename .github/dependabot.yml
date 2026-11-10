@@ -27,10 +27,29 @@ updates:
       semver-major-days: 7
       semver-minor-days: 2
 
+    # SDK 3 requires a coordinated migration of the entire telemetry family.
+    # Its experimental 0.300+ releases are breaking despite being minor bumps.
+    ignore:
+      # Formatter upgrades require an explicit repository-wide style refresh.
+      - dependency-name: 'prettier'
+        versions: ['>=3.9.0']
+      - dependency-name: '@opentelemetry/api'
+        versions: ['>=1.10.0']
+      - dependency-name: '@opentelemetry/*'
+        versions: ['>=0.300.0 <1.0.0']
+
     groups:
       npm-minor-patch:
         patterns:
           - '*'
+        exclude-patterns:
+          - '@opentelemetry/*'
+        update-types:
+          - 'minor'
+          - 'patch'
+      opentelemetry:
+        patterns:
+          - '@opentelemetry/*'
         update-types:
           - 'minor'
           - 'patch'

@@ -33,7 +33,7 @@ jobs:
         id: 'mint_identity_token'
         if: |-
           ${{ vars.APP_ID }}
-        uses: 'actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859' # ratchet:actions/create-github-app-token@v2
+        uses: 'actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1' # v3.2.0
         with:
           app-id: '${{ vars.APP_ID }}'
           private-key: '${{ secrets.APP_PRIVATE_KEY }}'
@@ -42,7 +42,7 @@ jobs:
           permission-pull-requests: 'write'
 
       - name: 'Checkout repository'
-        uses: 'actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd' # ratchet:actions/checkout@v6
+        uses: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' # v7.0.1
 
       - name: 'Authenticate to Google Cloud'
         if: ${{ vars.GCP_WIF_PROVIDER }}
@@ -54,10 +54,9 @@ jobs:
       - name: 'Run Gemini pull request review'
         id: 'gemini_pr_review'
         run: |
-          mkdir -p .gemini
-          echo "$SETTINGS" > .gemini/settings.json
-          npx @google/gemini-cli@${{ vars.GEMINI_CLI_VERSION || 'latest' }} --prompt "$PROMPT"
+          bash scripts/ci/run-gemini.sh
         env:
+          GEMINI_CLI_VERSION: '${{ vars.GEMINI_CLI_VERSION }}'
           GITHUB_TOKEN: '${{ steps.mint_identity_token.outputs.token || secrets.GITHUB_TOKEN || github.token }}'
           GEMINI_API_KEY: '${{ secrets.GEMINI_API_KEY }}'
           GOOGLE_API_KEY: '${{ secrets.GOOGLE_API_KEY }}'

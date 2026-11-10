@@ -1,11 +1,11 @@
 ---
 id: TASK-397
 title: Patch residual dependency advisories and align Actions with Node 24
-status: Verification
+status: In Progress
 assignee:
   - '@codex'
 created_date: '2026-10-30T20:04:00Z'
-updated_date: '2026-11-10T04:06:00Z'
+updated_date: '2026-11-10T04:34:00Z'
 labels: []
 dependencies: []
 references:
@@ -28,7 +28,7 @@ Clear currently reported low and moderate npm advisories using compatible patche
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [x] #1 `pnpm audit --audit-level low` reports no untriaged advisories, with any blocked advisory documented and explicitly scoped.
+- [ ] #1 `pnpm audit --audit-level low` reports no untriaged advisories, with any blocked advisory documented and explicitly scoped.
 - [x] #2 GitHub workflow action pins implicated in Node 20 runtime warnings are updated to verified Node 24-compatible releases without changing workflow inputs or deployment behavior.
 - [x] #3 Lockfile is consistent with package manifests and overrides.
 - [x] #4 Focused validation and the repository quick verification pass; CI results are recorded.
@@ -53,6 +53,10 @@ Clear currently reported low and moderate npm advisories using compatible patche
 4. Run audit, lockfile, action pinning, and repository quick verification. Leave any advisory requiring an unsafe/breaking jump documented and incomplete.
 
 5. Review pre-existing audit suppressions; remove any suppression whose advisory was withdrawn or whose risk is no longer present, so the zero-advisory result is not achieved by hiding a finding.
+
+User requested catching the system up after pushing local service fixes. Continue dependency/Actions remediation using GitHub connector logs and current CI. Diagnose PR #130 and independent Gemini failures, validate compatible Actions changes, coordinate Playwright versions, and reconcile landed task status. Shell network failures are execution-context limitations and do not justify declaring the host unhealthy.
+
+Current evidence changes the diagnosis: dedicated GitHub job-log tools are available. PR #130 fails because OpenTelemetry sdk-node 0.300 removes metricReader; upstream migration guide also confirms API 1.10 is incompatible with retained SDK 2.x packages, so renaming one field would mask a mixed-generation upgrade. Preserve the supported SDK 2.x telemetry family while updating compatible dependencies. Separate telemetry in Dependabot and block SDK-3 generation experimental/API versions pending an explicit migration. Resolve Gemini's confirmed missing-auth failure by guarding execution when no supported auth method is configured. Refresh Actions using verified SHA pins; use CI to validate candidates when execution-context networking prevents local installation.
 <!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
@@ -71,6 +75,10 @@ Final pushed revision `887912bc` CI: Dependency Audit and GHA Pinning Audit pass
 2026-11-09 agenda review: GitHub connector confirmed main package.json already pins Vitest 4.1.12. Closed obsolete PR #105 proposing 4.1.11 (conflicting/downgrade). Remaining open PRs: Actions #96–100, Docker #128 (collector), #129 (Playwright), and npm group #130. Shell DNS fails for api.github.com and registry.npmjs.org (curl exit 6; pnpm audit ENOTFOUND), so current advisory status and new package installs cannot be verified. Do not infer a clean current security scan from the historical audit. #129 must be coordinated with npm Playwright versions, and large #130 needs install/build/test validation before merging. No advisory was dismissed and no unverified dependency update merged.
 
 Remote CI inspection: PR #130 Pipeline run https://github.com/phalanxduel/phalanxduel/actions/runs/42616901893 installed locked dependencies successfully, then failed Sanity Checks / Run lightweight verification (job 129158899307). The connector cannot fetch actions job logs (URL rejected as unsupported), so the failure's underlying code cause remains unconfirmed. PR #128 Pipeline run 42614341466 and PR #129 run 42614361781 succeeded, but this lightweight gate does not validate collector image/runtime or Playwright browser compatibility. Older Actions PRs #96–100 have failed historical runs and need current-base validation. Gemini review additionally fails independently on PR #130 (run 42616901838, Run Gemini pull request review); no credential changes attempted.
+
+Confirmed PR #130 build failure from dedicated job logs: admin/src/server/instrument.ts:89 metricReader removed by sdk-node 0.300. Upstream SDK 3 migration guide also explicitly says SDK 2 cannot be combined with API 1.10. Prepared compatible manifests by retaining every directly declared @opentelemetry dependency from main, merging existing lock snapshots, then successfully regenerating/validating the lockfile offline with pnpm install --lockfile-only --offline --ignore-scripts. Published candidate f5f495ac to the existing Dependabot PR #130 branch with an expected-head lease; this is review/CI work, not a main merge. CI will install and verify the actual updated packages. Dedicated log tools supersede earlier claim that logs were unavailable.
+
+Fresh candidate audit run 42756166723 found GHSA-gg6h-894w-4m9c (re2js <2.8.7), GHSA-3g3m-2fjr-6pw4 (glob <=14.0.1), and GHSA-g3hv-75wg-m249 (minimatch <11.0.1). All three have reachable tooling dependency paths; do not dismiss them as merely stale snapshots. Candidate now uses re2js 2.8.7, glob 14.0.4, and minimatch 11.0.5 with explicit override floors. Lock graph traversal prunes unreachable snapshots; pnpm offline lockfile consistency passes. Retained OTel family is additionally bounded by API <1.10, core <3, and propagator-jaeger <3 overrides. Pending remote install, fresh audit, and tests before AC #1 can be rechecked. Exact collector-image config validation and Gemini auth regression checks already passed remotely.
 <!-- SECTION:NOTES:END -->
 
 ## Comments

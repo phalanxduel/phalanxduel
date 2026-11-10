@@ -18,12 +18,9 @@ processors:
 exporters:
   # Primary observability backend
   otlp/lgtm:
-    endpoint: ${LGTM_OTLP_ENDPOINT}
+    endpoint: ${env:LGTM_OTLP_ENDPOINT}
     tls:
       insecure: true
-
-  logging:
-    loglevel: info
 
 extensions:
   health_check:
