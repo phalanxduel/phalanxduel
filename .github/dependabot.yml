@@ -33,6 +33,10 @@ updates:
       # Formatter upgrades require an explicit repository-wide style refresh.
       - dependency-name: 'prettier'
         versions: ['>=3.9.0']
+      # @fastify/swagger 9.8.2+ changes nullable schema serialization,
+      # breaking the committed OpenAPI snapshot until the contract is regenerated and reviewed.
+      - dependency-name: '@fastify/swagger'
+        versions: ['>=9.8.2']
       - dependency-name: '@opentelemetry/api'
         versions: ['>=1.10.0']
       - dependency-name: '@opentelemetry/*'
