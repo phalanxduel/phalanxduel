@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-10-30T20:04:00Z'
-updated_date: '2026-11-10T14:00:00Z'
+updated_date: '2026-11-10T15:25:00Z'
 labels: []
 dependencies: []
 references:
@@ -15,6 +15,8 @@ documentation:
   - docs/agents/backlog-best-practices.md
   - .github/workflows/pipeline.yml
   - package.json
+  - docs/system/delivery-pipeline.md
+  - docs/system/AI_COLLABORATION.md
 priority: high
 type: chore
 ordinal: 270800
@@ -83,6 +85,10 @@ Fresh candidate audit run 42756166723 found GHSA-gg6h-894w-4m9c (re2js <2.8.7), 
 Verification on merged candidate: Pipeline run 42825745928 passed sanity and isolated server tests (400 passed; OpenAPI snapshot passed after normalizing unordered JSON Schema type arrays). Pipeline run 42826429786 and Code Quality run 42826428062 passed on main at 134e3b0. Audit reported no known vulnerabilities; the later 6-update group was closed after its server gate reproduced the @fastify/swagger 9.9.3 schema mismatch.
 
 2026-11-10 fresh Dependabot follow-up: OpenTelemetry group PR #138 failed in Pipeline because @opentelemetry/api 1.9.1 does not export `logs` while the group upgrades instrumentation/exporter packages to 0.223. Closed it and deferred OTel 0.217+ and SDK 2.8+ until the API/SDK line is coordinated. TypeScript 7 PR #141 also failed CI; coverage-v8 5 is deferred until it can move with the matching Vitest major. Dependabot config now records these boundaries.
+
+2026-11-10 audit correction: the generic Definition of Done items for full unit/integration suite, schema regeneration/verification, and FSM/event-log verification had been checked, but recorded evidence only proves `pnpm verify:quick`, the isolated server suite (400 tests plus OpenAPI snapshot), audit, and relevant CI. Unchecked those three items and returned the task to Verification so the record matches evidence. Follow-up: run the full test suite, schema generation/verification, and FSM/event-log checks before restoring Done. Accountability: Mike (human maintainer) is Accountable for acceptance and release/security decisions; Codex is Responsible for implementation and evidence; consult CI/security or release maintainers when changing coordinated dependency lines; inform through this task and canonical delivery-pipeline/dependency docs.
+
+2026-11-10 verification closure: local `pnpm check` passed its complete quick gate, then stopped at server tests because `with-test-postgres.sh` found no test Postgres on localhost:5432. Completed all remaining non-server suites separately: shared 163, engine 422, client 267, admin 15, MCP 8 tests passed (875 total). The isolated server CI run 42825745928 passed 400 tests and the OpenAPI snapshot. Ran `pnpm schema:gen` and `pnpm schema:check` successfully (8 schemas/81 types, artifacts current); `pnpm rules:check` passed FSM consistency, event-log coverage (7 action types), rule evidence (71 rules), and combat-reference verification (2,355,388 cases). Combined evidence covers the full package test set and the outstanding DoD items; the monolithic local `pnpm check` remains unable to complete solely because local test Postgres is unavailable.
 <!-- SECTION:NOTES:END -->
 
 ## Comments
@@ -94,6 +100,14 @@ created: 2026-10-30T20:33:00Z
 ---
 
 Verification note: CI checks for dependency audit and action SHA pinning passed on `887912bc`; no package audit findings remain and the dependency graph reports patched brace-expansion 5.0.12. Dependabot alert #249 remains open against stale metadata and was not manually dismissed. The unrelated production promotion step failed due Fly billing; no release was created.
+
+---
+
+created: 2026-11-10T15:22:00Z
+
+---
+
+Audit found the project-wide `docs/agents/raci.md` is specifically scoped to local-system observability/PVL, so it does not own dependency-maintenance work. Initiative accountability is now explicit here, consistent with `docs/system/AI_COLLABORATION.md`: human maintainer accountable, agent responsible, with cross-functional consultation when a dependency line or release gate requires it.
 
 ---
 <!-- COMMENTS:END -->
