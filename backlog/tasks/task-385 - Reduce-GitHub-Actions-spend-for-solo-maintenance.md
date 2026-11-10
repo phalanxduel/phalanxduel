@@ -5,7 +5,7 @@ status: Verification
 assignee:
   - '@codex'
 created_date: 2026-08-30 23:57
-updated_date: '2026-11-10T04:30:00Z'
+updated_date: '2026-11-10T13:53:00Z'
 labels:
   - ci
   - maintenance
@@ -79,6 +79,8 @@ Current blocker: gh authentication token for account just3ws is invalid, so reru
 2026-08-31 follow-up: gh authentication was refreshed and remote evidence was inspected. Main run 33365794879 passed all unit/server/OpenAPI tests and adversarial security tests; its only failure was deterministic Linux visual mismatch for lobby-advanced-open. Downloaded CI artifacts showed all three retries produced identical actual hash 48596d97effec2162c96900da754735b076485ea, while the committed Linux baseline was stale. Refreshed qa/visual-regression/tests/visual.spec.ts-snapshots/lobby-advanced-open-chromium-linux.png from the stable CI capture. Local qa:playthrough:verify and pnpm verify:quick passed; local visual run had a separate stale reused-server Darwin lobby-main mismatch and must not be treated as a code failure. Pending commit/push and remote verification.
 
 2026-11-09 reconciliation: cost controls landed on main (9ff5d29d); user pushed subsequent service changes and main Pipeline 42755082380 / Code Quality 42755082324 passed. Routine pushes and PRs execute sanity only; full Test and Lint, adversarial verification, SDK/image publication and production promotion require workflow_dispatch inputs. Gemini scheduled triage and stale automation are manual-only. Canonical delivery-pipeline reference is being corrected in dependency maintenance PR #130 to remove obsolete claims that routine pushes run full release jobs or that pre-push uses verify:ci. The normal release path retains test/adversarial prerequisites and production environment approval. Ready for review; earlier token/network/billing notes are historical evidence, not current active blockers.
+
+2026-11-10 follow-up: merged dependency catch-up PR #130 and the latest collector/setup-node follow-ups after passing candidate CI. Main Pipeline and Code Quality passed after the initial merge. The quick gate, npm audit, and isolated database-backed server tests also passed. The task remains in Verification because the repository's full workflow_dispatch validation (including schema generation and remaining release gates) was not run.
 <!-- SECTION:NOTES:END -->
 
 ## Comments

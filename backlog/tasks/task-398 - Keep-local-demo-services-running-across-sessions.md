@@ -5,7 +5,7 @@ status: Verification
 assignee:
   - codex
 created_date: '2026-11-10T04:03:00Z'
-updated_date: '2026-11-10T04:29:00Z'
+updated_date: '2026-11-10T13:53:00Z'
 labels: []
 dependencies: []
 priority: medium
@@ -57,4 +57,6 @@ Validation: isolated fixtures outside the repository exercised server/client/adm
 Cockpit fixture also passed actual SIGHUP survival and stdin EOF. The original nohup approach failed in the headless macOS execution context (`can't detach from console: Inappropriate ioctl for device`); the final ignored-HUP + exec implementation passed for all tested daemons and cockpit. Verification fixtures are local-only at /private/tmp/phx-service-check.py.
 
 Main verification: https://github.com/phalanxduel/phalanxduel/actions/runs/42755082380 and https://github.com/phalanxduel/phalanxduel/actions/runs/42755082324 both passed on 1dc34434. Ready for review; no deployment triggered.
+
+2026-11-10 follow-up: the dependency-specific CI job now provisions an isolated phalanxduel_test Postgres service and completed the server suite successfully (run 42825745928: 400 server tests passed plus OpenAPI snapshot). This resolves the earlier agent-host Postgres limitation for server test evidence. The broader manual workflow_dispatch verification, schema generation, and remaining automated checks are still pending; keep the task in Verification.
 <!-- SECTION:NOTES:END -->
