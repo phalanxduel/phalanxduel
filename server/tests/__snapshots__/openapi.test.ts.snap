@@ -1183,8 +1183,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   null,
                 ],
                 "type": [
-                  "string",
                   "null",
+                  "string",
                 ],
               },
               {
@@ -1209,8 +1209,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                   null,
                 ],
                 "type": [
-                  "string",
                   "null",
+                  "string",
                 ],
               },
             ],
@@ -4344,8 +4344,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       null,
                     ],
                     "type": [
-                      "string",
                       "null",
+                      "string",
                     ],
                   },
                   {
@@ -4370,8 +4370,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       null,
                     ],
                     "type": [
-                      "string",
                       "null",
+                      "string",
                     ],
                   },
                 ],
@@ -9803,8 +9803,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       null,
                     ],
                     "type": [
-                      "string",
                       "null",
+                      "string",
                     ],
                   },
                   {
@@ -9829,8 +9829,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       null,
                     ],
                     "type": [
-                      "string",
                       "null",
+                      "string",
                     ],
                   },
                 ],
@@ -12919,8 +12919,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       null,
                     ],
                     "type": [
-                      "string",
                       "null",
+                      "string",
                     ],
                   },
                   {
@@ -12945,8 +12945,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       null,
                     ],
                     "type": [
-                      "string",
                       "null",
+                      "string",
                     ],
                   },
                 ],
@@ -16953,8 +16953,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       null,
                     ],
                     "type": [
-                      "string",
                       "null",
+                      "string",
                     ],
                   },
                   {
@@ -16979,8 +16979,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       null,
                     ],
                     "type": [
-                      "string",
                       "null",
+                      "string",
                     ],
                   },
                 ],
@@ -20069,8 +20069,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       null,
                     ],
                     "type": [
-                      "string",
                       "null",
+                      "string",
                     ],
                   },
                   {
@@ -20095,8 +20095,8 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
                       null,
                     ],
                     "type": [
-                      "string",
                       "null",
+                      "string",
                     ],
                   },
                 ],
@@ -28799,8 +28799,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 null,
                               ],
                               "type": [
-                                "string",
                                 "null",
+                                "string",
                               ],
                             },
                             {
@@ -28825,8 +28825,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 null,
                               ],
                               "type": [
-                                "string",
                                 "null",
+                                "string",
                               ],
                             },
                           ],
@@ -31915,8 +31915,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 null,
                               ],
                               "type": [
-                                "string",
                                 "null",
+                                "string",
                               ],
                             },
                             {
@@ -31941,8 +31941,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 null,
                               ],
                               "type": [
-                                "string",
                                 "null",
+                                "string",
                               ],
                             },
                           ],
@@ -36239,8 +36239,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             null,
                           ],
                           "type": [
-                            "string",
                             "null",
+                            "string",
                           ],
                         },
                         {
@@ -36265,8 +36265,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                             null,
                           ],
                           "type": [
-                            "string",
                             "null",
+                            "string",
                           ],
                         },
                       ],
@@ -42720,8 +42720,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 null,
                               ],
                               "type": [
-                                "string",
                                 "null",
+                                "string",
                               ],
                             },
                             {
@@ -42746,8 +42746,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 null,
                               ],
                               "type": [
-                                "string",
                                 "null",
+                                "string",
                               ],
                             },
                           ],
@@ -45836,8 +45836,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 null,
                               ],
                               "type": [
-                                "string",
                                 "null",
+                                "string",
                               ],
                             },
                             {
@@ -45862,8 +45862,8 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                                 null,
                               ],
                               "type": [
-                                "string",
                                 "null",
+                                "string",
                               ],
                             },
                           ],
