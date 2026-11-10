@@ -1,11 +1,11 @@
 ---
 id: TASK-397
 title: Patch residual dependency advisories and align Actions with Node 24
-status: In Progress
+status: Done
 assignee:
   - '@codex'
 created_date: '2026-10-30T20:04:00Z'
-updated_date: '2026-11-10T04:34:00Z'
+updated_date: '2026-11-10T13:51:00Z'
 labels: []
 dependencies: []
 references:
@@ -28,7 +28,7 @@ Clear currently reported low and moderate npm advisories using compatible patche
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `pnpm audit --audit-level low` reports no untriaged advisories, with any blocked advisory documented and explicitly scoped.
+- [x] #1 `pnpm audit --audit-level low` reports no untriaged advisories, with any blocked advisory documented and explicitly scoped.
 - [x] #2 GitHub workflow action pins implicated in Node 20 runtime warnings are updated to verified Node 24-compatible releases without changing workflow inputs or deployment behavior.
 - [x] #3 Lockfile is consistent with package manifests and overrides.
 - [x] #4 Focused validation and the repository quick verification pass; CI results are recorded.
@@ -79,6 +79,8 @@ Remote CI inspection: PR #130 Pipeline run https://github.com/phalanxduel/phalan
 Confirmed PR #130 build failure from dedicated job logs: admin/src/server/instrument.ts:89 metricReader removed by sdk-node 0.300. Upstream SDK 3 migration guide also explicitly says SDK 2 cannot be combined with API 1.10. Prepared compatible manifests by retaining every directly declared @opentelemetry dependency from main, merging existing lock snapshots, then successfully regenerating/validating the lockfile offline with pnpm install --lockfile-only --offline --ignore-scripts. Published candidate f5f495ac to the existing Dependabot PR #130 branch with an expected-head lease; this is review/CI work, not a main merge. CI will install and verify the actual updated packages. Dedicated log tools supersede earlier claim that logs were unavailable.
 
 Fresh candidate audit run 42756166723 found GHSA-gg6h-894w-4m9c (re2js <2.8.7), GHSA-3g3m-2fjr-6pw4 (glob <=14.0.1), and GHSA-g3hv-75wg-m249 (minimatch <11.0.1). All three have reachable tooling dependency paths; do not dismiss them as merely stale snapshots. Candidate now uses re2js 2.8.7, glob 14.0.4, and minimatch 11.0.5 with explicit override floors. Lock graph traversal prunes unreachable snapshots; pnpm offline lockfile consistency passes. Retained OTel family is additionally bounded by API <1.10, core <3, and propagator-jaeger <3 overrides. Pending remote install, fresh audit, and tests before AC #1 can be rechecked. Exact collector-image config validation and Gemini auth regression checks already passed remotely.
+
+Verification on merged candidate: Pipeline run 42825745928 passed sanity and isolated server tests (400 passed; OpenAPI snapshot passed after normalizing unordered JSON Schema type arrays). Pipeline run 42826429786 and Code Quality run 42826428062 passed on main at 134e3b0. Audit reported no known vulnerabilities; the later 6-update group was closed after its server gate reproduced the @fastify/swagger 9.9.3 schema mismatch.
 <!-- SECTION:NOTES:END -->
 
 ## Comments
@@ -93,3 +95,9 @@ Verification note: CI checks for dependency audit and action SHA pinning passed 
 
 ---
 <!-- COMMENTS:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Merged the compatible npm catch-up, zero-finding audit, Node 24 action pin refresh, collector validation, and authenticated Gemini skip guard. Dependabot PR #130 merged to main at 134e3b0; follow-up collector and setup-node updates also merged. Kept @fastify/swagger below 9.8.2 because 9.8.2+ changes the generated nullable schema and fails the OpenAPI contract; Dependabot now defers that version line until an explicit contract/SDK review.
+<!-- SECTION:FINAL_SUMMARY:END -->
