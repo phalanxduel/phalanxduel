@@ -164,21 +164,23 @@ start_service() {
   echo "▶️  Starting $svc..."
   local logfile="$LOG_DIR/$svc.log"
 
-  local start_cmd="pnpm dev:$svc"
+  local work_dir="$REPO_ROOT"
+  local start_cmd=(pnpm "dev:$svc")
   if [ "$svc" = "client" ]; then
     # Keep the environment loader and the Vite process in one tracked
     # launcher. This avoids losing the client when the daemon wrapper exits.
-    start_cmd="scripts/dev/start-client.sh"
+    start_cmd=(scripts/dev/start-client.sh)
   fi
   if [ "$svc" = "site" ]; then
-    start_cmd="cd ../site && ./bin/server"
+    work_dir="$REPO_ROOT/../site"
+    start_cmd=(./bin/server)
   elif [ "$svc" = "backlog" ]; then
-    start_cmd="backlog browser"
+    start_cmd=(backlog browser)
   elif [ "$svc" = "admin" ]; then
     # Local demo ports are intentionally isolated from the common 3000 range.
     # Keep this explicit because a shell or dotenv value from an older setup
     # must not silently move the admin API away from the vhost and waiter.
-    start_cmd="env PHALANX_ADMIN_PORT=${PHALANX_ADMIN_PORT:-3102} pnpm dev:admin"
+    start_cmd=(env "PHALANX_ADMIN_PORT=${PHALANX_ADMIN_PORT:-3102}" pnpm dev:admin)
   fi
 
   if [ "$USE_TMUX" = "true" ]; then
@@ -190,7 +192,9 @@ start_service() {
       if ! tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
         tmux new-session -d -s "$TMUX_SESSION" -n "system" "echo 'Phalanx Tmux Coordinator' && bash"
       fi
-      tmux new-window -t "$TMUX_SESSION" -n "$svc" "cd \"$REPO_ROOT\" && $start_cmd"
+      local tmux_cmd
+      printf -v tmux_cmd '%q ' "${start_cmd[@]}"
+      tmux new-window -t "$TMUX_SESSION" -n "$svc" -c "$work_dir" "$tmux_cmd"
       echo "✔  $svc started in tmux session '$TMUX_SESSION:$svc'."
       return
     fi
@@ -198,14 +202,16 @@ start_service() {
 
   if [ "$DAEMON" = "true" ]; then
     (
-      cd "$REPO_ROOT"
-      $start_cmd > "$logfile" 2>&1 &
-      echo $! > "$RUN_DIR/$svc.pid"
-    )
+      cd "$work_dir" || exit 1
+      # Detach from terminal hangups and input, including for Vite.
+      trap '' HUP
+      exec "${start_cmd[@]}"
+    ) > "$logfile" 2>&1 < /dev/null &
+    echo $! > "$RUN_DIR/$svc.pid"
     echo "✔  $svc started in daemon mode (PID: $(cat "$RUN_DIR/$svc.pid")). Logs: $logfile"
   else
     echo "✔  $svc starting in foreground..."
-    cd "$REPO_ROOT" && $start_cmd
+    cd "$work_dir" && "${start_cmd[@]}"
   fi
 }
 

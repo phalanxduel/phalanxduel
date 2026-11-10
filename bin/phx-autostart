@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# bin/phx-autostart — Autostart Phalanx Duel stack on login via launchd.
+# Managed by LaunchAgent: com.phalanxduel.autostart
+set -euo pipefail
+
+case "${1:-}" in
+  -h|--help)
+    echo "Usage: $(basename "$0")"
+    echo "Wait up to 30s for local PostgreSQL, then start the demo in tmux without opening a browser."
+    exit 0
+    ;;
+  "") ;;
+  *) echo "Unknown argument: $1" >&2; exit 64 ;;
+esac
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LOG_DIR="$REPO_ROOT/.phx/logs"
+mkdir -p "$LOG_DIR"
+LOG="$LOG_DIR/autostart.log"
+
+# launchd does not load the interactive shell's PATH.
+export PATH="${PATH:-/usr/bin:/bin}:${PNPM_HOME:-$HOME/.local/share/pnpm}:$HOME/Library/pnpm:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/opt/homebrew/opt/postgresql@18/bin:/opt/homebrew/opt/postgresql@17/bin:/usr/local/opt/postgresql@18/bin:/usr/local/opt/postgresql@17/bin:/usr/sbin:/sbin"
+
+log() { printf '[%s] %s\n' "$(date '+%Y-%m-%dT%H:%M:%S')" "$*" | tee -a "$LOG"; }
+
+for dependency in pg_isready node pnpm; do
+  if ! command -v "$dependency" >/dev/null 2>&1; then
+    log "ERROR: Required command not found: $dependency"
+    exit 1
+  fi
+done
+
+log "phx-autostart: initializing Phalanx Duel localhost stack..."
+
+# 1. Wait for host PostgreSQL to be responsive (up to 30s)
+log "Checking PostgreSQL availability..."
+waited=0
+while ! pg_isready -h localhost -p 5432 -U phalanx_dev -d phalanxduel_development >/dev/null 2>&1; do
+  if [ "$waited" -ge 30 ]; then
+    log "ERROR: PostgreSQL not ready after 30s. Aborting autostart."
+    exit 1
+  fi
+  sleep 1
+  waited=$((waited + 1))
+done
+log "PostgreSQL ready (waited ${waited}s)."
+
+# 2. Start services in tmux session phx (or daemon mode fallback) without opening browser
+log "Starting Phalanx Duel services..."
+"$REPO_ROOT/bin/phx-demo-ctl" up --tmux --no-open >> "$LOG" 2>&1
+
+log "phx-autostart: Phalanx Duel services successfully started and healthy."

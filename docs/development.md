@@ -47,6 +47,19 @@ rtk pnpm services start all -d
 rtk pnpm services status
 ```
 
+For the demo stack (server, client, and admin), use
+`rtk bin/phx demo up --tmux --no-open`. The same flags work with `restart`.
+If tmux is unavailable, services run as detached daemons, with logs in
+`.phx/logs/`. Daemons and the cockpit survive closure of the launching terminal.
+
+On macOS, `bin/autostart` (also available as `bin/phx-autostart`) is an entry
+point for an existing login LaunchAgent. It waits up to 30 seconds for local
+PostgreSQL, then starts the demo in tmux without opening a browser. It uses
+`HOME` and `PNPM_HOME` to find pnpm; node and PostgreSQL tools must be installed
+on its PATH. Startup output goes to `.phx/logs/autostart.log`. Running this
+entry point does not install or enable a LaunchAgent. Use `--help` to inspect
+usage without starting services.
+
 Individual service commands:
 - `rtk pnpm dev:server`: Starts the Fastify/WebSocket server.
 - `rtk pnpm dev:client`: Starts the Vite development server.

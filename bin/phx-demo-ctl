@@ -76,6 +76,7 @@ Commands:
 
 Options:
   --no-open  Print or generate the result without opening a browser.
+  -t, --tmux  Start services in tmux (falls back to daemons if unavailable).
 
 Examples:
   $CLI_NAME up       # before the talk: start, wait, and open the cockpit page
@@ -92,9 +93,23 @@ if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
 fi
 
 NO_OPEN=false
+USE_TMUX=false
 for arg in "$@"; do
   [ "$arg" = "--no-open" ] && NO_OPEN=true
+  if [ "$arg" = "--tmux" ] || [ "$arg" = "-t" ]; then
+    USE_TMUX=true
+  fi
 done
+
+start_services() {
+  local start_flag="-d"
+  if [ "$USE_TMUX" = "true" ]; then
+    start_flag="--tmux"
+  fi
+  bin/services start server "$start_flag"
+  bin/services start client "$start_flag"
+  bin/services start admin "$start_flag"
+}
 
 service_pid() {
   local service=$1
@@ -161,9 +176,11 @@ start_cockpit_server() {
   mkdir -p "$SERVICES_RUN_DIR" "$SERVICES_LOG_DIR"
   (
     cd "$REPO_ROOT"
-    node scripts/demo-cockpit-server.mjs "$QUICKLINKS_FILE" "$SERVICES_LOG_DIR" "$COCKPIT_PORT" > "$SERVICES_LOG_DIR/cockpit.log" 2>&1 &
-    echo $! > "$COCKPIT_PID_FILE"
-  )
+    # Keep the cockpit alive when the launching terminal closes.
+    trap '' HUP
+    exec node scripts/demo-cockpit-server.mjs "$QUICKLINKS_FILE" "$SERVICES_LOG_DIR" "$COCKPIT_PORT"
+  ) > "$SERVICES_LOG_DIR/cockpit.log" 2>&1 < /dev/null &
+  echo $! > "$COCKPIT_PID_FILE"
   for _ in 1 2 3 4 5; do
     curl -fsS --max-time 1 "$COCKPIT_BRIDGE_URL/health" >/dev/null 2>&1 && return
     sleep 1
@@ -589,9 +606,7 @@ wait_ready() {
 
 case "${1:-}" in
   up)
-    bin/services start server -d
-    bin/services start client -d
-    bin/services start admin -d
+    start_services
     wait_ready
     ;;
   down)
@@ -605,9 +620,7 @@ case "${1:-}" in
     bin/services stop admin
     bin/services stop client
     bin/services stop server
-    bin/services start server -d
-    bin/services start client -d
-    bin/services start admin -d
+    start_services
     wait_ready
     ;;
   status)
