@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@codex'
 created_date: '2026-10-30T20:04:00Z'
-updated_date: '2026-11-10T13:51:00Z'
+updated_date: '2026-11-10T14:00:00Z'
 labels: []
 dependencies: []
 references:
@@ -81,6 +81,8 @@ Confirmed PR #130 build failure from dedicated job logs: admin/src/server/instru
 Fresh candidate audit run 42756166723 found GHSA-gg6h-894w-4m9c (re2js <2.8.7), GHSA-3g3m-2fjr-6pw4 (glob <=14.0.1), and GHSA-g3hv-75wg-m249 (minimatch <11.0.1). All three have reachable tooling dependency paths; do not dismiss them as merely stale snapshots. Candidate now uses re2js 2.8.7, glob 14.0.4, and minimatch 11.0.5 with explicit override floors. Lock graph traversal prunes unreachable snapshots; pnpm offline lockfile consistency passes. Retained OTel family is additionally bounded by API <1.10, core <3, and propagator-jaeger <3 overrides. Pending remote install, fresh audit, and tests before AC #1 can be rechecked. Exact collector-image config validation and Gemini auth regression checks already passed remotely.
 
 Verification on merged candidate: Pipeline run 42825745928 passed sanity and isolated server tests (400 passed; OpenAPI snapshot passed after normalizing unordered JSON Schema type arrays). Pipeline run 42826429786 and Code Quality run 42826428062 passed on main at 134e3b0. Audit reported no known vulnerabilities; the later 6-update group was closed after its server gate reproduced the @fastify/swagger 9.9.3 schema mismatch.
+
+2026-11-10 fresh Dependabot follow-up: OpenTelemetry group PR #138 failed in Pipeline because @opentelemetry/api 1.9.1 does not export `logs` while the group upgrades instrumentation/exporter packages to 0.223. Closed it and deferred OTel 0.217+ and SDK 2.8+ until the API/SDK line is coordinated. TypeScript 7 PR #141 also failed CI; coverage-v8 5 is deferred until it can move with the matching Vitest major. Dependabot config now records these boundaries.
 <!-- SECTION:NOTES:END -->
 
 ## Comments
