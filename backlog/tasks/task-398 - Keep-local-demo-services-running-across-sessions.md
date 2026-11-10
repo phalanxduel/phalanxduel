@@ -1,11 +1,11 @@
 ---
 id: TASK-398
 title: Keep local demo services running across sessions
-status: To Do
+status: Verification
 assignee:
   - codex
 created_date: '2026-11-10T04:03:00Z'
-updated_date: '2026-11-10T04:07:00Z'
+updated_date: '2026-11-10T04:29:00Z'
 labels: []
 dependencies: []
 priority: medium
@@ -45,6 +45,8 @@ L1 context brief: follow bin/phx-services daemon/tmux controls and bin/phx-demo-
 2. Share demo startup between up/restart and document --tmux.
 3. Use HOME/PNPM_HOME for login startup, validate prerequisites, retain the bounded PostgreSQL availability probe, and document use without modifying LaunchAgent registration.
 4. Validate using isolated shell fixtures, shellcheck, and unified check; record environmental blockers. Commit locally; do not push while the required complete check remains blocked.
+
+User pushed f57f2eac and 1dc34434 from a normal terminal. The pre-push quick gate passed; main Pipeline 42755082380 and Code Quality 42755082324 both succeeded. Treat earlier networking/PostgreSQL failures as limitations of this agent execution context, not confirmed host outages. Service implementation and behavior checks are complete and landed; remaining broad release/DB checks are separate evidence, not a reason to leave implemented service work To Do.
 <!-- SECTION:PLAN:END -->
 
 ## Implementation Notes
@@ -53,4 +55,6 @@ L1 context brief: follow bin/phx-services daemon/tmux controls and bin/phx-demo-
 Validation: isolated fixtures outside the repository exercised server/client/admin/site daemon argument and working-directory handling (including spaces), actual SIGHUP survival, stdin EOF, tmux working-directory serialization, fallback without tmux, autostart dispatch, help without startup, 30-attempt database timeout, and demo up/restart with default, --tmux, and -t. Shell syntax passes. Focused shellcheck passes excluding pre-existing SC1091 (external sourced helper) and SC2086 (multi-PID kill sites); no new shellcheck findings. `pnpm verify:quick` passes after final code changes: workspace build, lint/actionlint, 24 database-isolation assertions, typecheck, committed docs, Markdown lint, formatting. `pnpm check` reached server tests after 163 shared and 422 engine tests passed, then the test wrapper reported PostgreSQL unavailable on localhost:5432. Separately client 267, admin 15, and MCP 8 tests pass (875 total non-server tests). Ambient DATABASE_URL was removed for all pnpm validation; server tests retained bin/maint/with-test-postgres.sh and never used a personal database. `zsvc start postgres` attempted normal service startup but launchctl returned 141 / Reentrancy avoided. Do not restart/reset the host database or modify platform configuration to bypass this. No login agent installed or changed. Remaining work: restore PostgreSQL reachability, rerun pnpm check, then push and record CI.
 
 Cockpit fixture also passed actual SIGHUP survival and stdin EOF. The original nohup approach failed in the headless macOS execution context (`can't detach from console: Inappropriate ioctl for device`); the final ignored-HUP + exec implementation passed for all tested daemons and cockpit. Verification fixtures are local-only at /private/tmp/phx-service-check.py.
+
+Main verification: https://github.com/phalanxduel/phalanxduel/actions/runs/42755082380 and https://github.com/phalanxduel/phalanxduel/actions/runs/42755082324 both passed on 1dc34434. Ready for review; no deployment triggered.
 <!-- SECTION:NOTES:END -->

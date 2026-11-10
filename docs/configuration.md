@@ -118,3 +118,16 @@ Some features are controlled by environment variables or admin-level flags.
 - `VITE_PREACT_LOBBY`: Force-enable the new lobby regardless of rollout.
 
 See [Feature Flags Architecture](./architecture/feature-flags.md) for more details.
+## Optional Gemini automation
+
+Gemini workflows use `scripts/ci/run-gemini.sh`. Events without authentication
+(including Dependabot events where GitHub withholds secrets) skip Gemini with
+a notice and do not download the CLI. Configured API-key, Google Code Assist,
+and Google Cloud workload-identity authentication continue to run normally.
+`GOOGLE_API_KEY` is accepted as a fallback for `GEMINI_API_KEY`; workload
+identity selects Vertex and maps the configured project and location.
+
+Dependency updates keep OpenTelemetry separate from the general npm group.
+The application currently uses SDK 2.x and API 1.9.x. Experimental SDK 0.300+
+and API 1.10+ updates require a coordinated SDK 3 migration and are excluded
+from automatic updates until that migration is implemented and verified.

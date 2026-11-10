@@ -48,10 +48,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24.22.2
 
@@ -64,6 +64,72 @@ jobs:
       - name: Run lightweight verification
         run: corepack pnpm verify:quick
 
+      - name: Test optional Gemini authentication
+        run: bash scripts/ci/run-gemini.test.sh
+
+      - name: Validate bundled collector configuration
+        run: |
+          collector_image=$(awk '/^FROM otel\/opentelemetry-collector-contrib:/ {print $2; exit}' Dockerfile)
+          test -n "$collector_image"
+          docker run --rm --network none \
+            -e LGTM_OTLP_ENDPOINT=127.0.0.1:4317 \
+            -v "$PWD/otel-collector.fly.yaml:/etc/otelcol-contrib/config.yaml:ro" \
+            "$collector_image" validate --config=/etc/otelcol-contrib/config.yaml
+
+      - name: Test updated npm dependencies
+        if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'dependabot/npm_and_yarn/')
+        run: |
+          corepack pnpm audit --audit-level=low
+          corepack pnpm test:run:shared
+          corepack pnpm test:run:engine
+          corepack pnpm --filter @phalanxduel/client test
+          corepack pnpm --filter @phalanxduel/admin test
+          corepack pnpm --filter @phalanxduel/mcp test
+
+  dependency-server:
+    name: Dependency Server Tests
+    needs: [sanity]
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'dependabot/npm_and_yarn/')
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: phalanxduel_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://phalanx_test:phx_test_local@localhost:5432/phalanxduel_test # secretlint-disable-line
+      OTEL_SDK_DISABLED: 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.22.2
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install locked dependencies
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Build server dependencies
+        run: |
+          corepack pnpm --filter @phalanxduel/shared build
+          corepack pnpm --filter @phalanxduel/engine build
+
+      - name: Test server with isolated PostgreSQL
+        run: corepack pnpm test:run:server
+
   test:
     name: Test and Lint
     if: github.event_name == 'workflow_dispatch'
@@ -71,7 +137,7 @@ jobs:
     # It proves the game is playable and testable via CI checks and UI playthroughs.
     runs-on: ubuntu-24.04
     container:
-      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
     services:
       postgres:
         image: pgvector/pgvector:pg17
@@ -89,13 +155,13 @@ jobs:
       DATABASE_URL: postgresql://phalanx_test:phx_test_local@postgres:5432/phalanxduel_test # secretlint-disable-line
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Fix git directory ownership
         run: git config --global --add safe.directory '*'
 
       - name: Setup Node.js
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24.22.2
 
@@ -223,10 +289,10 @@ jobs:
       REQUIRE_ADVERSARIAL_POSTGRES: '1'
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24.22.2
 
@@ -282,10 +348,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24.22.2
 
@@ -337,13 +403,13 @@ jobs:
       image_ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
 
       - name: Log in to GHCR
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -385,13 +451,13 @@ jobs:
       url: https://play.phalanxduel.com
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # master
 
       - name: Log in to GHCR
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}

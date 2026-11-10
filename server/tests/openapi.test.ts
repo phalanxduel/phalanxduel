@@ -18,6 +18,20 @@ describe('OpenAPI Contract', () => {
 
       const spec = JSON.parse(response.body);
 
+      // JSON Schema defines `type` arrays as sets; generators may emit nullable
+      // types in different orders across compatible dependency updates.
+      const normalizeTypeOrder = (value: unknown): void => {
+        if (Array.isArray(value)) {
+          value.forEach(normalizeTypeOrder);
+          return;
+        }
+        if (typeof value !== 'object' || value === null) return;
+        const record = value as Record<string, unknown>;
+        if (Array.isArray(record.type)) record.type.sort();
+        Object.values(record).forEach(normalizeTypeOrder);
+      };
+      normalizeTypeOrder(spec);
+
       // Stabilize dynamic environment/version fields so the snapshot only guards API shape.
       if (spec.servers) {
         spec.servers = [{ url: 'http://127.0.0.1:3001' }];
