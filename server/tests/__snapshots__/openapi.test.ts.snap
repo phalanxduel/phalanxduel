@@ -15116,9 +15116,9 @@ exports[`OpenAPI Contract > should match the snapshot of the generated OpenAPI s
               "metadata": {
                 "additionalProperties": {
                   "type": [
-                    "string",
-                    "number",
                     "boolean",
+                    "number",
+                    "string",
                   ],
                 },
                 "type": "object",
