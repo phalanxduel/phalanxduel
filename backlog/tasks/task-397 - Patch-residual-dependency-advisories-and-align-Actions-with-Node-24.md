@@ -5,7 +5,7 @@ status: Verification
 assignee:
   - '@codex'
 created_date: '2026-10-30T20:04:00Z'
-updated_date: '2026-10-30T20:33:00Z'
+updated_date: '2026-11-10T04:06:00Z'
 labels: []
 dependencies: []
 references:
@@ -67,6 +67,10 @@ After the first push, GitHub Dependabot's dependency snapshot identified one add
 After the brace-expansion patch, `pnpm verify:quick` passed build, lint/actionlint, database isolation, typecheck, docs verification, and formatting. The first pushed revision's remote adversarial job passed; its pipeline Test and Lint job was still queued when the final brace-expansion fix was prepared. A fresh pipeline run for the final commit will provide authoritative remote verification.
 
 Final pushed revision `887912bc` CI: Dependency Audit and GHA Pinning Audit passed; Test and Lint passed in 6m39s; Adversarial Security Tests passed; GHCR Build and Push passed. Production promotion alone failed at Fly release creation due the account overdue-invoice 403, so no Fly release was created. The current GitHub dependency graph SBOM reports brace-expansion 5.0.12 (the first patched version) and `pnpm audit --audit-level low` reports no known vulnerabilities. Dependabot alert #249 remains open with its 2026-10-18 update timestamp despite the graph reporting the patched version; treating it as stale metadata, not dismissing it manually. Game and admin readiness rechecked after CI and both returned ready/database OK. Task is ready for review.
+
+2026-11-09 agenda review: GitHub connector confirmed main package.json already pins Vitest 4.1.12. Closed obsolete PR #105 proposing 4.1.11 (conflicting/downgrade). Remaining open PRs: Actions #96–100, Docker #128 (collector), #129 (Playwright), and npm group #130. Shell DNS fails for api.github.com and registry.npmjs.org (curl exit 6; pnpm audit ENOTFOUND), so current advisory status and new package installs cannot be verified. Do not infer a clean current security scan from the historical audit. #129 must be coordinated with npm Playwright versions, and large #130 needs install/build/test validation before merging. No advisory was dismissed and no unverified dependency update merged.
+
+Remote CI inspection: PR #130 Pipeline run https://github.com/phalanxduel/phalanxduel/actions/runs/42616901893 installed locked dependencies successfully, then failed Sanity Checks / Run lightweight verification (job 129158899307). The connector cannot fetch actions job logs (URL rejected as unsupported), so the failure's underlying code cause remains unconfirmed. PR #128 Pipeline run 42614341466 and PR #129 run 42614361781 succeeded, but this lightweight gate does not validate collector image/runtime or Playwright browser compatibility. Older Actions PRs #96–100 have failed historical runs and need current-base validation. Gemini review additionally fails independently on PR #130 (run 42616901838, Run Gemini pull request review); no credential changes attempted.
 <!-- SECTION:NOTES:END -->
 
 ## Comments
