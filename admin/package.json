@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.6",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.6",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "vite": "^8.3.7",
