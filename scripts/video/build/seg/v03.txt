@@ -1,0 +1,2 @@
+file '/Users/mike/github.com/phalanxduel/game/scripts/video/build/seg/cv03.webm'
+file '/Users/mike/github.com/phalanxduel/game/scripts/video/build/seg/fv03.webm'

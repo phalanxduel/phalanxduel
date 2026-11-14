@@ -1,0 +1,11 @@
+---
+type: C4 Component
+title: Combat math
+status: stable
+groma:
+  id: combat-math
+  parent: phalanxduel-game
+  code:
+    - scanner: typescript
+      file: engine/src/combat-math.ts
+---

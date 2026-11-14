@@ -1,0 +1,11 @@
+---
+type: C4 Component
+title: Model matches id simulate post 200 response pre state params initiative
+status: stable
+groma:
+  id: model-matches-id-simulate-post-200-response-pre-state-params-initiative
+  parent: duel-cli
+  code:
+    - scanner: go
+      file: clients/go/duel-cli/internal/phalanxapi/model__matches__id__simulate_post_200_response_pre_state_params_initiative.go
+---

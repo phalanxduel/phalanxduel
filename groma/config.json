@@ -1,0 +1,41 @@
+{
+  "scanners": [
+    {
+      "id": "go",
+      "source": "@groma/scanner-go@0.2.3",
+      "include": ["**/*.go", "**/go.mod"],
+      "exclude": ["vendor/"]
+    },
+    {
+      "id": "typescript",
+      "source": "@groma/scanner-typescript@0.2.4",
+      "include": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/tsconfig*.json",
+        "**/package.json",
+        "**/*.html",
+        "**/angular.json",
+        "**/project.json",
+        "**/nx.json"
+      ],
+      "exclude": [
+        "*.test.ts",
+        "*.test.tsx",
+        "*.spec.ts",
+        "*.spec.tsx",
+        "/test/",
+        "node_modules/",
+        "dist/",
+        "build/",
+        "coverage/"
+      ]
+    }
+  ],
+  "workSources": [
+    {
+      "id": "backlog",
+      "version": "1.55.3"
+    }
+  ]
+}

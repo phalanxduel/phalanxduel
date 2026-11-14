@@ -1,0 +1,8 @@
+file '/Users/mike/github.com/phalanxduel/game/scripts/video/build/seg/seg00.webm'
+file '/Users/mike/github.com/phalanxduel/game/scripts/video/build/seg/seg01.webm'
+file '/Users/mike/github.com/phalanxduel/game/scripts/video/build/seg/seg02.webm'
+file '/Users/mike/github.com/phalanxduel/game/scripts/video/build/seg/seg03.webm'
+file '/Users/mike/github.com/phalanxduel/game/scripts/video/build/seg/seg04.webm'
+file '/Users/mike/github.com/phalanxduel/game/scripts/video/build/seg/seg05.webm'
+file '/Users/mike/github.com/phalanxduel/game/scripts/video/build/seg/seg06.webm'
+file '/Users/mike/github.com/phalanxduel/game/scripts/video/build/seg/seg07.webm'
