@@ -64,6 +64,9 @@ jobs:
       - name: Run lightweight verification
         run: corepack pnpm verify:quick
 
+      - name: Verify architecture and knowledge graph
+        run: corepack pnpm verify:architecture
+
       - name: Test optional Gemini authentication
         run: bash scripts/ci/run-gemini.test.sh
 

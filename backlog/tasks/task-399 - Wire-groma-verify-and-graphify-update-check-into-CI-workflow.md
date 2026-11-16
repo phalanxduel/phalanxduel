@@ -1,7 +1,7 @@
 ---
 id: TASK-399
 title: Wire groma verify and graphify update check into CI workflow
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-11-14T22:50:00Z'
 labels:
@@ -21,7 +21,7 @@ Ensure the 652-element TypeScript/Go C4 architecture model in groma/architecture
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 groma scan --plain reports zero architectural drift
+- [x] #1 groma scan --plain reports zero architectural drift
 <!-- AC:END -->
 
 ## Definition of Done

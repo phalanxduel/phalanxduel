@@ -1,8 +1,9 @@
 ---
 type: Groma Project
-title: phalanxduel-game
+title: Phalanx Duel
 groma:
   profile: architecture
+description: Deterministic tactical card-dueling game platform
 ---
 
-Architecture for phalanxduel-game.
+Monorepo containing the authoritative TypeScript game engine, Fastify WebSocket/HTTP server, React web client, admin portal, MCP server, Go CLI, and QA/ops tooling.
