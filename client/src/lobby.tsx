@@ -3675,7 +3675,7 @@ export function unmountLobby(container: HTMLElement): void {
   preactRender(null, container);
 }
 
-export function validateOperativeId(name: string): string | null {
+function validateOperativeId(name: string): string | null {
   if (!name || name.trim().length === 0) return 'Name is required';
   if (name.trim().length < 3) return 'Name too short (min 3 characters)';
   if (name.trim().length > 30) return 'Name too long (max 30 characters)';

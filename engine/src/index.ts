@@ -66,6 +66,7 @@ export type {
 } from './bot.js';
 export { TIER_CONFIG } from './bot-tiers.js';
 export type { BotTier, TierConfig, HeuristicWeights } from './bot-tiers.js';
+export { evaluateState } from './mcts.js';
 
 // Event derivation
 export { deriveEventsFromEntry } from './events.js';

@@ -3,24 +3,10 @@
  * Licensed under the GNU Affero General Public License v3.0.
  */
 
-import type { PhalanxEvent, MatchEventLog, TransactionLogEntry } from '@phalanxduel/shared';
+import type { PhalanxEvent, MatchEventLog } from '@phalanxduel/shared';
 import * as Hash from '@phalanxduel/shared/hash';
-import {
-  observerForViewer,
-  projectEventsForObserver,
-  projectTransactionLogForObserver,
-} from '@phalanxduel/engine';
+import { observerForViewer, projectEventsForObserver } from '@phalanxduel/engine';
 const { computeStateHash } = Hash;
-
-/**
- * Redacts sensitive information from transaction log entries for public view.
- */
-export function redactTransactionLog(
-  log: TransactionLogEntry[] | undefined,
-  viewerIndex: number | null,
-): TransactionLogEntry[] | undefined {
-  return projectTransactionLogForObserver(log, observerForViewer(viewerIndex));
-}
 
 /**
  * Redacts card details in events for public/spectator view.

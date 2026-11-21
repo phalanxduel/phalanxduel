@@ -12,12 +12,7 @@
       "project": ["src/**/*.ts", "tests/**/*.ts"]
     },
     "server": {
-      "entry": [
-        "src/index.ts",
-        "src/ops/reset-admin-password.ts",
-        "scripts/**/*.ts",
-        "tests/perf/**/*.bench.ts"
-      ],
+      "entry": ["scripts/**/*.ts", "tests/perf/**/*.bench.ts"],
       "project": ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"]
     },
     "client": {
@@ -27,23 +22,17 @@
       "project": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts"]
     },
     "mcp": {
-      "entry": ["src/server.ts", "demo-llama.ts"],
-      "project": ["src/**/*.ts", "demo-llama.ts"]
+      "entry": ["demo-llama.ts"],
+      "project": ["src/**/*.ts"]
     }
   },
-  "ignore": [
-    "**/.stryker-tmp/**",
-    ".artifacts/**",
-    "artifacts/**",
-    "engine/reports/**",
-    "playwright-report/**",
-    "reports/**",
-    "test-results/**"
-  ],
   "ignoreBinaries": [
     "bin/qa/bootstrap.zsh",
     "bin/dock",
+    "bin/phx-datalake",
     "bin/phx-fix",
+    "groma",
+    "graphify",
     "go",
     "k6",
     "psql",

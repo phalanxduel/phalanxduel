@@ -2,13 +2,13 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import {
   computeBotAction,
+  evaluateState,
   getValidActions,
   simulateAttack,
   TIER_CONFIG,
-} from '../../../engine/src/index.js';
-import { evaluateState } from '../../../engine/src/mcts.js';
+  type BotTier,
+} from '@phalanxduel/engine';
 import type { GameState } from '@phalanxduel/shared';
-import type { BotTier } from '../../../engine/src/index.js';
 
 const BOT_TIERS = Object.keys(TIER_CONFIG) as BotTier[];
 

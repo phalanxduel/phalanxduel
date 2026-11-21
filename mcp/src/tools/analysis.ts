@@ -3,8 +3,7 @@ import { z } from 'zod';
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import type { GameState, Action } from '@phalanxduel/shared';
-import { getValidActions, simulateAttack } from '../../../engine/src/index.js';
-import { evaluateState } from '../../../engine/src/mcts.js';
+import { evaluateState, getValidActions, simulateAttack } from '@phalanxduel/engine';
 import { sanitizePlayerName } from '../utils/sanitize.js';
 
 const ANALYSIS_PROVIDER = (process.env.ANALYSIS_PROVIDER ?? 'anthropic') as 'anthropic' | 'llama';

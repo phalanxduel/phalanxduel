@@ -4,11 +4,6 @@ import { eq, count } from 'drizzle-orm';
 import { traceDbQuery } from '../db/observability.js';
 import { ACHIEVEMENT_METADATA, type AchievementType } from '@phalanxduel/shared';
 
-export interface AchievementStats {
-  totalEarned: number;
-  rarity: number; // percentage
-}
-
 export class AchievementService {
   /**
    * Returns rarity stats for all achievement types.
