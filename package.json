@@ -146,6 +146,7 @@
     "tournament:network": "bash bin/phx-tournament-check",
     "tournament:ports": "bash bin/phx-tournament-ports",
     "tournament:top": "bash bin/phx-tournament-top",
+    "tutorial:build": "node scripts/tutorials/build-episode.mjs",
     "tutorial:list": "tsx scripts/tutorials/stage-episode.ts --list",
     "tutorial:record": "tsx scripts/tutorials/record-episode.ts",
     "tutorial:stage": "tsx scripts/tutorials/stage-episode.ts",
