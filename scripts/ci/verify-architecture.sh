@@ -39,8 +39,8 @@ if command -v groma >/dev/null 2>&1; then
   echo "==> Running groma scan --plain..."
   run_groma_scan groma scan --plain
 elif [ "${CI:-}" = "true" ]; then
-  echo "==> Running npx groma@0.7.8 scan --plain (CI)..."
-  run_groma_scan npx --yes groma@0.7.8 scan --plain
+  echo "==> Running npx groma.md@0.7.8 scan --plain (CI)..."
+  run_groma_scan npx --yes groma.md@0.7.8 scan --plain
 else
   echo "WARN: groma CLI not found; skipping live groma scan."
 fi

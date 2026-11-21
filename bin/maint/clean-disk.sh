@@ -236,7 +236,7 @@ if [ "$FULL" = "true" ]; then
   fi
 fi
 
-NEW_ARTIFACTS_SIZE=$(du -sh "$ARTIFACTS_DIR" 2>/dev/null | awk '{print $1}')
+NEW_ARTIFACTS_SIZE=$(du -sh "$ARTIFACTS_DIR" 2>/dev/null | awk '{print $1}' || true)
 echo ""
 echo "✅ Disk hygiene complete!"
-echo "New artifacts directory size: $NEW_ARTIFACTS_SIZE (was $TOTAL_ARTIFACTS_SIZE)"
+echo "New artifacts directory size: ${NEW_ARTIFACTS_SIZE:-0B} (was ${TOTAL_ARTIFACTS_SIZE:-0B})"

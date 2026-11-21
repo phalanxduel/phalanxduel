@@ -15,3 +15,4 @@ Human or agentic player who authenticates, joins matchmaking, deploys units, and
 | --- | --- | --- | --- |
 | [player](player.md) | [client/src/index.ts](../../client/src/index.ts) | Plays matches in browser | HTTPS / WebSocket |
 | [player](player.md) | [clients/go/duel-cli/internal/phalanxapi/client.go](../../clients/go/duel-cli/internal/phalanxapi/client.go) | Plays matches in terminal | CLI / WebSocket |
+| [player](player.md) | [mcp/src/server.ts](../../mcp/src/server.ts) | Plays and analyzes via AI | Model Context Protocol |
