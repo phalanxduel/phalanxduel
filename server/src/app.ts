@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { trace, isSpanContextValid } from '@opentelemetry/api';
 import Fastify from 'fastify';
-import type { FastifyLoggerOptions } from 'fastify';
+import type { FastifyLoggerOptions, FastifyReply } from 'fastify';
 import websocket from '@fastify/websocket';
 import fastifyJwt from '@fastify/jwt';
 import fastifyCookie from '@fastify/cookie';
@@ -339,6 +339,31 @@ export async function buildApp(options: BuildAppOptions = {}) {
       return { error: 'Internal Server Error', code: 'INTERNAL_SERVER_ERROR' };
     }
   });
+
+  // ── Interactive Documentation & Architecture Library SPA ─────────
+  const docsLibraryPath = resolve(__dirname, '../../docs/library/index.html');
+  const serveDocsLibrary = async (_request: unknown, reply: FastifyReply) => {
+    try {
+      if (!existsSync(docsLibraryPath)) {
+        void reply.status(404);
+        return { error: 'Documentation library not found', code: 'NOT_FOUND' };
+      }
+      const content = readFileSync(docsLibraryPath, 'utf8');
+      void reply
+        .header(
+          'Content-Security-Policy',
+          "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:;",
+        )
+        .type('text/html; charset=utf-8');
+      return content;
+    } catch (err) {
+      app.log.error(err, 'Failed to serve Documentation Library SPA');
+      void reply.status(500);
+      return { error: 'Internal Server Error', code: 'INTERNAL_SERVER_ERROR' };
+    }
+  };
+  app.get('/docs/library', { schema: { hide: true } }, serveDocsLibrary);
+  app.get('/docs/library/', { schema: { hide: true } }, serveDocsLibrary);
 
   await app.register(helmet, {
     referrerPolicy: {

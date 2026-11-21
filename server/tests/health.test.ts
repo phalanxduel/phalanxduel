@@ -141,6 +141,16 @@ describe('Health Endpoints', () => {
       expect(paths).toContain('/matches');
       expect(paths).not.toContain('/matches/{matchId}/replay');
     });
+
+    it('GET /docs/library should serve the interactive Documentation Library SPA', async () => {
+      const response = await request.get('/docs/library');
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toContain('text/html');
+      expect(response.headers['content-security-policy']).toContain('cdn.jsdelivr.net');
+      expect(response.text).toContain('For Players');
+      expect(response.text).toContain('Investor');
+    });
   });
 
   describe('POST /matches', () => {

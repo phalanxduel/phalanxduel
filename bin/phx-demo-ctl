@@ -232,7 +232,7 @@ write_quicklinks() {
   jaeger_search_url="$JAEGER_URL/search"
   jaeger_monitor_url="$JAEGER_URL/monitor"
   jaeger_dependencies_url="$JAEGER_URL/dependencies"
-  local esc_git esc_play esc_admin esc_client esc_app_docs esc_o2 esc_o2_logs esc_o2_traces esc_o2_services esc_jaeger_search esc_jaeger_monitor esc_jaeger_dependencies esc_go esc_cockpit
+  local esc_git esc_play esc_admin esc_client esc_app_docs esc_app_library esc_o2 esc_o2_logs esc_o2_traces esc_o2_services esc_jaeger_search esc_jaeger_monitor esc_jaeger_dependencies esc_go esc_cockpit
   local esc_reel esc_pdf esc_narration esc_manifest esc_compat esc_pvl_md esc_pvl_graph esc_pvl_catalog esc_tech_catalog esc_system_story esc_server_log esc_client_log esc_admin_log
   local esc_play_health esc_play_ready esc_app_health esc_app_ready esc_admin_health esc_admin_ready esc_admin_ui esc_app_json
   local label_play label_admin label_app label_api
@@ -241,6 +241,7 @@ write_quicklinks() {
   esc_admin=$(html_escape "$ADMIN_URL")
   esc_client=$(html_escape "$CLIENT_URL/")
   esc_app_docs=$(html_escape "$APP_URL/docs")
+  esc_app_library=$(html_escape "$APP_URL/docs/library")
   esc_o2=$(html_escape "$o2_dashboard_url")
   esc_o2_logs=$(html_escape "$o2_logs_url")
   esc_o2_traces=$(html_escape "$o2_traces_url")
@@ -381,6 +382,7 @@ write_quicklinks() {
     <div class="card launch-card"><a class="surface-link" href="$esc_pvl_graph">PVL graph model ↗</a><small>Machine-readable nodes, edges, and ordered sequence</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_pvl_catalog">PVL scenario catalog ↗</a><small>Declared standard-user workflows and evidence gaps</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_tech_catalog">Tech &amp; OTel catalog ↗</a><small>Outside-in dependency inventory &amp; OTel cartography</small></div>
+    <div class="card launch-card"><a class="surface-link" href="$esc_app_library">Documentation &amp; Visual Library ↗</a><small>Interactive SPA for Players, Platform &amp; Investors, C4, ERD, and Topology</small></div>
     <div class="card launch-card"><a class="surface-link" href="$esc_cockpit">Refresh this cockpit ↗</a><small>Regenerate with <code>phx-demo-ctl links</code></small></div>
   </div>
 
@@ -574,6 +576,7 @@ EOF
   echo "   Admin:      $ADMIN_URL  ($(probe_label "$admin_code"))"
   echo "   App health: $APP_URL/health                    ($(probe_label "$app_code"))"
   echo "   API docs:   $APP_URL/docs                       ($(probe_label "$api_code"))"
+  echo "   Library:    $APP_URL/docs/library               (visual & architecture SPA)"
   echo "   Source:     $REPO_ROOT"
   echo "   PIDs:       server=${server_pid:-unknown} client=${client_pid:-unknown} admin=${admin_pid:-unknown}"
   echo "   Logs:       $SERVICES_LOG_DIR/{server,client,admin}.log"

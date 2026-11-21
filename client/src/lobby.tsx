@@ -3051,8 +3051,12 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
             href="https://github.com/phalanxduel/phalanxduel/blob/main/docs/gameplay/rules.md"
             class="footer-link"
             target="_blank"
+            rel="noopener noreferrer"
           >
             RULES (DOCS)
+          </a>
+          <a href="/docs/library" class="footer-link" target="_blank" rel="noopener noreferrer">
+            VISUAL GUIDE
           </a>
           {state.user && (
             <button

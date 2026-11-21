@@ -23,6 +23,17 @@ function parseHash(hash: string): { route: string; params: Record<string, string
   return { route: 'dashboard', params: {} };
 }
 
+function resolveDocsLibraryUrl(): string {
+  const { protocol, hostname } = window.location;
+  if (hostname === 'admin.lan.phalanxduel.com') {
+    return `${protocol}//play.lan.phalanxduel.com/docs/library`;
+  }
+  if (hostname === 'phalanxduel-admin.fly.dev') {
+    return 'https://play.phalanxduel.com/docs/library';
+  }
+  return 'http://127.0.0.1:3001/docs/library';
+}
+
 function Sidebar({ route }: { route: string }) {
   const navLink = (href: string, label: string, active: boolean) => (
     <a href={href} class={`app-nav-link${active ? ' active' : ''}`}>
@@ -56,6 +67,18 @@ function Sidebar({ route }: { route: string }) {
       <div class="app-nav-section">
         <div class="app-nav-label">Analytics</div>
         {navLink('#/reports', 'Queries', route === 'reports')}
+      </div>
+
+      <div class="app-nav-section">
+        <div class="app-nav-label">Resources</div>
+        <a
+          href={resolveDocsLibraryUrl()}
+          class="app-nav-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Docs Library ↗
+        </a>
       </div>
     </nav>
   );

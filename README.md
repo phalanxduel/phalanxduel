@@ -86,7 +86,8 @@ The **[Documentation Wiki](docs/README.md)** is the central entry point for all 
 - **[Database Schema ERD (SVG)](docs/database/schema-erd.svg)** — Interactive visual entity-relationship diagram ([Mermaid](docs/database/schema-erd.mmd) & [Model Catalog](docs/database/SCHEMA.md))
 - **[Infrastructure & Deployment Topology (SVG)](docs/system/infrastructure-topology.svg)** — Complete hybrid host-native and cloud deployment topology
 - **[Module Dependency Graph (SVG)](docs/system/dependency-graph.svg)** — Workspace package boundaries and architectural trust isolation
-- **[Documentation Library SPA](docs/library/index.html)** — Self-contained documentation reader (serve via `bin/phx-docs-library`)
+- **[Documentation Library SPA](docs/library/index.html)** — Self-contained visual library for players, engineers, partners, and investors (live at `/docs/library` or via `bin/phx-docs-library`)
+- **[Player, Partner & Investor Diagrams](docs/system/AUDIENCE_DIAGRAMS.md)** — Canonical Mermaid source for match lifecycle, combat cascade, competitive loop, platform ecosystem, anti-cheat moat, and scaling economics
 
 ### Key Entry Points
 - **[How to Play](docs/gameplay/how-to-play.md)** — Game rules and mechanics

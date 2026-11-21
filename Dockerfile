@@ -95,6 +95,8 @@ COPY --chown=nodejs:nodejs admin/package.json ./admin/package.json
 # Copy config and other required files
 COPY --chown=nodejs:nodejs package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY --chown=nodejs:nodejs otel-collector.fly.yaml ./otel-collector.fly.yaml
+COPY --chown=nodejs:nodejs docs/api/asyncapi.yaml ./docs/api/asyncapi.yaml
+COPY --chown=nodejs:nodejs docs/library/index.html ./docs/library/index.html
 
 # Switch to non-root user
 USER nodejs

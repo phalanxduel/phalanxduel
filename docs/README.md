@@ -28,6 +28,8 @@ Welcome to the central documentation hub. This directory contains the canonical 
 | Doc | What it covers |
 | :--- | :--- |
 | **[Full Stack Architecture](./architecture/FULL_STACK.md)** | Canonical runtime topology, ports, protocol flows, and verification gates |
+| **[Interactive Documentation Library](./library/index.html)** | Self-contained visual library SPA (Players, Platform & Investor Overview, C4, ERD, Topology, live at `/docs/library`) |
+| **[Player, Partner & Investor Diagrams](./system/AUDIENCE_DIAGRAMS.md)** | 8 audience-facing Mermaid diagrams covering gameplay loops, ecosystem, anti-cheat moat, and scaling |
 | **[Infrastructure & Deployment Topology](./system/INFRASTRUCTURE.md)** | Hybrid host-native and cloud deployment topology |
 | **[Architecture Principles](./architecture/principles.md)** | Core design, boundaries, and hashing model |
 | **[Domain Glossary](./reference/glossary.md)** | Canonical terminology for the game and system |
