@@ -421,6 +421,8 @@ export async function generateLibraryHtml(): Promise<string> {
     <button class="tab-btn" onclick="switchTab('tab-routes')">⚡ Fastify API Directory</button>
     <button class="tab-btn" onclick="switchTab('tab-deps')">📦 Package DAG</button>
     <button class="tab-btn" onclick="switchTab('tab-accessibility')">🛰️ Tournament Ports Matrix</button>
+    <button class="tab-btn" onclick="switchTab('tab-players')">🎮 For Players</button>
+    <button class="tab-btn" onclick="switchTab('tab-investors')">🚀 Platform & Investor Overview</button>
   </nav>
 
   <main>
@@ -521,6 +523,110 @@ export async function generateLibraryHtml(): Promise<string> {
               .join('')}
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- TAB 6: For Players -->
+    <div id="tab-players" class="tab-pane">
+      <div class="card">
+        <div class="card-title">
+          <span>⚔️ 1. Column Cascade &amp; Suit Boundary Map</span>
+          <span class="badge badge-ready">15-Second Rules Visual</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 0;font-family:var(--font-mono);font-size:12px">
+          <div style="padding:10px 14px;border-radius:6px;background:rgba(88,166,255,0.15);border:1px solid var(--accent)"><strong>Front Attacker</strong><br><span style="color:var(--text-muted)">♣ / ♠ amplify offense</span></div>
+          <span style="color:var(--accent);font-weight:700">→</span>
+          <div style="padding:10px 14px;border-radius:6px;background:var(--bg-card);border:1px solid var(--border)"><strong>Opposing Front Card</strong><br><span style="color:var(--text-muted)">Absorbs first</span></div>
+          <span style="color:var(--yellow);font-weight:700">→ ♦ →</span>
+          <div style="padding:10px 14px;border-radius:6px;background:var(--bg-card);border:1px solid var(--border)"><strong>Opposing Back Card</strong><br><span style="color:var(--text-muted)">♦ Diamond boundary absorbs spillover</span></div>
+          <span style="color:var(--red);font-weight:700">→ ♥ →</span>
+          <div style="padding:10px 14px;border-radius:6px;background:rgba(248,81,73,0.15);border:1px solid var(--red)"><strong>Opponent Life Points</strong><br><span style="color:var(--text-muted)">♥ Heart boundary cushions · 0 LP = Win</span></div>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted)">In Classic mode, surviving cards reset to full health between turns; in Cumulative mode, chip damage persists.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>🪜 2. Player Skill Ladder &amp; Mode Journey</span>
+          <span class="badge badge-get">8 Bot Tiers + Ranked PvP</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;padding-top:8px;font-size:12px">
+          <div style="padding:10px;border-radius:6px;background:var(--bg-card);border:1px solid var(--border)"><strong>1. Guest Quick Start</strong><br><span style="color:var(--text-muted)">Zero-friction browser play</span></div>
+          <div style="padding:10px;border-radius:6px;background:var(--bg-card);border:1px solid var(--border)"><strong>2. Scout → Grunt</strong><br><span style="color:var(--text-muted)">Random → Heuristic training</span></div>
+          <div style="padding:10px;border-radius:6px;background:var(--bg-card);border:1px solid var(--border)"><strong>3. Soldier (MCTS 100)</strong><br><span style="color:var(--text-muted)">Plans 1–2 turns ahead</span></div>
+          <div style="padding:10px;border-radius:6px;background:var(--bg-card);border:1px solid var(--border)"><strong>4. Specialist Bots</strong><br><span style="color:var(--text-muted)">Veteran · Destroyer · Sentinel · Blitz</span></div>
+          <div style="padding:10px;border-radius:6px;background:rgba(188,140,255,0.12);border:1px solid var(--purple)"><strong>5. Champion (MCTS 1000)</strong><br><span style="color:var(--text-muted)">Tournament-grade apex AI</span></div>
+          <div style="padding:10px;border-radius:6px;background:rgba(63,185,80,0.12);border:1px solid var(--green)"><strong>6. Ranked PvP &amp; LAN</strong><br><span style="color:var(--text-muted)">4 Elo ladders · Spectator casting</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>🔄 3. Player-Friendly 5-Step Turn Loop</span>
+          <span class="badge badge-ws">Source: docs/system/AUDIENCE_DIAGRAMS.md</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding-top:8px;font-family:var(--font-mono);font-size:12px">
+          <span class="badge badge-get">1. Deploy (Hand → 2×4 Grid)</span> →
+          <span class="badge badge-post">2. Attack or Pass</span> →
+          <span class="badge badge-warn">3. Column Cascade</span> →
+          <span class="badge badge-ws">4. Reinforce &amp; Draw</span> →
+          <span class="badge badge-ready">5. Victory Check (0 LP / Forfeit / Pass Limit)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: Platform & Investor Overview -->
+    <div id="tab-investors" class="tab-pane">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px">
+        <div class="card" style="margin:0"><div style="font-size:11px;color:var(--text-muted)">EXHAUSTIVE COMBAT PROOFS</div><div style="font-size:24px;font-weight:800;color:var(--green)">2,355,388</div><div style="font-size:11px;color:var(--text-muted)">+ 71 rule evidence checks</div></div>
+        <div class="card" style="margin:0"><div style="font-size:11px;color:var(--text-muted)">ENGINE P99 LATENCY</div><div style="font-size:24px;font-weight:800;color:var(--accent)">0.225 ms</div><div style="font-size:11px;color:var(--text-muted)">6,259 actions/s in-process</div></div>
+        <div class="card" style="margin:0"><div style="font-size:11px;color:var(--text-muted)">CLIENT SURFACES</div><div style="font-size:24px;font-weight:800;color:var(--purple)">4 + LAN</div><div style="font-size:11px;color:var(--text-muted)">Web · Go CLI · MCP · Offline LAN</div></div>
+        <div class="card" style="margin:0"><div style="font-size:11px;color:var(--text-muted)">TUTORIAL PIPELINE</div><div style="font-size:24px;font-weight:800;color:var(--yellow)">22 Episodes</div><div style="font-size:11px;color:var(--text-muted)">10 Shorts 9:16 · 12 Long 16:9</div></div>
+        <div class="card" style="margin:0"><div style="font-size:11px;color:var(--text-muted)">SECURITY &amp; BOUNDARIES</div><div style="font-size:24px;font-weight:800;color:var(--green)">0 / 0</div><div style="font-size:11px;color:var(--text-muted)">0 HIGH/CRIT CVEs · 0 dep violations</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:16px">
+        <div class="card" style="margin:0">
+          <div class="card-title"><span>🏛️ Platform Moat: One Engine → Many Surfaces</span><span class="badge badge-ready">Low COGS</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Pure deterministic TypeScript engine powers React Web, Go <code>duel-cli</code>, MCP AI agents, and zero-cloud-cost LAN tournament hosting from one OpenAPI/AsyncAPI contract.</p>
+          <div style="font-family:var(--font-mono);font-size:11px;line-height:1.7;background:#090d13;padding:10px;border-radius:6px;border:1px solid var(--border)">
+            @phalanxduel/engine (0.225ms p99)<br>
+            &nbsp;&nbsp;├─▶ Web Client (play.phalanxduel.com)<br>
+            &nbsp;&nbsp;├─▶ Go duel-cli (REST + WS ACK replay)<br>
+            &nbsp;&nbsp;├─▶ MCP Server &amp; Autonomous Bots<br>
+            &nbsp;&nbsp;└─▶ Offline-Capable LAN Tournament Host
+          </div>
+        </div>
+
+        <div class="card" style="margin:0">
+          <div class="card-title"><span>🔐 Provable Fair-Play &amp; Esports Trust Chain</span><span class="badge badge-ws">Tournament Ready</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Server-authoritative transitions, hidden-hand redaction, spectator delay, and canonical SHA-256 per-turn hash chains make every match publicly auditable.</p>
+          <div style="font-family:var(--font-mono);font-size:11px;line-height:1.7;background:#090d13;padding:10px;border-radius:6px;border:1px solid var(--border)">
+            Action → MatchActor (Authoritative)<br>
+            &nbsp;&nbsp;├─▶ Redacted Projection → Spectator Delay<br>
+            &nbsp;&nbsp;└─▶ SHA-256 Hash Chain → GET /api/matches/:id/verify
+          </div>
+        </div>
+
+        <div class="card" style="margin:0">
+          <div class="card-title"><span>📈 Acquisition, Retention &amp; Monetization Flywheel</span><span class="badge badge-post">Non-P2W</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Automated content distribution feeds frictionless guest play, deep competitive retention, and ethical cosmetic/venue monetization.</p>
+          <div style="font-family:var(--font-mono);font-size:11px;line-height:1.7;background:#090d13;padding:10px;border-radius:6px;border:1px solid var(--border)">
+            Acquire: 22 YouTube Tutorials + Battle Calculator + LAN QR<br>
+            Retain:&nbsp; 4 Elo Ladders + 19 Rarity Achievements + Dual Loop<br>
+            Revenue: Cosmetic Cardbacks + Supporter Pass (Stripe) + Venue Kits
+          </div>
+        </div>
+
+        <div class="card" style="margin:0">
+          <div class="card-title"><span>🛡️ Assurance Pyramid &amp; Automated Content Engine</span><span class="badge badge-get">Due Diligence</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Production discipline verified continuously in CI plus automated Playwright + Zoe TTS + <code>media-pipeline</code> video generation.</p>
+          <div style="font-family:var(--font-mono);font-size:11px;line-height:1.7;background:#090d13;padding:10px;border-radius:6px;border:1px solid var(--border)">
+            Proofs: 2.35M Combat Oracle · fast-check · Stryker Mutation<br>
+            Maps:&nbsp;&nbsp; Groma C4 · Graphify (12.7k nodes) · OTel + Jaeger<br>
+            Media:&nbsp; Playwright → FFmpeg EBU R128 → media-pipeline staged/
+          </div>
+        </div>
       </div>
     </div>
   </main>
