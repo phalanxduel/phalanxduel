@@ -12,6 +12,8 @@ import type { GameConfig, BotConfig } from '@phalanxduel/engine';
 import { TelemetryName, isRetry, isStale, isGameOver } from '@phalanxduel/shared';
 import type { ILedgerStore, LedgerAction } from './db/ledger-store.js';
 import { ActionError } from './match-types.js';
+import { SeverityNumber } from '@opentelemetry/api-logs';
+import { emitOtlpLog } from './instrument.js';
 import { recordAction, recordPhaseTransition, recordActionRejection } from './telemetry.js';
 import type { IEventBus, MatchUpdatedEvent } from './event-bus.js';
 import {
@@ -206,8 +208,11 @@ export class MatchActor {
 
     // 1. De-duplication check (Prioritize replay)
     if (isRetry(action, lastEntry)) {
-      console.log(
+      emitOtlpLog(
+        SeverityNumber.DEBUG,
+        'DEBUG',
         `[MatchActor:${this.matchId}] Duplicate msgId detected: ${action.msgId}. Replaying result.`,
+        { 'match.id': this.matchId },
       );
       if (!this._lastPreState || !this._state || !lastEntry) {
         throw new ActionError(
@@ -627,13 +632,21 @@ export class MatchActor {
       timestamp: createdAtIso,
       config: gameConfig,
     };
-    console.log(`[MatchActor:${this.matchId}] Applying system:init action...`);
+    emitOtlpLog(
+      SeverityNumber.DEBUG,
+      'DEBUG',
+      `[MatchActor:${this.matchId}] Applying system:init action...`,
+      { 'match.id': this.matchId },
+    );
     this._state = applyAction(preInitState, initAction, applyOptions);
     this._config = gameConfig;
 
     const initEntry = this._state.transactionLog?.at(-1);
-    console.log(
+    emitOtlpLog(
+      SeverityNumber.DEBUG,
+      'DEBUG',
       `[MatchActor:${this.matchId}] system:init result: seq=${initEntry?.sequenceNumber}, logSize=${this._state.transactionLog?.length}`,
+      { 'match.id': this.matchId },
     );
 
     const initialStateHash = initEntry?.stateHashAfter ?? computeStateHash(this._state);
@@ -647,7 +660,12 @@ export class MatchActor {
     });
 
     if (initEntry) {
-      console.log(`[MatchActor:${this.matchId}] Appending system:init to ledger...`);
+      emitOtlpLog(
+        SeverityNumber.DEBUG,
+        'DEBUG',
+        `[MatchActor:${this.matchId}] Appending system:init to ledger...`,
+        { 'match.id': this.matchId },
+      );
       await this.ledgerStore.appendAction({
         matchId: this.matchId,
         sequenceNumber: initEntry.sequenceNumber,

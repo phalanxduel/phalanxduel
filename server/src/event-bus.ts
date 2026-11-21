@@ -1,5 +1,7 @@
 import { EventEmitter } from 'events';
 import type { Sql } from 'postgres';
+import { SeverityNumber } from '@opentelemetry/api-logs';
+import { emitOtlpLog } from './instrument.js';
 
 export interface MatchUpdatedEvent {
   matchId: string;
@@ -72,8 +74,11 @@ export class PostgresEventBus implements IEventBus {
 
   async publishMatchUpdate(event: MatchUpdatedEvent): Promise<void> {
     const payload = JSON.stringify(event);
-    console.log(
+    emitOtlpLog(
+      SeverityNumber.DEBUG,
+      'DEBUG',
       `[PgEventBus] Publishing notification for match ${event.matchId}, seq ${event.sequenceNumber}`,
+      { 'match.id': event.matchId },
     );
     await this.sql`SELECT pg_notify(${this.channel}, ${payload})`;
   }
@@ -92,7 +97,12 @@ export class PostgresEventBus implements IEventBus {
       this.subscriptions.set(matchId, callbacks);
     }
     callbacks.add(callback);
-    console.log(`[PgEventBus] Subscribed to match ${matchId}. Total callbacks: ${callbacks.size}`);
+    emitOtlpLog(
+      SeverityNumber.DEBUG,
+      'DEBUG',
+      `[PgEventBus] Subscribed to match ${matchId}. Total callbacks: ${callbacks.size}`,
+      { 'match.id': matchId },
+    );
 
     return () => {
       const remaining = this.subscriptions.get(matchId);
@@ -113,12 +123,20 @@ export class PostgresEventBus implements IEventBus {
     this.listenMeta = await this.sql.listen(this.channel, (payload) => {
       try {
         const event = JSON.parse(payload) as MatchUpdatedEvent;
-        console.log(
+        emitOtlpLog(
+          SeverityNumber.DEBUG,
+          'DEBUG',
           `[PgEventBus] Received notification for match ${event.matchId}, seq ${event.sequenceNumber}`,
+          { 'match.id': event.matchId },
         );
         const callbacks = this.subscriptions.get(event.matchId);
         if (callbacks) {
-          console.log(`[PgEventBus] Found ${callbacks.size} callbacks for ${event.matchId}`);
+          emitOtlpLog(
+            SeverityNumber.DEBUG,
+            'DEBUG',
+            `[PgEventBus] Found ${callbacks.size} callbacks for ${event.matchId}`,
+            { 'match.id': event.matchId },
+          );
           for (const cb of callbacks) {
             void cb(event);
           }

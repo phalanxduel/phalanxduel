@@ -407,12 +407,46 @@ case "$CMD" in
       ports)
         exec node --import tsx "${REPO_ROOT}/scripts/tournament/port-inspector.ts" "$@"
         ;;
+      cockpit)
+        COCKPIT_MODE="tmux"
+        for arg in "$@"; do
+          case "$arg" in
+            --herdr) COCKPIT_MODE="herdr" ;;
+            --tmux) COCKPIT_MODE="tmux" ;;
+            -h|--help)
+              echo "Usage: phx tournament cockpit [--tmux|--herdr]"
+              echo "Idempotently starts the local tournament stack, runs pre-flight checks, and launches phx-top + phx-tournament-top."
+              exit 0
+              ;;
+          esac
+        done
+        "${REPO_ROOT}/bin/phx-demo-ctl" up --tmux --no-open
+        "${REPO_ROOT}/bin/phx-tournament-ports" || true
+        "${REPO_ROOT}/bin/phx-healthcheck" localhost:3001 --observability || true
+        if [[ "$COCKPIT_MODE" == "herdr" ]] && command -v herdr >/dev/null 2>&1; then
+          herdr workspace create --name phx-tournament --dir "${REPO_ROOT}" >/dev/null 2>&1 || true
+          herdr pane split --command "${REPO_ROOT}/bin/phx-top" >/dev/null 2>&1 || true
+          exec herdr pane split --command "${REPO_ROOT}/bin/phx-tournament-top"
+        else
+          if tmux list-windows -t phx -F '#{window_name}' 2>/dev/null | grep -qx 'cockpit'; then
+            tmux select-window -t phx:cockpit
+          else
+            tmux new-window -t phx -n cockpit -c "${REPO_ROOT}" "${REPO_ROOT}/bin/phx-top"
+            tmux split-window -h -t phx:cockpit -c "${REPO_ROOT}" "${REPO_ROOT}/bin/phx-tournament-top"
+          fi
+          if [[ -n "${TMUX:-}" ]]; then
+            exec tmux switch-client -t phx:cockpit
+          else
+            exec tmux attach -t phx:cockpit
+          fi
+        fi
+        ;;
       -h|--help)
-        echo "Usage: phx tournament {check|top|ports} [args]"
+        echo "Usage: phx tournament {check|top|ports|cockpit} [args]"
         exit 0
         ;;
       *)
-        echo "Unknown tournament command: $SUBCMD (expected check, top, ports)" >&2
+        echo "Unknown tournament command: $SUBCMD (expected check, top, ports, cockpit)" >&2
         exit 1
         ;;
     esac

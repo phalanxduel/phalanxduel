@@ -16,4 +16,6 @@ cd "$ROOT_DIR" || exit
 pnpm --filter @phalanxduel/shared test:coverage
 pnpm --filter @phalanxduel/engine test:coverage
 pnpm --filter @phalanxduel/server test:coverage
+pnpm --filter @phalanxduel/client test:coverage
+pnpm --filter @phalanxduel/admin test:coverage
 pnpm test:coverage:report

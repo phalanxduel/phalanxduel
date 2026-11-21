@@ -145,7 +145,7 @@ export const CANONICAL_TOURNAMENT_ENDPOINTS: EndpointCheck[] = [
     id: 'client-vite',
     name: 'Vite Dev Server',
     role: 'client',
-    domain: 'play.lan.phalanxduel.com',
+    domain: '127.0.0.1',
     port: 5173,
     protocol: 'http',
     path: '/',

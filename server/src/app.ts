@@ -984,7 +984,13 @@ export async function buildApp(options: BuildAppOptions = {}) {
           }
           if (socket.readyState === 1) {
             const serialized = JSON.stringify(msg);
-            console.log(`[server] SENDING WS: ${serialized.substring(0, 100)}...`);
+            if (process.env.PHALANX_DEBUG_WS === '1') {
+              emitOtlpLog(
+                SeverityNumber.DEBUG,
+                'DEBUG',
+                `[server] SENDING WS: ${serialized.substring(0, 100)}...`,
+              );
+            }
             socket.send(serialized);
           }
           if (responseCapture && !isTransportOnlyServerMessage(msg)) {
@@ -1080,7 +1086,13 @@ export async function buildApp(options: BuildAppOptions = {}) {
             try {
               const messageStr = preprocessMessage(raw);
               if (messageStr === null) return;
-              console.log(`[server] RECEIVED WS: ${messageStr.substring(0, 100)}...`);
+              if (process.env.PHALANX_DEBUG_WS === '1') {
+                emitOtlpLog(
+                  SeverityNumber.DEBUG,
+                  'DEBUG',
+                  `[server] RECEIVED WS: ${messageStr.substring(0, 100)}...`,
+                );
+              }
 
               let parsed: unknown;
               try {
