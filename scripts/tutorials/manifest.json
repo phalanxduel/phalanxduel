@@ -24,7 +24,9 @@
       "format": "16:9",
       "formatRationale": "Needs full-width view of hand, front rank, back rank, and column selection.",
       "targetDurationSec": 210,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-02-deployment-and-quick-deploy.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-02-deployment-and-quick-deploy.md"
     },
     {
       "id": "ep-03-combat-cascade",
@@ -34,7 +36,9 @@
       "format": "9:16",
       "formatRationale": "Single focused column cascade (Front -> Back -> LP) reads crisply in vertical feeds.",
       "targetDurationSec": 58,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-03-combat-cascade.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-03-combat-cascade.md"
     },
     {
       "id": "ep-04-suit-boundaries",
@@ -44,7 +48,9 @@
       "format": "9:16",
       "formatRationale": "Punchy four-beat visual breakdown ideal for Shorts discovery.",
       "targetDurationSec": 60,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-04-suit-boundaries.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-04-suit-boundaries.md"
     },
     {
       "id": "ep-05-special-cards-pass-reinforce",
@@ -54,7 +60,9 @@
       "format": "16:9",
       "formatRationale": "Multi-phase board state with full HUD indicators and combat provenance.",
       "targetDurationSec": 270,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-05-special-cards-pass-reinforce.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-05-special-cards-pass-reinforce.md"
     },
     {
       "id": "ep-06-account-signup-and-management",

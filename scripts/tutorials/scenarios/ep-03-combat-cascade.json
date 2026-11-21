@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "id": "ep-03-combat-cascade",
+  "season": 1,
+  "episodeNumber": 3,
+  "title": "Combat Cascade & Column Overkill Explained",
+  "format": "9:16",
+  "targetDurationSec": 58,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42003,
+  "botTier": "grunt",
+  "cardSkinId": "obsidian-heraldry",
+  "playerName": "TutorialHost",
+  "tags": ["Phalanx Duel", "Combat Cascade", "Card Game Rules", "Tutorial", "Shorts"],
+  "summary": "See how column combat cascades in Phalanx Duel: front-rank attackers strike the opposing front card, excess damage spills into the back card, and leftover overkill hits enemy Life Points.",
+  "cues": [
+    {
+      "id": "setup-cascade",
+      "label": "Opening Combat Board",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2000
+    },
+    {
+      "id": "enter-combat",
+      "label": "Front-Rank Attack Declaration",
+      "action": "quickStart",
+      "holdMs": 3000
+    },
+    {
+      "id": "column-overflow",
+      "label": "Front -> Back -> Life Points Cascade",
+      "action": "deployFirstCard",
+      "holdMs": 3500
+    },
+    {
+      "id": "classic-reset",
+      "label": "Classic Between-Turn Damage Reset",
+      "action": "hold",
+      "holdMs": 3000
+    }
+  ]
+}

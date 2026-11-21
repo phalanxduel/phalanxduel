@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "id": "ep-02-deployment-and-quick-deploy",
+  "season": 1,
+  "episodeNumber": 2,
+  "title": "Formation-First Deployment & Quick Deploy",
+  "format": "16:9",
+  "targetDurationSec": 210,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42002,
+  "botTier": "scout",
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "tags": ["Phalanx Duel", "Card Game", "Deployment", "Formation Strategy", "Tutorial"],
+  "summary": "Master formation-first deployment in Phalanx Duel: how hidden hands become a public 2x4 battlefield, why front-rank vs back-rank column placement matters, and when to use Quick Deploy.",
+  "cues": [
+    {
+      "id": "lobby-enter",
+      "label": "Enter Match for Deployment",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2000
+    },
+    {
+      "id": "launch-match",
+      "label": "Start Seeded Training Match",
+      "action": "quickStart",
+      "holdMs": 2500
+    },
+    {
+      "id": "hand-and-grid",
+      "label": "Hidden Hand vs Public 2x4 Grid",
+      "action": "waitForSelector",
+      "selector": "#phx-phase-indicator",
+      "holdMs": 3500
+    },
+    {
+      "id": "manual-deploy",
+      "label": "Manual Front-Rank Placement",
+      "action": "deployFirstCard",
+      "holdMs": 3500
+    },
+    {
+      "id": "column-symmetry",
+      "label": "Front Rank Attackers & Back Rank Support",
+      "action": "hold",
+      "holdMs": 3500
+    }
+  ]
+}

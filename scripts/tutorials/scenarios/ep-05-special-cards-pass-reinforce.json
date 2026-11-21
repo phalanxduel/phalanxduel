@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "id": "ep-05-special-cards-pass-reinforce",
+  "season": 1,
+  "episodeNumber": 5,
+  "title": "Aces, Face Cards, Pass, Reinforce & Victory Conditions",
+  "format": "16:9",
+  "targetDurationSec": 270,
+  "mode": "classic",
+  "startingLp": 10,
+  "seed": 42005,
+  "botTier": "soldier",
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "tags": ["Phalanx Duel", "Aces", "Face Cards", "Reinforce", "Victory Conditions", "Tutorial"],
+  "summary": "Complete your Season 1 mastery of Phalanx Duel: Ace and Face Card destruction eligibility, strategic Passing, the Reinforce phase, and every way a match can end.",
+  "cues": [
+    {
+      "id": "special-intro",
+      "label": "Aces & Face Cards Eligibility",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2000
+    },
+    {
+      "id": "start-soldier",
+      "label": "Mid-Game Match Against Soldier Bot",
+      "action": "quickStart",
+      "holdMs": 3000
+    },
+    {
+      "id": "pass-and-reinforce",
+      "label": "Passing Turns & Reinforcing Open Columns",
+      "action": "deployFirstCard",
+      "holdMs": 4000
+    },
+    {
+      "id": "victory-conditions",
+      "label": "LP Zero, Forfeit & Liveness Victory",
+      "action": "hold",
+      "holdMs": 3500
+    }
+  ]
+}

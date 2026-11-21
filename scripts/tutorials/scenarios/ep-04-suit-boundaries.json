@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "id": "ep-04-suit-boundaries",
+  "season": 1,
+  "episodeNumber": 4,
+  "title": "The Four Suit Boundaries (Diamonds, Hearts, Clubs, Spades)",
+  "format": "9:16",
+  "targetDurationSec": 60,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42004,
+  "botTier": "grunt",
+  "cardSkinId": "dual-loop",
+  "playerName": "TutorialHost",
+  "tags": ["Phalanx Duel", "Suit Rules", "Tactical Card Game", "Tutorial", "Shorts"],
+  "summary": "Understand Phalanx Duel's boundary-based suit rules in 60 seconds: Diamonds, Hearts, Clubs, and Spades modify specific card-to-card and card-to-player transitions — not global buffs.",
+  "cues": [
+    {
+      "id": "suits-intro",
+      "label": "Suits Are Transition Boundaries",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2000
+    },
+    {
+      "id": "diamonds-hearts",
+      "label": "Diamonds & Hearts: Defensive Boundaries",
+      "action": "quickStart",
+      "holdMs": 3500
+    },
+    {
+      "id": "clubs-spades",
+      "label": "Clubs & Spades: Offensive Boundaries",
+      "action": "deployFirstCard",
+      "holdMs": 3500
+    },
+    {
+      "id": "math-provenance",
+      "label": "Verify Every Calculation in the Inspector",
+      "action": "hold",
+      "holdMs": 3000
+    }
+  ]
+}
