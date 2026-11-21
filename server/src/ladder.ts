@@ -3,7 +3,7 @@ import { matches, eloSnapshots } from './db/schema.js';
 import { computeRollingElo, ELO_CONSTANTS, type MatchResult } from './elo.js';
 import { and, eq, gte, desc, sql } from 'drizzle-orm';
 import { traceDbQuery } from './db/observability.js';
-import { PlayerRatingsService } from './ratings.js';
+import { modeFromBotStrategy, PlayerRatingsService } from './ratings.js';
 import { SeasonService } from './season.js';
 
 export type LadderCategory = 'pvp' | 'sp-random' | 'sp-heuristic' | 'sp-mcts';
@@ -22,8 +22,7 @@ export class LadderService {
   private readonly seasonService = new SeasonService();
 
   static deriveCategory(botStrategy: string | null | undefined): LadderCategory {
-    if (!botStrategy) return 'pvp';
-    return `sp-${botStrategy}` as LadderCategory;
+    return modeFromBotStrategy(botStrategy);
   }
 
   static phantomRating(category: LadderCategory): number | null {

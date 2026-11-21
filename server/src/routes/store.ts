@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyPluginAsync, FastifyRequest } from 'fastify';
+import type { FastifyPluginAsync } from 'fastify';
 import { CardSkinIdSchema } from '@phalanxduel/shared';
 import { db } from '../db/index.js';
 import { cosmeticProducts, userEntitlements } from '../db/schema.js';
@@ -11,17 +11,7 @@ import {
   getEquippedCardSkin,
   userOwnsCardSkin,
 } from '../cosmetics.js';
-
-function resolveAuthenticatedUserId(app: FastifyInstance, request: FastifyRequest): string | null {
-  try {
-    let token = request.headers.authorization?.replace('Bearer ', '');
-    token ??= request.cookies.phalanx_refresh;
-    if (!token) return null;
-    return app.jwt.verify<{ id: string }>(token).id;
-  } catch {
-    return null;
-  }
-}
+import { resolveAuthenticatedUserId } from './matchmaking.js';
 
 export const storeRoutes: FastifyPluginAsync = async (app) => {
   const DEFAULT_PRODUCTS = [

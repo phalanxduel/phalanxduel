@@ -115,7 +115,7 @@ const AbandonMatchResponseSchema = z.object({
 
 type ActiveMatchResponse = z.infer<typeof ActiveMatchSchema>;
 
-function resolveAuthenticatedUserId(
+export function resolveAuthenticatedUserId(
   fastify: FastifyInstance,
   request: { headers: Record<string, unknown>; cookies: Record<string, string | undefined> },
 ): string | null {

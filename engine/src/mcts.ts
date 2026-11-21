@@ -22,8 +22,8 @@ export interface MCTSConfig {
   weights?: HeuristicWeights;
 }
 
-/** Mulberry32: fast seeded PRNG for deterministic MCTS. */
-function mulberry32(seed: number): () => number {
+/** Mulberry32: fast seeded PRNG for deterministic bot and MCTS search. */
+export function mulberry32(seed: number): () => number {
   let s = seed | 0;
   return () => {
     s = (s + 0x6d2b79f5) | 0;

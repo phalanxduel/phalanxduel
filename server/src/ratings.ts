@@ -86,7 +86,7 @@ interface MatchOutcome {
   turnNumber?: number | null;
 }
 
-function modeFromBotStrategy(botStrategy: string | null | undefined): RatingMode {
+export function modeFromBotStrategy(botStrategy: string | null | undefined): RatingMode {
   if (!botStrategy) return 'pvp';
   return `sp-${botStrategy}` as RatingMode;
 }
