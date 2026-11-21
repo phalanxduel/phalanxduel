@@ -25,11 +25,26 @@ interface RecordedCueSpan {
   keyframe: string;
 }
 
+async function dismissOverlays(page: Page): Promise<void> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const overlay = page.locator('.phx-modal-overlay').first();
+    if (!(await overlay.isVisible().catch(() => false))) return;
+    const closeBtn = overlay.locator('button').last();
+    if (await closeBtn.isVisible().catch(() => false)) {
+      await closeBtn.click().catch(() => {});
+    } else {
+      await page.keyboard.press('Escape').catch(() => {});
+    }
+    await overlay.waitFor({ state: 'hidden', timeout: 2_000 }).catch(() => {});
+  }
+}
+
 async function runStep(page: Page, step: TutorialCueStep, baseUrl: string, playerName: string) {
   switch (step.action) {
     case 'goto': {
       const target = new URL(step.urlPath ?? '/', baseUrl).toString();
       await page.goto(target, { waitUntil: 'networkidle' });
+      await dismissOverlays(page);
       break;
     }
     case 'fill': {
@@ -53,19 +68,22 @@ async function runStep(page: Page, step: TutorialCueStep, baseUrl: string, playe
       break;
     }
     case 'quickStart': {
+      await dismissOverlays(page);
       const nameInput = page.locator('#phx-lobby-name-input');
       if (await nameInput.isVisible().catch(() => false)) {
         await nameInput.fill(playerName);
       }
       await page.click('#phx-lobby-quick-start-btn');
       await page.waitForSelector('#phx-phase-indicator', { timeout: 15_000 });
+      await dismissOverlays(page);
       break;
     }
     case 'deployFirstCard': {
+      await dismissOverlays(page);
       const handCard = page.locator('[id^="phx-card-hand-"]').first();
       await handCard.waitFor({ state: 'visible', timeout: 10_000 });
       await handCard.click();
-      const targetCell = page.locator('#phx-cell-0-0');
+      const targetCell = page.locator('[data-testid="player-cell-r0-c0"], .valid-target').first();
       await targetCell.waitFor({ state: 'visible', timeout: 10_000 });
       await targetCell.click();
       break;
