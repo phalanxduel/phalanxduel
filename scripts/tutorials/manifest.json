@@ -1,0 +1,230 @@
+{
+  "schemaVersion": "1.0",
+  "seriesTitle": "Phalanx Duel — Complete Player & Tournament Guide",
+  "targetSlug": "phalanx-duel",
+  "defaultStagedDir": "/Users/mike/Library/CloudStorage/GoogleDrive-mike@just3ws.com/.shortcut-targets-by-id/1p5m0Kgdc3WkCqkbgjr1pTu3dTA2gaqux/ai/media-pipeline/whoistechcmty/phalanx-duel/staged",
+  "episodes": [
+    {
+      "id": "ep-01-welcome-and-objective",
+      "season": 1,
+      "episodeNumber": 1,
+      "title": "What Is Phalanx Duel? (60-Second Overview)",
+      "format": "9:16",
+      "formatRationale": "High-impact vertical hook introducing the 2x4 battlefield, LP objective, and Quick Start.",
+      "targetDurationSec": 55,
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-01-welcome-and-objective.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-01-welcome-and-objective.md"
+    },
+    {
+      "id": "ep-02-deployment-and-quick-deploy",
+      "season": 1,
+      "episodeNumber": 2,
+      "title": "Formation-First Deployment & Quick Deploy",
+      "format": "16:9",
+      "formatRationale": "Needs full-width view of hand, front rank, back rank, and column selection.",
+      "targetDurationSec": 210,
+      "status": "planned"
+    },
+    {
+      "id": "ep-03-combat-cascade",
+      "season": 1,
+      "episodeNumber": 3,
+      "title": "Combat Cascade & Column Overkill Explained",
+      "format": "9:16",
+      "formatRationale": "Single focused column cascade (Front -> Back -> LP) reads crisply in vertical feeds.",
+      "targetDurationSec": 58,
+      "status": "planned"
+    },
+    {
+      "id": "ep-04-suit-boundaries",
+      "season": 1,
+      "episodeNumber": 4,
+      "title": "The Four Suit Boundaries (Diamonds, Hearts, Clubs, Spades)",
+      "format": "9:16",
+      "formatRationale": "Punchy four-beat visual breakdown ideal for Shorts discovery.",
+      "targetDurationSec": 60,
+      "status": "planned"
+    },
+    {
+      "id": "ep-05-special-cards-pass-reinforce",
+      "season": 1,
+      "episodeNumber": 5,
+      "title": "Aces, Face Cards, Pass, Reinforce & Victory Conditions",
+      "format": "16:9",
+      "formatRationale": "Multi-phase board state with full HUD indicators and combat provenance.",
+      "targetDurationSec": 270,
+      "status": "planned"
+    },
+    {
+      "id": "ep-06-account-signup-and-management",
+      "season": 2,
+      "episodeNumber": 6,
+      "title": "Sign Up, Gamertags & Account Management",
+      "format": "9:16",
+      "formatRationale": "AuthPanel and profile modals stack vertically cleanly for Shorts.",
+      "targetDurationSec": 55,
+      "status": "planned"
+    },
+    {
+      "id": "ep-07-cardbacks-and-cosmetics",
+      "season": 2,
+      "episodeNumber": 7,
+      "title": "Cardbacks & Cosmetics: Neon Relay, Dual Loop & Obsidian Heraldry",
+      "format": "9:16",
+      "formatRationale": "Visual cosmetic showcase shines as a fast vertical Short.",
+      "targetDurationSec": 50,
+      "status": "planned"
+    },
+    {
+      "id": "ep-08-hud-combat-math-and-settings",
+      "season": 2,
+      "episodeNumber": 8,
+      "title": "Reading the HUD, Combat Math Inspector & Narration Settings",
+      "format": "16:9",
+      "formatRationale": "Full desktop HUD layout with Combat Explanation, Narration Ticker, and Settings.",
+      "targetDurationSec": 210,
+      "status": "planned"
+    },
+    {
+      "id": "ep-09-classic-vs-cumulative-and-custom",
+      "season": 3,
+      "episodeNumber": 9,
+      "title": "Classic vs Cumulative Damage Modes",
+      "format": "9:16",
+      "formatRationale": "Crisp A/B rule comparison fits under 60 seconds in vertical format.",
+      "targetDurationSec": 55,
+      "status": "planned"
+    },
+    {
+      "id": "ep-10-pvp-1v1-lobby-and-reconnect",
+      "season": 3,
+      "episodeNumber": 10,
+      "title": "1v1 Live PvP: Creating, Joining & Auto-Reconnecting Matches",
+      "format": "16:9",
+      "formatRationale": "Side-by-side two-player flow requires widescreen clarity.",
+      "targetDurationSec": 240,
+      "status": "planned"
+    },
+    {
+      "id": "ep-11-bots-basics-scout-to-soldier",
+      "season": 3,
+      "episodeNumber": 11,
+      "title": "1vBot Training Ladder: Scout, Grunt & Soldier",
+      "format": "9:16",
+      "formatRationale": "Fast three-tier progression teaser built for vertical feeds.",
+      "targetDurationSec": 58,
+      "status": "planned"
+    },
+    {
+      "id": "ep-12-bots-specialist-and-champion",
+      "season": 3,
+      "episodeNumber": 12,
+      "title": "Mastering Specialist Bots (Veteran, Destroyer, Sentinel, Blitz & Champion)",
+      "format": "16:9",
+      "formatRationale": "Deep comparison of 5 MCTS bot personalities and full-board evaluations.",
+      "targetDurationSec": 300,
+      "status": "planned"
+    },
+    {
+      "id": "ep-13-rankings-elo-and-seasons",
+      "season": 4,
+      "episodeNumber": 13,
+      "title": "Understanding Your Ranking, Elo Categories & Seasonal Ladders",
+      "format": "16:9",
+      "formatRationale": "Leaderboard tables, category tabs, and confidence badges need widescreen readability.",
+      "targetDurationSec": 210,
+      "status": "planned"
+    },
+    {
+      "id": "ep-14-profiles-history-and-achievements",
+      "season": 4,
+      "episodeNumber": 14,
+      "title": "Profiles, Match History & Rarity Achievements",
+      "format": "9:16",
+      "formatRationale": "Profile cards and achievement badges present cleanly in vertical layout.",
+      "targetDurationSec": 55,
+      "status": "planned"
+    },
+    {
+      "id": "ep-15-replays-and-hash-verification",
+      "season": 4,
+      "episodeNumber": 15,
+      "title": "Deterministic Replays & Cryptographic Hash-Chain Verification",
+      "format": "16:9",
+      "formatRationale": "Replay scrubber, event log, and verification proofs require full screen width.",
+      "targetDurationSec": 240,
+      "status": "planned"
+    },
+    {
+      "id": "ep-16-spectator-mode",
+      "season": 5,
+      "episodeNumber": 16,
+      "title": "Spectator Mode: Watch Links, Delay & Fair-Play Redaction",
+      "format": "9:16",
+      "formatRationale": "Quick feature spotlight showing how to share and watch live duels.",
+      "targetDurationSec": 55,
+      "status": "planned"
+    },
+    {
+      "id": "ep-17-playing-in-a-tournament",
+      "season": 5,
+      "episodeNumber": 17,
+      "title": "How to Play in a Local / LAN Tournament",
+      "format": "16:9",
+      "formatRationale": "Full lobby, persistent account check-in, bracket pacing, and standings.",
+      "targetDurationSec": 270,
+      "status": "planned"
+    },
+    {
+      "id": "ep-18-hosting-a-local-tournament",
+      "season": 5,
+      "episodeNumber": 18,
+      "title": "Hosting & Directing a Local Tournament (Admin Portal & Runbook)",
+      "format": "16:9",
+      "formatRationale": "Terminal pre-flight checks plus full Admin Portal dashboard and match moderation.",
+      "targetDurationSec": 300,
+      "status": "planned"
+    },
+    {
+      "id": "ep-19-terminal-client-duel-cli",
+      "season": 5,
+      "episodeNumber": 19,
+      "title": "Playing from the Terminal with Go duel-cli",
+      "format": "16:9",
+      "formatRationale": "Split terminal + browser cross-client gameplay requires widescreen.",
+      "targetDurationSec": 210,
+      "status": "planned"
+    },
+    {
+      "id": "ep-20-advanced-column-and-suit-synergy",
+      "season": 6,
+      "episodeNumber": 20,
+      "title": "Advanced Strategy: Column Architecture & Suit Synergy",
+      "format": "16:9",
+      "formatRationale": "Full-board tactical puzzle comparisons with math provenance.",
+      "targetDurationSec": 330,
+      "status": "planned"
+    },
+    {
+      "id": "ep-21-tempo-pass-economy-and-traps",
+      "season": 6,
+      "episodeNumber": 21,
+      "title": "Pro Tip: Tempo, Pass Economy & Face-Card Traps",
+      "format": "9:16",
+      "formatRationale": "High-engagement tactical puzzle Short driving viewers into the full playlist.",
+      "targetDurationSec": 60,
+      "status": "planned"
+    },
+    {
+      "id": "ep-22-full-annotated-champion-duel",
+      "season": 6,
+      "episodeNumber": 22,
+      "title": "Full Annotated Masterclass: Beating the Champion MCTS Bot",
+      "format": "16:9",
+      "formatRationale": "Complete start-to-finish tactical match breakdown with live evaluation commentary.",
+      "targetDurationSec": 540,
+      "status": "planned"
+    }
+  ]
+}

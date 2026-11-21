@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "id": "ep-01-welcome-and-objective",
+  "season": 1,
+  "episodeNumber": 1,
+  "title": "What Is Phalanx Duel? (60-Second Overview)",
+  "format": "9:16",
+  "targetDurationSec": 55,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42001,
+  "botTier": "scout",
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "tags": ["Phalanx Duel", "Card Game", "Tactical Card Game", "Tutorial", "Shorts"],
+  "summary": "Learn the core objective of Phalanx Duel in under 60 seconds: build a 2x4 formation, break through enemy columns, and drop your opponent's Life Points to zero.",
+  "cues": [
+    {
+      "id": "lobby-welcome",
+      "label": "Welcome to the Lobby",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "quick-start",
+      "label": "Launch Quick Start Match",
+      "action": "quickStart",
+      "holdMs": 3000
+    },
+    {
+      "id": "board-overview",
+      "label": "2x4 Battlefield & Life Points",
+      "action": "waitForSelector",
+      "selector": "#phx-phase-indicator",
+      "holdMs": 3500
+    },
+    {
+      "id": "first-deploy",
+      "label": "Deploy Your First Unit",
+      "action": "deployFirstCard",
+      "holdMs": 3500
+    }
+  ]
+}
