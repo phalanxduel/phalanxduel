@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "ep-14-profiles-history-and-achievements",
+  "season": 4,
+  "episodeNumber": 14,
+  "title": "Profiles, Match History & Rarity Achievements",
+  "format": "9:16",
+  "targetDurationSec": 55,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42014,
+  "cardSkinId": "dual-loop",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/competitive/",
+  "tags": ["Phalanx Duel", "Profiles", "Match History", "Achievements", "Shorts"],
+  "summary": "Explore public player profiles, review past matches, track global achievement rarity percentages, favorite memorable duels, and follow rivals.",
+  "cues": [
+    {
+      "id": "profile-open",
+      "label": "Public Player Profile & Stats",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "match-history",
+      "label": "Match History & Favoriting Duels",
+      "action": "hold",
+      "holdMs": 3000
+    },
+    {
+      "id": "achievements-rarity",
+      "label": "Achievements & Global Rarity",
+      "action": "hold",
+      "holdMs": 3000
+    }
+  ]
+}

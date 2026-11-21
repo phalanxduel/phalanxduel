@@ -179,6 +179,7 @@ async function main(): Promise<void> {
   const tags = [...new Set([...spec.tags, ...(spec.format === '9:16' ? ['Shorts'] : [])])];
   const description = [
     spec.summary,
+    ...(spec.companionUrl ? ['', `Companion guide: ${spec.companionUrl}`] : []),
     ...(chapters.length > 0 ? ['', 'Chapters:', ...chapters] : []),
     '',
     `Series: ${manifest.seriesTitle} (Season ${spec.season}, Episode ${spec.episodeNumber})`,

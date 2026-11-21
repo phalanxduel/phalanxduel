@@ -72,7 +72,9 @@
       "format": "9:16",
       "formatRationale": "AuthPanel and profile modals stack vertically cleanly for Shorts.",
       "targetDurationSec": 55,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-06-account-signup-and-management.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-06-account-signup-and-management.md"
     },
     {
       "id": "ep-07-cardbacks-and-cosmetics",
@@ -82,7 +84,9 @@
       "format": "9:16",
       "formatRationale": "Visual cosmetic showcase shines as a fast vertical Short.",
       "targetDurationSec": 50,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-07-cardbacks-and-cosmetics.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-07-cardbacks-and-cosmetics.md"
     },
     {
       "id": "ep-08-hud-combat-math-and-settings",
@@ -92,7 +96,9 @@
       "format": "16:9",
       "formatRationale": "Full desktop HUD layout with Combat Explanation, Narration Ticker, and Settings.",
       "targetDurationSec": 210,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-08-hud-combat-math-and-settings.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-08-hud-combat-math-and-settings.md"
     },
     {
       "id": "ep-09-classic-vs-cumulative-and-custom",
@@ -102,7 +108,9 @@
       "format": "9:16",
       "formatRationale": "Crisp A/B rule comparison fits under 60 seconds in vertical format.",
       "targetDurationSec": 55,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-09-classic-vs-cumulative-and-custom.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-09-classic-vs-cumulative-and-custom.md"
     },
     {
       "id": "ep-10-pvp-1v1-lobby-and-reconnect",
@@ -112,7 +120,9 @@
       "format": "16:9",
       "formatRationale": "Side-by-side two-player flow requires widescreen clarity.",
       "targetDurationSec": 240,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-10-pvp-1v1-lobby-and-reconnect.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-10-pvp-1v1-lobby-and-reconnect.md"
     },
     {
       "id": "ep-11-bots-basics-scout-to-soldier",
@@ -122,7 +132,9 @@
       "format": "9:16",
       "formatRationale": "Fast three-tier progression teaser built for vertical feeds.",
       "targetDurationSec": 58,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-11-bots-basics-scout-to-soldier.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-11-bots-basics-scout-to-soldier.md"
     },
     {
       "id": "ep-12-bots-specialist-and-champion",
@@ -132,7 +144,9 @@
       "format": "16:9",
       "formatRationale": "Deep comparison of 5 MCTS bot personalities and full-board evaluations.",
       "targetDurationSec": 300,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-12-bots-specialist-and-champion.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-12-bots-specialist-and-champion.md"
     },
     {
       "id": "ep-13-rankings-elo-and-seasons",
@@ -142,7 +156,9 @@
       "format": "16:9",
       "formatRationale": "Leaderboard tables, category tabs, and confidence badges need widescreen readability.",
       "targetDurationSec": 210,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-13-rankings-elo-and-seasons.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-13-rankings-elo-and-seasons.md"
     },
     {
       "id": "ep-14-profiles-history-and-achievements",
@@ -152,7 +168,9 @@
       "format": "9:16",
       "formatRationale": "Profile cards and achievement badges present cleanly in vertical layout.",
       "targetDurationSec": 55,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-14-profiles-history-and-achievements.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-14-profiles-history-and-achievements.md"
     },
     {
       "id": "ep-15-replays-and-hash-verification",
@@ -162,7 +180,9 @@
       "format": "16:9",
       "formatRationale": "Replay scrubber, event log, and verification proofs require full screen width.",
       "targetDurationSec": 240,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-15-replays-and-hash-verification.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-15-replays-and-hash-verification.md"
     },
     {
       "id": "ep-16-spectator-mode",
@@ -172,7 +192,9 @@
       "format": "9:16",
       "formatRationale": "Quick feature spotlight showing how to share and watch live duels.",
       "targetDurationSec": 55,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-16-spectator-mode.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-16-spectator-mode.md"
     },
     {
       "id": "ep-17-playing-in-a-tournament",
@@ -182,7 +204,9 @@
       "format": "16:9",
       "formatRationale": "Full lobby, persistent account check-in, bracket pacing, and standings.",
       "targetDurationSec": 270,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-17-playing-in-a-tournament.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-17-playing-in-a-tournament.md"
     },
     {
       "id": "ep-18-hosting-a-local-tournament",
@@ -192,7 +216,9 @@
       "format": "16:9",
       "formatRationale": "Terminal pre-flight checks plus full Admin Portal dashboard and match moderation.",
       "targetDurationSec": 300,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-18-hosting-a-local-tournament.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-18-hosting-a-local-tournament.md"
     },
     {
       "id": "ep-19-terminal-client-duel-cli",
@@ -202,7 +228,9 @@
       "format": "16:9",
       "formatRationale": "Split terminal + browser cross-client gameplay requires widescreen.",
       "targetDurationSec": 210,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-19-terminal-client-duel-cli.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-19-terminal-client-duel-cli.md"
     },
     {
       "id": "ep-20-advanced-column-and-suit-synergy",
@@ -212,7 +240,9 @@
       "format": "16:9",
       "formatRationale": "Full-board tactical puzzle comparisons with math provenance.",
       "targetDurationSec": 330,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-20-advanced-column-and-suit-synergy.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-20-advanced-column-and-suit-synergy.md"
     },
     {
       "id": "ep-21-tempo-pass-economy-and-traps",
@@ -222,7 +252,9 @@
       "format": "9:16",
       "formatRationale": "High-engagement tactical puzzle Short driving viewers into the full playlist.",
       "targetDurationSec": 60,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-21-tempo-pass-economy-and-traps.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-21-tempo-pass-economy-and-traps.md"
     },
     {
       "id": "ep-22-full-annotated-champion-duel",
@@ -232,7 +264,9 @@
       "format": "16:9",
       "formatRationale": "Complete start-to-finish tactical match breakdown with live evaluation commentary.",
       "targetDurationSec": 540,
-      "status": "planned"
+      "status": "scripted",
+      "scenarioPath": "scripts/tutorials/scenarios/ep-22-full-annotated-champion-duel.json",
+      "narrationPath": "scripts/tutorials/narrations/ep-22-full-annotated-champion-duel.md"
     }
   ]
 }

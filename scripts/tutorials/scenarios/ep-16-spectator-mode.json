@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "ep-16-spectator-mode",
+  "season": 5,
+  "episodeNumber": 16,
+  "title": "Spectator Mode: Watch Links, Delay & Fair-Play Redaction",
+  "format": "9:16",
+  "targetDurationSec": 55,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42016,
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/competitive/",
+  "tags": ["Phalanx Duel", "Spectator Mode", "Watch Live", "Esports", "Shorts"],
+  "summary": "Watch live Phalanx Duel matches with Spectator Mode: share /watch links, observe public formations with fair-play hidden-hand redaction and spectator delay.",
+  "cues": [
+    {
+      "id": "watch-link",
+      "label": "Open a Live Spectator Link",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "redaction-fairness",
+      "label": "Hidden-Hand Redaction & Spectator Delay",
+      "action": "hold",
+      "holdMs": 3000
+    },
+    {
+      "id": "share-watch",
+      "label": "One-Click Watch Link Sharing",
+      "action": "hold",
+      "holdMs": 2500
+    }
+  ]
+}

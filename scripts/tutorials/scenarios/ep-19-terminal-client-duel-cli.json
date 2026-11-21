@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "ep-19-terminal-client-duel-cli",
+  "season": 5,
+  "episodeNumber": 19,
+  "title": "Playing from the Terminal with Go duel-cli",
+  "format": "16:9",
+  "targetDurationSec": 210,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42019,
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/build-with-phalanx/",
+  "tags": ["Phalanx Duel", "duel-cli", "Go", "Terminal", "Cross-Client", "Tutorial"],
+  "summary": "Play Phalanx Duel straight from your terminal with the official Go duel-cli client — complete with OpenAPI REST matchmaking, WebSocket ACK replay, and browser cross-play.",
+  "cues": [
+    {
+      "id": "cli-intro",
+      "label": "Meet Go duel-cli",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "cli-join",
+      "label": "Joining a Match Over REST + WebSocket",
+      "action": "hold",
+      "holdMs": 3500
+    },
+    {
+      "id": "cross-client",
+      "label": "100% Protocol Parity Across Clients",
+      "action": "hold",
+      "holdMs": 3000
+    }
+  ]
+}

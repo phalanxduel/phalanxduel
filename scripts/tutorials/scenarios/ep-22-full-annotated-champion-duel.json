@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "id": "ep-22-full-annotated-champion-duel",
+  "season": 6,
+  "episodeNumber": 22,
+  "title": "Full Annotated Masterclass: Beating the Champion MCTS Bot",
+  "format": "16:9",
+  "targetDurationSec": 540,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42022,
+  "botTier": "champion",
+  "cardSkinId": "obsidian-heraldry",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/mastery/mastery/",
+  "tags": ["Phalanx Duel", "Masterclass", "Champion Bot", "MCTS", "Annotated Match", "Tutorial"],
+  "summary": "Watch a complete start-to-finish annotated duel against the 1,000-iteration Champion MCTS bot, breaking down opening formation, mid-game pivots, endgame lethal math, and post-match hash verification.",
+  "cues": [
+    {
+      "id": "match-intro",
+      "label": "Match Setup vs Champion (MCTS 1000)",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "opening-formation",
+      "label": "Opening Formation & Tempo Plan",
+      "action": "quickStart",
+      "holdMs": 3500
+    },
+    {
+      "id": "midgame-pivot",
+      "label": "Mid-Game Cascade & Reinforcement Pivot",
+      "action": "deployFirstCard",
+      "holdMs": 4000
+    },
+    {
+      "id": "endgame-verify",
+      "label": "Lethal Finish & Replay Hash Proof",
+      "action": "hold",
+      "holdMs": 3500
+    }
+  ]
+}

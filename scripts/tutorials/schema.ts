@@ -75,6 +75,7 @@ export const TutorialEpisodeScenarioSchema = z.object({
     .optional(),
   cardSkinId: z.enum(['default', 'dual-loop', 'obsidian-heraldry']).default('default'),
   playerName: z.string().min(3).max(30).default('TutorialHost'),
+  companionUrl: z.string().url().optional(),
   tags: z.array(z.string().min(1)).min(1),
   summary: z.string().min(10),
   cues: z.array(TutorialCueStepSchema).min(1),

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "ep-17-playing-in-a-tournament",
+  "season": 5,
+  "episodeNumber": 17,
+  "title": "How to Play in a Local / LAN Tournament",
+  "format": "16:9",
+  "targetDurationSec": 270,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42017,
+  "cardSkinId": "obsidian-heraldry",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/competitive/",
+  "tags": ["Phalanx Duel", "Tournament", "LAN", "Competitive", "Tutorial"],
+  "summary": "Player checklist for local and LAN Phalanx Duel tournaments: connecting to the LAN domain, signing into persistent accounts, joining bracket matches, and tracking standings.",
+  "cues": [
+    {
+      "id": "lan-connect",
+      "label": "Connect to the Local Tournament Domain",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "persistent-login",
+      "label": "Sign In with Your Tournament Account",
+      "action": "hold",
+      "holdMs": 3500
+    },
+    {
+      "id": "bracket-play",
+      "label": "Joining Pairings & Spectator Casting",
+      "action": "quickStart",
+      "holdMs": 3500
+    }
+  ]
+}

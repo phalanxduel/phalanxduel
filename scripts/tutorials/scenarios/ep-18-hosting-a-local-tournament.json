@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "ep-18-hosting-a-local-tournament",
+  "season": 5,
+  "episodeNumber": 18,
+  "title": "Hosting & Directing a Local Tournament (Admin Portal & Runbook)",
+  "format": "16:9",
+  "targetDurationSec": 300,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42018,
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/build-with-phalanx/",
+  "tags": ["Phalanx Duel", "Tournament Hosting", "Admin Portal", "LAN", "Runbook"],
+  "summary": "Operator guide to hosting a LAN tournament: pre-flight port & firewall checks (pnpm tournament:ports), starting services (bin/phx up), and monitoring matches in the Admin Portal.",
+  "cues": [
+    {
+      "id": "preflight-ports",
+      "label": "Pre-Flight: pnpm tournament:ports & Firewall",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 3000
+    },
+    {
+      "id": "start-services",
+      "label": "Launch Stack with bin/phx up",
+      "action": "hold",
+      "holdMs": 3500
+    },
+    {
+      "id": "admin-console",
+      "label": "Live Monitoring in the Admin Portal",
+      "action": "hold",
+      "holdMs": 3500
+    }
+  ]
+}

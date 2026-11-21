@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "id": "ep-11-bots-basics-scout-to-soldier",
+  "season": 3,
+  "episodeNumber": 11,
+  "title": "1vBot Training Ladder: Scout, Grunt & Soldier",
+  "format": "9:16",
+  "targetDurationSec": 58,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42011,
+  "botTier": "soldier",
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/learn/foundations/",
+  "tags": ["Phalanx Duel", "Bots", "AI", "Scout", "Grunt", "Soldier", "Shorts"],
+  "summary": "Climb the first three rungs of the 1vBot training ladder: Scout (random), Grunt (legal heuristic), and Soldier (balanced MCTS-100).",
+  "cues": [
+    {
+      "id": "bot-tiers-intro",
+      "label": "Meet the Training Bots",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "scout-and-grunt",
+      "label": "Scout (Random) & Grunt (Heuristic)",
+      "action": "quickStart",
+      "holdMs": 3000
+    },
+    {
+      "id": "soldier-mcts",
+      "label": "Soldier (Balanced MCTS 100)",
+      "action": "deployFirstCard",
+      "holdMs": 3000
+    }
+  ]
+}

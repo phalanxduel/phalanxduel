@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "id": "ep-08-hud-combat-math-and-settings",
+  "season": 2,
+  "episodeNumber": 8,
+  "title": "Reading the HUD, Combat Math Inspector & Narration Settings",
+  "format": "16:9",
+  "targetDurationSec": 210,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42008,
+  "botTier": "grunt",
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/tools/battle-calculator/",
+  "tags": ["Phalanx Duel", "HUD", "Combat Math", "Narration", "Settings", "Tutorial"],
+  "summary": "Tour the Phalanx Duel desktop HUD: inspect engine-authored combat math provenance, configure the Narration Ticker, audio/music controls, and in-game Glossary.",
+  "cues": [
+    {
+      "id": "hud-overview",
+      "label": "Desktop HUD Layout",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "combat-inspector",
+      "label": "Inspect Combat Provenance",
+      "action": "quickStart",
+      "holdMs": 3500
+    },
+    {
+      "id": "narration-and-audio",
+      "label": "Narration Ticker, Music & Accessibility",
+      "action": "deployFirstCard",
+      "holdMs": 3500
+    }
+  ]
+}

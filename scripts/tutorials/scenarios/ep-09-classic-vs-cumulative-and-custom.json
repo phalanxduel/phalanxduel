@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "id": "ep-09-classic-vs-cumulative-and-custom",
+  "season": 3,
+  "episodeNumber": 9,
+  "title": "Classic vs Cumulative Damage Modes",
+  "format": "9:16",
+  "targetDurationSec": 55,
+  "mode": "cumulative",
+  "startingLp": 12,
+  "seed": 42009,
+  "botTier": "grunt",
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/learn/rules/",
+  "tags": ["Phalanx Duel", "Classic Mode", "Cumulative Mode", "Game Modes", "Shorts"],
+  "summary": "Compare Classic mode (between-turn damage reset) vs Cumulative mode (persistent chip damage) plus custom starting Life Points.",
+  "cues": [
+    {
+      "id": "mode-intro",
+      "label": "Classic vs Cumulative Damage Modes",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "classic-behavior",
+      "label": "Classic: Surviving Cards Reset Between Turns",
+      "action": "quickStart",
+      "holdMs": 3000
+    },
+    {
+      "id": "cumulative-behavior",
+      "label": "Cumulative: Persistent Chip Damage",
+      "action": "deployFirstCard",
+      "holdMs": 3000
+    }
+  ]
+}

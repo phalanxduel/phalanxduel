@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "id": "ep-20-advanced-column-and-suit-synergy",
+  "season": 6,
+  "episodeNumber": 20,
+  "title": "Advanced Strategy: Column Architecture & Suit Synergy",
+  "format": "16:9",
+  "targetDurationSec": 330,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42020,
+  "botTier": "veteran",
+  "cardSkinId": "obsidian-heraldry",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/learn/tactical-depth/",
+  "tags": ["Phalanx Duel", "Advanced Strategy", "Suit Synergy", "Column Architecture", "Tutorial"],
+  "summary": "Level up your formation design: protecting back-row anchors, pairing Diamond and Heart defensive walls, and setting up Club and Spade lethal breakthroughs.",
+  "cues": [
+    {
+      "id": "column-arch",
+      "label": "Thinking in Columns, Not Individual Cards",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "defensive-walls",
+      "label": "Diamond & Heart Boundary Stacking",
+      "action": "quickStart",
+      "holdMs": 3500
+    },
+    {
+      "id": "lethal-setups",
+      "label": "Club & Spade Breakthrough Columns",
+      "action": "deployFirstCard",
+      "holdMs": 3500
+    }
+  ]
+}

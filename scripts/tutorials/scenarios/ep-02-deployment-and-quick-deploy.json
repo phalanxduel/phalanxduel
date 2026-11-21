@@ -47,5 +47,6 @@
       "action": "hold",
       "holdMs": 3500
     }
-  ]
+  ],
+  "companionUrl": "https://phalanxduel.com/learn/foundations/"
 }

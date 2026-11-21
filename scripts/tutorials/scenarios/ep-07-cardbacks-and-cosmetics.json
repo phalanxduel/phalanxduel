@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "id": "ep-07-cardbacks-and-cosmetics",
+  "season": 2,
+  "episodeNumber": 7,
+  "title": "Cardbacks & Cosmetics: Neon Relay, Dual Loop & Obsidian Heraldry",
+  "format": "9:16",
+  "targetDurationSec": 50,
+  "mode": "classic",
+  "startingLp": 3,
+  "seed": 42007,
+  "botTier": "scout",
+  "cardSkinId": "obsidian-heraldry",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/learn/first-match/",
+  "tags": [
+    "Phalanx Duel",
+    "Cardbacks",
+    "Cosmetics",
+    "Neon Relay",
+    "Dual Loop",
+    "Obsidian Heraldry",
+    "Shorts"
+  ],
+  "summary": "Preview and equip Phalanx Duel cardbacks: Neon Relay, Obsidian Heraldry, and unlock Dual Loop by completing your first match.",
+  "cues": [
+    {
+      "id": "open-settings",
+      "label": "Open Cardback & Cosmetics Settings",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "preview-skins",
+      "label": "Neon Relay & Obsidian Heraldry",
+      "action": "quickStart",
+      "holdMs": 3000
+    },
+    {
+      "id": "unlock-dual-loop",
+      "label": "Unlock & Equip Dual Loop",
+      "action": "deployFirstCard",
+      "holdMs": 3000
+    }
+  ]
+}

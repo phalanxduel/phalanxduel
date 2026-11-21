@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "ep-06-account-signup-and-management",
+  "season": 2,
+  "episodeNumber": 6,
+  "title": "Sign Up, Gamertags & Account Management",
+  "format": "9:16",
+  "targetDurationSec": 55,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42006,
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/learn/getting-started/",
+  "tags": ["Phalanx Duel", "Account", "Signup", "Tutorial", "Shorts"],
+  "summary": "Create your Phalanx Duel account in seconds, choose a valid operative gamertag, manage your profile, and keep your session synced across matches.",
+  "cues": [
+    {
+      "id": "open-auth",
+      "label": "Open Account & Sign Up Panel",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "register-gamertag",
+      "label": "Choose Gamertag & Register",
+      "action": "hold",
+      "holdMs": 3000
+    },
+    {
+      "id": "profile-security",
+      "label": "Manage Profile & Password Reset",
+      "action": "hold",
+      "holdMs": 3000
+    }
+  ]
+}

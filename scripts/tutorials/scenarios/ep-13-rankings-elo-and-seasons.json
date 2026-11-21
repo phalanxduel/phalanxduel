@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "ep-13-rankings-elo-and-seasons",
+  "season": 4,
+  "episodeNumber": 13,
+  "title": "Understanding Your Ranking, Elo Categories & Seasonal Ladders",
+  "format": "16:9",
+  "targetDurationSec": 210,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42013,
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/competitive/",
+  "tags": ["Phalanx Duel", "Rankings", "Elo", "Leaderboard", "Seasons", "Tutorial"],
+  "summary": "Understand Phalanx Duel rankings: separate Elo ladders for PvP and bot categories (baseline 1000, K=32), seasonal windows, and confidence badges.",
+  "cues": [
+    {
+      "id": "leaderboard-open",
+      "label": "Tour the Seasonal Leaderboard",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "categories-elo",
+      "label": "Four Rating Categories & Elo Math",
+      "action": "hold",
+      "holdMs": 3500
+    },
+    {
+      "id": "confidence-badges",
+      "label": "Provisional, Calibrating, Established & Inactive",
+      "action": "hold",
+      "holdMs": 3500
+    }
+  ]
+}

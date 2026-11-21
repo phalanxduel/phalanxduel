@@ -40,5 +40,6 @@
       "action": "hold",
       "holdMs": 3000
     }
-  ]
+  ],
+  "companionUrl": "https://phalanxduel.com/learn/rules/"
 }

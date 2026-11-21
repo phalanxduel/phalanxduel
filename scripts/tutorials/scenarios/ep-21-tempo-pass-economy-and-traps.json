@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "id": "ep-21-tempo-pass-economy-and-traps",
+  "season": 6,
+  "episodeNumber": 21,
+  "title": "Pro Tip: Tempo, Pass Economy & Face-Card Traps",
+  "format": "9:16",
+  "targetDurationSec": 60,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42021,
+  "botTier": "destroyer",
+  "cardSkinId": "dual-loop",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/learn/analytical-mastery/",
+  "tags": ["Phalanx Duel", "Pro Tip", "Tempo", "Pass Economy", "Strategy", "Shorts"],
+  "summary": "Master tempo and the pass economy in 60 seconds: when Passing beats attacking, how to starve enemy reinforcements, and setting Ace/Face-card traps.",
+  "cues": [
+    {
+      "id": "tempo-hook",
+      "label": "Why Attacking Every Turn Loses Games",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2000
+    },
+    {
+      "id": "pass-trap",
+      "label": "Strategic Passing & Face-Card Locks",
+      "action": "quickStart",
+      "holdMs": 3000
+    },
+    {
+      "id": "reinforce-starve",
+      "label": "Controlling Initiative & Reinforcements",
+      "action": "deployFirstCard",
+      "holdMs": 3000
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "id": "ep-15-replays-and-hash-verification",
+  "season": 4,
+  "episodeNumber": 15,
+  "title": "Deterministic Replays & Cryptographic Hash-Chain Verification",
+  "format": "16:9",
+  "targetDurationSec": 240,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42015,
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/learn/gameplay-assurance/",
+  "tags": ["Phalanx Duel", "Replays", "Determinism", "Hash Chain", "Fair Play", "Tutorial"],
+  "summary": "Step through deterministic match replays, inspect per-turn cryptographic state hashes, and verify fair play via the match verification endpoint.",
+  "cues": [
+    {
+      "id": "replay-intro",
+      "label": "Why Deterministic Replays Matter",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "step-through",
+      "label": "Scrubbing Turn-by-Turn Provenance",
+      "action": "hold",
+      "holdMs": 3500
+    },
+    {
+      "id": "hash-verify",
+      "label": "Canonical State Hash Verification",
+      "action": "hold",
+      "holdMs": 3500
+    }
+  ]
+}

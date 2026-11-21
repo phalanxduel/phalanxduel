@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "id": "ep-12-bots-specialist-and-champion",
+  "season": 3,
+  "episodeNumber": 12,
+  "title": "Mastering Specialist Bots (Veteran, Destroyer, Sentinel, Blitz & Champion)",
+  "format": "16:9",
+  "targetDurationSec": 300,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42012,
+  "botTier": "champion",
+  "cardSkinId": "obsidian-heraldry",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/learn/tactical-depth/",
+  "tags": ["Phalanx Duel", "Bots", "MCTS", "Veteran", "Destroyer", "Sentinel", "Blitz", "Champion"],
+  "summary": "Counter all five specialist MCTS bots — Veteran, Destroyer, Sentinel, Blitz, and the 1,000-iteration Champion — by understanding their heuristic weights.",
+  "cues": [
+    {
+      "id": "specialist-intro",
+      "label": "The Five Specialist MCTS Personalities",
+      "action": "goto",
+      "urlPath": "/",
+      "holdMs": 2500
+    },
+    {
+      "id": "veteran-destroyer",
+      "label": "Veteran (Attack) & Destroyer (Column-Clear)",
+      "action": "quickStart",
+      "holdMs": 3500
+    },
+    {
+      "id": "sentinel-blitz",
+      "label": "Sentinel (Defense) & Blitz (Speed)",
+      "action": "deployFirstCard",
+      "holdMs": 3500
+    },
+    {
+      "id": "champion-boss",
+      "label": "Champion (MCTS 1000 Apex)",
+      "action": "hold",
+      "holdMs": 3500
+    }
+  ]
+}
