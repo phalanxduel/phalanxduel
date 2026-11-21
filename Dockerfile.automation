@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install Node.js 22 (LTS) - Robust method
 ENV NODE_VERSION=22.13.1
-RUN apt-get update && apt-get install -y curl && \
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
     ARCH=$([ "$(uname -m)" = "x86_64" ] && echo "x64" || echo "arm64") && \
     curl -fsSL "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$ARCH.tar.gz" -o node.tar.gz && \
     tar -xzf node.tar.gz --strip-components=1 -C /usr/local && \
@@ -19,7 +19,7 @@ RUN curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/do
 
 # Install Go 1.24.0
 ENV GO_VERSION=1.24.0
-RUN apt-get update && apt-get install -y wget && \
+RUN apt-get update && apt-get install -y --no-install-recommends wget && \
     ARCH=$(dpkg --print-architecture) && \
     case "${ARCH}" in \
       amd64) GO_ARCH="amd64" ;; \
@@ -38,7 +38,7 @@ ENV PATH=$PATH:/usr/local/go/bin
 RUN npm install -g pnpm@10.33.2
 
 # Install Playwright dependencies + VNC tools
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     xvfb \
     fluxbox \
     x11vnc \

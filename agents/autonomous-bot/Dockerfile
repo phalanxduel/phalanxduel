@@ -10,10 +10,13 @@ COPY server/package.json server/
 COPY mcp/package.json mcp/
 COPY agents/autonomous-bot/package.json agents/autonomous-bot/
 
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+RUN npm install -g pnpm@10.33.2 && pnpm install --frozen-lockfile
 
 # Copy source
-COPY . .
+COPY --chown=node:node . .
+
+RUN chown -R node:node /app
+USER node
 
 WORKDIR /app/agents/autonomous-bot
 

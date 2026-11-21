@@ -23,9 +23,6 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
 # ── Stage 2: Build everything ─────────────────────────────────────
 FROM deps AS build
 
-# Install pinned pnpm directly; bundled Corepack keyrings can lag pnpm signatures.
-RUN apk add --no-cache git && npm install -g pnpm@10.33.2
-
 ARG GIT_COMMIT_SHA=unknown
 ARG BUILD_NUMBER
 
@@ -36,7 +33,7 @@ RUN --mount=type=cache,target=/root/.pnpm-store \
     pnpm install --frozen-lockfile && \
     GIT_COMMIT_SHA="$GIT_COMMIT_SHA" BUILD_NUMBER="$BUILD_NUMBER" node --import tsx scripts/generate-build-metadata.ts && \
     pnpm --filter @phalanxduel/shared build && \
-    ls shared/dist/ 2>/dev/null | sort | xargs echo DIST: && ls shared/dist/index.d.ts && \
+    find shared/dist -maxdepth 1 -mindepth 1 && test -f shared/dist/index.d.ts && \
     pnpm --filter @phalanxduel/engine build && \
     pnpm --filter @phalanxduel/server build && \
     pnpm --filter @phalanxduel/client build && \
@@ -117,7 +114,7 @@ EXPOSE 3001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD wget -qO- "http://127.0.0.1:${PHALANX_ADMIN_PORT:-${PHALANX_SERVER_PORT:-3001}}/health" > /dev/null 2>&1 || exit 1
+  CMD ["sh", "-c", "wget -qO- \"http://127.0.0.1:${PHALANX_ADMIN_PORT:-${PHALANX_SERVER_PORT:-3001}}/health\" > /dev/null 2>&1 || exit 1"]
 
 STOPSIGNAL SIGTERM
 
