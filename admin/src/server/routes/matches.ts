@@ -2,9 +2,8 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { MATCH_CONSTRAINTS } from '@phalanxduel/shared';
 import { sql } from 'drizzle-orm';
-import { requireAdmin } from '../middleware/auth.js';
+import { withAdmin, withAdminProxy } from '../middleware/route-aspect.js';
 import { db } from '../db.js';
-import { adminInternalToken, gameServerInternalUrl } from '../config.js';
 
 const MatchListQuery = z.object({
   status: z.enum(['active', 'completed', 'all']).default('all'),
@@ -15,35 +14,70 @@ const RetentionQuery = z.object({
   olderThan: z.string().datetime({ offset: true }),
 });
 
+const CreateMatchBody = z.object({
+  playerName: z.string().min(1).max(50),
+  opponent: z.enum(['bot-random', 'human']),
+  matchParams: z
+    .object({
+      rows: z
+        .number()
+        .int()
+        .min(MATCH_CONSTRAINTS.rows.min)
+        .max(MATCH_CONSTRAINTS.rows.max)
+        .optional(),
+      columns: z
+        .number()
+        .int()
+        .min(MATCH_CONSTRAINTS.columns.min)
+        .max(MATCH_CONSTRAINTS.columns.max)
+        .optional(),
+      maxHandSize: z.number().int().min(MATCH_CONSTRAINTS.maxHandSize.min).optional(),
+    })
+    .optional(),
+  gameOptions: z
+    .object({
+      damageMode: z.enum(['classic', 'cumulative']).optional(),
+      startingLifepoints: z
+        .number()
+        .int()
+        .min(MATCH_CONSTRAINTS.startingLifepoints.min)
+        .max(MATCH_CONSTRAINTS.startingLifepoints.max)
+        .optional(),
+    })
+    .optional(),
+  rngSeed: z.number().optional(),
+});
+
 export function registerMatchRoutes(fastify: FastifyInstance) {
-  fastify.get<{ Querystring: unknown }>('/admin-api/matches/retention', async (request, reply) => {
-    const admin = await requireAdmin(request, reply);
-    if (!admin) return;
-    const parsed = RetentionQuery.safeParse(request.query ?? {});
-    if (!parsed.success)
-      return reply.status(400).send({ error: 'olderThan must be an ISO timestamp' });
-    const rows = await db.execute(sql`
+  fastify.get<{ Querystring: unknown }>(
+    '/admin-api/matches/retention',
+    withAdmin<{ Querystring: unknown }>(async (request, reply) => {
+      const parsed = RetentionQuery.safeParse(request.query ?? {});
+      if (!parsed.success)
+        return reply.status(400).send({ error: 'olderThan must be an ISO timestamp' });
+      const rows = await db.execute(sql`
       SELECT COUNT(*)::int AS count, MIN(created_at) AS oldest
       FROM matches
       WHERE status IN ('pending', 'active', 'cancelled')
         AND COALESCE(updated_at, created_at) < ${parsed.data.olderThan}::timestamptz
     `);
-    return reply.send({
-      olderThan: parsed.data.olderThan,
-      eligible: rows[0] ?? { count: 0, oldest: null },
-    });
-  });
+      return reply.send({
+        olderThan: parsed.data.olderThan,
+        eligible: rows[0] ?? { count: 0, oldest: null },
+      });
+    }),
+  );
 
-  fastify.post<{ Body: unknown }>('/admin-api/matches/retention/purge', async (request, reply) => {
-    const admin = await requireAdmin(request, reply);
-    if (!admin) return;
-    const parsed = RetentionQuery.safeParse(request.body ?? {});
-    if (!parsed.success)
-      return reply.status(400).send({ error: 'olderThan must be an ISO timestamp' });
-    // Match history has dependent rows without cascading foreign keys. Delete
-    // the stale graph in one statement so retention cannot leave orphans or
-    // fail with a generic FK error.
-    const rows = await db.execute(sql`
+  fastify.post<{ Body: unknown }>(
+    '/admin-api/matches/retention/purge',
+    withAdmin<{ Body: unknown }>(async (request, reply, admin) => {
+      const parsed = RetentionQuery.safeParse(request.body ?? {});
+      if (!parsed.success)
+        return reply.status(400).send({ error: 'olderThan must be an ISO timestamp' });
+      // Match history has dependent rows without cascading foreign keys. Delete
+      // the stale graph in one statement so retention cannot leave orphans or
+      // fail with a generic FK error.
+      const rows = await db.execute(sql`
       WITH stale AS MATERIALIZED (
         SELECT id FROM matches
         WHERE status IN ('pending', 'active', 'cancelled')
@@ -60,21 +94,21 @@ export function registerMatchRoutes(fastify: FastifyInstance) {
       DELETE FROM matches x USING stale s WHERE x.id = s.id
       RETURNING x.id
     `);
-    await db.execute(sql`
+      await db.execute(sql`
       INSERT INTO admin_audit_log (actor_id, action, metadata)
       VALUES (${admin.id}, 'purge_stale_matches', ${JSON.stringify({ olderThan: parsed.data.olderThan, count: rows.length })}::jsonb)
     `);
-    return reply.send({ purged: rows.length, olderThan: parsed.data.olderThan });
-  });
+      return reply.send({ purged: rows.length, olderThan: parsed.data.olderThan });
+    }),
+  );
 
-  fastify.get<{ Querystring: unknown }>('/admin-api/matches', async (request, reply) => {
-    const admin = await requireAdmin(request, reply);
-    if (!admin) return;
+  fastify.get<{ Querystring: unknown }>(
+    '/admin-api/matches',
+    withAdmin<{ Querystring: unknown }>(async (request, reply) => {
+      const query = MatchListQuery.parse(request.query ?? {});
+      const statusFilter = query.status === 'all' ? sql`1=1` : sql`status = ${query.status}`;
 
-    const query = MatchListQuery.parse(request.query ?? {});
-    const statusFilter = query.status === 'all' ? sql`1=1` : sql`status = ${query.status}`;
-
-    const rows = await db.execute(sql`
+      const rows = await db.execute(sql`
       SELECT
         id,
         player_1_name,
@@ -96,15 +130,13 @@ export function registerMatchRoutes(fastify: FastifyInstance) {
       LIMIT ${query.limit}
     `);
 
-    return reply.status(200).send(rows);
-  });
+      return reply.status(200).send(rows);
+    }),
+  );
 
   fastify.get<{ Params: { matchId: string } }>(
     '/admin-api/matches/:matchId',
-    async (request, reply) => {
-      const admin = await requireAdmin(request, reply);
-      if (!admin) return;
-
+    withAdmin<{ Params: { matchId: string } }>(async (request, reply) => {
       const { matchId } = request.params;
 
       const rows = await db.execute(sql`
@@ -135,208 +167,117 @@ export function registerMatchRoutes(fastify: FastifyInstance) {
       }
 
       return reply.status(200).send(rows[0]);
-    },
+    }),
   );
 
-  const CreateMatchBody = z.object({
-    playerName: z.string().min(1).max(50),
-    opponent: z.enum(['bot-random', 'human']),
-    matchParams: z
-      .object({
-        rows: z
-          .number()
-          .int()
-          .min(MATCH_CONSTRAINTS.rows.min)
-          .max(MATCH_CONSTRAINTS.rows.max)
-          .optional(),
-        columns: z
-          .number()
-          .int()
-          .min(MATCH_CONSTRAINTS.columns.min)
-          .max(MATCH_CONSTRAINTS.columns.max)
-          .optional(),
-        maxHandSize: z.number().int().min(MATCH_CONSTRAINTS.maxHandSize.min).optional(),
-      })
-      .optional(),
-    gameOptions: z
-      .object({
-        damageMode: z.enum(['classic', 'cumulative']).optional(),
-        startingLifepoints: z
-          .number()
-          .int()
-          .min(MATCH_CONSTRAINTS.startingLifepoints.min)
-          .max(MATCH_CONSTRAINTS.startingLifepoints.max)
-          .optional(),
-      })
-      .optional(),
-    rngSeed: z.number().optional(),
-  });
+  fastify.post<{ Body: unknown }>(
+    '/admin-api/matches',
+    withAdminProxy<{ Body: unknown }>(async (request, reply, { admin, fetchUpstream }) => {
+      const parsed = CreateMatchBody.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.status(400).send({ error: 'Invalid body', code: 'VALIDATION_ERROR' });
+      }
 
-  fastify.post<{ Body: unknown }>('/admin-api/matches', async (request, reply) => {
-    const admin = await requireAdmin(request, reply);
-    if (!admin) return;
-
-    const parsed = CreateMatchBody.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.status(400).send({ error: 'Invalid body', code: 'VALIDATION_ERROR' });
-    }
-
-    const gameServerUrl = gameServerInternalUrl();
-    const token = adminInternalToken();
-    if (!token) {
-      return reply
-        .status(503)
-        .send({ error: 'Admin token not configured', code: 'NOT_CONFIGURED' });
-    }
-
-    let upstream: Response;
-    try {
-      upstream = await fetch(`${gameServerUrl}/internal/matches`, {
+      const upstream = await fetchUpstream('/internal/matches', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(parsed.data),
       });
-    } catch {
-      return reply.status(502).send({ error: 'Game server unreachable', code: 'UPSTREAM_ERROR' });
-    }
+      if (!upstream) return;
 
-    const upstreamBody = (await upstream.json().catch(() => ({}))) as { matchId?: string };
+      const upstreamBody = (await upstream.json().catch(() => ({}))) as { matchId?: string };
 
-    if (!upstream.ok || !upstreamBody.matchId) {
-      return reply.status(upstream.status).send(upstreamBody);
-    }
+      if (!upstream.ok || !upstreamBody.matchId) {
+        return reply.status(upstream.status).send(upstreamBody);
+      }
 
-    // Record in audit log
-    await db.execute(sql`
+      await db.execute(sql`
       INSERT INTO admin_audit_log (actor_id, action, metadata)
       VALUES (${admin.id}, 'create_match', ${JSON.stringify({ matchId: upstreamBody.matchId, ...parsed.data })}::jsonb)
     `);
 
-    return reply.status(201).send(upstreamBody);
-  });
+      return reply.status(201).send(upstreamBody);
+    }),
+  );
 
   fastify.post<{ Params: { matchId: string } }>(
     '/admin-api/matches/:matchId/terminate',
-    async (request, reply) => {
-      const admin = await requireAdmin(request, reply);
-      if (!admin) return;
+    withAdminProxy<{ Params: { matchId: string } }>(
+      async (request, reply, { admin, fetchUpstream }) => {
+        const { matchId } = request.params;
 
-      const { matchId } = request.params;
-      const gameServerUrl = gameServerInternalUrl();
-      const token = adminInternalToken();
-
-      if (!token) {
-        return reply
-          .status(503)
-          .send({ error: 'Admin token not configured', code: 'NOT_CONFIGURED' });
-      }
-
-      let upstream: Response;
-      try {
-        upstream = await fetch(`${gameServerUrl}/internal/matches/${matchId}/terminate`, {
+        const upstream = await fetchUpstream(`/internal/matches/${matchId}/terminate`, {
           method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         });
-      } catch {
-        return reply.status(502).send({ error: 'Game server unreachable', code: 'UPSTREAM_ERROR' });
-      }
+        if (!upstream) return;
 
-      if (!upstream.ok) {
-        const errBody = (await upstream.json().catch(() => ({}))) as { error?: string };
-        return reply.status(upstream.status).send(errBody);
-      }
+        if (!upstream.ok) {
+          const errBody = (await upstream.json().catch(() => ({}))) as { error?: string };
+          return reply.status(upstream.status).send(errBody);
+        }
 
-      // Record in audit log
-      await db.execute(sql`
+        await db.execute(sql`
       INSERT INTO admin_audit_log (actor_id, action, metadata)
       VALUES (${admin.id}, 'terminate_match', ${JSON.stringify({ matchId })}::jsonb)
     `);
 
-      return reply.status(200).send({ terminated: true });
-    },
+        return reply.status(200).send({ terminated: true });
+      },
+    ),
   );
 
   fastify.post<{ Params: { matchId: string }; Body: { targetSequenceNumber: number } }>(
     '/admin-api/matches/:matchId/rollback',
-    async (request, reply) => {
-      const admin = await requireAdmin(request, reply);
-      if (!admin) return;
+    withAdminProxy<{ Params: { matchId: string }; Body: { targetSequenceNumber: number } }>(
+      async (request, reply, { admin, fetchUpstream }) => {
+        const { matchId } = request.params;
+        const { targetSequenceNumber } = request.body;
 
-      const { matchId } = request.params;
-      const { targetSequenceNumber } = request.body;
+        if (typeof targetSequenceNumber !== 'number' || targetSequenceNumber < 0) {
+          return reply
+            .status(400)
+            .send({ error: 'Invalid target sequence number', code: 'VALIDATION_ERROR' });
+        }
 
-      if (typeof targetSequenceNumber !== 'number' || targetSequenceNumber < 0) {
-        return reply
-          .status(400)
-          .send({ error: 'Invalid target sequence number', code: 'VALIDATION_ERROR' });
-      }
-
-      const gameServerUrl = gameServerInternalUrl();
-      const token = adminInternalToken();
-
-      if (!token) {
-        return reply
-          .status(503)
-          .send({ error: 'Admin token not configured', code: 'NOT_CONFIGURED' });
-      }
-
-      let upstream: Response;
-      try {
-        upstream = await fetch(`${gameServerUrl}/internal/matches/${matchId}/rollback`, {
+        const upstream = await fetchUpstream(`/internal/matches/${matchId}/rollback`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ targetSequenceNumber }),
         });
-      } catch {
-        return reply.status(502).send({ error: 'Game server unreachable', code: 'UPSTREAM_ERROR' });
-      }
+        if (!upstream) return;
 
-      if (!upstream.ok) {
-        const errBody = (await upstream.json().catch(() => ({}))) as { error?: string };
-        return reply.status(upstream.status).send(errBody);
-      }
+        if (!upstream.ok) {
+          const errBody = (await upstream.json().catch(() => ({}))) as { error?: string };
+          return reply.status(upstream.status).send(errBody);
+        }
 
-      // Record in audit log
-      await db.execute(sql`
+        await db.execute(sql`
       INSERT INTO admin_audit_log (actor_id, action, metadata)
       VALUES (${admin.id}, 'rollback_match', ${JSON.stringify({ matchId, targetSequenceNumber })}::jsonb)
     `);
 
-      return reply.status(200).send({ success: true });
-    },
+        return reply.status(200).send({ success: true });
+      },
+    ),
   );
 
   // POST /admin-api/comments/:commentId/remove
   fastify.post<{ Params: { commentId: string }; Body: { reason: string } }>(
     '/admin-api/comments/:commentId/remove',
-    async (request, reply) => {
-      const admin = await requireAdmin(request, reply);
-      if (!admin) return;
+    withAdminProxy<{ Params: { commentId: string }; Body: { reason: string } }>(
+      async (request, reply, { admin, fetchUpstream }) => {
+        const { commentId } = request.params;
+        const { reason } = request.body;
 
-      const { commentId } = request.params;
-      const { reason } = request.body;
+        const res = await fetchUpstream(`/internal/comments/${commentId}/remove`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason, actorId: admin.id }),
+        });
+        if (!res) return;
 
-      const gameServerUrl = gameServerInternalUrl();
-      const token = adminInternalToken();
-
-      const res = await fetch(`${gameServerUrl}/internal/comments/${commentId}/remove`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ reason, actorId: admin.id }),
-      });
-
-      return reply.status(res.status).send(await res.json());
-    },
+        return reply.status(res.status).send(await res.json());
+      },
+    ),
   );
 }

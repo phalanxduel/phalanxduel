@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { sql } from 'drizzle-orm';
-import { requireAdmin } from '../middleware/auth.js';
+import { withAdmin } from '../middleware/route-aspect.js';
 import { db } from '../db.js';
 
 interface ReportParam {
@@ -212,58 +212,58 @@ const REPORTS: Report[] = [
 
 export function registerReportRoutes(fastify: FastifyInstance) {
   // GET /admin-api/reports — list without buildSql
-  fastify.get('/admin-api/reports', async (request, reply) => {
-    const admin = await requireAdmin(request, reply);
-    if (!admin) return;
-
-    return reply.status(200).send(
-      REPORTS.map(({ id, name, description, category, params }) => ({
-        id,
-        name,
-        description,
-        category,
-        params,
-      })),
-    );
-  });
+  fastify.get(
+    '/admin-api/reports',
+    withAdmin((_request, reply) =>
+      reply.status(200).send(
+        REPORTS.map(({ id, name, description, category, params }) => ({
+          id,
+          name,
+          description,
+          category,
+          params,
+        })),
+      ),
+    ),
+  );
 
   // GET /admin-api/reports/:reportId/sql — render SQL with query params
   fastify.get<{ Params: { reportId: string }; Querystring: Record<string, string> }>(
     '/admin-api/reports/:reportId/sql',
-    async (request, reply) => {
-      const admin = await requireAdmin(request, reply);
-      if (!admin) return;
+    withAdmin<{ Params: { reportId: string }; Querystring: Record<string, string> }>(
+      (request, reply) => {
+        const report = REPORTS.find((r) => r.id === request.params.reportId);
+        if (!report)
+          return reply.status(404).send({ error: 'Report not found', code: 'NOT_FOUND' });
 
-      const report = REPORTS.find((r) => r.id === request.params.reportId);
-      if (!report) return reply.status(404).send({ error: 'Report not found', code: 'NOT_FOUND' });
-
-      const renderedSql = report.buildSql(request.query);
-      return reply.status(200).send({ sql: renderedSql });
-    },
+        const renderedSql = report.buildSql(request.query);
+        return reply.status(200).send({ sql: renderedSql });
+      },
+    ),
   );
 
   // POST /admin-api/reports/:reportId/run — run report
   fastify.post<{ Params: { reportId: string }; Body: Record<string, string | number> }>(
     '/admin-api/reports/:reportId/run',
-    async (request, reply) => {
-      const admin = await requireAdmin(request, reply);
-      if (!admin) return;
+    withAdmin<{ Params: { reportId: string }; Body: Record<string, string | number> }>(
+      async (request, reply) => {
+        const report = REPORTS.find((r) => r.id === request.params.reportId);
+        if (!report)
+          return reply.status(404).send({ error: 'Report not found', code: 'NOT_FOUND' });
 
-      const report = REPORTS.find((r) => r.id === request.params.reportId);
-      if (!report) return reply.status(404).send({ error: 'Report not found', code: 'NOT_FOUND' });
+        const params = request.body;
+        const renderedSql = report.buildSql(params);
+        const start = Date.now();
+        const rows = await db.execute(sql.raw(renderedSql));
+        const durationMs = Date.now() - start;
 
-      const params = request.body;
-      const renderedSql = report.buildSql(params);
-      const start = Date.now();
-      const rows = await db.execute(sql.raw(renderedSql));
-      const durationMs = Date.now() - start;
-
-      return reply.status(200).send({
-        rows,
-        rowCount: rows.length,
-        durationMs,
-        sql: renderedSql,
-      });
-    },
+        return reply.status(200).send({
+          rows,
+          rowCount: rows.length,
+          durationMs,
+          sql: renderedSql,
+        });
+      },
+    ),
   );
 }

@@ -3,24 +3,22 @@ import { z } from 'zod';
 import { sql } from 'drizzle-orm';
 import { randomBytes } from 'node:crypto';
 import bcrypt from 'bcryptjs';
-import { requireAdmin } from '../middleware/auth.js';
+import { withAdmin, withAdminProxy } from '../middleware/route-aspect.js';
 import { db } from '../db.js';
-import { adminInternalToken, gameServerInternalUrl } from '../config.js';
 
 export function registerUserRoutes(fastify: FastifyInstance) {
   // GET /admin-api/users — paginated user list with match counts
-  fastify.get<{ Querystring: unknown }>('/admin-api/users', async (request, reply) => {
-    const admin = await requireAdmin(request, reply);
-    if (!admin) return;
+  fastify.get<{ Querystring: unknown }>(
+    '/admin-api/users',
+    withAdmin<{ Querystring: unknown }>(async (request, reply) => {
+      const query = z
+        .object({
+          limit: z.coerce.number().int().min(1).max(200).default(50),
+          offset: z.coerce.number().int().min(0).default(0),
+        })
+        .parse(request.query ?? {});
 
-    const query = z
-      .object({
-        limit: z.coerce.number().int().min(1).max(200).default(50),
-        offset: z.coerce.number().int().min(0).default(0),
-      })
-      .parse(request.query ?? {});
-
-    const rows = await db.execute(sql`
+      const rows = await db.execute(sql`
       SELECT
         u.id,
         u.gamertag,
@@ -38,16 +36,14 @@ export function registerUserRoutes(fastify: FastifyInstance) {
       LIMIT ${query.limit} OFFSET ${query.offset}
     `);
 
-    return reply.status(200).send(rows);
-  });
+      return reply.status(200).send(rows);
+    }),
+  );
 
   // GET /admin-api/users/:userId
   fastify.get<{ Params: { userId: string } }>(
     '/admin-api/users/:userId',
-    async (request, reply) => {
-      const admin = await requireAdmin(request, reply);
-      if (!admin) return;
-
+    withAdmin<{ Params: { userId: string } }>(async (request, reply) => {
       const { userId } = request.params;
 
       const userRows = await db.execute(sql`
@@ -74,16 +70,13 @@ export function registerUserRoutes(fastify: FastifyInstance) {
       return reply
         .status(200)
         .send({ user: userRows[0], matches: matchRows, snapshots: snapshotRows });
-    },
+    }),
   );
 
   // POST /admin-api/users/:userId/reset-password
   fastify.post<{ Params: { userId: string } }>(
     '/admin-api/users/:userId/reset-password',
-    async (request, reply) => {
-      const admin = await requireAdmin(request, reply);
-      if (!admin) return;
-
+    withAdmin<{ Params: { userId: string } }>(async (request, reply, admin) => {
       const { userId } = request.params;
 
       const tempPassword = randomBytes(8).toString('hex'); // 16 hex chars
@@ -98,16 +91,13 @@ export function registerUserRoutes(fastify: FastifyInstance) {
     `);
 
       return reply.status(200).send({ tempPassword });
-    },
+    }),
   );
 
   // PATCH /admin-api/users/:userId/admin — toggle is_admin with self-revocation guard
   fastify.patch<{ Params: { userId: string }; Body: unknown }>(
     '/admin-api/users/:userId/admin',
-    async (request, reply) => {
-      const admin = await requireAdmin(request, reply);
-      if (!admin) return;
-
+    withAdmin<{ Params: { userId: string }; Body: unknown }>(async (request, reply, admin) => {
       const { userId } = request.params;
 
       // Self-revocation guard
@@ -134,69 +124,45 @@ export function registerUserRoutes(fastify: FastifyInstance) {
     `);
 
       return reply.status(200).send({ ok: true });
-    },
+    }),
   );
 
   // POST /admin-api/users/:userId/disable
   fastify.post<{ Params: { userId: string }; Body: { reason: string } }>(
     '/admin-api/users/:userId/disable',
-    async (request, reply) => {
-      const admin = await requireAdmin(request, reply);
-      if (!admin) return;
+    withAdminProxy<{ Params: { userId: string }; Body: { reason: string } }>(
+      async (request, reply, { admin, fetchUpstream }) => {
+        const { userId } = request.params;
+        const { reason } = request.body;
 
-      const { userId } = request.params;
-      const { reason } = request.body;
+        const res = await fetchUpstream(`/internal/users/${userId}/disable`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason, actorId: admin.id }),
+        });
+        if (!res) return;
 
-      const gameServerUrl = gameServerInternalUrl();
-      const token = adminInternalToken();
-
-      if (!token) {
-        return reply
-          .status(503)
-          .send({ error: 'Admin token not configured', code: 'NOT_CONFIGURED' });
-      }
-
-      const res = await fetch(`${gameServerUrl}/internal/users/${userId}/disable`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ reason, actorId: admin.id }),
-      });
-
-      return reply.status(res.status).send(await res.json());
-    },
+        return reply.status(res.status).send(await res.json());
+      },
+    ),
   );
 
   // POST /admin-api/users/:userId/purge
   fastify.post<{ Params: { userId: string } }>(
     '/admin-api/users/:userId/purge',
-    async (request, reply) => {
-      const admin = await requireAdmin(request, reply);
-      if (!admin) return;
+    withAdminProxy<{ Params: { userId: string } }>(
+      async (request, reply, { admin, fetchUpstream }) => {
+        const { userId } = request.params;
 
-      const { userId } = request.params;
+        const res = await fetchUpstream(`/internal/users/${userId}/purge`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ actorId: admin.id }),
+        });
+        if (!res) return;
 
-      const gameServerUrl = gameServerInternalUrl();
-      const token = adminInternalToken();
-
-      if (!token) {
-        return reply
-          .status(503)
-          .send({ error: 'Admin token not configured', code: 'NOT_CONFIGURED' });
-      }
-
-      const res = await fetch(`${gameServerUrl}/internal/users/${userId}/purge`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ actorId: admin.id }),
-      });
-
-      return reply.status(res.status).send(await res.json());
-    },
+        return reply.status(res.status).send(await res.json());
+      },
+    ),
   );
 }

@@ -1,7 +1,7 @@
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { ErrorResponseSchema, SpectatorMatchSummarySchema } from '@phalanxduel/shared';
-import { traceHttpHandler, httpTraceContext } from '../tracing.js';
+import { withRouteAspect } from '../http-aspect.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { UserRepository } from '../db/user-repo.js';
 import { MatchRepository } from '../db/match-repo.js';
@@ -12,25 +12,6 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
   const userRepo = new UserRepository();
   const matchRepo = new MatchRepository();
   const moderationService = new ModerationService();
-
-  const getAuthUser = async (request: FastifyRequest) => {
-    try {
-      let token = request.headers.authorization?.replace('Bearer ', '');
-      const reqWithCookies = request as FastifyRequest & { cookies: Record<string, string> };
-      token ??= reqWithCookies.cookies?.phalanx_refresh;
-      if (!token) return null;
-
-      const decoded = fastify.jwt.verify<{ id: string; gamertag: string; suffix: number }>(token);
-
-      // Safety check: is the user disabled?
-      const user = await userRepo.getUserById(decoded.id);
-      if (!user || user.isDisabled) return null;
-
-      return decoded;
-    } catch {
-      return null;
-    }
-  };
 
   const CommentSchema = z.object({
     id: z.uuid(),
@@ -69,11 +50,9 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      const user = await getAuthUser(request);
-      if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
-
-      return traceHttpHandler('social.follow', httpTraceContext(request, reply), async () => {
+    withRouteAspect<{ Params: { targetUserId: string } }, false, true>(
+      { operation: 'social.follow', requireAuth: true, userRepo },
+      async ({ request, reply, user }) => {
         const followerId = user.id;
         const followingId = request.params.targetUserId;
 
@@ -85,8 +64,8 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
         await userRepo.followUser(followerId, followingId);
         void reply.status(204);
         return null;
-      });
-    },
+      },
+    ),
   );
 
   fastify.delete<{ Params: { targetUserId: string } }>(
@@ -102,19 +81,14 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      const user = await getAuthUser(request);
-      if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
-
-      return traceHttpHandler('social.unfollow', httpTraceContext(request, reply), async () => {
-        const followerId = user.id;
-        const followingId = request.params.targetUserId;
-
-        await userRepo.unfollowUser(followerId, followingId);
+    withRouteAspect<{ Params: { targetUserId: string } }, false, true>(
+      { operation: 'social.unfollow', requireAuth: true, userRepo },
+      async ({ request, reply, user }) => {
+        await userRepo.unfollowUser(user.id, request.params.targetUserId);
         void reply.status(204);
         return null;
-      });
-    },
+      },
+    ),
   );
 
   fastify.get<{ Params: { userId: string } }>(
@@ -130,12 +104,10 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('social.follow_stats', httpTraceContext(request, reply), async () => {
-        const stats = await userRepo.getFollowStats(request.params.userId);
-        return stats;
-      });
-    },
+    withRouteAspect<{ Params: { userId: string } }>(
+      { operation: 'social.follow_stats' },
+      async ({ request }) => userRepo.getFollowStats(request.params.userId),
+    ),
   );
 
   // --- Favorite Endpoints ---
@@ -153,16 +125,14 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      const user = await getAuthUser(request);
-      if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
-
-      return traceHttpHandler('social.favorite', httpTraceContext(request, reply), async () => {
+    withRouteAspect<{ Params: { matchId: string } }, false, true>(
+      { operation: 'social.favorite', requireAuth: true, userRepo },
+      async ({ request, reply, user }) => {
         await matchRepo.favoriteMatch(user.id, request.params.matchId);
         void reply.status(204);
         return null;
-      });
-    },
+      },
+    ),
   );
 
   fastify.delete<{ Params: { matchId: string } }>(
@@ -178,16 +148,14 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      const user = await getAuthUser(request);
-      if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
-
-      return traceHttpHandler('social.unfavorite', httpTraceContext(request, reply), async () => {
+    withRouteAspect<{ Params: { matchId: string } }, false, true>(
+      { operation: 'social.unfavorite', requireAuth: true, userRepo },
+      async ({ request, reply, user }) => {
         await matchRepo.unfavoriteMatch(user.id, request.params.matchId);
         void reply.status(204);
         return null;
-      });
-    },
+      },
+    ),
   );
 
   fastify.get<{ Params: { userId: string } }>(
@@ -202,15 +170,10 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler(
-        'social.list_favorites',
-        httpTraceContext(request, reply),
-        async () => {
-          return await matchRepo.listUserFavorites(request.params.userId);
-        },
-      );
-    },
+    withRouteAspect<{ Params: { userId: string } }>(
+      { operation: 'social.list_favorites' },
+      async ({ request }) => matchRepo.listUserFavorites(request.params.userId),
+    ),
   );
 
   // --- Rating Endpoints ---
@@ -229,16 +192,14 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      const user = await getAuthUser(request);
-      if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
-
-      return traceHttpHandler('social.rate', httpTraceContext(request, reply), async () => {
+    withRouteAspect<{ Params: { matchId: string }; Body: { rating: number } }, false, true>(
+      { operation: 'social.rate', requireAuth: true, userRepo },
+      async ({ request, reply, user }) => {
         await matchRepo.rateMatch(user.id, request.params.matchId, request.body.rating);
         void reply.status(204);
         return null;
-      });
-    },
+      },
+    ),
   );
 
   fastify.get<{ Params: { matchId: string } }>(
@@ -253,11 +214,10 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('social.match_stats', httpTraceContext(request, reply), async () => {
-        return await matchRepo.getMatchSocialStats(request.params.matchId);
-      });
-    },
+    withRouteAspect<{ Params: { matchId: string } }>(
+      { operation: 'social.match_stats' },
+      async ({ request }) => matchRepo.getMatchSocialStats(request.params.matchId),
+    ),
   );
 
   // --- Comment Endpoints ---
@@ -281,21 +241,19 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      const user = await getAuthUser(request);
-      if (!user) return reply.status(401).send({ error: 'Unauthorized', code: 'UNAUTHORIZED' });
-
-      return traceHttpHandler('social.comment', httpTraceContext(request, reply), async () => {
+    withRouteAspect<
+      { Params: { matchId: string }; Body: { content: string; step?: number } },
+      false,
+      true
+    >(
+      { operation: 'social.comment', requireAuth: true, userRepo },
+      async ({ request, reply, user }) => {
         const { content, step } = request.body;
 
         // Automatic moderation
         const filter = ContentFilterService.getInstance();
         if (filter.isFlagged(content)) {
-          // Log violation and notify support
           await moderationService.handleViolation(user.id, content, 'comment');
-
-          // Still allow the comment but flag it for review?
-          // User requested "block those comments with a warning".
           return reply.status(400).send({
             error: 'Comment contains inappropriate content and has been flagged for moderation.',
             code: 'CONTENT_FLAGGED',
@@ -310,8 +268,8 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
         });
         void reply.status(204);
         return null;
-      });
-    },
+      },
+    ),
   );
 
   fastify.get<{ Params: { matchId: string } }>(
@@ -326,12 +284,12 @@ export function registerSocialRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('social.get_comments', httpTraceContext(request, reply), async () => {
+    withRouteAspect<{ Params: { matchId: string } }>(
+      { operation: 'social.get_comments' },
+      async ({ request }) => {
         const comments = await matchRepo.getMatchComments(request.params.matchId);
-        // Filter out removed comments
         return comments.filter((c) => !c.isRemoved);
-      });
-    },
+      },
+    ),
   );
 }

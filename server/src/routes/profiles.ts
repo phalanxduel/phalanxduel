@@ -4,10 +4,9 @@ import { desc, eq } from 'drizzle-orm';
 import { AchievementListSchema, ACHIEVEMENT_METADATA } from '@phalanxduel/shared';
 import { achievementService } from '../achievements/service.js';
 import { ErrorResponseSchema } from '@phalanxduel/shared';
-import { traceHttpHandler, httpTraceContext } from '../tracing.js';
+import { withRouteAspect } from '../http-aspect.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { PlayerRatingsService } from '../ratings.js';
-import { db } from '../db/index.js';
 import { achievements } from '../db/schema.js';
 
 export function registerProfileRoutes(fastify: FastifyInstance): void {
@@ -84,13 +83,10 @@ export function registerProfileRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('achievements.list', httpTraceContext(request, reply), async () => {
+    withRouteAspect<{ Params: { userId: string } }, true>(
+      { operation: 'achievements.list', requireDb: true },
+      async ({ request, db }) => {
         const { userId } = request.params;
-        if (!db) {
-          void reply.status(503);
-          return { error: 'Database unavailable', code: 'DB_UNAVAILABLE' };
-        }
         const rows = await db
           .select()
           .from(achievements)
@@ -107,8 +103,8 @@ export function registerProfileRoutes(fastify: FastifyInstance): void {
             metadata: r.metadata ?? {},
           })),
         };
-      });
-    },
+      },
+    ),
   );
 
   fastify.get<{ Params: { userId: string } }>(
@@ -131,8 +127,9 @@ export function registerProfileRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('profiles.get', httpTraceContext(request, reply), async () => {
+    withRouteAspect<{ Params: { userId: string } }>(
+      { operation: 'profiles.get' },
+      async ({ request, reply }) => {
         const viewerId = (request.user as { id: string } | undefined)?.id;
         const profile = await ratings.getPublicProfile(request.params.userId, viewerId);
         if (!profile) {
@@ -140,8 +137,8 @@ export function registerProfileRoutes(fastify: FastifyInstance): void {
           return { error: 'User not found', code: 'USER_NOT_FOUND' };
         }
         return profile;
-      });
-    },
+      },
+    ),
   );
 
   fastify.get(
@@ -160,14 +157,12 @@ export function registerProfileRoutes(fastify: FastifyInstance): void {
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('achievements.stats', httpTraceContext(request, reply), async () => {
-        const stats = await achievementService.getGlobalRarityStats();
-        return {
-          stats,
-          metadata: ACHIEVEMENT_METADATA,
-        };
-      });
-    },
+    withRouteAspect({ operation: 'achievements.stats' }, async () => {
+      const stats = await achievementService.getGlobalRarityStats();
+      return {
+        stats,
+        metadata: ACHIEVEMENT_METADATA,
+      };
+    }),
   );
 }
