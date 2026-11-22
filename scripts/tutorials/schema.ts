@@ -100,6 +100,8 @@ export const TutorialManifestSchema = z.object({
   schemaVersion: z.literal('1.0'),
   seriesTitle: z.string().min(1),
   targetSlug: z.string().min(1),
+  playlistId: z.string().min(1).optional(),
+  channelUrl: z.string().url().optional(),
   defaultStagedDir: z.string().min(1),
   episodes: z.array(TutorialManifestEntrySchema).min(1),
 });

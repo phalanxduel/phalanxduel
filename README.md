@@ -4,7 +4,7 @@ Arm yourself for battle with spades and clubs and shields against your opponent.
 
 Phalanx Duel is a tactical 1v1 card combat game. This repository contains the core rules engine and the official web implementation as a TypeScript monorepo.
 
-Phalanx Duel is also a hands-on architecture laboratory maintained by [Mike Hall](https://www.just3ws.com/), a Principal Software Engineer and Systems Architect available for hire for legacy modernization, distributed systems, platform resilience, OpenTelemetry, and AI-augmented engineering work. See the [Principal resume](https://www.just3ws.com/resumes/mike-hall-principal-software-engineer/) or [contact Mike](https://www.just3ws.com/contact/).
+Phalanx Duel is also a hands-on architecture laboratory maintained by [Mike Hall](https://www.just3ws.com/), a Principal Software Engineer and Systems Architect available for hire for legacy modernization, distributed systems, platform resilience, OpenTelemetry, and AI-augmented engineering work. See the [Principal resume](https://www.just3ws.com/resumes/mike-hall-principal-software-engineer/), watch the [Phalanx Duel YouTube series playlist](https://www.youtube.com/playlist?list=PLHenvAZhJjHo) on [`@just3ws-mike`](https://www.youtube.com/@just3ws-mike), follow along on [Patreon](https://www.patreon.com/c/just3ws) / [just3ws.com/support](https://www.just3ws.com/support/), or [contact Mike](https://www.just3ws.com/contact/).
 
 ## 🚀 Quick Start
 
