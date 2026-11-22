@@ -137,3 +137,6 @@ graphify-out/*
 !graphify-out/.graphify_labels.json
 !graphify-out/cost.json
 .pnpm-store/
+
+# Rendered tutorial media (staged externally to Google Drive / YouTube)
+output/video/
