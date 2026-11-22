@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { ErrorResponseSchema, isGameOver } from '@phalanxduel/shared';
+import { ErrorResponseSchema, PROTOCOL_TIMING, isGameOver } from '@phalanxduel/shared';
 import type { IMatchManager } from '../match-types.js';
 import type { LobbyMatchSummary } from '../match-types.js';
 import { ActionError, MatchError } from '../match.js';
@@ -77,8 +77,8 @@ const LobbyMatchSchema = z.object({
   expiryStatus: z.enum(['fresh', 'expiring', 'expired', 'recent_expired']),
 });
 
-const FRESHNESS_EXPIRING_MS = 15 * 60 * 1000;
-const RECENT_EXPIRED_WINDOW_MS = 60 * 60 * 1000;
+const FRESHNESS_EXPIRING_MS = PROTOCOL_TIMING.publicLobbyExpiringMs;
+const RECENT_EXPIRED_WINDOW_MS = PROTOCOL_TIMING.recentExpiredWindowMs;
 
 function deriveExpiryStatus(
   publicExpiresAtMs: number | null,

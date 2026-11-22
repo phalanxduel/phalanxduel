@@ -4,6 +4,7 @@
  */
 
 export * from './schema.js';
+export * from './constants.js';
 export type * from './types.js';
 export * from './telemetry.js';
 export * from './achievements-metadata.js';

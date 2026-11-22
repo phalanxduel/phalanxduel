@@ -7,7 +7,7 @@ import type {
   PhalanxTurnResult,
   MatchCosmetics,
 } from '@phalanxduel/shared';
-import { isGameOver } from '@phalanxduel/shared';
+import { isGameOver, MATCH_CONSTRAINTS } from '@phalanxduel/shared';
 import { generateTacticalCallsign } from './name-generator';
 import { DEFAULT_MATCH_COSMETICS } from './cosmetics';
 
@@ -267,7 +267,7 @@ let state: InternalState = {
   selectedDeployCard: null,
   error: null,
   damageMode: 'cumulative',
-  startingLifepoints: 20,
+  startingLifepoints: MATCH_CONSTRAINTS.startingLifepoints.default,
   serverHealth: null,
   isSpectator: false,
   spectatorCount: 0,
@@ -705,7 +705,10 @@ export function setDamageMode(mode: DamageMode): void {
 
 export function setStartingLifepoints(value: number): void {
   // Client-side guard; server schema is authoritative.
-  const clamped = Math.max(1, Math.min(500, Math.trunc(value)));
+  const clamped = Math.max(
+    MATCH_CONSTRAINTS.startingLifepoints.min,
+    Math.min(MATCH_CONSTRAINTS.startingLifepoints.max, Math.trunc(value)),
+  );
   setState({ startingLifepoints: clamped });
 }
 

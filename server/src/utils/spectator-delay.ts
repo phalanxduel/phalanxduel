@@ -3,13 +3,18 @@
  * Licensed under the GNU Affero General Public License v3.0.
  */
 
-import type { Action, GameState, PhalanxEvent } from '@phalanxduel/shared';
+import {
+  PROTOCOL_TIMING,
+  type Action,
+  type GameState,
+  type PhalanxEvent,
+} from '@phalanxduel/shared';
 import { computeStateHash } from '@phalanxduel/shared/hash';
 import { deriveEventsFromEntry, replayGameAtOrBeforeTurn } from '@phalanxduel/engine';
 import type { MatchInstance } from '../match-types.js';
 
-export const MINIMUM_SPECTATOR_DELAY_TURNS = 2;
-export const DEFAULT_SPECTATOR_DELAY_TURNS = 3;
+export const MINIMUM_SPECTATOR_DELAY_TURNS = PROTOCOL_TIMING.minSpectatorDelayTurns;
+export const DEFAULT_SPECTATOR_DELAY_TURNS = PROTOCOL_TIMING.defaultSpectatorDelayTurns;
 
 export function spectatorDelayTurns(): number {
   const configured = Number.parseInt(process.env.SPECTATOR_DELAY_TURNS ?? '', 10);

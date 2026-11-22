@@ -67,10 +67,13 @@ export {
   type IMatchManager,
 };
 
-const MAX_SPECTATORS_PER_MATCH = 50;
-const RECONNECT_WINDOW_MS = 2 * 60 * 1000; // 2 minutes
-const INACTIVITY_FORFEIT_WINDOW_MS = 30 * 60 * 1000;
-const PUBLIC_OPEN_MATCH_TTL_MS = 30 * 60 * 1000;
+import { getServerConfig } from './config.js';
+
+const serverConfig = getServerConfig();
+const MAX_SPECTATORS_PER_MATCH = serverConfig.maxSpectatorsPerMatch;
+const RECONNECT_WINDOW_MS = serverConfig.reconnectWindowMs;
+const INACTIVITY_FORFEIT_WINDOW_MS = serverConfig.inactivityForfeitWindowMs;
+const PUBLIC_OPEN_MATCH_TTL_MS = serverConfig.publicOpenMatchTtlMs;
 const SYSTEM_ERROR_EVENT_NAME = 'game.system_error';
 
 /**
@@ -130,8 +133,8 @@ export function filterStateForPlayer(state: GameState, playerIndex: number): Gam
 }
 
 /** TTL constants in milliseconds */
-const GAME_OVER_TTL = 5 * 60 * 1000; // 5 minutes
-const ABANDONED_TTL = 10 * 60 * 1000; // 10 minutes
+const GAME_OVER_TTL = serverConfig.gameOverTtlMs;
+const ABANDONED_TTL = serverConfig.abandonedTtlMs;
 
 export class LocalMatchManager implements IMatchManager {
   private readonly recoveryWindowStartedAt = Date.now();

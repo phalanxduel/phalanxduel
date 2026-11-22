@@ -1,5 +1,5 @@
 import type { DamageMode, CreateMatchParamsPartial, GameState } from '@phalanxduel/shared';
-import { formatGamertag, isGameOver } from '@phalanxduel/shared';
+import { formatGamertag, isGameOver, PROTOCOL_TIMING } from '@phalanxduel/shared';
 import { render as preactRender } from 'preact';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { GameApp } from './game';
@@ -354,7 +354,7 @@ interface PublicProfileSummary {
 
 const PUBLIC_LOBBY_REFRESH_MS = 30_000;
 const SPECTATOR_LOBBY_REFRESH_MS = 15_000;
-const PUBLIC_LOBBY_EXPIRING_MS = 15 * 60 * 1000;
+const PUBLIC_LOBBY_EXPIRING_MS = PROTOCOL_TIMING.publicLobbyExpiringMs;
 
 function getRemainingMs(match: OpenMatchSummary, nowMs: number): number | null {
   if (!match.expiresAt) return null;

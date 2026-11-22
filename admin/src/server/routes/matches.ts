@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import { MATCH_CONSTRAINTS } from '@phalanxduel/shared';
 import { sql } from 'drizzle-orm';
 import { requireAdmin } from '../middleware/auth.js';
 import { db } from '../db.js';
@@ -142,15 +143,30 @@ export function registerMatchRoutes(fastify: FastifyInstance) {
     opponent: z.enum(['bot-random', 'human']),
     matchParams: z
       .object({
-        rows: z.number().int().min(1).max(12).optional(),
-        columns: z.number().int().min(1).max(12).optional(),
-        maxHandSize: z.number().int().min(0).optional(),
+        rows: z
+          .number()
+          .int()
+          .min(MATCH_CONSTRAINTS.rows.min)
+          .max(MATCH_CONSTRAINTS.rows.max)
+          .optional(),
+        columns: z
+          .number()
+          .int()
+          .min(MATCH_CONSTRAINTS.columns.min)
+          .max(MATCH_CONSTRAINTS.columns.max)
+          .optional(),
+        maxHandSize: z.number().int().min(MATCH_CONSTRAINTS.maxHandSize.min).optional(),
       })
       .optional(),
     gameOptions: z
       .object({
         damageMode: z.enum(['classic', 'cumulative']).optional(),
-        startingLifepoints: z.number().int().min(1).max(500).optional(),
+        startingLifepoints: z
+          .number()
+          .int()
+          .min(MATCH_CONSTRAINTS.startingLifepoints.min)
+          .max(MATCH_CONSTRAINTS.startingLifepoints.max)
+          .optional(),
       })
       .optional(),
     rngSeed: z.number().optional(),

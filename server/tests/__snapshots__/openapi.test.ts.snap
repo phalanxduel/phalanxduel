@@ -25722,6 +25722,38 @@ A schema-valid action can be semantically invalid if sent in the wrong phase. Th
                           },
                           "type": "object",
                         },
+                        "protocol": {
+                          "properties": {
+                            "defaultSpectatorDelayTurns": {
+                              "type": "integer",
+                            },
+                            "heartbeatIntervalMs": {
+                              "type": "integer",
+                            },
+                            "heartbeatTimeoutMs": {
+                              "type": "integer",
+                            },
+                            "initialReconnectDelayMs": {
+                              "type": "integer",
+                            },
+                            "maxReconnectDelayMs": {
+                              "type": "integer",
+                            },
+                            "minSpectatorDelayTurns": {
+                              "type": "integer",
+                            },
+                            "publicLobbyExpiringMs": {
+                              "type": "integer",
+                            },
+                            "publicOpenMatchTtlMs": {
+                              "type": "integer",
+                            },
+                            "reconnectWindowMs": {
+                              "type": "integer",
+                            },
+                          },
+                          "type": "object",
+                        },
                         "versions": {
                           "properties": {
                             "compatibility": {

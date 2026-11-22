@@ -3,6 +3,7 @@ import { PlayerActionSchema } from '@phalanxduel/shared';
 import { z } from 'zod';
 import WebSocket from 'ws';
 import { randomUUID } from 'node:crypto';
+import { mcpConfig } from '../config.js';
 
 // Maps tier codenames (and legacy aliases) to the WS createMatch opponent + botDifficulty fields.
 // The server resolves botDifficulty → mctsIterations (easy=100, medium=500, hard=2000).
@@ -26,10 +27,10 @@ const TIER_TO_WS: Record<
   champion: { opponent: 'bot-mcts', botDifficulty: 'hard' },
 };
 
-const GAME_SERVER_URL = process.env.GAME_SERVER_URL;
-const AGENT_TOKEN = process.env.AGENT_TOKEN;
+const GAME_SERVER_URL = mcpConfig.explicitGameServerUrl;
+const AGENT_TOKEN = mcpConfig.agentToken;
 
-const WS_TIMEOUT_MS = 15_000;
+const WS_TIMEOUT_MS = mcpConfig.wsTimeoutMs;
 
 type ServerMsg = Record<string, unknown> & { type: string };
 interface ToolResult {

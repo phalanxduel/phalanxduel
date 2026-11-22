@@ -1,5 +1,5 @@
 import type { ServerMessage, ClientMessage } from '@phalanxduel/shared';
-import { isGameOver, buildReliableMessage } from '@phalanxduel/shared';
+import { isGameOver, buildReliableMessage, PROTOCOL_TIMING } from '@phalanxduel/shared';
 import {
   context,
   propagation,
@@ -47,10 +47,10 @@ interface PendingEntry {
 }
 
 const tracer = trace.getTracer('phx-client');
-const HEARTBEAT_INTERVAL_MS = 30_000;
-const HEARTBEAT_TIMEOUT_MS = 65_000;
-const INITIAL_RECONNECT_DELAY_MS = 1_000;
-const MAX_RECONNECT_DELAY_MS = 30_000;
+const HEARTBEAT_INTERVAL_MS: number = PROTOCOL_TIMING.heartbeatIntervalMs;
+const HEARTBEAT_TIMEOUT_MS: number = PROTOCOL_TIMING.heartbeatTimeoutMs;
+const INITIAL_RECONNECT_DELAY_MS: number = PROTOCOL_TIMING.initialReconnectDelayMs;
+const MAX_RECONNECT_DELAY_MS: number = PROTOCOL_TIMING.maxReconnectDelayMs;
 
 function wsEndpointAttrs(url: string): Attributes {
   const attrs: Attributes = {

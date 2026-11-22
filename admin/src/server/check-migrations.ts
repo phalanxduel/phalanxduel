@@ -3,11 +3,11 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import postgres from 'postgres';
+import { MIGRATIONS_TABLE } from '@phalanxduel/shared';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // Admin shares the server's migrations — resolve via monorepo layout.
 const MIGRATIONS_DIR = resolve(__dirname, '../../../server/migrations');
-const MIGRATIONS_TABLE = 'schema_migrations';
 
 function checksum(text: string): string {
   return createHash('sha256').update(text, 'utf8').digest('hex');

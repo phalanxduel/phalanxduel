@@ -1,12 +1,9 @@
 import type { GameState } from '@phalanxduel/shared';
-
-// Strip control characters and newlines from user-supplied strings before
-// they enter embedding summaries or analysis prompts.
-const CONTROL_CHARS = new RegExp('[\\x00-\\x1f\\x7f]', 'g'); // eslint-disable-line no-control-regex
+import { sanitizePlayerName } from './sanitize.js';
 
 function sanitizeName(name: string | null): string | null {
   if (name === null) return null;
-  return name.replace(CONTROL_CHARS, ' ').trim().slice(0, 64);
+  return sanitizePlayerName(name);
 }
 
 export type MatchOutcome = {

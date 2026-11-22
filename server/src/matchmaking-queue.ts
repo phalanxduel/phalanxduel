@@ -1,8 +1,8 @@
 import type { WebSocket } from 'ws';
 import type { IMatchManager } from './match-types.js';
+import { getServerConfig } from './config.js';
 
-const ELO_BAND = 200;
-const MAX_WAIT_MS = 5 * 60 * 1000;
+const { matchmakingEloBand: ELO_BAND, matchmakingMaxWaitMs: MAX_WAIT_MS } = getServerConfig();
 
 interface QueueEntry {
   userId: string;

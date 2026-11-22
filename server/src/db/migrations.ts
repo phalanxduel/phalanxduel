@@ -2,11 +2,12 @@ import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { MIGRATIONS_TABLE } from '@phalanxduel/shared';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const MIGRATIONS_DIR = resolve(__dirname, '../../migrations');
-export const MIGRATIONS_TABLE = 'schema_migrations';
+export { MIGRATIONS_TABLE };
 
 export interface MigrationFile {
   name: string;

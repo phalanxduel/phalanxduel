@@ -8,9 +8,9 @@ import { traceDbQuery } from '../db/observability.js';
 import { httpTraceContext, traceHttpHandler } from '../tracing.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { z } from 'zod';
-import { ErrorResponseSchema } from '@phalanxduel/shared';
+import { ErrorResponseSchema, LADDER_CATEGORIES } from '@phalanxduel/shared';
 
-const VALID_CATEGORIES = new Set<string>(['pvp', 'sp-random', 'sp-heuristic']);
+const VALID_CATEGORIES = new Set<string>(LADDER_CATEGORIES);
 export const MAX_LADDER_OFFSET = 2_147_483_647;
 
 export function isValidCategory(value: string): value is LadderCategory {

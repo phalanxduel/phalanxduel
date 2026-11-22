@@ -5,6 +5,7 @@ import { and, eq, gte, desc, sql } from 'drizzle-orm';
 import { traceDbQuery } from './db/observability.js';
 import { modeFromBotStrategy, PlayerRatingsService } from './ratings.js';
 import { SeasonService } from './season.js';
+import { getServerConfig } from './config.js';
 
 export type LadderCategory = 'pvp' | 'sp-random' | 'sp-heuristic' | 'sp-mcts';
 
@@ -14,8 +15,8 @@ const PHANTOM_RATINGS: Record<string, number> = {
   'sp-mcts': 1400,
 };
 
-const WINDOW_DAYS = 7;
-const STALE_THRESHOLD_MS = 60 * 60 * 1000; // 1 hour
+const { ladderWindowDays: WINDOW_DAYS, ladderStaleThresholdMs: STALE_THRESHOLD_MS } =
+  getServerConfig();
 
 export class LadderService {
   private readonly ratingService = new PlayerRatingsService();

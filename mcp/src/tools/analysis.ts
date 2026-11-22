@@ -5,10 +5,11 @@ import OpenAI from 'openai';
 import type { GameState, Action } from '@phalanxduel/shared';
 import { evaluateState, getValidActions, simulateAttack } from '@phalanxduel/engine';
 import { sanitizePlayerName } from '../utils/sanitize.js';
+import { mcpConfig } from '../config.js';
 
-const ANALYSIS_PROVIDER = (process.env.ANALYSIS_PROVIDER ?? 'anthropic') as 'anthropic' | 'llama';
-const LLAMA_BASE_URL = process.env.LLAMA_BASE_URL ?? 'http://127.0.0.1:8080/v1';
-const LLAMA_MODEL = process.env.LLAMA_MODEL ?? 'local';
+const ANALYSIS_PROVIDER = mcpConfig.analysisProvider;
+const LLAMA_BASE_URL = mcpConfig.llamaBaseUrl;
+const LLAMA_MODEL = mcpConfig.llamaModel;
 
 const anthropic = ANALYSIS_PROVIDER === 'anthropic' ? new Anthropic() : null;
 const llamaClient =

@@ -7,9 +7,10 @@ import {
   ATTR_SERVER_ADDRESS,
   ATTR_SERVER_PORT,
 } from '@opentelemetry/semantic-conventions';
+import { DEV_PORTS } from '@phalanxduel/shared';
 import { withActiveSpan } from '../observability.js';
 
-const DEFAULT_POSTGRES_PORT = 5432;
+const DEFAULT_POSTGRES_PORT = DEV_PORTS.postgres;
 
 function resolveDatabaseTarget(): {
   database?: string;

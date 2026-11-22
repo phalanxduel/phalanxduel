@@ -39,8 +39,8 @@ async function main(): Promise<void> {
   await ContentFilterService.getInstance().initialize();
 
   let app = await buildApp();
-  const port = parseInt(process.env.PHALANX_SERVER_PORT ?? '3001', 10);
-  const host = process.env.HOST ?? '::';
+  const { getServerConfig, resetServerConfig } = await import('./config.js');
+  const { port, host } = getServerConfig();
 
   await app.listen({ port, host });
   console.log(`Phalanx Duel server listening on http://${host}:${port}`);
@@ -93,13 +93,15 @@ async function main(): Promise<void> {
             // Re-evaluate configuration manually
             const { loadAllEnvs } = await import('./loadEnv.js');
             loadAllEnvs();
+            resetServerConfig();
 
             app = await buildApp();
-            const port = parseInt(process.env.PHALANX_SERVER_PORT ?? '3001', 10);
-            const host = process.env.HOST ?? '::';
+            const reloaded = getServerConfig();
 
-            await app.listen({ port, host });
-            app.log.info(`Phalanx Duel server re-listening on http://${host}:${port}`);
+            await app.listen({ port: reloaded.port, host: reloaded.host });
+            app.log.info(
+              `Phalanx Duel server re-listening on http://${reloaded.host}:${reloaded.port}`,
+            );
           } catch (err) {
             app.log.error(
               { error: err instanceof Error ? err.message : String(err) },

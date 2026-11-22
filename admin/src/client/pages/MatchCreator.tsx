@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks';
+import { MATCH_CONSTRAINTS } from '@phalanxduel/shared';
 import { apiPost } from '../hooks/useApi.js';
 
 export function MatchCreator() {
@@ -8,14 +9,16 @@ export function MatchCreator() {
   const [columns, setColumns] = useState(6);
   const [maxHandSize, setMaxHandSize] = useState(3);
   const [damageMode, setDamageMode] = useState<'classic' | 'cumulative'>('classic');
-  const [startingLifepoints, setStartingLifepoints] = useState(20);
+  const [startingLifepoints, setStartingLifepoints] = useState<number>(
+    MATCH_CONSTRAINTS.startingLifepoints.default,
+  );
   const [rngSeed, setRngSeed] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const totalSlots = rows * columns;
   const initialDraw = rows * columns + columns;
-  const slotsOverLimit = totalSlots > 48;
+  const slotsOverLimit = totalSlots > MATCH_CONSTRAINTS.maxTotalSlots;
 
   const payload = {
     playerName,

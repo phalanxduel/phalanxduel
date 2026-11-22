@@ -3,9 +3,9 @@ import { db } from '../db/index.js';
 import { users, matchComments, adminAuditLog } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { ContentFilterService } from '../content-filter.js';
+import { getServerConfig } from '../config.js';
 
-const SUPPORT_EMAIL = 'support@phalanxduel.com';
-const FROM_EMAIL = process.env.SYSTEM_EMAIL || 'no-reply@phalanxduel.com';
+const { supportEmail: SUPPORT_EMAIL, systemEmail: FROM_EMAIL } = getServerConfig();
 
 /**
  * ModerationService handles the business logic for content oversight,

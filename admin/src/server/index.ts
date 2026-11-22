@@ -23,6 +23,7 @@ import { registerUserRoutes } from './routes/users.js';
 import { registerReportRoutes } from './routes/reports.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerSystemRoutes } from './routes/system.js';
+import { adminPort } from './config.js';
 import { checkPendingMigrations } from './check-migrations.js';
 import { adminJwtSecret, assertAdminProductionConfig } from './config.js';
 
@@ -62,7 +63,7 @@ export async function buildAdminApp() {
 async function main() {
   await checkPendingMigrations();
   const app = await buildAdminApp();
-  const port = parseInt(process.env.PHALANX_ADMIN_PORT ?? '3102', 10);
+  const port = adminPort();
   const host = process.env.HOST ?? '::';
   await app.listen({ port, host });
   console.log(`Admin service listening on port ${port}`);

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { db } from '../db.js';
 import { matches, users, playerRatings, matchEmbeddings } from '../../../server/src/db/schema.js';
 import { eq, desc, sql, and } from 'drizzle-orm';
+import { mcpConfig } from '../config.js';
 
 interface AuthToolResponse {
   message?: string;
@@ -30,7 +31,7 @@ export function registerDataTools(server: McpServer): void {
     },
     async ({ gamertag, email, password }) => {
       try {
-        const url = process.env.GAME_SERVER_URL ?? 'http://127.0.0.1:3001';
+        const url = mcpConfig.gameServerUrl;
         const response = await fetch(`${url}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -75,7 +76,7 @@ export function registerDataTools(server: McpServer): void {
     },
     async ({ email, password }) => {
       try {
-        const url = process.env.GAME_SERVER_URL ?? 'http://127.0.0.1:3001';
+        const url = mcpConfig.gameServerUrl;
         const response = await fetch(`${url}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -119,7 +120,7 @@ export function registerDataTools(server: McpServer): void {
     },
     async ({ serverUrl }) => {
       try {
-        const url = serverUrl ?? process.env.GAME_SERVER_URL ?? 'http://127.0.0.1:3001';
+        const url = serverUrl ?? mcpConfig.gameServerUrl;
         const response = await fetch(`${url}/api/matches/lobby`);
         if (!response.ok) {
           throw new Error(`Failed to fetch lobby: ${response.statusText}`);

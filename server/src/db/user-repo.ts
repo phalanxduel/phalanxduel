@@ -18,9 +18,10 @@ import {
 import { eq, and, gt, isNull, or, count } from 'drizzle-orm';
 import crypto from 'crypto';
 import { traceDbQuery, traceDbTransaction } from './observability.js';
+import { getServerConfig } from '../config.js';
 
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const { maxLoginAttempts: MAX_LOGIN_ATTEMPTS, lockoutDurationMs: LOCKOUT_DURATION_MS } =
+  getServerConfig();
 
 export interface PreferenceUpdate {
   emailNotifications?: boolean;

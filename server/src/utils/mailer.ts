@@ -69,7 +69,8 @@ const provider: EmailProvider = process.env.POSTMARK_SERVER_TOKEN
  * High-level helper for password reset emails.
  */
 export async function sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
-  const uiBaseUrl = process.env.UI_BASE_URL ?? 'http://localhost:5173';
+  const { getServerConfig } = await import('../config.js');
+  const uiBaseUrl = process.env.UI_BASE_URL ?? getServerConfig().uiBaseUrl;
   const resetLink = `${uiBaseUrl}/reset-password?token=${resetToken}`;
 
   const options: EmailOptions = {

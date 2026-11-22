@@ -18,6 +18,9 @@ import {
   SCHEMA_VERSION,
   ClientMessageSchema,
   DEFAULT_MATCH_PARAMS,
+  MATCH_CONSTRAINTS,
+  PROTOCOL_TIMING,
+  DEV_PORTS,
   formatGamertag,
   MatchParametersSchema,
   GameStateSchema,
@@ -152,14 +155,14 @@ interface ClientMessageReceipt {
   storedAt: number;
 }
 
-const TRANSPORT_RECEIPT_TTL_MS = 10 * 60 * 1000;
-const APP_HEARTBEAT_INTERVAL_MS = 30_000;
-const APP_HEARTBEAT_TIMEOUT_MS = 65_000;
+const TRANSPORT_RECEIPT_TTL_MS = PROTOCOL_TIMING.transportReceiptTtlMs;
+const APP_HEARTBEAT_INTERVAL_MS = PROTOCOL_TIMING.heartbeatIntervalMs;
+const APP_HEARTBEAT_TIMEOUT_MS = PROTOCOL_TIMING.heartbeatTimeoutMs;
 const LOCAL_DEV_HTTP_ORIGINS = [
-  'http://localhost:3001',
-  'http://localhost:5173',
-  'http://127.0.0.1:3001',
-  'http://127.0.0.1:5173',
+  `http://localhost:${DEV_PORTS.server}`,
+  `http://localhost:${DEV_PORTS.client}`,
+  `http://127.0.0.1:${DEV_PORTS.server}`,
+  `http://127.0.0.1:${DEV_PORTS.client}`,
   'https://play.phalanxduel.localhost',
   'https://admin.phalanxduel.localhost',
   'https://phalanxduel.localhost',
@@ -169,14 +172,14 @@ const LOCAL_DEV_HTTP_ORIGINS = [
   'https://www.lan.phalanxduel.com',
 ] as const;
 const LOCAL_DEV_CONNECT_SRCS = [
-  'http://localhost:3001',
-  'http://127.0.0.1:3001',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'ws://localhost:3001',
-  'ws://127.0.0.1:3001',
-  'ws://localhost:5173',
-  'ws://127.0.0.1:5173',
+  `http://localhost:${DEV_PORTS.server}`,
+  `http://127.0.0.1:${DEV_PORTS.server}`,
+  `http://localhost:${DEV_PORTS.client}`,
+  `http://127.0.0.1:${DEV_PORTS.client}`,
+  `ws://localhost:${DEV_PORTS.server}`,
+  `ws://127.0.0.1:${DEV_PORTS.server}`,
+  `ws://localhost:${DEV_PORTS.client}`,
+  `ws://127.0.0.1:${DEV_PORTS.client}`,
   'https://play.phalanxduel.localhost',
   'wss://play.phalanxduel.localhost',
   'https://admin.phalanxduel.localhost',
@@ -538,6 +541,20 @@ export async function buildApp(options: BuildAppOptions = {}) {
                     type: 'array',
                     items: { type: 'string' },
                   },
+                  protocol: {
+                    type: 'object',
+                    properties: {
+                      heartbeatIntervalMs: { type: 'integer' },
+                      heartbeatTimeoutMs: { type: 'integer' },
+                      initialReconnectDelayMs: { type: 'integer' },
+                      maxReconnectDelayMs: { type: 'integer' },
+                      reconnectWindowMs: { type: 'integer' },
+                      publicOpenMatchTtlMs: { type: 'integer' },
+                      publicLobbyExpiringMs: { type: 'integer' },
+                      minSpectatorDelayTurns: { type: 'integer' },
+                      defaultSpectatorDelayTurns: { type: 'integer' },
+                    },
+                  },
                 },
               },
             },
@@ -548,7 +565,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
     async (request, reply) =>
       traceHttpHandler('defaults', httpTraceContext(request, reply), () => ({
         ...DEFAULT_MATCH_PARAMS,
-        startingLifepoints: 20,
+        startingLifepoints: MATCH_CONSTRAINTS.startingLifepoints.default,
         _meta: {
           configSource: 'shared/src/schema.ts → DEFAULT_MATCH_PARAMS',
           versions: {
@@ -560,14 +577,28 @@ export async function buildApp(options: BuildAppOptions = {}) {
             },
           },
           constraints: {
-            rows: { min: 1, max: 12 },
-            columns: { min: 1, max: 12 },
-            maxHandSize: { min: 0, note: 'must be <= columns' },
+            rows: { min: MATCH_CONSTRAINTS.rows.min, max: MATCH_CONSTRAINTS.rows.max },
+            columns: { min: MATCH_CONSTRAINTS.columns.min, max: MATCH_CONSTRAINTS.columns.max },
+            maxHandSize: { min: MATCH_CONSTRAINTS.maxHandSize.min, note: 'must be <= columns' },
             initialDraw: { note: 'rows * columns + columns' },
-            startingLifepoints: { min: 1, max: 500 },
-            totalSlots: { note: 'rows * columns <= 48' },
+            startingLifepoints: {
+              min: MATCH_CONSTRAINTS.startingLifepoints.min,
+              max: MATCH_CONSTRAINTS.startingLifepoints.max,
+            },
+            totalSlots: { note: `rows * columns <= ${MATCH_CONSTRAINTS.maxTotalSlots}` },
           },
           botStrategies: ['random', 'heuristic'],
+          protocol: {
+            heartbeatIntervalMs: PROTOCOL_TIMING.heartbeatIntervalMs,
+            heartbeatTimeoutMs: PROTOCOL_TIMING.heartbeatTimeoutMs,
+            initialReconnectDelayMs: PROTOCOL_TIMING.initialReconnectDelayMs,
+            maxReconnectDelayMs: PROTOCOL_TIMING.maxReconnectDelayMs,
+            reconnectWindowMs: PROTOCOL_TIMING.reconnectWindowMs,
+            publicOpenMatchTtlMs: PROTOCOL_TIMING.publicOpenMatchTtlMs,
+            publicLobbyExpiringMs: PROTOCOL_TIMING.publicLobbyExpiringMs,
+            minSpectatorDelayTurns: PROTOCOL_TIMING.minSpectatorDelayTurns,
+            defaultSpectatorDelayTurns: PROTOCOL_TIMING.defaultSpectatorDelayTurns,
+          },
         },
       })),
   );

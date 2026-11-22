@@ -1,5 +1,17 @@
+import { z } from 'zod';
+import { DEV_PORTS } from '@phalanxduel/shared';
+
 const DEVELOPMENT_JWT_SECRET = 'phalanx-dev-secret';
-const DEVELOPMENT_GAME_SERVER_URL = 'http://localhost:3001';
+const DEVELOPMENT_GAME_SERVER_URL = `http://localhost:${DEV_PORTS.server}`;
+
+const AdminPortSchema = z.preprocess(
+  (val) => (val === undefined || val === '' ? DEV_PORTS.adminApi : val),
+  z.coerce.number().int().min(1).max(65_535),
+);
+
+export function adminPort(): number {
+  return AdminPortSchema.parse(process.env.PHALANX_ADMIN_PORT);
+}
 
 function isProduction(): boolean {
   return process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production';
