@@ -72,13 +72,13 @@ describe('server runtime config & cross-package drift guard', () => {
   });
 
   it('prevents server and client from re-declaring hardcoded heartbeat literals', () => {
-    const serverApp = readFileSync(resolve(repoRoot, 'server/src/app.ts'), 'utf8');
+    const serverWs = readFileSync(resolve(repoRoot, 'server/src/ws-handler.ts'), 'utf8');
     const clientConn = readFileSync(resolve(repoRoot, 'client/src/connection.ts'), 'utf8');
 
-    expect(serverApp).toContain('PROTOCOL_TIMING.heartbeatIntervalMs');
-    expect(serverApp).toContain('PROTOCOL_TIMING.heartbeatTimeoutMs');
-    expect(serverApp).not.toMatch(/APP_HEARTBEAT_INTERVAL_MS\s*=\s*\d/);
-    expect(serverApp).not.toMatch(/APP_HEARTBEAT_TIMEOUT_MS\s*=\s*\d/);
+    expect(serverWs).toContain('PROTOCOL_TIMING.heartbeatIntervalMs');
+    expect(serverWs).toContain('PROTOCOL_TIMING.heartbeatTimeoutMs');
+    expect(serverWs).not.toMatch(/APP_HEARTBEAT_INTERVAL_MS\s*=\s*\d/);
+    expect(serverWs).not.toMatch(/APP_HEARTBEAT_TIMEOUT_MS\s*=\s*\d/);
 
     expect(clientConn).toContain('PROTOCOL_TIMING.heartbeatIntervalMs');
     expect(clientConn).toContain('PROTOCOL_TIMING.heartbeatTimeoutMs');

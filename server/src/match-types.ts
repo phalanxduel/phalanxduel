@@ -171,6 +171,7 @@ export interface IMatchManager {
     matchId: string,
     playerId: string,
     socket: WebSocket,
+    userId?: string,
   ): Promise<{ playerIndex: number }>;
   watchMatch(matchId: string, socket: WebSocket): Promise<{ spectatorId: string }>;
   updatePlayerIdentity(socket: WebSocket, userId: string, playerName: string): void;
