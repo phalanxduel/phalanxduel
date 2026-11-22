@@ -5,7 +5,8 @@ import { eq } from 'drizzle-orm';
 import { LadderService, type LadderCategory } from '../ladder.js';
 import { SeasonService } from '../season.js';
 import { traceDbQuery } from '../db/observability.js';
-import { httpTraceContext, traceHttpHandler } from '../tracing.js';
+import { withRouteAspect } from '../http-aspect.js';
+import { getServerConfig } from '../config.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { z } from 'zod';
 import { ErrorResponseSchema, LADDER_CATEGORIES } from '@phalanxduel/shared';
@@ -87,46 +88,47 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('ladder.category', httpTraceContext(request, reply), async () => {
-        const { category } = request.params;
-        const { limit = 50, offset = 0 } = request.query;
+    withRouteAspect<{
+      Params: { category: string };
+      Querystring: { limit?: number; offset?: number };
+    }>({ operation: 'ladder.category' }, async ({ request, reply }) => {
+      const { category } = request.params;
+      const { limit = 50, offset = 0 } = request.query;
 
-        if (!isValidCategory(category)) {
-          void reply.status(400);
-          return {
-            error: 'Invalid category. Use: pvp, sp-random, sp-heuristic',
-            code: 'INVALID_CATEGORY',
-          };
-        }
-
-        const rankings = await ladder.getLeaderboard(category, limit, offset);
-
-        const enriched = await Promise.all(
-          rankings.map(async (entry, idx) => ({
-            rank: offset + idx + 1,
-            userId: entry.userId,
-            gamertag: await resolveGamertag(entry.userId),
-            elo: entry.elo,
-            matches: entry.matches,
-            wins: entry.wins,
-          })),
-        );
-
-        const activeSeason = await seasonService.getActiveSeason();
-
+      if (!isValidCategory(category)) {
+        void reply.status(400);
         return {
-          category,
-          windowDays: 7,
-          computedAt: new Date().toISOString(),
-          activeSeason: activeSeason?.number ?? null,
-          activeSeasonStartedAt: activeSeason?.startedAt.toISOString() ?? null,
-          limit,
-          offset,
-          rankings: enriched,
+          error: `Invalid category. Use: ${LADDER_CATEGORIES.join(', ')}`,
+          code: 'INVALID_CATEGORY',
         };
-      });
-    },
+      }
+
+      const rankings = await ladder.getLeaderboard(category, limit, offset);
+
+      const enriched = await Promise.all(
+        rankings.map(async (entry, idx) => ({
+          rank: offset + idx + 1,
+          userId: entry.userId,
+          gamertag: await resolveGamertag(entry.userId),
+          elo: entry.elo,
+          matches: entry.matches,
+          wins: entry.wins,
+        })),
+      );
+
+      const activeSeason = await seasonService.getActiveSeason();
+
+      return {
+        category,
+        windowDays: getServerConfig().ladderWindowDays,
+        computedAt: new Date().toISOString(),
+        activeSeason: activeSeason?.number ?? null,
+        activeSeasonStartedAt: activeSeason?.startedAt.toISOString() ?? null,
+        limit,
+        offset,
+        rankings: enriched,
+      };
+    }),
   );
 
   fastify.get<{ Params: { category: string; userId: string } }>(
@@ -158,8 +160,9 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('ladder.player', httpTraceContext(request, reply), async () => {
+    withRouteAspect<{ Params: { category: string; userId: string } }>(
+      { operation: 'ladder.player' },
+      async ({ request, reply }) => {
         const { category, userId } = request.params;
         if (!isValidCategory(category)) {
           void reply.status(400);
@@ -175,8 +178,8 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         }
 
         return { userId, gamertag, category, elo, matches: matchCount, wins: winCount };
-      });
-    },
+      },
+    ),
   );
 
   fastify.get<{ Params: { userId: string } }>(
@@ -211,8 +214,9 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('stats.history', httpTraceContext(request, reply), async () => {
+    withRouteAspect<{ Params: { userId: string } }>(
+      { operation: 'stats.history' },
+      async ({ request, reply }) => {
         const { userId } = request.params;
 
         const gamertag = await resolveGamertag(userId);
@@ -221,17 +225,16 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
           return { error: 'User not found', code: 'USER_NOT_FOUND' };
         }
 
-        const categories: LadderCategory[] = ['pvp', 'sp-random', 'sp-heuristic'];
         const categoryStats: Record<string, { currentElo: number; matches: number; wins: number }> =
           {};
 
-        for (const cat of categories) {
+        for (const cat of LADDER_CATEGORIES) {
           const { elo, matchCount, winCount } = await ladder.computePlayerElo(userId, cat);
           categoryStats[cat] = { currentElo: elo, matches: matchCount, wins: winCount };
         }
 
         return { userId, gamertag, categories: categoryStats };
-      });
-    },
+      },
+    ),
   );
 }

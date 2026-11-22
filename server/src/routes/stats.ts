@@ -4,7 +4,7 @@ import * as Hash from '@phalanxduel/shared/hash';
 const { computeStateHash } = Hash;
 import type { MatchEventLog } from '@phalanxduel/shared';
 import { replayGame } from '@phalanxduel/engine';
-import { httpTraceContext, traceHttpHandler } from '../tracing.js';
+import { withRouteAspect } from '../http-aspect.js';
 import { MatchRepository } from '../db/match-repo.js';
 import { toJsonSchema } from '../utils/openapi.js';
 import { z } from 'zod';
@@ -47,20 +47,18 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMat
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('stats.summary', httpTraceContext(request, reply), () => {
-        const matches = matchManager.listInMemoryMatches();
-        const totalMatches = matches.length;
-        const activeMatches = matches.filter((m) => m.state && !isGameOver(m.state)).length;
-        const completedMatches = totalMatches - activeMatches;
+    withRouteAspect({ operation: 'stats.summary' }, () => {
+      const matches = matchManager.listInMemoryMatches();
+      const totalMatches = matches.length;
+      const activeMatches = matches.filter((m) => m.state && !isGameOver(m.state)).length;
+      const completedMatches = totalMatches - activeMatches;
 
-        return {
-          totalMatches,
-          activeMatches,
-          completedMatches,
-        };
-      });
-    },
+      return {
+        totalMatches,
+        activeMatches,
+        completedMatches,
+      };
+    }),
   );
 
   fastify.get<{ Params: { matchId: string } }>(
@@ -107,8 +105,9 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMat
         },
       },
     },
-    async (request, reply) => {
-      return traceHttpHandler('matches.verify', httpTraceContext(request, reply), async () => {
+    withRouteAspect<{ Params: { matchId: string } }>(
+      { operation: 'matches.verify' },
+      async ({ request, reply }) => {
         const { matchId } = request.params;
 
         // Try in-memory first (active matches)
@@ -210,7 +209,7 @@ export function registerStatsRoutes(fastify: FastifyInstance, matchManager: IMat
         }
 
         return response;
-      });
-    },
+      },
+    ),
   );
 }
