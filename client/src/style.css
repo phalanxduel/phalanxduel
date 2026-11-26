@@ -2583,6 +2583,27 @@ select:focus {
       'ticker hud-bottom sidebar';
     grid-template-columns: auto 1fr 380px;
   }
+
+  .phx-game-layout[data-spectator='true'] {
+    grid-template-areas:
+      'hud-top hud-top sidebar'
+      'ticker main sidebar';
+  }
+}
+
+/* Venue TV / Broadcast spectator layout: reclaim empty command-console row for larger boards */
+.phx-game-layout[data-spectator='true'] {
+  grid-template-rows: auto 1fr;
+}
+
+.phx-game-layout[data-spectator='true'] .phx-stats-horizontal .phx-stat-val {
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.phx-game-layout[data-spectator='true'] .phx-phase-indicator {
+  font-size: 0.95rem;
+  padding: 6px 20px;
 }
 
 @media (min-width: 1200px) {

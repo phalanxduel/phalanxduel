@@ -643,6 +643,8 @@ function PhxInfoBar({
 }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  if (state.isSpectator) return null;
+
   const isReinforce = isReinforcementPhase(gs);
   const hasReinforceActions = state.validActions.some((a) => a.type === 'reinforce');
   const canPass =
