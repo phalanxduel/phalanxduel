@@ -14,8 +14,9 @@
 // Title cards are rendered with headless Chromium, so no ffmpeg drawtext needed.
 
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
@@ -35,6 +36,14 @@ const argValue = (name, fallback) => {
 };
 const narrationPath = resolve(argValue('--narration', join(here, 'demo-narration.md')));
 const outputStem = argValue('--output-stem', 'phalanx-duel-demo');
+const shouldStage = argv.includes('--stage');
+const stagedDir = resolve(
+  argValue(
+    '--staged-dir',
+    process.env.PHALANX_MEDIA_PIPELINE_STAGED_DIR ??
+      join(homedir(), 'ai/media-pipeline/just3ws-mike/phalanx-duel/staged'),
+  ),
+);
 
 if (argv.includes('--help') || argv.includes('-h')) {
   console.log(`Usage: node scripts/video/build-demo.mjs [options]
@@ -42,6 +51,8 @@ if (argv.includes('--help') || argv.includes('-h')) {
 Options:
   --narration <path>       Narration markdown (default: demo-narration.md)
   --output-stem <name>     Output basename under output/video/ (default: phalanx-duel-demo)
+  --stage                  Also stage .mp4, .vtt, .txt, and .yml into media-pipeline staged/
+  --staged-dir <path>      Override staging directory
 `);
   process.exit(0);
 }
@@ -221,8 +232,37 @@ await exec('ffmpeg', [
 const vttOut = join(OUT_DIR, `${outputStem}.vtt`);
 await writeFile(vttOut, vtt.join('\n') + '\n');
 
+const transcriptText = cues.map((c) => oneLine(c.text)).join('\n\n') + '\n';
+const txtOut = join(OUT_DIR, `${outputStem}.txt`);
+await writeFile(txtOut, transcriptText);
+
+if (shouldStage) {
+  await mkdir(stagedDir, { recursive: true });
+  const title = front.title || 'Phalanx Duel — Gameplay Overview Demo';
+  const description = [
+    front.description ||
+      'Full narrated gameplay demo of Phalanx Duel: deterministic 2x4 tactical card combat, suit boundaries, and replay-verified matches.',
+    '',
+    'Playlist: https://www.youtube.com/playlist?list=PLHenvAZhJjHo',
+  ].join('\n');
+  const sidecar = [
+    `title: ${JSON.stringify(title)}`,
+    'privacy: "private"',
+    'tags:',
+    '  - "Phalanx Duel"',
+    '  - "Gameplay Demo"',
+    '  - "Tactical Card Game"',
+    `description: ${JSON.stringify(description)}`,
+  ].join('\n');
+  await copyFile(mp4Out, join(stagedDir, `${outputStem}.mp4`));
+  await copyFile(vttOut, join(stagedDir, `${outputStem}.vtt`));
+  await writeFile(join(stagedDir, `${outputStem}.txt`), transcriptText);
+  await writeFile(join(stagedDir, `${outputStem}.yml`), sidecar + '\n');
+  console.log(`[build-demo] staged bundle into ${stagedDir}`);
+}
+
 console.log(`\n[build-demo] ${(timeline / 60).toFixed(1)} min`);
-for (const f of [mp4Out, webmOut, vttOut]) console.log(`  ${f}`);
+for (const f of [mp4Out, webmOut, vttOut, txtOut]) console.log(`  ${f}`);
 
 // ---------------------------------------------------------------- helpers
 

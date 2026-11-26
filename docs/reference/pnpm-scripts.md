@@ -339,9 +339,6 @@ Mutates the local pnpm store cache. Appropriate in CI and occasional local maint
 | `qa:replay:verify` | `tsx bin/qa/replay-verify.ts` |
 | `qa:setup` | `bin/qa/bootstrap.zsh` |
 | `qa:swarm:staging` | `tsx bin/qa/simulate-headless.ts --base-url https://phalanxduel-staging.fly.dev --p1 bot-heuristic --p2 bot-heuristic --batch 10 --quick-start` |
-| `qa:v1-baseline` | `tsx bin/qa/v1-baseline-capture.ts` |
-| `qa:v1-phase-capture` | `tsx bin/qa/v1-phase-capture.ts` |
-| `qa:v1-record` | `tsx bin/qa/v1-record-playthrough.ts` |
 | `qa:visual:run` | `pnpm --filter @phalanxduel/root exec playwright test -c qa/visual-regression/playwright.config.ts` |
 | `qa:visual:update` | `pnpm --filter @phalanxduel/root exec playwright test -c qa/visual-regression/playwright.config.ts --update-snapshots` |
 | `quality:hotspots` | `tsx scripts/docs/quality-hotspots.ts` |
