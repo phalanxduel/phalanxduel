@@ -82,11 +82,13 @@ See the full **[Features Guide](docs/reference/features.md)** for more details.
 The **[Documentation Wiki](docs/README.md)** is the central entry point for all project knowledge.
 
 ### Canonical Blueprints & Visual Cartography
+- **[Interactive C4 Architecture Map (Groma)](https://phalanxduel.com/library/architecture/)** — Live interactive C4 system, container, and component explorer ([local model](groma/index.md))
 - **[Full Stack Architecture & Operational Blueprint](docs/architecture/FULL_STACK.md)** — Canonical runtime topology, ports, protocol flows, and verification gates
 - **[Database Schema ERD (SVG)](docs/database/schema-erd.svg)** — Interactive visual entity-relationship diagram ([Mermaid](docs/database/schema-erd.mmd) & [Model Catalog](docs/database/SCHEMA.md))
 - **[Infrastructure & Deployment Topology (SVG)](docs/system/infrastructure-topology.svg)** — Complete hybrid host-native and cloud deployment topology
 - **[Module Dependency Graph (SVG)](docs/system/dependency-graph.svg)** — Workspace package boundaries and architectural trust isolation
-- **[Documentation Library SPA](docs/library/index.html)** — Self-contained visual library for players, engineers, partners, and investors (live at `/docs/library` or via `bin/phx-docs-library`)
+- **[Documentation Library SPA](docs/library/index.html)** — Self-contained visual library for players, engineers, partners, and investors (live at [`phalanxduel.com/library`](https://phalanxduel.com/library/) or via `bin/phx-docs-library`)
+- **[Video Tutorials & Masterclass Series (22 Episodes)](https://phalanxduel.com/learn/tutorials/)** — 10 quick-start Shorts and 12 deep-dive guides with full searchable transcripts
 - **[Player, Partner & Investor Diagrams](docs/system/AUDIENCE_DIAGRAMS.md)** — Canonical Mermaid source for match lifecycle, combat cascade, competitive loop, platform ecosystem, anti-cheat moat, and scaling economics
 
 ### Key Entry Points
