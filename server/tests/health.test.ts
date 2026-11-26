@@ -94,6 +94,9 @@ describe('Health Endpoints', () => {
         expect(contentSecurityPolicy).toContain('ws://127.0.0.1:3001');
         expect(contentSecurityPolicy).toContain('http://localhost:3001');
         expect(contentSecurityPolicy).toContain('http://127.0.0.1:3001');
+        // Non-TLS local/LAN environments must not emit upgrade-insecure-requests
+        // or plain HTTP LAN origins (e.g. http://10.x.x.x:3001) fail to load JS assets.
+        expect(contentSecurityPolicy).not.toContain('upgrade-insecure-requests');
       });
     });
   });

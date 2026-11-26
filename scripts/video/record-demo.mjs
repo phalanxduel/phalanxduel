@@ -37,6 +37,7 @@ const { values } = parseArgs({
     'base-url': { type: 'string' },
     'starting-lp': { type: 'string', default: '8' },
     'max-turns': { type: 'string', default: '120' },
+    headed: { type: 'boolean', default: false },
     help: { type: 'boolean', default: false },
   },
 });
@@ -146,7 +147,7 @@ async function fromLive() {
   const BASE_URL = values['base-url'] || process.env.PHALANX_BASE_URL || 'http://127.0.0.1:5173';
   const MAX_TURNS = Math.max(1, Number.parseInt(values['max-turns'], 10) || 120);
 
-  const browser = await chromium.launch({ headless: true, slowMo: 120 });
+  const browser = await chromium.launch({ headless: !values.headed, slowMo: 120 });
   const context = await browser.newContext({
     viewport: { width: W, height: H },
     colorScheme: 'dark',

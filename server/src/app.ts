@@ -271,7 +271,11 @@ export async function buildApp(options: BuildAppOptions = {}) {
 
   await app.register(swaggerUi, { routePrefix: '/docs' });
 
+  const isTlsEnv = process.env.APP_ENV === 'production' || process.env.APP_ENV === 'staging';
+
   await app.register(helmet, {
+    hsts: isTlsEnv,
+    crossOriginOpenerPolicy: isTlsEnv ? { policy: 'same-origin' } : false,
     referrerPolicy: {
       policy: 'strict-origin-when-cross-origin',
     },
@@ -304,7 +308,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
           'https://www.phalanxduel.com',
           'https://phalanxduel.github.io',
         ],
-        upgradeInsecureRequests: [],
+        upgradeInsecureRequests: isTlsEnv ? [] : null,
       },
     },
   });
