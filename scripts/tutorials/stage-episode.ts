@@ -98,6 +98,8 @@ async function main(): Promise<void> {
       validate: { type: 'boolean', default: false },
       stage: { type: 'boolean', default: false },
       'stage-all': { type: 'boolean', default: false },
+      'sync-site': { type: 'boolean', default: false },
+      'site-tutorials-yml': { type: 'string', default: '../site/_data/tutorials.yml' },
       'dry-run': { type: 'boolean', default: false },
       'staged-dir': { type: 'string' },
       'capture-dir': { type: 'string', default: 'artifacts/tutorials' },
@@ -406,6 +408,116 @@ async function main(): Promise<void> {
     await atomicWrite(join(stagedDir, 'playlist.md'), playlistMd);
     await atomicWrite(join(stagedDir, 'playlist.yml'), playlistYml);
     console.log(`✅ Wrote playlist notes (playlist.md, playlist.yml) into ${stagedDir}`);
+
+    if (values['sync-site']) {
+      const siteYmlPath = resolve(repoRoot, values['site-tutorials-yml']);
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      if (!existsSync(siteYmlPath)) {
+        throw new Error(`Site tutorials data file not found: ${siteYmlPath}`);
+      }
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      const existingRaw = await readFile(siteYmlPath, 'utf8');
+      const ytIdByEp = new Map<string, string>();
+      for (const m of existingRaw.matchAll(/-\s+id:\s*"([^"]+)"[\s\S]*?youtube_id:\s*"([^"]*)"/g)) {
+        if (m[1]) ytIdByEp.set(m[1], m[2] ?? '');
+      }
+      const seasonMeta = [
+        {
+          number: 1,
+          slug: 'season-1',
+          name: 'Season 1 — Core Foundations',
+          description:
+            'Master the 2x4 battlefield, deployment, combat cascades, suit boundaries, and victory conditions.',
+        },
+        {
+          number: 2,
+          slug: 'season-2',
+          name: 'Season 2 — Accounts, Cosmetics & HUD',
+          description:
+            'Set up your gamertag, customize cardbacks, and read the Combat Math Inspector.',
+        },
+        {
+          number: 3,
+          slug: 'season-3',
+          name: 'Season 3 — Modes, PvP & Bot Ladder',
+          description:
+            'Compare Classic vs Cumulative modes, play private PvP duels, and challenge the bot tiers.',
+        },
+        {
+          number: 4,
+          slug: 'season-4',
+          name: 'Season 4 — Rankings, Profiles, Replays & Spectating',
+          description:
+            'Track Elo ratings, inspect match history and achievements, rewatch matches, and spectate live.',
+        },
+        {
+          number: 5,
+          slug: 'season-5',
+          name: 'Season 5 — LAN Tournaments & Terminal Client',
+          description:
+            'Play and host local LAN tournaments on lan.phalanxduel.com and duel from the Go CLI.',
+        },
+        {
+          number: 6,
+          slug: 'season-6',
+          name: 'Season 6 — Advanced Strategy & Full Match',
+          description:
+            'Read column architecture, leverage tactical passes, and follow a complete Hard MCTS duel.',
+        },
+      ];
+      const ymlLines = [
+        '# Generated from phalanxduel/game scripts/tutorials/manifest.json + staged media-pipeline metadata',
+        '# Populate youtube_id on any episode to automatically enable click-to-load youtube-nocookie embeds.',
+        `series_title: ${JSON.stringify(manifest.seriesTitle)}`,
+        `playlist_id: ${JSON.stringify(manifest.playlistId)}`,
+        `channel_url: ${JSON.stringify(manifest.channelUrl)}`,
+        `total_episodes: ${playlistEntries.length}`,
+        `shorts_count: ${playlistEntries.filter((e) => e.format === '9:16').length}`,
+        `longform_count: ${playlistEntries.filter((e) => e.format === '16:9').length}`,
+        'seasons:',
+      ];
+      for (const season of seasonMeta) {
+        const eps = playlistEntries.filter((e) => e.season === season.number);
+        if (eps.length === 0) continue;
+        ymlLines.push(
+          `  - number: ${season.number}`,
+          `    slug: ${JSON.stringify(season.slug)}`,
+          `    name: ${JSON.stringify(season.name)}`,
+          `    description: ${JSON.stringify(season.description)}`,
+          '    episodes:',
+        );
+        for (const ep of eps) {
+          const scenPath = resolve(here, 'scenarios', `${ep.id}.json`);
+          const scen = TutorialEpisodeScenarioSchema.parse(
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            JSON.parse(await readFile(scenPath, 'utf8')) as unknown,
+          );
+          const comp = (scen.companionUrl ?? '/learn/getting-started/').replace(
+            /^https:\/\/phalanxduel\.com/,
+            '',
+          );
+          ymlLines.push(
+            `      - id: ${JSON.stringify(ep.id)}`,
+            `        episode_number: ${ep.episodeNumber}`,
+            `        title: ${JSON.stringify(ep.title)}`,
+            `        format: ${JSON.stringify(ep.format)}`,
+            `        format_label: ${JSON.stringify(ep.format === '9:16' ? 'Short (9:16)' : 'Deep Dive (16:9)')}`,
+            `        duration_label: ${JSON.stringify(`${scen.targetDurationSec}s`)}`,
+            `        summary: ${JSON.stringify(scen.summary)}`,
+            `        companion_url: ${JSON.stringify(comp || '/')}`,
+            `        youtube_id: ${JSON.stringify(ytIdByEp.get(ep.id) ?? '')}`,
+            '        transcript:',
+            ...ep.transcript
+              .split('\n\n')
+              .map((l) => l.trim())
+              .filter(Boolean)
+              .map((l) => `          - ${JSON.stringify(l)}`),
+          );
+        }
+      }
+      await atomicWrite(siteYmlPath, ymlLines.join('\n') + '\n');
+      console.log(`✅ Synced ${playlistEntries.length} episodes into ${siteYmlPath}`);
+    }
   }
 }
 

@@ -31,15 +31,11 @@ Playwright baselines are platform-specific. Never copy a macOS/Darwin PNG into a
 
 ## Automated UI and gallery capture
 
-When capturing screenshot galleries or automated video footage via Playwright, modal dialogs (`WelcomeDialog`, `OnboardingBriefing`) will intercept pointer events unless explicitly dismissed. Scripted harnesses (such as `bin/qa/capture-gallery.ts` and `bin/qa/capture-design-baseline.ts`) must pre-populate `localStorage` via `context.addInitScript()`:
+Passive onboarding, welcome, help, and splash modals have been removed from the client, so capture harnesses do not need `localStorage` modal-suppression flags or `"Acknowledge"` click loops. Scripted Playwright captures (such as `scripts/tutorials/record-episode.ts`, `bin/qa/capture-gallery.ts`, and `bin/qa/simulate-ui.ts`) should:
 
-```ts
-localStorage.setItem('phx_welcome_v1_seen', '1');
-localStorage.setItem('phx_onboarding_deploy_seen', '1');
-localStorage.setItem('phx_onboarding_combat_seen', '1');
-localStorage.setItem('phx_onboarding_spectator_seen', '1');
-localStorage.setItem('phx:helpOpen', 'false');
-```
+- Set `colorScheme: 'dark'` on `browser.newContext()` (matching `color-scheme: dark` in `client/src/style.css`).
+- Set `ignoreHTTPSErrors: true` when recording against local LAN tournament hosts (`*.lan.phalanxduel.com`).
+- Abort external font/analytics hosts (`fonts.googleapis.com`, `fonts.gstatic.com`, `gc.zgo.at`, `stats.phalanxduel.com`) during offline or LAN captures so `page.screenshot()` never stalls waiting on external fonts.
 
 ## Presentation LAN topology
 
@@ -51,9 +47,10 @@ To demo Phalanx Duel live across phones, tablets, or audience devices:
 
 ## Narrated video generation pipeline
 
-The demo video assets are generated directly from code and markdown:
+The demo and tutorial video assets are generated directly from code and markdown:
 - `pnpm docs:demo:record`: Runs a headless browser match to record 30 FPS raw WebM footage and phase timestamps (`scripts/video/build/demo-raw.webm`, `footage.json`).
-- `pnpm docs:demo:build`: Synthesizes voiceover from `scripts/video/demo-narration.md`, renders title cards, and produces the finalized video assets (`output/video/phalanx-duel-demo.mp4`, `.webm`, `.vtt`).
+- `pnpm docs:demo:build -- --stage`: Synthesizes voiceover from `scripts/video/demo-narration.md`, renders title cards, produces finalized video assets (`output/video/phalanx-duel-demo.mp4`, `.vtt`, `.txt`), and stages the bundle into `$HOME/ai/media-pipeline/just3ws-mike/phalanx-duel/staged`.
+- `pnpm tutorial:stage --stage-all`: Stages all 22 dark-mode tutorial episodes (10 Shorts 9:16 + 12 Long-Form 16:9) with `.vtt`, `.txt` transcripts, `.yml` sidecars, and `playlist.md`/`playlist.yml` into `media-pipeline`.
 
 ## Infrastructure boundary
 

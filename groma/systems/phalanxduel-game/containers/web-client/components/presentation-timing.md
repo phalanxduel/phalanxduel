@@ -8,4 +8,5 @@ groma:
   code:
     - scanner: typescript
       file: client/src/presentation-timing.ts
+      symbol: PRESENTATION_TIMING
 ---

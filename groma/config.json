@@ -8,7 +8,7 @@
     },
     {
       "id": "typescript",
-      "source": "@groma/scanner-typescript@0.2.4",
+      "source": "@groma/scanner-typescript@0.2.6",
       "include": [
         "**/*.ts",
         "**/*.tsx",

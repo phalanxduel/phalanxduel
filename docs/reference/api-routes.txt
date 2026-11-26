@@ -8,12 +8,15 @@
     │   │       │   └── * (HEAD, GET)
     │   │       ├── json (GET, HEAD)
     │   │       ├── yaml (GET, HEAD)
-    │   │       └── asyncapi.yaml (GET, HEAD)
+    │   │       ├── asyncapi.yaml (GET, HEAD)
+    │   │       └── library (GET, HEAD)
+    │   │           └── / (GET, HEAD)
     │   └── ebug/error (GET, HEAD)
     ├── health (GET, HEAD)
     ├── ready (GET, HEAD)
     ├── a
     │   ├── pi/
+    │   │   ├── defaults (GET, HEAD)
     │   │   ├── s
     │   │   │   ├── t
     │   │   │   │   ├── ats (GET, HEAD)
@@ -86,8 +89,7 @@
     │   │   ├── profiles/
     │   │   │   └── :userId (GET, HEAD)
     │   │   ├── cards/manifest (GET, HEAD)
-    │   │   ├── rules/phases (GET, HEAD)
-    │   │   └── defaults (GET, HEAD)
+    │   │   └── rules/phases (GET, HEAD)
     │   └── dmin (GET, HEAD)
     │       └── /ab-tests (GET, HEAD)
     ├── matches (POST, GET, HEAD)
