@@ -4157,6 +4157,12 @@ select:focus {
   }
 }
 
+/* Hide redundant card-type subtitle while ENGAGE target badge is shown */
+.phx-card.valid-target .phx-card-type,
+.phx-card.valid-target .card-type {
+  display: none;
+}
+
 .phx-divider-center {
   display: inline-flex;
   align-items: center;

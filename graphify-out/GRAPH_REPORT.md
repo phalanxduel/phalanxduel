@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e744efce`
+- Built from commit: `a1ab8da6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -88,9 +88,9 @@
 - GameAutomator
 - Phalanx Duel — Operations Runbook
 - properties
-- createAndJoinMatch
+- bot-swarm.ts
 - simulate-headless.ts
-- capture-gameplay-gif.ts
+- instrument-cli.ts
 - narration-producer.ts
 - PULL_REQUEST_TEMPLATE.md
 - compilerOptions
@@ -167,7 +167,7 @@
 - 3. Comprehensive Layer-by-Layer Inventory
 - phalanx-duel-30-minute-slides.md
 - GameProjection
-- Feature Flags & Admin
+- createAndJoinMatch
 - ignoreBinaries
 - GameTopMonitor
 - required
@@ -179,7 +179,7 @@
 - Connect by Tool
 - Local Development Guide
 - Security Knowledge Base and Reference Index
-- Core Criteria
+- capture-gameplay-gif.ts
 - typedoc.json
 - reinforcement
 - required
@@ -285,7 +285,7 @@
 - task-28 - Advanced-Contributor-Workflow-Guide.md
 - task-45.5 - Event-Log-HTTP-API.md
 - TASK-53: Add Graceful Shutdown Handler
-- instrument-cli.ts
+- TutorialTerminal
 - Part 2 — For Investors, Sponsors & Venue Partners
 - AGENTS.md
 - DEC-2G-001 - Client UI/UX audit and remediation plan
@@ -390,7 +390,7 @@
 - DEC-2B-005 - Agentic gameplay immediate path: MCP client + bot opponent + llama analysis
 - @phalanxduel/shared
 - 3. Match Parameters (Authoritative Schema)
-- 21. Card Visibility and Fog of War
+- Feature Flags & Admin
 - Context Hunter
 - OpenTelemetry and Collector Topology
 - gameplay.ts
@@ -400,7 +400,7 @@
 - match-event-log.schema.json
 - ws-smoke.js
 - deploy-fly.sh
-- TutorialTerminal
+- Core Criteria
 - player
 - src/run-evidence.ts
 - autonomous-bot/tsconfig.json
@@ -554,7 +554,7 @@
 - Pavel — PVL specialist agent
 - Visual publication audit
 - Trademark Policy
-- Adoption Phases
+- simulation.test.ts
 - project
 - supportedArchitectures
 - reliable-channel.ts
@@ -676,14 +676,14 @@
 - Phalanx O2 Operator
 - Canonical Documentation Map
 - Production Path Review Guideline
-- bot-swarm.ts
+- 21. Card Visibility and Fog of War
 - Robots & Sitemap Route Decisions
 - Backlog Technical Project Manager
 - Phalanx Duel local tooling
 - Card Cosmetics
 - Rejected Alternatives
 - KNIP_REPORT.md
-- simulation.test.ts
+- Adoption Phases
 - Phalanx Duel demo observability packet
 - SCMC Talk — Demo Directory & Rehearsal Script
 - pnpm
@@ -1201,9 +1201,9 @@
 - Record Phalanx Duel tutorials
 - typedoc
 - server/src/instrument.ts
-- trajectory.test.ts
-- Scope
 - generate-openapi-file.ts
+- Scope
+- trajectory.test.ts
 - tools/analysis.ts
 
 ## God Nodes (most connected - your core abstractions)
@@ -1527,17 +1527,17 @@ Nodes (31): 1.1 Automated Checks, 1.2 Manual Diagnostics, 1. Health Monitoring, 
 Cohesion: 0.07
 Nodes (31): hybrid, strict, additionalProperties, properties, required, type, description, type (+23 more)
 
-### Community 73 - "createAndJoinMatch"
-Cohesion: 0.21
-Nodes (10): capturePageSnapshot(), createAndJoinMatch(), describeSnapshot(), formatSession(), logSnapshotIfChanged(), randomToken(), readCurrentMatchId(), readServerCorrelation() (+2 more)
+### Community 73 - "bot-swarm.ts"
+Cohesion: 0.32
+Nodes (9): botPersonaForIndex(), buildBotIdentity(), buildPersistentTournamentIdentity(), buildTournamentIdentity(), deriveWaveSizes(), parseWaveSizes(), WavePlanOptions, zeroPad() (+1 more)
 
 ### Community 74 - "simulate-headless.ts"
 Cohesion: 0.11
 Nodes (31): GameScenario, loadScenario(), BrowserOutcomeDetails, checkPortReachable(), chooseRandomClickable(), CliOptions, DamageMode, FailureReason (+23 more)
 
-### Community 75 - "capture-gameplay-gif.ts"
-Cohesion: 0.25
-Nodes (10): argv, clickCommandBtn(), exec, main(), MAX_TURNS, openCommandDrawer(), OUT_DIR, playTurn() (+2 more)
+### Community 75 - "instrument-cli.ts"
+Cohesion: 0.18
+Nodes (7): argv, { values }, originalConsole, otlpEndpoint, otlpEndpointRaw, resource, scriptName
 
 ### Community 76 - "narration-producer.ts"
 Cohesion: 0.11
@@ -1839,9 +1839,9 @@ Nodes (19): 1. Executive Summary & PVL Longitudinal Framework, 2. Outside-In Con
 Cohesion: 0.11
 Nodes (18): A small game as a laboratory for boundaries, feedback, and trust, Determinism is a contract, not a slogan, Form the line. Find the breach. Explain the result., Make the rules legible, Observability is not availability, One attack is a causal story, Phalanx Duel, Put authority in one transition boundary (+10 more)
 
-### Community 152 - "Feature Flags & Admin"
-Cohesion: 0.22
-Nodes (9): Active Flags, Admin Authentication, Experiment Assignment (lobby_framework), Feature Flags & Admin, Lobby Framework Decision Logic, Rollout Progression, Server Experiment Config (`PHALANX_AB_TESTS_JSON`), Telemetry Events (lobby_framework) (+1 more)
+### Community 152 - "createAndJoinMatch"
+Cohesion: 0.21
+Nodes (10): capturePageSnapshot(), createAndJoinMatch(), describeSnapshot(), formatSession(), logSnapshotIfChanged(), randomToken(), readCurrentMatchId(), readServerCorrelation() (+2 more)
 
 ### Community 153 - "ignoreBinaries"
 Cohesion: 0.09
@@ -1887,9 +1887,9 @@ Nodes (18): 1. Host-Native Development (Primary), 2. Containerized Verification 
 Cohesion: 0.11
 Nodes (17): 1.1 Core References, 1.2 Implemented Controls, 1. WebSocket Security (Transport & Protocol), 2.1 Core References, 2.2 Implemented Controls, 2. Server-Authoritative Game Security, 3.1 Core References, 3.2 Implemented Controls (+9 more)
 
-### Community 164 - "Core Criteria"
-Cohesion: 0.22
-Nodes (8): 1. Specification Alignment, 2. Verification, 3. Trust & Safety, 4. Code Quality, 5. Observability, 6. Accessibility & UX, 7. AI-Assisted Work, Core Criteria
+### Community 164 - "capture-gameplay-gif.ts"
+Cohesion: 0.25
+Nodes (10): argv, clickCommandBtn(), exec, main(), MAX_TURNS, openCommandDrawer(), OUT_DIR, playTurn() (+2 more)
 
 ### Community 165 - "typedoc.json"
 Cohesion: 0.11
@@ -2307,9 +2307,9 @@ Nodes (10): Acceptance Criteria, Authorization, Compact format, Description, `GE
 Cohesion: 0.18
 Nodes (10): Acceptance Criteria, Definition of Done, Dependencies, Description, Implementation, Related Tasks, Risk Assessment, TASK-53: Add Graceful Shutdown Handler (+2 more)
 
-### Community 270 - "instrument-cli.ts"
-Cohesion: 0.18
-Nodes (7): argv, { values }, originalConsole, otlpEndpoint, otlpEndpointRaw, resource, scriptName
+### Community 270 - "TutorialTerminal"
+Cohesion: 0.33
+Nodes (5): cliDir, isAllowedCaptureHost(), resolveAdminUrl(), showTerminal(), TutorialTerminal
 
 ### Community 271 - "Part 2 — For Investors, Sponsors & Venue Partners"
 Cohesion: 0.18
@@ -2711,9 +2711,9 @@ Nodes (8): Agent account bootstrap, Consequences, Context, DEC-2B-005 - Agentic 
 Cohesion: 0.22
 Nodes (9): 3.1.1 Strict Mode, 3.1.2 Hybrid Mode, 3.1.3 Manual Mode, 3.1 Classic Schema Binding Rules, 3.2 Invalid Configuration Conditions, 3.3 Global System Constraints, 3.4 Canonical vs Compatibility Inputs, 3.5 Rules-Version Compatibility (+1 more)
 
-### Community 375 - "21. Card Visibility and Fog of War"
-Cohesion: 0.25
-Nodes (8): 21.1 Hands and Draw Piles, 21.2 Battlefield, 21.3 Graveyard (Discard Pile), 21.4 Observer Noninterference, 21.5 Spectator and Replay Lifecycle, 21.6 Competitive and Research Bots, 21.7 Observer-Safe Calculation Evidence, 21. Card Visibility and Fog of War
+### Community 375 - "Feature Flags & Admin"
+Cohesion: 0.22
+Nodes (9): Active Flags, Admin Authentication, Experiment Assignment (lobby_framework), Feature Flags & Admin, Lobby Framework Decision Logic, Rollout Progression, Server Experiment Config (`PHALANX_AB_TESTS_JSON`), Telemetry Events (lobby_framework) (+1 more)
 
 ### Community 376 - "Context Hunter"
 Cohesion: 0.22
@@ -2747,9 +2747,9 @@ Nodes (7): k6, options, connectDuration, connectErrors, errorRate, messageErrors
 Cohesion: 0.39
 Nodes (7): probe_database(), reject_local_database_target(), require_release_env(), run_post_deploy_healthcheck(), run_pre_deploy_migrate(), run_release_verification(), deploy-fly.sh script
 
-### Community 385 - "TutorialTerminal"
-Cohesion: 0.33
-Nodes (5): cliDir, isAllowedCaptureHost(), resolveAdminUrl(), showTerminal(), TutorialTerminal
+### Community 385 - "Core Criteria"
+Cohesion: 0.22
+Nodes (8): 1. Specification Alignment, 2. Verification, 3. Trust & Safety, 4. Code Quality, 5. Observability, 6. Accessibility & UX, 7. AI-Assisted Work, Core Criteria
 
 ### Community 386 - "player"
 Cohesion: 0.22
@@ -3363,9 +3363,9 @@ Nodes (6): Current inventory, Publication rules, Recommended recording sequence,
 Cohesion: 0.29
 Nodes (6): Canonical Policy, Contact, Open Source and Trademarks, Permitted Use, Restrictions, Trademark Policy
 
-### Community 539 - "Adoption Phases"
+### Community 539 - "simulation.test.ts"
 Cohesion: 0.33
-Nodes (6): Adoption Phases, Phase 0 — Confirm Inventory, Phase 1 — Advisory Gates (no behavior changes), Phase 2 — Hard Gates for Low-Noise Rules, Phase 3 — Domain Correctness Expansion, Phase 4 — Runtime / Performance / DB Validation
+Nodes (5): assertInvariants(), makeAttackAction(), makeDeployAction(), makeReinforceAction(), playFullGame()
 
 ### Community 540 - "project"
 Cohesion: 0.50
@@ -3851,9 +3851,9 @@ Nodes (5): Canonical Documentation Map, Canonical Topic Homes, Known Secondary o
 Cohesion: 0.33
 Nodes (5): Core Goal, Production Path Review Guideline, Required Review Framing, Required Use, Usage Notes
 
-### Community 662 - "bot-swarm.ts"
-Cohesion: 0.32
-Nodes (9): botPersonaForIndex(), buildBotIdentity(), buildPersistentTournamentIdentity(), buildTournamentIdentity(), deriveWaveSizes(), parseWaveSizes(), WavePlanOptions, zeroPad() (+1 more)
+### Community 662 - "21. Card Visibility and Fog of War"
+Cohesion: 0.25
+Nodes (8): 21.1 Hands and Draw Piles, 21.2 Battlefield, 21.3 Graveyard (Discard Pile), 21.4 Observer Noninterference, 21.5 Spectator and Replay Lifecycle, 21.6 Competitive and Research Bots, 21.7 Observer-Safe Calculation Evidence, 21. Card Visibility and Fog of War
 
 ### Community 663 - "Robots & Sitemap Route Decisions"
 Cohesion: 0.33
@@ -3875,9 +3875,9 @@ Nodes (5): Accessibility and fallback, Card Cosmetics, Dual Loop design contract
 Cohesion: 0.40
 Nodes (5): Blanket pass confirmation, Defer all findings to TASK-173 polish workstream, Full accessibility overhaul as a single task, Implement pre-attack preview (F-07) immediately, Rejected Alternatives
 
-### Community 670 - "simulation.test.ts"
+### Community 670 - "Adoption Phases"
 Cohesion: 0.33
-Nodes (5): assertInvariants(), makeAttackAction(), makeDeployAction(), makeReinforceAction(), playFullGame()
+Nodes (6): Adoption Phases, Phase 0 — Confirm Inventory, Phase 1 — Advisory Gates (no behavior changes), Phase 2 — Hard Gates for Low-Noise Rules, Phase 3 — Domain Correctness Expansion, Phase 4 — Runtime / Performance / DB Validation
 
 ### Community 671 - "Phalanx Duel demo observability packet"
 Cohesion: 0.33
@@ -5071,13 +5071,13 @@ Nodes (5): Capture and edit, Distribution, Outputs and Shorts review, Record Pha
 Cohesion: 0.06
 Nodes (32): getServerConfig(), loadServerConfig(), ServerConfig, ServerConfigSchema, checkPendingMigrations(), main(), runMigrations(), checksum() (+24 more)
 
+### Community 1831 - "generate-openapi-file.ts"
+Cohesion: 0.50
+Nodes (3): __dirname, main(), OUTPUT_PATH
+
 ### Community 1832 - "Scope"
 Cohesion: 0.67
 Nodes (3): In scope, Non-goals, Scope
-
-### Community 1834 - "generate-openapi-file.ts"
-Cohesion: 0.50
-Nodes (3): __dirname, main(), OUTPUT_PATH
 
 ### Community 1838 - "tools/analysis.ts"
 Cohesion: 0.07
