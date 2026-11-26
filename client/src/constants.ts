@@ -2,7 +2,7 @@ import type { GamePhase } from '@phalanxduel/shared';
 
 /**
  * Canonical display labels for all game phases.
- * Shared between HUD (InfoBar) and Narration (NarrationOverlay).
+ * Shared between the HUD and narration.
  */
 export const HUD_PHASE_LABELS: Record<string, string> = {
   DeploymentPhase: 'DEPLOYMENT',

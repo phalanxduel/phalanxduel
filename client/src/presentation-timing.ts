@@ -13,22 +13,10 @@ export const PRESENTATION_TIMING = {
     bonus: 340,
     phase: 300,
     calculation: 480,
-    // The next narrated cue cannot enter until the focal cinematic has exited.
-    cinematic: 1_800,
+    cinematic: 340,
     terminal: 900,
   },
-  overlay: {
-    narrationHold: 900,
-    phaseHold: 1_050,
-    combatFeedback: 2_200,
-    exit: 240,
-    reducedHold: 700,
-  },
-  cinematic: {
-    hold: 1_500,
-    exit: 280,
-    reducedHold: 900,
-  },
+  combatFeedback: 2_200,
   effects: {
     beam: 440,
     impactDelay: 240,
@@ -42,9 +30,5 @@ export const PRESENTATION_TIMING = {
     deployFlash: 480,
     deployLabel: 620,
     deployFlight: 460,
-    terminalHold: 900,
-    terminalExit: 300,
   },
 } as const;
-
-export type PresentationState = 'entering' | 'holding' | 'exiting';

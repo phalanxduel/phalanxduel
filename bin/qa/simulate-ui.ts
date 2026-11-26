@@ -575,16 +575,13 @@ async function clickGameElement(locator: Locator): Promise<void> {
 async function assertTerminalPresentation(page: Page, name: string): Promise<void> {
   const evidence = await page.evaluate(() => ({
     gameOverViews: document.querySelectorAll('[data-component="GameOverView"]').length,
-    phaseOverlays: document.querySelectorAll('.nr-phase-announce').length,
-    activeCinematics: document.querySelectorAll('.cinematic-modal.is-active').length,
+    blockingOverlays: document.querySelectorAll(
+      '.phx-modal-overlay, .cinematic-modal, .cinematic-overlay, .pz-splash-overlay, .nr-overlay',
+    ).length,
     mathViews: document.querySelectorAll('[data-component="CombatExplanationView"]').length,
   }));
 
-  if (
-    evidence.gameOverViews !== 1 ||
-    evidence.phaseOverlays !== 0 ||
-    evidence.activeCinematics !== 0
-  ) {
+  if (evidence.gameOverViews !== 1 || evidence.blockingOverlays !== 0) {
     throw new Error(
       `Terminal presentation invariant failed for ${name}: ${JSON.stringify(evidence)}`,
     );
@@ -2163,16 +2160,7 @@ async function main(): Promise<void> {
           ...(headed && OPTIONS.devtoolsEnabled ? ['--auto-open-devtools-for-tabs'] : []),
         ],
       });
-      const context = await browser.newContext({ viewport: null });
-      await context.addInitScript(() => {
-        try {
-          localStorage.setItem('phx_welcome_v1_seen', '1');
-          localStorage.setItem('phx_onboarding_deploy_seen', '1');
-          localStorage.setItem('phx:helpOpen', 'false');
-        } catch {
-          // Ignore storage failures in hardened contexts.
-        }
-      });
+      const context = await browser.newContext({ viewport: null, colorScheme: 'dark' });
       if (!OPTIONS.telemetryEnabled) {
         await context.addInitScript(() => {
           try {

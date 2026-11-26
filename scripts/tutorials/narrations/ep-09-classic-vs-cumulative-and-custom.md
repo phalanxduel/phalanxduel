@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:mode-intro -->
-Two damage modes completely change how you build columns in Phalanx Duel: Classic and Cumulative.
+Open Advanced to choose Classic or Cumulative combat rules and set your starting life points before you launch a match.
 
 <!-- cue:classic-behavior -->
-In Classic mode, any card that survives an attack heals back to full strength at the end of the turn — rewarding decisive breakthroughs.
+Here is an attack that leaves the defender in place. In Classic play the surviving card returns to full strength, so a chip attack does not wear the card down.
 
 <!-- cue:cumulative-behavior -->
-In Cumulative mode, damage sticks across turns so attrition and multi-turn focus fire can grind down even the toughest front rank. Try both in Custom Match options!
+In the Cumulative match, the surviving defender’s health display stays below its maximum. That damage is still there for a later attack.

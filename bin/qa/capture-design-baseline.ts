@@ -95,19 +95,6 @@ async function snap(
   return { screen, variant, viewport: vpTag, path: filename };
 }
 
-async function dismissModals(page: Page): Promise<void> {
-  // Suppress modals via CSS — more reliable than clicking
-  await page
-    .addStyleTag({
-      content: `
-        [role="dialog"], .phx-modal-overlay, .phx-onboarding-overlay,
-        .phx-briefing-overlay { display: none !important; }
-      `,
-    })
-    .catch(() => null);
-  await page.waitForTimeout(300);
-}
-
 async function navigateToScreen(page: Page, screen: string): Promise<void> {
   const url = new URL(BASE_URL);
   if (screen !== 'lobby') {
@@ -115,7 +102,6 @@ async function navigateToScreen(page: Page, screen: string): Promise<void> {
   }
   await page.goto(url.toString(), { timeout: 15000, waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
-  await dismissModals(page);
 }
 
 async function applyCardThemeForVisualCapture(
@@ -219,13 +205,12 @@ async function captureGameplayScreens(
   // Quick match starts a PvB game
   const quickBtn = page.locator('[data-testid="lobby-quick-match-btn"]');
   if (await quickBtn.isVisible().catch(() => false)) {
-    await quickBtn.click({ force: true });
+    await quickBtn.click();
   }
 
   // Wait for game layout to appear
   await page.waitForSelector('[data-testid="game-layout"]', { timeout: 20000 }).catch(() => null);
   await page.waitForTimeout(2000);
-  await dismissModals(page);
 
   // Helper to get current phase
   const getPhase = async (): Promise<string> => {

@@ -3,9 +3,9 @@
   "id": "ep-17-playing-in-a-tournament",
   "season": 5,
   "episodeNumber": 17,
-  "title": "How to Play in a Local / LAN Tournament",
+  "title": "Rehearse a Tournament Table",
   "format": "16:9",
-  "targetDurationSec": 270,
+  "targetDurationSec": 25,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42017,
@@ -13,26 +13,54 @@
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/competitive/",
   "tags": ["Phalanx Duel", "Tournament", "LAN", "Competitive", "Tutorial"],
-  "summary": "Player checklist for local and LAN Phalanx Duel tournaments: connecting to the LAN domain, signing into persistent accounts, joining bracket matches, and tracking standings.",
+  "summary": "Overview of local LAN tournament play on play.lan.phalanxduel.com: create a private venue table, seat your opponent via invite code, and make an opening move with spectator-ready deterministic replay.",
   "cues": [
     {
       "id": "lan-connect",
-      "label": "Connect to the Local Tournament Domain",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
-    },
-    {
-      "id": "persistent-login",
-      "label": "Sign In with Your Tournament Account",
-      "action": "hold",
-      "holdMs": 3500
+      "label": "Create a practice table",
+      "actions": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "fill",
+          "selector": "[data-testid=\"lobby-name-input\"]",
+          "value": "TutorialHost"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"lobby-create-btn\"]"
+        }
+      ],
+      "expect": "[data-testid=\"waiting-match-id\"]",
+      "focus": [".waiting-grid"],
+      "holdMs": 2200
     },
     {
       "id": "bracket-play",
-      "label": "Joining Pairings & Spectator Casting",
-      "action": "quickStart",
-      "holdMs": 3500
+      "label": "Seat the other player",
+      "actions": [
+        {
+          "action": "joinOpponent",
+          "value": "ensurePlayerTurn"
+        }
+      ],
+      "expect": "[data-testid=\"game-layout\"]",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
+    },
+    {
+      "id": "first-move",
+      "label": "Play the opening card",
+      "actions": [
+        {
+          "action": "deployFirstCard"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] [data-row=\"0\"].occupied",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"hand\"]"],
+      "holdMs": 2200
     }
   ]
 }

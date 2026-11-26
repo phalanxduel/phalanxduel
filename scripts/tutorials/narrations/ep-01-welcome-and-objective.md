@@ -1,6 +1,6 @@
 ---
 episode_id: ep-01-welcome-and-objective
-title: "What Is Phalanx Duel? (60-Second Overview)"
+title: "Phalanx Duel in One Match Opening"
 format: "9:16"
 privacy: private
 pronunciation:
@@ -8,14 +8,11 @@ pronunciation:
   LP: life points
 ---
 
-<!-- cue:lobby-welcome -->
-Welcome to Phalanx Duel — a deterministic tactical card game where every move is verifiable and formation is everything.
-
-<!-- cue:quick-start -->
-Hit Quick Start from the lobby to jump straight into a live match against a training bot.
+<!-- cue:first-deploy -->
+Select a card from your hand, then click an open position. The card is face-up as soon as it reaches the battlefield.
 
 <!-- cue:board-overview -->
-Each player commands a two-by-four battlefield: a front rank that attacks, a back rank that reinforces, and a Life Points pool. Drop your opponent to zero Life Points to win.
+Each column has a front and a back position. Quick Deploy fills the rest of your formation so you can start attacking.
 
-<!-- cue:first-deploy -->
-Deploy your opening cards into columns, trigger suit boundaries, and break through to the enemy Life Points. Check the playlist for Episode 2 on formation strategy!
+<!-- cue:first-attack -->
+Select your front card, then the matching enemy column. The engagement log shows exactly what happened. Reduce the other player’s life points to zero to win.

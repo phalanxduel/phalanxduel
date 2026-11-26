@@ -1,6 +1,6 @@
 ---
 episode_id: ep-17-playing-in-a-tournament
-title: "How to Play in a Local / LAN Tournament"
+title: "Rehearse a Tournament Table"
 format: "16:9"
 companion_url: "https://phalanxduel.com/competitive/"
 privacy: private
@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:lan-connect -->
-Playing in a local or LAN Phalanx Duel tournament? Here is everything you need to go from check-in to the finals.
-
-<!-- cue:persistent-login -->
-Sign in with your persistent player account so every bracket win, Elo update, and replay is tied to your gamertag across rounds.
+In local LAN tournament mode, players connect to play dot lan dot phalanx duel dot com on the venue network. Open the table URL, create a private match, and share the invite code.
 
 <!-- cue:bracket-play -->
-Join your paired match from the lobby, play clean turns, and share the Watch link with the tournament projector so the whole room can follow the finals live.
+Your opponent joins with the invite link or match code, while venue displays can follow live matches in spectator mode. Check both names and wait for the board before you start.
+
+<!-- cue:first-move -->
+Select a card and deploy it to the front rank. Because every match is server-authoritative and replay-verified on the LAN host, results stay deterministic and auditable for bracket reporting.

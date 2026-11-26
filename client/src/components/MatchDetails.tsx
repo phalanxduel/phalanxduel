@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import type { GameState, TransactionLogEntry } from '@phalanxduel/shared';
 import { CombatMath } from './CombatMath';
 
@@ -8,17 +8,12 @@ interface Props {
   token?: string | null;
 }
 
-export function MatchDetailsDialog({ matchId, onClose, token }: Props) {
+export function MatchDetails({ matchId, onClose, token }: Props) {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (dialogRef.current && !dialogRef.current.open) {
-      dialogRef.current.showModal();
-    }
-
     let isMounted = true;
 
     fetch(`/api/matches/${matchId}/replay?step=9999`, {
@@ -45,32 +40,8 @@ export function MatchDetailsDialog({ matchId, onClose, token }: Props) {
     };
   }, [matchId, token]);
 
-  const handleClose = () => {
-    if (dialogRef.current) {
-      dialogRef.current.close();
-    }
-    onClose();
-  };
-
   return (
-    <dialog
-      ref={dialogRef}
-      class="phx-dialog"
-      onCancel={(e) => {
-        e.preventDefault();
-        handleClose();
-      }}
-      style={{
-        maxWidth: '800px',
-        width: '90vw',
-        padding: '24px',
-        background: 'rgba(10,12,16,0.95)',
-        border: '1px solid var(--gold-dim)',
-        color: '#fff',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-      }}
-    >
+    <section class="hud-panel" aria-label="Match breakdown" data-testid="match-breakdown">
       <div
         style={{
           display: 'flex',
@@ -82,7 +53,7 @@ export function MatchDetailsDialog({ matchId, onClose, token }: Props) {
         <h2 class="section-label" style={{ margin: '0', color: 'var(--gold)' }}>
           MATCH BREAKDOWN
         </h2>
-        <button class="btn btn-tiny" onClick={handleClose}>
+        <button class="btn btn-tiny" onClick={onClose}>
           CLOSE
         </button>
       </div>
@@ -259,6 +230,6 @@ export function MatchDetailsDialog({ matchId, onClose, token }: Props) {
           )}
         </div>
       ) : null}
-    </dialog>
+    </section>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { MatchDetailsDialog } from './MatchDetailsDialog';
+import { MatchDetails } from './MatchDetails';
 
 interface MatchEntry {
   matchId: string;
@@ -219,7 +219,8 @@ export function MatchHistory({ userId, token, onRewatch, onOpenProfile }: Props)
         )}
       </div>
       {selectedMatchId && (
-        <MatchDetailsDialog
+        <MatchDetails
+          key={selectedMatchId}
           matchId={selectedMatchId}
           onClose={() => setSelectedMatchId(null)}
           token={token}

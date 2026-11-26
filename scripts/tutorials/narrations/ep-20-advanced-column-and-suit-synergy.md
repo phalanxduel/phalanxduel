@@ -1,6 +1,6 @@
 ---
 episode_id: ep-20-advanced-column-and-suit-synergy
-title: "Advanced Strategy: Column Architecture & Suit Synergy"
+title: "Read a Column Before You Attack"
 format: "16:9"
 companion_url: "https://phalanxduel.com/learn/tactical-depth/"
 privacy: private
@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:column-arch -->
-Welcome to Season 6 — Advanced Strategy. Winning consistently starts with thinking in vertical columns instead of isolated cards.
+Look at the two cards in each column as a pair. The front card attacks and defends first, and the back card is the second line of defense.
 
 <!-- cue:defensive-walls -->
-Stacking a Diamond in front of a Heart creates a two-stage defensive wall: Diamonds blunt card-to-card overflow, and Hearts cushion any remaining damage before it hits Life Points.
+Select an attacker so you can evaluate the lane straight across. Check the rank and suit of both defenders before you decide whether to resolve the attack.
 
 <!-- cue:lethal-setups -->
-On offense, align high-power Clubs and Spades against weakened lanes to convert single-turn attacks into massive Life Point swings.
+Compare the attack’s starting power with what reached each defender. The Analyst view tells you which rules mattered for this particular lane.

@@ -20,44 +20,62 @@ export const FORMAT_PROFILES: Record<
   z.infer<typeof TutorialRenderProfileSchema>
 > = {
   '16:9': {
-    viewportWidth: 1280,
-    viewportHeight: 720,
+    viewportWidth: 1600,
+    viewportHeight: 900,
     outputWidth: 1920,
     outputHeight: 1080,
     fps: 30,
   },
   '9:16': {
-    viewportWidth: 430,
-    viewportHeight: 764,
+    viewportWidth: 1600,
+    viewportHeight: 900,
     outputWidth: 1080,
     outputHeight: 1920,
     fps: 30,
   },
 };
 
-export const TutorialCueStepSchema = z.object({
-  id: z.string().min(1),
-  label: z.string().min(1),
-  action: z
-    .enum([
-      'goto',
-      'fill',
-      'click',
-      'waitForSelector',
-      'hold',
-      'highlight',
-      'screenshot',
-      'quickStart',
-      'deployFirstCard',
-    ])
-    .default('hold'),
+const TutorialActionSchema = z.object({
+  action: z.enum([
+    'goto',
+    'fill',
+    'select',
+    'click',
+    'waitForSelector',
+    'hold',
+    'highlight',
+    'screenshot',
+    'quickStart',
+    'deployFirstCard',
+    'attack',
+    'selectAttack',
+    'reinforce',
+    'joinOpponent',
+    'watchMatch',
+    'reconnect',
+    'finishMatch',
+    'reachPosition',
+    'registerDemo',
+    'openReplay',
+    'terminal',
+  ]),
   selector: z.string().optional(),
   value: z.string().optional(),
   urlPath: z.string().optional(),
-  holdMs: z.number().int().min(0).default(2500),
+});
+
+export const TutorialCueStepSchema = TutorialActionSchema.partial({ action: true }).extend({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  setup: z.array(TutorialActionSchema).optional(),
+  actions: z.array(TutorialActionSchema).min(1).optional(),
+  focus: z.array(z.string().min(1)).min(1).optional(),
+  expect: z.string().min(1).optional(),
+  holdMs: z.number().int().min(500).default(2500),
 });
 
 export type TutorialCueStep = z.infer<typeof TutorialCueStepSchema>;
+export type TutorialAction = z.infer<typeof TutorialActionSchema>;
 
 export const TutorialEpisodeScenarioSchema = z.object({
   version: z.literal(1),

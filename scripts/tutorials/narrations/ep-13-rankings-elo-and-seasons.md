@@ -1,6 +1,6 @@
 ---
 episode_id: ep-13-rankings-elo-and-seasons
-title: "Understanding Your Ranking, Elo Categories & Seasonal Ladders"
+title: "Browse the Global Elo Ladder"
 format: "16:9"
 companion_url: "https://phalanxduel.com/competitive/"
 privacy: private
@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:leaderboard-open -->
-How does your ranking work in Phalanx Duel? Let us open the Leaderboard and decode the Elo system.
+Open Global Ladder from the lobby. Each category ranks a different kind of match.
 
 <!-- cue:categories-elo -->
-Ratings are tracked separately across four categories — PvP, sp-random, sp-heuristic, and sp-mcts — starting from a 1,000 Elo baseline with a K-factor of 32.
+Select the Easy AI category to see its own rating table. A player’s results in another category do not appear here.
 
-<!-- cue:confidence-badges -->
-As you play more rated games in a season, your confidence label progresses from Provisional to Calibrating to Established — or Inactive if you step away for 30 days.
+<!-- cue:expert-category -->
+Switch to Medium AI to view the heuristic bot rating table.

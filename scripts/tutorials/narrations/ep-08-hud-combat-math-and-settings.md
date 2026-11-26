@@ -1,6 +1,6 @@
 ---
 episode_id: ep-08-hud-combat-math-and-settings
-title: "Reading the HUD, Combat Math Inspector & Narration Settings"
+title: "Read the HUD and Inspect Combat Math"
 format: "16:9"
 companion_url: "https://phalanxduel.com/tools/battle-calculator/"
 privacy: private
@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:hud-overview -->
-Every number in Phalanx Duel is explainable. In this episode, we tour the full HUD and Combat Math Inspector.
+The board shows each formation. The life-point and card counters above it show what each player has left.
 
 <!-- cue:combat-inspector -->
-Hover or click any engagement in the Combat Explanation panel to see the exact arithmetic chain — base power, suit boundary modifiers, and overkill into Life Points.
+After attacking, open Analyst in the engagement log. Each line comes from the resolved attack, including the starting power, the boundary rules that fired, and any damage that reached life points.
 
 <!-- cue:narration-and-audio -->
-Use Settings to toggle the live Narration Ticker, adjust music and sound effects, enable reduced-motion choreography, or open the Glossary and Help dialogs mid-match.
+The narration panel can expand while the match continues. The attack history remains available in the engagement log.

@@ -1,6 +1,6 @@
 ---
 episode_id: ep-21-tempo-pass-economy-and-traps
-title: "Pro Tip: Tempo, Pass Economy & Face-Card Traps"
+title: "Pass a Turn and Read the Reply"
 format: "9:16"
 companion_url: "https://phalanxduel.com/learn/analytical-mastery/"
 privacy: private
@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:tempo-hook -->
-Biggest mistake new Phalanx Duel players make? Attacking every single turn just because they can.
+Passing is a tactical option when you want to keep your current formation in place. Open the command drawer to see it.
 
 <!-- cue:pass-trap -->
-Sometimes Passing preserves a lethal counter-column and forces your opponent into an unfavorable trade against your Ace or Face-card defender.
+Press Pass to let the other player act. When play comes back to you, read the board again before choosing a lane.
 
 <!-- cue:reinforce-starve -->
-Track the pass limit, hold initiative, and force awkward reinforcements — then strike when your opponent cannot recover!
+Choose a front card and strike across. Check the engagement log to see what changed after the pass.

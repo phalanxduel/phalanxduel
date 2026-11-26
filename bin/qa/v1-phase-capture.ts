@@ -75,20 +75,10 @@ async function captureV1Phases() {
     await page.waitForLoadState('networkidle', { timeout: 10000 });
     console.log('✓ Lobby loaded\n');
 
-    // Wait for overlay to auto-dismiss or click anywhere to proceed
-    await page.waitForTimeout(2000);
-
-    // Click quick start with force to bypass overlay
+    // Click quick start
     console.log('Starting quick match...');
     const quickStartBtn = page.locator('[data-testid="lobby-quick-match-btn"]');
-    try {
-      await quickStartBtn.click({ force: true, timeout: 5000 });
-    } catch {
-      // If overlay persists, try clicking the overlay first to dismiss it
-      await page.click('.phx-modal-overlay', { force: true }).catch(() => null);
-      await page.waitForTimeout(500);
-      await quickStartBtn.click({ force: true });
-    }
+    await quickStartBtn.click({ timeout: 5000 });
     await page.waitForTimeout(3000);
     console.log('✓ Match started\n');
 

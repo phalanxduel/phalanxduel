@@ -1,37 +1,40 @@
-# Phalanx Duel — Tutorial Series Production Harness
+# Record Phalanx Duel tutorials
 
-Deterministic Playwright recording + `media-pipeline` cue-bundle staging for the 6-season / 22-episode YouTube tutorial playlist (mixed **9:16 Shorts** and **16:9 Long-Form**).
+The series uses a 1600×900 browser recording for every episode. Landscape edits keep the entire board at 1920×1080. Shorts use a 1080×1920 composition with a sharp crop of each lesson’s controls or board over a blurred copy of the desktop. The viewport stays wide during play.
 
-## Commands
+## What went wrong in the first batch
+
+The 22 original scripts contained no attack actions. Eight stayed in the lobby for the entire episode, and 13 launched a match and placed at most one card. The tournament player episode launched a bot instead of seating another player. The previous Combat Cascade video shows deployment rather than a resolved attack. The previous Go client video shows the browser lobby throughout.
+
+The recorder opened Shorts at 430 pixels wide and used a generic “last button” dismissal that could open a rules modal. First-visit dialogs, in-match briefings, and splash screens also covered the board. Narration could continue while a placeholder cue simply held the same screen. Timestamps described raw capture time, so long setup and waits carried into the export or shifted its chapter boundaries.
+
+## Capture and edit
+
+1. Run the local playability gate. Use a loopback game server with the built browser client and the project’s development database wrapper. Finish rebuilds before recording. A reload or server restart can interrupt the WebSocket session.
+2. Rehearse the lesson in the browser. Write each cue around an observable action and an expected result. Matching cue IDs in the scenario JSON and narration Markdown bind the voiceover to that result.
+3. Put off-camera preparation in `setup`. Use `actions` for interactions viewers should see, `expect` for evidence of the result, and `focus` for the control or board area the viewer needs. Use separate cues when the focus moves from a card to the engagement log. A visible selector must distinguish the intended result from something that was already present.
+4. Record the cue, then build the episode. The recorder captures click indicators, keyframes, raw timing, and the coordinates of the focus region. It reports the failed cue and saves `failure.png` if an assertion fails. The build refuses a recorded cue without matching narration.
+5. Review each exported MP4 at its intended size. Check the first frame, the key action, and the ending. Scrub around each cut, look for connection or loading messages, and confirm that the narration describes the action on screen. Verify the audio stream, caption alignment, and aspect ratio. A successful capture is only the starting point for this review.
 
 ```bash
-# List all 22 planned/scripted episodes and their 9:16 vs 16:9 formats
-pnpm tutorial:list
-
-# Validate manifest.json and all authored scenario/narration pairs
-pnpm tutorial:validate
-
-# Record an episode against the local dev stack (outputs raw.webm + footage.json + keyframes)
-pnpm tutorial:record ep-01-welcome-and-objective
-
-# Preview the media-pipeline cue bundle (dry-run)
-pnpm tutorial:stage ep-01-welcome-and-objective --dry-run
-
-# Stage rendered .mp4 + .vtt + thumbnail + YAML/JSON sidecars into Google Drive phalanx-duel/pending/
-pnpm tutorial:stage ep-01-welcome-and-objective --stage
+rtk pnpm qa:playthrough:verify
+rtk pnpm tutorial:validate
+rtk pnpm tutorial:record ep-03-combat-cascade --base-url http://127.0.0.1:3001
+rtk pnpm tutorial:build ep-03-combat-cascade
+rtk pnpm tutorial:stage ep-03-combat-cascade --dry-run
 ```
 
-## Layout
+The recorder needs Playwright Chromium and captures in dark mode (`colorScheme: 'dark'`), supporting both loopback (`127.0.0.1` / `localhost`) and local LAN tournament hosts (`*.lan.phalanxduel.com`, `*.phalanxduel.localhost`) with local TLS. External font/analytics hosts are aborted during capture so offline LAN recordings never stall on screenshot waits. The builder uses FFmpeg, FFprobe, and macOS `say`. Use `--voice` to select the macOS voice. For an isolated run, pair recorder `--output-dir` with builder `--capture-dir`. The local Admin Cockpit sign-in capture uses port 3103 on loopback or `https://admin.lan.phalanxduel.com/` on LAN hosts. The Go episode builds and drives the interactive Go CLI against the same server as the browser. Account recordings use disposable local accounts with `example.invalid` addresses.
 
-- `manifest.json` — Master 22-episode catalog with aspect-ratio assignments (`9:16` Shorts vs `16:9` Long-Form) and default `media-pipeline` intake target (`pending/`).
-- `schema.ts` — Shared Zod schemas for episode specs, cue steps, and format profiles.
-- `scenarios/<ep-id>.json` — Deterministic seed, bot tier, cosmetics, and ordered Playwright cues.
-- `narrations/<ep-id>.md` — Cue-tagged voiceover script compatible with `scripts/video/build-demo.mjs` and `media-pipeline`.
-- `record-episode.ts` — Drives Playwright at the episode's target viewport and writes `artifacts/tutorials/<ep-id>/`.
-- `stage-episode.ts` — Validates and atomically copies the 6-file `media-pipeline` bundle (`mp4`, `vtt`, thumbnail, `metadata.json`, `yml`, `manifest.json`) to `PHALANX_MEDIA_PIPELINE_STAGED_DIR` (defaults to `.../just3ws-mike/phalanx-duel/pending`).
+## Outputs and Shorts review
 
-## Hosting & Distribution
+- `artifacts/tutorials/<episode>/raw.webm` is the desktop master. `footage.json` maps cue IDs to source timings, keyframes, shot bounds, and per-cue DOM/engine telemetry (`colorScheme`, `matchId`, `phase`, `damageMode`, `actionCount`, `ruleIds`).
+- `pnpm tutorial:stage --stage-all` writes all 22 episode bundles (`.mp4`, `.vtt`, `.txt` transcript, `.png` thumbnail, `.yml` YouTube sidecar, `.metadata.json`, `.manifest.json`) plus `playlist.md` and `playlist.yml` directly into `$HOME/ai/media-pipeline/just3ws-mike/phalanx-duel/staged`.
 
-- **Primary pipeline (YouTube):** Episodes are enqueued into Google Drive `media-pipeline/just3ws-mike/phalanx-duel/pending/` for `media-pipeline` ingestion and YouTube publication to `@just3ws-mike` (playlist [`PLHenvAZhJjHo`](https://www.youtube.com/playlist?list=PLHenvAZhJjHo)). Once published, add each video's `youtube_id` to `../site/_data/tutorials.yml` to activate click-to-load `youtube-nocookie.com` embeds on `phalanxduel.com/learn/tutorials/`.
-- **Avoid committing `.mp4` binaries to `../site`:** GitHub Pages has a 1 GB site limit and 100 GB/month soft bandwidth limit, and committing video binaries permanently bloats git history. Keep only lightweight `.vtt` transcripts and embed metadata in `../site`.
-- **Future self-hosted MP4 option:** If self-hosted `.mp4` playback is ever needed without YouTube (e.g., a zero-third-party-cookie landing page or an offline/LAN tournament kiosk), host the `.mp4` files on **Cloudflare R2** (zero egress fees) or as **GitHub Releases** assets rather than inside `../site`'s git history.
+The portrait edit follows the local media-pipeline [clip montage guide](https://github.com/just3ws/media-pipeline/blob/main/docs/clip-montages.md). Keep the full sharp foreground when a comparison needs the whole board. Zoom to the smallest region containing the input and resulting state when a control, lane, or equation is the lesson. Interactions across different screens start wide and cut in once the expected result appears. The blurred background preserves context and leaves room for captions and the YouTube UI. Use the edit JSON and VTT timestamps to pick excerpts for a montage. Review start, middle, and end frames at phone size before staging.
+
+The recorded tournament episodes are local rehearsals. They cover the host probe, the sign-in surface, and seating a second player, with venue networking and bracket administration covered in the [tournament runbook](../../docs/ops/TOURNAMENT_RUNBOOK.md).
+
+## Distribution
+
+Only stage a reviewed export. Staging hands the video and its sidecars to the media-pipeline intake. After publication, add the YouTube ID in the site’s `_data/tutorials.yml` so the tutorial page can embed it. Keep video binaries in the media pipeline and captions in the site repository.

@@ -13,16 +13,8 @@ import type {
   QuickDeployStrategy,
 } from '@phalanxduel/shared';
 import type { AppState, BaseState, ScreenState } from './state';
-import {
-  selectAttacker,
-  selectDeployCard,
-  clearSelection,
-  toggleHelp,
-  startActionTimeout,
-} from './state';
+import { selectAttacker, selectDeployCard, clearSelection, startActionTimeout } from './state';
 import { getConnection } from './app-connection';
-import { HelpDialog } from './components/HelpDialog';
-import { OnboardingBriefing } from './components/OnboardingBriefing';
 import { HealthBadge } from './components/HealthBadge';
 import { cardLabel, greekRankLabel, suitColor, suitSymbol, isFace } from './cards';
 import { EngagementLog } from './components/EngagementLog';
@@ -186,6 +178,8 @@ function PhxCard(props: {
   const { bCard, card, variant, isReinforceCol, isValidTarget, columnHighlight, onClick } = props;
   const actualCard = bCard?.card ?? card;
   const cardSkinId = normalizeCardSkinId(props.cardSkinId);
+  const forecastRules = props.attackPreviewProvenance?.steps.map((step) => step.ruleId);
+  const previewRules = forecastRules && [...new Set(forecastRules)].join(' ');
 
   const dataState = props.isSelected
     ? 'selected'
@@ -231,6 +225,7 @@ function PhxCard(props: {
         data-testid={props.testId}
         data-card-variant={variant}
         data-action-preview={props.attackPreview ?? undefined}
+        data-preview-rules={previewRules}
         onClick={onClick}
       />
     );
@@ -269,6 +264,7 @@ function PhxCard(props: {
       data-card-theme={cardSkinId}
       data-qa-attackable={props.isAttackPlayable ? 'true' : undefined}
       data-action-preview={props.attackPreview ?? undefined}
+      data-preview-rules={previewRules}
       onClick={onClick}
     >
       <div class="phx-card-layer phx-card-layer-base" />
@@ -651,6 +647,12 @@ function PhxInfoBar({
   const hasReinforceActions = state.validActions.some((a) => a.type === 'reinforce');
   const canPass =
     state.validActions.some((a) => a.type === 'pass') && (!isReinforce || !hasReinforceActions);
+  const nextPassEndsMatch =
+    !isReinforce &&
+    ((gs.passState?.consecutivePasses[myIdx] ?? 0) + 1 >=
+      (gs.params.modePassRules?.maxConsecutivePasses ?? 3) ||
+      (gs.passState?.totalPasses[myIdx] ?? 0) + 1 >=
+        (gs.params.modePassRules?.maxTotalPassesPerPlayer ?? 5));
   const canCancel = Boolean(state.selectedAttacker ?? state.selectedDeployCard);
   // Forfeit is available throughout an active player match, even when the
   // engine's turn-specific valid-action list does not include it.
@@ -741,14 +743,16 @@ function PhxInfoBar({
                         data-action={isReinforce ? 'skip' : 'pass'}
                         data-testid={isReinforce ? 'combat-skip-reinforce-btn' : 'combat-pass-btn'}
                         onClick={() => {
-                          const label = isReinforce ? 'SKIP' : 'PASS';
-                          if (confirm(`Confirm ${label}?`)) {
-                            closeAndSend({
-                              type: 'pass',
-                              playerIndex: myIdx,
-                              timestamp: new Date().toISOString(),
-                            });
-                          }
+                          if (
+                            nextPassEndsMatch &&
+                            !confirm('Confirm PASS? This pass ends the match.')
+                          )
+                            return;
+                          closeAndSend({
+                            type: 'pass',
+                            playerIndex: myIdx,
+                            timestamp: new Date().toISOString(),
+                          });
                         }}
                       >
                         {isReinforce ? 'SKIP' : 'PASS'}
@@ -847,6 +851,7 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: GameScreenState }) {
         key={state.matchId ?? 'pending'}
         isSpectator={state.isSpectator}
         hasAttack={hasAttack}
+        playerIndex={myIdx}
         playByPlayEntries={playByPlayEntries}
         entries={entries}
       />
@@ -854,9 +859,14 @@ function PhxSidebar({ gs, state }: { gs: GameState; state: GameScreenState }) {
       <div class="phx-stats-block" style="border-top: 1px solid var(--border); margin-top: auto;">
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
           <CopyButton label="CODE" getValue={() => state.matchId ?? ''} className="btn btn-tiny" />
-          <button class="btn btn-tiny" onClick={toggleHelp} data-testid="sidebar-help-btn">
-            HELP
-          </button>
+          <a
+            class="btn btn-tiny"
+            href="https://phalanxduel.com/guide"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GUIDE
+          </a>
         </div>
         <div style="margin-top: 1rem">
           <HealthBadge health={state.serverHealth} label="SYSTEM" />
@@ -911,7 +921,7 @@ function CombatFeedbackBanner({ gs }: { gs: GameState }) {
     feedbackTimerRef.current = setTimeout(() => {
       setCombatFeedback(null);
       feedbackTimerRef.current = null;
-    }, PRESENTATION_TIMING.overlay.combatFeedback);
+    }, PRESENTATION_TIMING.combatFeedback);
 
     return () => {
       if (feedbackTimerRef.current) {
@@ -1055,7 +1065,6 @@ function OpponentHand({ count, cardSkinId }: { count: number; cardSkinId: CardSk
 
 // eslint-disable-next-line complexity -- the arena view coordinates phase-specific HUD surfaces.
 export function GameApp({ state }: { state: AppState }) {
-  const [helpOpen, setHelpOpen] = useState(false);
   if (state.screen !== 'game') return null;
   const gs = state.gameState;
   if (!gs) {
@@ -1096,6 +1105,9 @@ export function GameApp({ state }: { state: AppState }) {
       data-component="ArenaView"
       data-testid="game-layout"
       data-phase={gs.phase}
+      data-turn={gs.turnNumber}
+      data-action-count={gs.transactionLog?.length ?? 0}
+      data-damage-mode={gs.params.modeDamagePersistence}
       data-phase-tone={phaseTone}
       data-match-id={state.matchId ?? undefined}
       data-spectator={state.isSpectator ? 'true' : undefined}
@@ -1104,17 +1116,6 @@ export function GameApp({ state }: { state: AppState }) {
       <header class="phx-hud-top">
         <div class="phx-match-meta">
           <div style="display: flex; gap: 8px; align-items: center">
-            <button
-              id="phx-game-help-btn"
-              class="btn btn-secondary btn-tiny"
-              data-testid="game-help-btn"
-              style="padding: 2px 8px; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 900; background: rgba(0,0,0,0.3)"
-              onClick={() => {
-                setHelpOpen(true);
-              }}
-            >
-              ?
-            </button>
             <span style="font-weight: 900; color: var(--gold)">T{gs.turnNumber}</span>
           </div>
           {state.isSpectator && (
@@ -1171,6 +1172,9 @@ export function GameApp({ state }: { state: AppState }) {
             data-component="ActionPromptView"
             data-testid="phase-indicator"
             data-phase={gs.phase}
+            data-turn={gs.turnNumber}
+            data-action-count={gs.transactionLog?.length ?? 0}
+            data-damage-mode={gs.params.modeDamagePersistence}
             data-phase-tone={phaseTone}
           >
             {getPhaseLabel(gs)}
@@ -1187,22 +1191,6 @@ export function GameApp({ state }: { state: AppState }) {
       <PhxInfoBar gs={gs} state={state} myIdx={myIdx} />
       <PhxSidebar gs={gs} state={state} />
       <NarrationTicker />
-
-      <OnboardingBriefing
-        phase={gs.phase}
-        gameState={gs}
-        isSpectator={state.isSpectator}
-        onClose={() => {}}
-      />
-
-      {helpOpen && (
-        <HelpDialog
-          topicId={isDeploymentPhase(gs) ? 'deployment' : 'combat'}
-          onClose={() => {
-            setHelpOpen(false);
-          }}
-        />
-      )}
     </div>
   );
 }

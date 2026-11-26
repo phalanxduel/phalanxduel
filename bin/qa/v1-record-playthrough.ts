@@ -120,14 +120,6 @@ async function recordV1Playthrough() {
     await page.goto(baseUrl, { timeout: 15000, waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
 
-    // Hide modals
-    await page
-      .addStyleTag({
-        content:
-          '[role="dialog"] { display: none !important; } .phx-modal-overlay { display: none !important; }',
-      })
-      .catch(() => null);
-
     // Log all game state transitions
     const phaseLog: string[] = [];
     page.on('console', (msg) => {
@@ -160,19 +152,8 @@ async function recordV1Playthrough() {
 
     const quickStartBtn = page.locator('[data-testid="lobby-quick-match-btn"]');
     if (await quickStartBtn.isVisible()) {
-      await quickStartBtn.click({ force: true });
+      await quickStartBtn.click();
       await page.waitForTimeout(3000);
-
-      // Close modals
-      for (let i = 0; i < 5; i++) {
-        await page
-          .locator('button:has-text("Acknowledge"), button:has-text("acknowledge")')
-          .first()
-          .click()
-          .catch(() => null);
-        await page.keyboard.press('Escape').catch(() => null);
-        await page.waitForTimeout(200);
-      }
     }
 
     // Main game loop: capture phases until gameover
@@ -196,14 +177,6 @@ async function recordV1Playthrough() {
         if (gameOverText) {
           console.log('🏁 Game Over detected');
           foundGameOver = true;
-
-          // Close any modal blocking gameover
-          await page
-            .locator('button:has-text("Acknowledge"), button:has-text("acknowledge")')
-            .first()
-            .click()
-            .catch(() => null);
-          await page.waitForTimeout(500);
 
           filepath = join(screenshotDir, `99-gameover.png`);
           await page.screenshot({ path: filepath });

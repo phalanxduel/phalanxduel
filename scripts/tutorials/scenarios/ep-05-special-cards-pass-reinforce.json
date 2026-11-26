@@ -3,42 +3,101 @@
   "id": "ep-05-special-cards-pass-reinforce",
   "season": 1,
   "episodeNumber": 5,
-  "title": "Aces, Face Cards, Pass, Reinforce & Victory Conditions",
+  "title": "Passing and Reinforcing in Phalanx Duel",
   "format": "16:9",
-  "targetDurationSec": 270,
+  "targetDurationSec": 31,
   "mode": "classic",
-  "startingLp": 10,
+  "startingLp": 40,
   "seed": 42005,
   "botTier": "soldier",
   "cardSkinId": "default",
   "playerName": "TutorialHost",
-  "tags": ["Phalanx Duel", "Aces", "Face Cards", "Reinforce", "Victory Conditions", "Tutorial"],
-  "summary": "Complete your Season 1 mastery of Phalanx Duel: Ace and Face Card destruction eligibility, strategic Passing, the Reinforce phase, and every way a match can end.",
+  "tags": ["Phalanx Duel", "Passing", "Reinforce", "Combat Rules", "Tutorial"],
+  "summary": "Pass, attack again, then fill a legal reinforcement slot.",
   "cues": [
     {
-      "id": "special-intro",
-      "label": "Aces & Face Cards Eligibility",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2000
-    },
-    {
       "id": "start-soldier",
-      "label": "Mid-Game Match Against Soldier Bot",
-      "action": "quickStart",
-      "holdMs": 3000
+      "label": "Look for rank and suit",
+      "actions": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "quickStart"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid^=\"hand-card-\"].playable"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"player-cell-r0-c0\"].valid-target"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] .attack-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
     },
     {
-      "id": "pass-and-reinforce",
-      "label": "Passing Turns & Reinforcing Open Columns",
-      "action": "deployFirstCard",
-      "holdMs": 4000
+      "id": "pass",
+      "label": "Pass a turn",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"command-drawer-handle\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"combat-pass-btn\"]"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"combat-pass-btn\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] .attack-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
     },
     {
-      "id": "victory-conditions",
-      "label": "LP Zero, Forfeit & Liveness Victory",
-      "action": "hold",
-      "holdMs": 3500
+      "id": "attack",
+      "label": "Find an opening for reinforcement",
+      "setup": [
+        {
+          "action": "reachPosition",
+          "selector": "[data-testid^=\"hand-card-\"].reinforce-playable"
+        }
+      ],
+      "actions": [
+        {
+          "action": "highlight",
+          "selector": "[data-testid^=\"hand-card-\"].reinforce-playable"
+        }
+      ],
+      "expect": "[data-testid^=\"hand-card-\"].reinforce-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"hand\"]"],
+      "holdMs": 2200
+    },
+    {
+      "id": "reinforce",
+      "label": "Play into the open slot",
+      "actions": [
+        {
+          "action": "reinforce"
+        }
+      ],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"hand\"]"],
+      "holdMs": 2200
     }
   ],
   "companionUrl": "https://phalanxduel.com/learn/rules/"

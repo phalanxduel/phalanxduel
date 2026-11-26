@@ -1,6 +1,6 @@
 ---
 episode_id: ep-14-profiles-history-and-achievements
-title: "Profiles, Match History & Rarity Achievements"
+title: "Find Your Match History and Achievements"
 format: "9:16"
 companion_url: "https://phalanxduel.com/competitive/"
 privacy: private
@@ -11,10 +11,7 @@ pronunciation:
 ---
 
 <!-- cue:profile-open -->
-Every rated player in Phalanx Duel gets a public profile showcasing win rates, seasonal Elo, and recent duels.
-
-<!-- cue:match-history -->
-Browse your Match History to reopen any completed game, star your favorite comebacks, or follow rivals to keep tabs on their climb.
+Open your profile from the signed-in header. Recent Engagements lists your completed games and gives you a direct link to each replay.
 
 <!-- cue:achievements-rarity -->
-Every achievement displays its live global rarity percentage across all players — see how rare your best plays really are!
+The achievement gallery lists the milestones you can earn. Some rewards require specific actions in a match.

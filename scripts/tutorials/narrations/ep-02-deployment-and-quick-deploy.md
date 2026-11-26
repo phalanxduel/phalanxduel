@@ -8,17 +8,14 @@ pronunciation:
   LP: life points
 ---
 
-<!-- cue:lobby-enter -->
-In Episode 2 of Phalanx Duel, we break down the most important phase of the game: Formation-First Deployment.
-
 <!-- cue:launch-match -->
-Let's jump into a training match and look closely at how your opening hand becomes your battlefield.
+Quick Start opens a practice match with your hand along the bottom and both battlefields above it.
 
 <!-- cue:hand-and-grid -->
-Your hand and draw pile stay hidden, but every card you deploy onto the two-by-four battlefield is face-up and public. That means both players can read every column and calculate exact combat math.
+Click a card. The highlighted spaces are legal deployment targets. Your opponent can see the formation as you build it, while unused cards stay in your hand.
 
 <!-- cue:manual-deploy -->
-Click a card in your hand and choose a column slot. Cards in the front rank lead your attacks and absorb incoming fire first. Cards in the back rank protect your Life Points and advance forward when the front card falls.
+Choose a front slot. This card will lead attacks and take incoming damage first.
 
 <!-- cue:column-symmetry -->
-When you want faster games or tournament warmups, Quick Deploy fills your formation automatically — but manual deployment lets you line up suit boundaries and protect key back-row anchors. Up next in Episode 3: Combat Cascade and Column Overkill.
+Aggressive Quick Deploy completes the remaining placements with strong cards up front. Once both players have deployed, the match moves into combat.

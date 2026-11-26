@@ -3,9 +3,9 @@
   "id": "ep-16-spectator-mode",
   "season": 5,
   "episodeNumber": 16,
-  "title": "Spectator Mode: Watch Links, Delay & Fair-Play Redaction",
+  "title": "Watch a Duel from Spectator Mode",
   "format": "9:16",
-  "targetDurationSec": 55,
+  "targetDurationSec": 17,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42016,
@@ -13,26 +13,56 @@
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/competitive/",
   "tags": ["Phalanx Duel", "Spectator Mode", "Watch Live", "Esports", "Shorts"],
-  "summary": "Watch live Phalanx Duel matches with Spectator Mode: share /watch links, observe public formations with fair-play hidden-hand redaction and spectator delay.",
+  "summary": "Open the delayed spectator view and find the live director and play-by-play.",
   "cues": [
     {
       "id": "watch-link",
-      "label": "Open a Live Spectator Link",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
+      "label": "Open a match as an observer",
+      "actions": [
+        {
+          "action": "highlight",
+          "selector": "[data-testid=\"spectator-banner\"]"
+        }
+      ],
+      "expect": "[data-testid=\"spectator-banner\"]",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "quickStart"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        },
+        {
+          "action": "attack"
+        },
+        {
+          "action": "watchMatch"
+        }
+      ]
     },
     {
       "id": "redaction-fairness",
-      "label": "Hidden-Hand Redaction & Spectator Delay",
-      "action": "hold",
-      "holdMs": 3000
-    },
-    {
-      "id": "share-watch",
-      "label": "One-Click Watch Link Sharing",
-      "action": "hold",
-      "holdMs": 2500
+      "label": "Check the hidden hands",
+      "actions": [
+        {
+          "action": "highlight",
+          "selector": "[data-testid=\"engagement-log\"]"
+        }
+      ],
+      "expect": "[data-testid=\"spectator-live-panel\"]",
+      "focus": ["[data-testid=\"engagement-log\"]", "[data-testid=\"spectator-live-panel\"]"],
+      "holdMs": 2200
     }
   ]
 }

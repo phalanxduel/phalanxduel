@@ -5,9 +5,9 @@
   "episodeNumber": 9,
   "title": "Classic vs Cumulative Damage Modes",
   "format": "9:16",
-  "targetDurationSec": 55,
+  "targetDurationSec": 22,
   "mode": "cumulative",
-  "startingLp": 12,
+  "startingLp": 30,
   "seed": 42009,
   "botTier": "grunt",
   "cardSkinId": "default",
@@ -18,22 +18,97 @@
   "cues": [
     {
       "id": "mode-intro",
-      "label": "Classic vs Cumulative Damage Modes",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
+      "label": "Open match options",
+      "actions": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"advanced-options-toggle\"]"
+        },
+        {
+          "action": "highlight",
+          "selector": "[data-testid=\"lobby-starting-lp\"]"
+        }
+      ],
+      "expect": "[data-testid=\"advanced-options-panel\"]",
+      "focus": ["[data-testid=\"advanced-options-panel\"]"],
+      "holdMs": 2200
     },
     {
       "id": "classic-behavior",
-      "label": "Classic: Surviving Cards Reset Between Turns",
-      "action": "quickStart",
-      "holdMs": 3000
+      "label": "Select Classic",
+      "actions": [
+        {
+          "action": "selectAttack",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-action-preview=\"LOSING_EXCHANGE\"][data-preview-rules~=\"PD-RULE-019\"]"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-action-preview=\"LOSING_EXCHANGE\"][data-preview-rules~=\"PD-RULE-019\"]"
+        }
+      ],
+      "expect": "[data-testid=\"game-layout\"][data-damage-mode=\"classic\"] [data-testid=\"opponent-battlefield\"]:not(:has(.is-damaged))",
+      "focus": ["[data-testid=\"opponent-battlefield\"]", "[data-testid=\"opponent-stats\"]"],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "quickStart",
+          "selector": "lobby-bot-btn-med",
+          "value": "classic"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ]
     },
     {
       "id": "cumulative-behavior",
-      "label": "Cumulative: Persistent Chip Damage",
-      "action": "deployFirstCard",
-      "holdMs": 3000
+      "label": "Start a Cumulative match",
+      "actions": [
+        {
+          "action": "selectAttack",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-action-preview=\"LOSING_EXCHANGE\"][data-preview-rules~=\"PD-RULE-019\"]"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-action-preview=\"LOSING_EXCHANGE\"][data-preview-rules~=\"PD-RULE-019\"]"
+        }
+      ],
+      "expect": "[data-testid=\"game-layout\"][data-damage-mode=\"cumulative\"] [data-testid=\"opponent-battlefield\"] .is-damaged",
+      "focus": ["[data-testid=\"opponent-battlefield\"]", "[data-testid=\"opponent-stats\"]"],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/",
+          "value": "fresh"
+        },
+        {
+          "action": "quickStart",
+          "selector": "lobby-bot-btn-med",
+          "value": "cumulative"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ]
     }
   ]
 }

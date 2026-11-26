@@ -76,16 +76,6 @@ async function captureKeyMoments() {
       await page.goto(baseUrl, { timeout: 15000, waitUntil: 'domcontentloaded' }).catch(() => null);
       await page.waitForTimeout(2000);
 
-      // Disable modals via CSS (cleaner than trying to close them)
-      await page
-        .addStyleTag({
-          content:
-            '[role="dialog"] { display: none !important; } .phx-modal-overlay { display: none !important; }',
-        })
-        .catch(() => null);
-
-      await page.waitForTimeout(500);
-
       // Capture: Lobby
       let filepath = join(
         outDir,
@@ -102,35 +92,8 @@ async function captureKeyMoments() {
 
       const quickStartBtn = page.locator('[data-testid="lobby-quick-match-btn"]');
       if (await quickStartBtn.isVisible()) {
-        await quickStartBtn.click({ force: true });
+        await quickStartBtn.click();
         await page.waitForTimeout(3000);
-
-        // Close modal that appears after quick start (acknowledge button, close icon, etc)
-        for (let round = 0; round < 5; round++) {
-          // Try: Click Acknowledge button (common in info modals)
-          await page
-            .locator('button:has-text("Acknowledge"), button:has-text("acknowledge")')
-            .first()
-            .click()
-            .catch(() => null);
-
-          // Try: Click close icon (X button in top right)
-          await page
-            .locator('button[aria-label*="close"], button[aria-label*="Close"]')
-            .first()
-            .click()
-            .catch(() => null);
-
-          // Try: ESC key
-          for (let i = 0; i < 3; i++) {
-            await page.keyboard.press('Escape').catch(() => null);
-            await page.waitForTimeout(100);
-          }
-
-          await page.waitForTimeout(300);
-          const modalsRemaining = await page.locator('[role="dialog"]').count();
-          if (modalsRemaining === 0) break;
-        }
       }
 
       await page.waitForTimeout(1000);
@@ -150,14 +113,6 @@ async function captureKeyMoments() {
         try {
           const gameOverText = page.locator('text=Game Over').first();
           if (await gameOverText.isVisible().catch(() => false)) {
-            // Found gameover, close modal blocking it
-            await page
-              .locator('button:has-text("Acknowledge"), button:has-text("acknowledge")')
-              .first()
-              .click()
-              .catch(() => null);
-            await page.waitForTimeout(500);
-
             filepath = join(
               outDir,
               `03-gameover_${viewport.label.replace(/\s+/g, '-').toLowerCase()}.png`,

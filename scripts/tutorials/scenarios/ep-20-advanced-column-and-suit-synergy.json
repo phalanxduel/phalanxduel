@@ -3,9 +3,9 @@
   "id": "ep-20-advanced-column-and-suit-synergy",
   "season": 6,
   "episodeNumber": 20,
-  "title": "Advanced Strategy: Column Architecture & Suit Synergy",
+  "title": "Read a Column Before You Attack",
   "format": "16:9",
-  "targetDurationSec": 330,
+  "targetDurationSec": 25,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42020,
@@ -14,26 +14,57 @@
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/learn/tactical-depth/",
   "tags": ["Phalanx Duel", "Advanced Strategy", "Suit Synergy", "Column Architecture", "Tutorial"],
-  "summary": "Level up your formation design: protecting back-row anchors, pairing Diamond and Heart defensive walls, and setting up Club and Spade lethal breakthroughs.",
+  "summary": "Inspect a defensive formation, preview a lane, then compare the forecast with the combat log.",
   "cues": [
     {
       "id": "column-arch",
-      "label": "Thinking in Columns, Not Individual Cards",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
+      "label": "Inspect a defensive formation",
+      "actions": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "quickStart"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-defensive\"]"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] .attack-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
     },
     {
       "id": "defensive-walls",
-      "label": "Diamond & Heart Boundary Stacking",
-      "action": "quickStart",
-      "holdMs": 3500
+      "label": "Preview a column before committing",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ],
+      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
     },
     {
       "id": "lethal-setups",
-      "label": "Club & Spade Breakthrough Columns",
-      "action": "deployFirstCard",
-      "holdMs": 3500
+      "label": "Review what the attack achieved",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target"
+        },
+        {
+          "action": "click",
+          "selector": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"] button:text-is(\"ANALYST\")"
+        }
+      ],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"][data-mode=\"analyst\"]",
+      "focus": ["[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]"],
+      "holdMs": 2200
     }
   ]
 }

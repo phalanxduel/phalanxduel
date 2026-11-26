@@ -3,9 +3,9 @@
   "id": "ep-10-pvp-1v1-lobby-and-reconnect",
   "season": 3,
   "episodeNumber": 10,
-  "title": "1v1 Live PvP: Creating, Joining & Auto-Reconnecting Matches",
+  "title": "Create, Join, and Reconnect to a Private Duel",
   "format": "16:9",
-  "targetDurationSec": 240,
+  "targetDurationSec": 21,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42010,
@@ -13,26 +13,53 @@
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/learn/first-match/",
   "tags": ["Phalanx Duel", "PvP", "1v1", "Multiplayer", "Reconnect", "Tutorial"],
-  "summary": "Create a 1v1 PvP match, share an invite link or join from the public lobby, and see how automatic WebSocket reconnect recovers live matches without losing state.",
+  "summary": "Create an invitation, join from a second browser, and refresh to recover the same match.",
   "cues": [
     {
       "id": "create-pvp",
-      "label": "Create a 1v1 Lobby Match",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
+      "label": "Create a private match",
+      "actions": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "fill",
+          "selector": "[data-testid=\"lobby-name-input\"]",
+          "value": "TutorialHost"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"lobby-create-btn\"]"
+        }
+      ],
+      "expect": "[data-testid=\"waiting-match-id\"]",
+      "focus": [".waiting-grid"],
+      "holdMs": 2200
     },
     {
       "id": "invite-and-join",
-      "label": "Share Invite Link & Waiting Room",
-      "action": "hold",
-      "holdMs": 3500
+      "label": "Join from a second browser",
+      "actions": [
+        {
+          "action": "joinOpponent"
+        }
+      ],
+      "expect": "[data-testid=\"game-layout\"]",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
     },
     {
       "id": "reconnect-proof",
-      "label": "Resilient Reconnect & State Recovery",
-      "action": "hold",
-      "holdMs": 3500
+      "label": "Refresh and recover",
+      "actions": [
+        {
+          "action": "reconnect"
+        }
+      ],
+      "expect": "[data-testid=\"game-layout\"]",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
     }
   ]
 }

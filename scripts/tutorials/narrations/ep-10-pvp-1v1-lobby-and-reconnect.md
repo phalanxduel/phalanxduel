@@ -1,6 +1,6 @@
 ---
 episode_id: ep-10-pvp-1v1-lobby-and-reconnect
-title: "1v1 Live PvP: Creating, Joining & Auto-Reconnecting Matches"
+title: "Create, Join, and Reconnect to a Private Duel"
 format: "16:9"
 companion_url: "https://phalanxduel.com/learn/first-match/"
 privacy: private
@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:create-pvp -->
-Playing live against another human is where Phalanx Duel truly shines. Let us walk through creating and joining a 1v1 match.
+Enter a name and choose Private Match. The waiting screen gives you an invite link and a match code.
 
 <!-- cue:invite-and-join -->
-Create a match from the lobby to get a one-click invite link, or browse open challenges in the public lobby. Once both players connect, the match transitions straight into deployment.
+A second browser joins using the same match code. Both players now share the arena and see each other’s starting formation.
 
 <!-- cue:reconnect-proof -->
-If your browser refreshes or your Wi-Fi blips mid-duel, the server persists every turn to PostgreSQL and automatically restores your exact board state when you reconnect.
+Refresh the tab. The same browser session reconnects to the same match. You can continue where you left off.

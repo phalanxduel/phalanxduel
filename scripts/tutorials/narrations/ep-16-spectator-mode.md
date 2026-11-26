@@ -1,6 +1,6 @@
 ---
 episode_id: ep-16-spectator-mode
-title: "Spectator Mode: Watch Links, Delay & Fair-Play Redaction"
+title: "Watch a Duel from Spectator Mode"
 format: "9:16"
 companion_url: "https://phalanxduel.com/competitive/"
 privacy: private
@@ -11,10 +11,7 @@ pronunciation:
 ---
 
 <!-- cue:watch-link -->
-Want to cast a tournament match or watch friends duel live? That is what Spectator Mode is built for.
+Open the watch link to enter the spectator stream. The stream uses delayed frames, so it trails the players’ live boards.
 
 <!-- cue:redaction-fairness -->
-Spectators see the full public battlefield, Life Points, and live combat narration — while player hands stay strictly redacted by the server with built-in spectator delay to prevent stream sniping.
-
-<!-- cue:share-watch -->
-Copy the Watch link straight from any lobby or waiting room and drop it in chat — zero account required to spectate!
+Spectators get the play-by-play and board state. They cannot select cards or make moves, and the players’ private hand identities are hidden.

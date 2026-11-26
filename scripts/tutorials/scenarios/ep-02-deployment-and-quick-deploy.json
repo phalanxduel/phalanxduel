@@ -5,7 +5,7 @@
   "episodeNumber": 2,
   "title": "Formation-First Deployment & Quick Deploy",
   "format": "16:9",
-  "targetDurationSec": 210,
+  "targetDurationSec": 30,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42002,
@@ -16,36 +16,59 @@
   "summary": "Master formation-first deployment in Phalanx Duel: how hidden hands become a public 2x4 battlefield, why front-rank vs back-rank column placement matters, and when to use Quick Deploy.",
   "cues": [
     {
-      "id": "lobby-enter",
-      "label": "Enter Match for Deployment",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2000
-    },
-    {
       "id": "launch-match",
-      "label": "Start Seeded Training Match",
-      "action": "quickStart",
-      "holdMs": 2500
+      "label": "Open a training match",
+      "actions": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "quickStart"
+        }
+      ],
+      "expect": "[data-testid=\"hand\"]",
+      "focus": ["[data-testid=\"hand\"]"],
+      "holdMs": 2200
     },
     {
       "id": "hand-and-grid",
-      "label": "Hidden Hand vs Public 2x4 Grid",
-      "action": "waitForSelector",
-      "selector": "#phx-phase-indicator",
-      "holdMs": 3500
+      "label": "Select a card",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid^=\"hand-card-\"].playable"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] .valid-target",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"hand\"]"],
+      "holdMs": 2200
     },
     {
       "id": "manual-deploy",
-      "label": "Manual Front-Rank Placement",
-      "action": "deployFirstCard",
-      "holdMs": 3500
+      "label": "Place a front card",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"player-battlefield\"] [data-row=\"0\"].valid-target"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] [data-row=\"0\"].occupied",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"hand\"]"],
+      "holdMs": 2200
     },
     {
       "id": "column-symmetry",
-      "label": "Front Rank Attackers & Back Rank Support",
-      "action": "hold",
-      "holdMs": 3500
+      "label": "Complete the formation",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] .attack-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
     }
   ],
   "companionUrl": "https://phalanxduel.com/learn/foundations/"

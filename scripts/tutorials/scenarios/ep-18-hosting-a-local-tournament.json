@@ -3,9 +3,9 @@
   "id": "ep-18-hosting-a-local-tournament",
   "season": 5,
   "episodeNumber": 18,
-  "title": "Hosting & Directing a Local Tournament (Admin Portal & Runbook)",
+  "title": "Tournament Host Preflight",
   "format": "16:9",
-  "targetDurationSec": 300,
+  "targetDurationSec": 26,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42018,
@@ -13,26 +13,59 @@
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/build-with-phalanx/",
   "tags": ["Phalanx Duel", "Tournament Hosting", "Admin Portal", "LAN", "Runbook"],
-  "summary": "Operator guide to hosting a LAN tournament: pre-flight port & firewall checks (pnpm tournament:ports), starting services (bin/phx up), and monitoring matches in the Admin Portal.",
+  "summary": "Overview of local LAN tournament hosting on lan.phalanxduel.com: verify game server health, load the Admin Cockpit operator portal, and test player invite creation before opening venue tables.",
   "cues": [
     {
       "id": "preflight-ports",
-      "label": "Pre-Flight: pnpm tournament:ports & Firewall",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 3000
-    },
-    {
-      "id": "start-services",
-      "label": "Launch Stack with bin/phx up",
-      "action": "hold",
-      "holdMs": 3500
+      "label": "Verify local game readiness",
+      "actions": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "terminal",
+          "value": "health"
+        }
+      ],
+      "expect": "#phx-tutorial-terminal",
+      "focus": ["#phx-tutorial-terminal"],
+      "holdMs": 2200
     },
     {
       "id": "admin-console",
-      "label": "Live Monitoring in the Admin Portal",
-      "action": "hold",
-      "holdMs": 3500
+      "label": "Locate the operator sign-in",
+      "actions": [
+        {
+          "action": "terminal",
+          "value": "admin-login"
+        }
+      ],
+      "expect": "input[type=\"password\"]",
+      "focus": ["form"],
+      "holdMs": 2200
+    },
+    {
+      "id": "player-preflight",
+      "label": "Verify the player path separately",
+      "actions": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "fill",
+          "selector": "[data-testid=\"lobby-name-input\"]",
+          "value": "VenueCheck"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"lobby-create-btn\"]"
+        }
+      ],
+      "expect": "[data-testid=\"waiting-match-id\"]",
+      "focus": [".waiting-grid"],
+      "holdMs": 2200
     }
   ]
 }

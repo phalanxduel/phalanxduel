@@ -1,6 +1,6 @@
 ---
 episode_id: ep-19-terminal-client-duel-cli
-title: "Playing from the Terminal with Go duel-cli"
+title: "Play a Browser Duel from the Go CLI"
 format: "16:9"
 companion_url: "https://phalanxduel.com/build-with-phalanx/"
 privacy: private
@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:cli-intro -->
-Prefer the terminal? Phalanx Duel ships an official Go CLI client built from generated OpenAPI and AsyncAPI contracts.
+Run the Go duel client and enter a name. Its menu lets you create a duel, join from an invite, or play a bot.
 
 <!-- cue:cli-join -->
-Launch duel-cli to browse the live lobby, join a match against a browser opponent, and play turns with resilient WebSocket ACK replay and automatic rejoin.
+Choose Join and enter the match code created by the browser player. The terminal displays the live turn, along with both players and their board state.
 
 <!-- cue:cross-client -->
-Because the TypeScript server is the single source of truth, terminal players, browser players, and MCP AI agents all compete on the exact same authoritative board.
+Pick a numbered deployment action in the terminal. The browser player sees the opponent’s card appear in the same match.

@@ -183,232 +183,223 @@ export function SettingsPanel({ state, onClose }: SettingsPanelProps) {
   };
 
   return (
-    <div
-      class="auth-modal-backdrop"
-      onClick={(e) => {
-        if ((e.target as HTMLElement).classList.contains('auth-modal-backdrop')) onClose();
-      }}
-    >
-      <div class="auth-panel brutalist-panel">
-        <div class="auth-header">
-          <h2 class="auth-title">OPERATIVE_SETTINGS</h2>
-          <button class="auth-close" onClick={onClose}>
-            ×
+    <section class="auth-panel brutalist-panel settings-panel" aria-labelledby="settings-title">
+      <div class="auth-header">
+        <h2 class="auth-title" id="settings-title">
+          OPERATIVE_SETTINGS
+        </h2>
+        <button class="auth-close" aria-label="Close settings" onClick={onClose}>
+          ×
+        </button>
+      </div>
+
+      {error && (
+        <div class="auth-error" style="margin-bottom: 1rem">
+          {error}
+        </div>
+      )}
+      {flash && (
+        <div class="phx-flash-message" style="margin-bottom: 1rem">
+          {flash}
+        </div>
+      )}
+
+      <div class="settings-group">
+        <h3 class="settings-label">VOICE_CALIBRATION_TEST_REEL</h3>
+        <p class="settings-desc">Test and adjust the TTS announcer persona.</p>
+        <div class="voice-test-reel">
+          <button
+            class="phx-btn primary"
+            onClick={() => {
+              if (window.__commentary) {
+                window.__commentary.testVoice('male', 'Finish him! Clash of Aces! Triple Combo!');
+              }
+            }}
+          >
+            TEST MALE (Movie Guy / MK)
+          </button>
+          <button
+            class="phx-btn primary"
+            style="margin-left: 0.5rem"
+            onClick={() => {
+              if (window.__commentary) {
+                window.__commentary.testVoice(
+                  'female',
+                  'Get away from her! Target locked. Clash of Aces!',
+                );
+              }
+            }}
+          >
+            TEST FEMALE (Ripley / Sarah Connor)
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3 class="settings-label">SIGNAL_CHANNELS</h3>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-name">TRANSACTIONAL_UPLINK</span>
+            <span class="setting-desc">
+              Critical alerts, password resets, and security notices. Account management requires
+              occasional system emails.
+            </span>
+          </div>
+          <button
+            class={`brutalist-toggle ${user.emailNotifications ? 'active' : ''}`}
+            disabled={saving}
+            onClick={() => {
+              void updatePreference('emailNotifications', !user.emailNotifications);
+            }}
+          >
+            {user.emailNotifications ? 'OPT_IN' : 'OPT_OUT'}
           </button>
         </div>
 
-        {error && (
-          <div class="auth-error" style="margin-bottom: 1rem">
-            {error}
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-name">ENGAGEMENT_ALERTS</span>
+            <span class="setting-desc">Notifications for match starts and turn reminders.</span>
           </div>
-        )}
-        {flash && (
-          <div class="phx-flash-message" style="margin-bottom: 1rem">
-            {flash}
-          </div>
-        )}
-
-        <div class="settings-group">
-          <h3 class="settings-label">VOICE_CALIBRATION_TEST_REEL</h3>
-          <p class="settings-desc">Test and adjust the TTS announcer persona.</p>
-          <div class="voice-test-reel">
-            <button
-              class="phx-btn primary"
-              onClick={() => {
-                if (window.__commentary) {
-                  window.__commentary.testVoice('male', 'Finish him! Clash of Aces! Triple Combo!');
-                }
-              }}
-            >
-              TEST MALE (Movie Guy / MK)
-            </button>
-            <button
-              class="phx-btn primary"
-              style="margin-left: 0.5rem"
-              onClick={() => {
-                if (window.__commentary) {
-                  window.__commentary.testVoice(
-                    'female',
-                    'Get away from her! Target locked. Clash of Aces!',
-                  );
-                }
-              }}
-            >
-              TEST FEMALE (Ripley / Sarah Connor)
-            </button>
-          </div>
-        </div>
-
-        <div class="settings-group">
-          <h3 class="settings-label">SIGNAL_CHANNELS</h3>
-
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-name">TRANSACTIONAL_UPLINK</span>
-              <span class="setting-desc">
-                Critical alerts, password resets, and security notices. Account management requires
-                occasional system emails.
-              </span>
-            </div>
-            <button
-              class={`brutalist-toggle ${user.emailNotifications ? 'active' : ''}`}
-              disabled={saving}
-              onClick={() => {
-                void updatePreference('emailNotifications', !user.emailNotifications);
-              }}
-            >
-              {user.emailNotifications ? 'OPT_IN' : 'OPT_OUT'}
-            </button>
-          </div>
-
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-name">ENGAGEMENT_ALERTS</span>
-              <span class="setting-desc">Notifications for match starts and turn reminders.</span>
-            </div>
-            <button
-              class={`brutalist-toggle ${user.reminderNotifications ? 'active' : ''}`}
-              disabled={saving}
-              onClick={() => {
-                void updatePreference('reminderNotifications', !user.reminderNotifications);
-              }}
-            >
-              {user.reminderNotifications ? 'ENABLED' : 'DISABLED'}
-            </button>
-          </div>
-
-          <div class="setting-row">
-            <div class="setting-info">
-              <span class="setting-name">MARKETING_BEACON</span>
-              <span class="setting-desc">
-                News, promotional offers, and tactical updates (TCPA compliant).
-              </span>
-            </div>
-            <button
-              class={`brutalist-toggle ${user.marketingConsentAt ? 'active' : ''}`}
-              disabled={saving}
-              onClick={() => {
-                void toggleMarketing(!user.marketingConsentAt);
-              }}
-            >
-              {user.marketingConsentAt ? 'AUTHORIZED' : 'DE-AUTHORIZED'}
-            </button>
-          </div>
-        </div>
-
-        <div class="settings-group cosmetic-loadout-group">
-          <h3 class="settings-label">CARD_SIGNAL_LOADOUT</h3>
-          <p class="settings-desc">
-            Your opponent sees your equipped card back in your hand and your theme on deployed
-            cards.
-          </p>
-          <div
-            class="cosmetic-loadout-grid"
-            data-component="CosmeticLoadoutView"
-            data-state={cosmeticsLoading ? 'loading' : 'ready'}
+          <button
+            class={`brutalist-toggle ${user.reminderNotifications ? 'active' : ''}`}
+            disabled={saving}
+            onClick={() => {
+              void updatePreference('reminderNotifications', !user.reminderNotifications);
+            }}
           >
-            {CARD_SKINS.map((skin) => {
-              const isOwned = ownedCardSkinIds.includes(skin.id);
-              const isEquipped = equippedCardSkinId === skin.id;
-              return (
-                <article
-                  key={skin.id}
-                  class={`cosmetic-loadout-card ${isEquipped ? 'is-equipped' : ''} ${
-                    isOwned ? 'is-owned' : 'is-locked'
-                  }`}
-                  data-card-theme={skin.id}
-                  data-state={isEquipped ? 'equipped' : isOwned ? 'owned' : 'locked'}
-                >
-                  <div class="cosmetic-card-back" aria-hidden="true">
-                    <div class="cosmetic-card-back-art" />
-                  </div>
-                  <div class="cosmetic-loadout-copy">
-                    <strong>{skin.name}</strong>
-                    <span>{skin.description}</span>
-                    <small>{isOwned ? 'UNLOCKED' : `LOCKED · ${skin.unlock}`}</small>
-                  </div>
-                  <button
-                    class={`phx-btn ${isEquipped ? 'secondary' : 'primary'}`}
-                    disabled={saving || cosmeticsLoading || !isOwned || isEquipped}
-                    onClick={() => {
-                      void equipSkin(skin.id);
-                    }}
-                  >
-                    {isEquipped ? 'EQUIPPED' : isOwned ? 'EQUIP' : 'LOCKED'}
-                  </button>
-                </article>
-              );
-            })}
+            {user.reminderNotifications ? 'ENABLED' : 'DISABLED'}
+          </button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-name">MARKETING_BEACON</span>
+            <span class="setting-desc">
+              News, promotional offers, and tactical updates (TCPA compliant).
+            </span>
           </div>
-        </div>
-
-        <div class="settings-group" style="margin-top: 2rem">
-          <h3 class="settings-label">DATA_SOVEREIGNTY</h3>
-          <p class="setting-desc" style="margin-bottom: 1rem">
-            You have the right to be forgotten. Purging your account will permanently delete your
-            identity and anonymize your combat history.
-          </p>
-
-          {!showPurgeConfirm ? (
-            <button
-              class="btn btn-danger"
-              style="width: 100%; letter-spacing: 2px"
-              onClick={() => {
-                setShowPurgeConfirm(true);
-              }}
-            >
-              INITIALIZE_THE_PURGE
-            </button>
-          ) : (
-            <div
-              class="purge-confirm-zone"
-              style="border: 2px solid var(--neon-red); padding: 1rem"
-            >
-              <p
-                class="warning-text"
-                style="color: var(--neon-red); font-weight: 900; margin-bottom: 1rem"
-              >
-                WARNING: This action is IRREVERSIBLE.
-              </p>
-              <input
-                type="password"
-                class="name-input"
-                style="margin-bottom: 1rem"
-                placeholder="CONFIRM_PASSWORD"
-                value={purgePassword}
-                onInput={(e) => {
-                  setPurgePassword(e.currentTarget.value);
-                }}
-              />
-              <div style="display: flex; gap: 8px">
-                <button
-                  class="btn btn-danger"
-                  style="flex: 1"
-                  disabled={saving || !purgePassword}
-                  onClick={() => {
-                    void handlePurge();
-                  }}
-                >
-                  {saving ? 'PURGING...' : 'CONFIRM_PURGE'}
-                </button>
-                <button
-                  class="btn btn-secondary"
-                  style="flex: 1"
-                  onClick={() => {
-                    setShowPurgeConfirm(false);
-                  }}
-                >
-                  ABORT
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div class="auth-footer" style="margin-top: 2rem; opacity: 0.5; font-size: 0.6rem">
-          LEGAL_CONSENT_v1.0 | GDPR/TCPA_READY
+          <button
+            class={`brutalist-toggle ${user.marketingConsentAt ? 'active' : ''}`}
+            disabled={saving}
+            onClick={() => {
+              void toggleMarketing(!user.marketingConsentAt);
+            }}
+          >
+            {user.marketingConsentAt ? 'AUTHORIZED' : 'DE-AUTHORIZED'}
+          </button>
         </div>
       </div>
-    </div>
+
+      <div class="settings-group cosmetic-loadout-group">
+        <h3 class="settings-label">CARD_SIGNAL_LOADOUT</h3>
+        <p class="settings-desc">
+          Your opponent sees your equipped card back in your hand and your theme on deployed cards.
+        </p>
+        <div
+          class="cosmetic-loadout-grid"
+          data-component="CosmeticLoadoutView"
+          data-state={cosmeticsLoading ? 'loading' : 'ready'}
+        >
+          {CARD_SKINS.map((skin) => {
+            const isOwned = ownedCardSkinIds.includes(skin.id);
+            const isEquipped = equippedCardSkinId === skin.id;
+            return (
+              <article
+                key={skin.id}
+                class={`cosmetic-loadout-card ${isEquipped ? 'is-equipped' : ''} ${
+                  isOwned ? 'is-owned' : 'is-locked'
+                }`}
+                data-card-theme={skin.id}
+                data-state={isEquipped ? 'equipped' : isOwned ? 'owned' : 'locked'}
+              >
+                <div class="cosmetic-card-back" aria-hidden="true">
+                  <div class="cosmetic-card-back-art" />
+                </div>
+                <div class="cosmetic-loadout-copy">
+                  <strong>{skin.name}</strong>
+                  <span>{skin.description}</span>
+                  <small>{isOwned ? 'UNLOCKED' : `LOCKED · ${skin.unlock}`}</small>
+                </div>
+                <button
+                  class={`phx-btn ${isEquipped ? 'secondary' : 'primary'}`}
+                  disabled={saving || cosmeticsLoading || !isOwned || isEquipped}
+                  onClick={() => {
+                    void equipSkin(skin.id);
+                  }}
+                >
+                  {isEquipped ? 'EQUIPPED' : isOwned ? 'EQUIP' : 'LOCKED'}
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+
+      <div class="settings-group" style="margin-top: 2rem">
+        <h3 class="settings-label">DATA_SOVEREIGNTY</h3>
+        <p class="setting-desc" style="margin-bottom: 1rem">
+          You have the right to be forgotten. Purging your account will permanently delete your
+          identity and anonymize your combat history.
+        </p>
+
+        {!showPurgeConfirm ? (
+          <button
+            class="btn btn-danger"
+            style="width: 100%; letter-spacing: 2px"
+            onClick={() => {
+              setShowPurgeConfirm(true);
+            }}
+          >
+            INITIALIZE_THE_PURGE
+          </button>
+        ) : (
+          <div class="purge-confirm-zone" style="border: 2px solid var(--neon-red); padding: 1rem">
+            <p
+              class="warning-text"
+              style="color: var(--neon-red); font-weight: 900; margin-bottom: 1rem"
+            >
+              WARNING: This action is IRREVERSIBLE.
+            </p>
+            <input
+              type="password"
+              class="name-input"
+              style="margin-bottom: 1rem"
+              placeholder="CONFIRM_PASSWORD"
+              value={purgePassword}
+              onInput={(e) => {
+                setPurgePassword(e.currentTarget.value);
+              }}
+            />
+            <div style="display: flex; gap: 8px">
+              <button
+                class="btn btn-danger"
+                style="flex: 1"
+                disabled={saving || !purgePassword}
+                onClick={() => {
+                  void handlePurge();
+                }}
+              >
+                {saving ? 'PURGING...' : 'CONFIRM_PURGE'}
+              </button>
+              <button
+                class="btn btn-secondary"
+                style="flex: 1"
+                onClick={() => {
+                  setShowPurgeConfirm(false);
+                }}
+              >
+                ABORT
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div class="auth-footer" style="margin-top: 2rem; opacity: 0.5; font-size: 0.6rem">
+        LEGAL_CONSENT_v1.0 | GDPR/TCPA_READY
+      </div>
+    </section>
   );
 }

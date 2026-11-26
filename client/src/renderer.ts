@@ -28,6 +28,7 @@ let lastIsSpectator: boolean | null = null;
 let lastPlayerIndex: number | null = null;
 let lastRewatchStep: number | null = null;
 let lastRewatchMatchId: string | null = null;
+let lastProfileId: string | null = null;
 
 interface RenderStateSnapshot {
   stateHash: string | null;
@@ -152,7 +153,8 @@ function needsFullRender(state: AppState): {
     snapshot.isSpectator !== lastIsSpectator ||
     state.playerIndex !== lastPlayerIndex ||
     snapshot.rewatchStep !== lastRewatchStep ||
-    snapshot.rewatchMatchId !== lastRewatchMatchId;
+    snapshot.rewatchMatchId !== lastRewatchMatchId ||
+    (state.screen === 'profile' ? state.profileId : null) !== lastProfileId;
 
   if (state.screen === 'rewatch' && state.rewatchStep !== lastRewatchStep) {
     console.log(
@@ -172,7 +174,9 @@ function isPreactLobbyScreen(screen: Screen | null): boolean {
     screen === 'profile' ||
     screen === 'public_lobby' ||
     screen === 'spectator_lobby' ||
-    screen === 'rewatch'
+    screen === 'rewatch' ||
+    screen === 'all_achievements' ||
+    screen === 'achievement_detail'
   );
 }
 
@@ -203,6 +207,8 @@ function dispatchScreenRender(app: HTMLElement, state: AppState): void {
     case 'public_lobby':
     case 'spectator_lobby':
     case 'rewatch':
+    case 'all_achievements':
+    case 'achievement_detail':
       renderLobby(app, state);
       break;
     case 'waiting':
@@ -304,6 +310,7 @@ export function render(state: AppState): void {
   lastPlayerIndex = state.playerIndex;
   lastRewatchStep = state.screen === 'rewatch' ? state.rewatchStep : null;
   lastRewatchMatchId = state.screen === 'rewatch' ? state.rewatchMatchId : null;
+  lastProfileId = state.screen === 'profile' ? state.profileId : null;
 
   updateDocumentTitle(state);
   dispatchScreenRender(app, state);

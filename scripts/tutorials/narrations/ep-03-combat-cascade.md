@@ -8,14 +8,11 @@ pronunciation:
   LP: life points
 ---
 
-<!-- cue:setup-cascade -->
-How does damage actually flow in Phalanx Duel? It all comes down to the Column Cascade.
-
 <!-- cue:enter-combat -->
-Only front-rank cards can attack, and they always strike straight across into the matching enemy column.
+Select a front card to read the matching enemy lane. The preview highlights the target before you commit.
 
 <!-- cue:column-overflow -->
-When an attack destroys the enemy front card, leftover damage cascades straight into the back card behind it. Destroy the back card too, and any remaining overkill hits the opponent's Life Points directly.
+Watch the front defender fall. Damage that gets through that first card can reach the back card or the enemy player.
 
 <!-- cue:classic-reset -->
-And remember: in Classic mode, surviving cards reset to full health between turns — so chip damage doesn't stick unless you break through! Watch Episode 4 next for the Four Suit Boundaries.
+Open Analyst to follow the subtraction in order. The engagement log keeps the arithmetic for this attack.

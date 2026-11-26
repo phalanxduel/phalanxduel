@@ -3,9 +3,9 @@
   "id": "ep-21-tempo-pass-economy-and-traps",
   "season": 6,
   "episodeNumber": 21,
-  "title": "Pro Tip: Tempo, Pass Economy & Face-Card Traps",
+  "title": "Pass a Turn and Read the Reply",
   "format": "9:16",
-  "targetDurationSec": 60,
+  "targetDurationSec": 20,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42021,
@@ -14,26 +14,66 @@
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/learn/analytical-mastery/",
   "tags": ["Phalanx Duel", "Pro Tip", "Tempo", "Pass Economy", "Strategy", "Shorts"],
-  "summary": "Master tempo and the pass economy in 60 seconds: when Passing beats attacking, how to starve enemy reinforcements, and setting Ace/Face-card traps.",
+  "summary": "Find Pass, observe the opponent response, and take your next attack.",
   "cues": [
     {
       "id": "tempo-hook",
-      "label": "Why Attacking Every Turn Loses Games",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2000
+      "label": "Find Pass in the command drawer",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"command-drawer-handle\"]"
+        }
+      ],
+      "expect": "[data-testid=\"combat-pass-btn\"]",
+      "focus": [".phx-hud-bottom"],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "quickStart"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ]
     },
     {
       "id": "pass-trap",
-      "label": "Strategic Passing & Face-Card Locks",
-      "action": "quickStart",
-      "holdMs": 3000
+      "label": "Pass and watch the reply",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"combat-pass-btn\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ],
+      "expect": "[data-testid=\"game-layout\"][data-phase=\"AttackPhase\"]",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
     },
     {
       "id": "reinforce-starve",
-      "label": "Controlling Initiative & Reinforcements",
-      "action": "deployFirstCard",
-      "holdMs": 3000
+      "label": "Attack on the next opportunity",
+      "actions": [
+        {
+          "action": "attack"
+        }
+      ],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
     }
   ]
 }

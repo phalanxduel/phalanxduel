@@ -3,36 +3,80 @@
   "id": "ep-15-replays-and-hash-verification",
   "season": 4,
   "episodeNumber": 15,
-  "title": "Deterministic Replays & Cryptographic Hash-Chain Verification",
+  "title": "Rewatch a Match and Share a Replay Step",
   "format": "16:9",
-  "targetDurationSec": 240,
+  "targetDurationSec": 23,
   "mode": "classic",
-  "startingLp": 12,
+  "startingLp": 2,
   "seed": 42015,
   "cardSkinId": "default",
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/learn/gameplay-assurance/",
   "tags": ["Phalanx Duel", "Replays", "Determinism", "Hash Chain", "Fair Play", "Tutorial"],
-  "summary": "Step through deterministic match replays, inspect per-turn cryptographic state hashes, and verify fair play via the match verification endpoint.",
+  "summary": "Open a completed match, advance the reconstructed board, and copy a link to the current step.",
   "cues": [
     {
       "id": "replay-intro",
-      "label": "Why Deterministic Replays Matter",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
+      "label": "Open a completed match replay",
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "quickStart"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        },
+        {
+          "action": "openReplay"
+        }
+      ],
+      "actions": [
+        {
+          "action": "highlight",
+          "selector": "[data-testid=\"rewatch-board\"]"
+        }
+      ],
+      "expect": "[data-testid=\"rewatch-board\"]",
+      "focus": ["[data-testid=\"rewatch-board\"]"],
+      "holdMs": 2200
     },
     {
       "id": "step-through",
-      "label": "Scrubbing Turn-by-Turn Provenance",
-      "action": "hold",
-      "holdMs": 3500
+      "label": "Step through the reconstruction",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"rewatch-next-btn\"]"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"rewatch-next-btn\"]"
+        }
+      ],
+      "expect": "[data-testid=\"rewatch-step-label\"]",
+      "focus": ["[data-testid=\"rewatch-board\"]"],
+      "holdMs": 2200
     },
     {
-      "id": "hash-verify",
-      "label": "Canonical State Hash Verification",
-      "action": "hold",
-      "holdMs": 3500
+      "id": "copy-replay",
+      "label": "Copy the current step",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "button:text-is(\"Copy replay link\")"
+        }
+      ],
+      "expect": "button:text-is(\"Copied\")",
+      "focus": ["[data-testid=\"rewatch-step-label\"]"],
+      "holdMs": 2200
     }
   ]
 }

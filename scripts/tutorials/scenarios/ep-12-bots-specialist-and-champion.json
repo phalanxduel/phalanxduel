@@ -3,9 +3,9 @@
   "id": "ep-12-bots-specialist-and-champion",
   "season": 3,
   "episodeNumber": 12,
-  "title": "Mastering Specialist Bots (Veteran, Destroyer, Sentinel, Blitz & Champion)",
+  "title": "Choose an MCTS Bot Difficulty",
   "format": "16:9",
-  "targetDurationSec": 300,
+  "targetDurationSec": 22,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42012,
@@ -13,33 +13,58 @@
   "cardSkinId": "obsidian-heraldry",
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/learn/tactical-depth/",
-  "tags": ["Phalanx Duel", "Bots", "MCTS", "Veteran", "Destroyer", "Sentinel", "Blitz", "Champion"],
-  "summary": "Counter all five specialist MCTS bots — Veteran, Destroyer, Sentinel, Blitz, and the 1,000-iteration Champion — by understanding their heuristic weights.",
+  "tags": ["Phalanx Duel", "Bots", "MCTS", "MCTS Easy", "MCTS Medium", "MCTS Hard", "Tutorial"],
+  "summary": "Find the MCTS difficulty choices, start a Hard match, and inspect its opening combat.",
   "cues": [
     {
       "id": "specialist-intro",
-      "label": "The Five Specialist MCTS Personalities",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
-    },
-    {
-      "id": "veteran-destroyer",
-      "label": "Veteran (Attack) & Destroyer (Column-Clear)",
-      "action": "quickStart",
-      "holdMs": 3500
-    },
-    {
-      "id": "sentinel-blitz",
-      "label": "Sentinel (Defense) & Blitz (Speed)",
-      "action": "deployFirstCard",
-      "holdMs": 3500
+      "label": "Find the MCTS choices",
+      "actions": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "highlight",
+          "selector": "[data-testid=\"lobby-bot-btn-mcts-hard\"]"
+        }
+      ],
+      "expect": "[data-testid=\"lobby-bot-btn-mcts-hard\"]",
+      "focus": [".solo-section"],
+      "holdMs": 2200
     },
     {
       "id": "champion-boss",
-      "label": "Champion (MCTS 1000 Apex)",
-      "action": "hold",
-      "holdMs": 3500
+      "label": "Launch MCTS Hard",
+      "actions": [
+        {
+          "action": "quickStart",
+          "selector": "lobby-bot-btn-mcts-hard"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] .attack-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
+    },
+    {
+      "id": "combat-reply",
+      "label": "Inspect a real attack",
+      "actions": [
+        {
+          "action": "attack"
+        },
+        {
+          "action": "click",
+          "selector": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"] button:text-is(\"ANALYST\")"
+        }
+      ],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"][data-mode=\"analyst\"]",
+      "focus": ["[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]"],
+      "holdMs": 2200
     }
   ]
 }

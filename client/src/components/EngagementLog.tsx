@@ -6,6 +6,7 @@ import { CombatMath } from './CombatMath';
 export interface EngagementLogProps {
   isSpectator: boolean;
   hasAttack: boolean;
+  playerIndex: number;
   playByPlayEntries: { key: number; label: string; provenance?: CalculationProvenance }[];
   entries: CombatLogEntry[];
 }
@@ -13,6 +14,7 @@ export interface EngagementLogProps {
 export function EngagementLog({
   isSpectator,
   hasAttack,
+  playerIndex,
   playByPlayEntries,
   entries,
 }: EngagementLogProps) {
@@ -61,8 +63,15 @@ export function EngagementLog({
             entries
               .slice(-20)
               .reverse()
-              .map((entry, i) => (
-                <div key={i} class="phx-log-entry" data-testid="log-entry">
+              .map((entry) => (
+                <div
+                  key={`${entry.turnNumber}-${entry.attackerPlayerIndex}`}
+                  class="phx-log-entry"
+                  data-testid="log-entry"
+                  data-attack-owner={
+                    entry.attackerPlayerIndex === playerIndex ? 'player' : 'opponent'
+                  }
+                >
                   <span style="color: var(--gold)">T{entry.turnNumber}</span>:{' '}
                   {cardLabel(entry.attackerCard)} ATK COL {entry.targetColumn + 1}
                   <CombatMath provenance={entry.calculationProvenance} context="log" label="WHY" />

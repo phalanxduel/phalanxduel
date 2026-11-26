@@ -5,40 +5,75 @@
   "episodeNumber": 3,
   "title": "Combat Cascade & Column Overkill Explained",
   "format": "9:16",
-  "targetDurationSec": 58,
+  "targetDurationSec": 20,
   "mode": "classic",
-  "startingLp": 12,
+  "startingLp": 30,
   "seed": 42003,
   "botTier": "grunt",
   "cardSkinId": "obsidian-heraldry",
   "playerName": "TutorialHost",
   "tags": ["Phalanx Duel", "Combat Cascade", "Card Game Rules", "Tutorial", "Shorts"],
-  "summary": "See how column combat cascades in Phalanx Duel: front-rank attackers strike the opposing front card, excess damage spills into the back card, and leftover overkill hits enemy Life Points.",
+  "summary": "See how column combat cascades in Phalanx Duel: front-rank attackers strike the opposing front card, excess damage spills into the back card, and any remaining overkill can reach enemy Life Points.",
   "cues": [
     {
-      "id": "setup-cascade",
-      "label": "Opening Combat Board",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2000
-    },
-    {
       "id": "enter-combat",
-      "label": "Front-Rank Attack Declaration",
-      "action": "quickStart",
-      "holdMs": 3000
+      "label": "Line up a column",
+      "actions": [
+        {
+          "action": "selectAttack",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-020\"]:is([data-preview-rules~=\"PD-RULE-064\"],[data-preview-rules~=\"PD-RULE-023\"],[data-preview-rules~=\"PD-RULE-024\"])"
+        }
+      ],
+      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-020\"]:is([data-preview-rules~=\"PD-RULE-064\"],[data-preview-rules~=\"PD-RULE-023\"],[data-preview-rules~=\"PD-RULE-024\"])",
+      "focus": [
+        "[data-testid=\"player-battlefield\"] .selected",
+        "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-020\"]:is([data-preview-rules~=\"PD-RULE-064\"],[data-preview-rules~=\"PD-RULE-023\"],[data-preview-rules~=\"PD-RULE-024\"])"
+      ],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "quickStart",
+          "selector": "lobby-bot-btn-med"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ]
     },
     {
       "id": "column-overflow",
-      "label": "Front -> Back -> Life Points Cascade",
-      "action": "deployFirstCard",
-      "holdMs": 3500
+      "label": "Resolve the attack",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-020\"]:is([data-preview-rules~=\"PD-RULE-064\"],[data-preview-rules~=\"PD-RULE-023\"],[data-preview-rules~=\"PD-RULE-024\"])"
+        }
+      ],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]",
+      "focus": ["[data-testid=\"opponent-battlefield\"]", "[data-testid=\"opponent-stats\"]"],
+      "holdMs": 2200
     },
     {
       "id": "classic-reset",
-      "label": "Classic Between-Turn Damage Reset",
-      "action": "hold",
-      "holdMs": 3000
+      "label": "Read the resolution",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"] button:text-is(\"ANALYST\")"
+        }
+      ],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"][data-mode=\"analyst\"]:has([data-rule-id=\"PD-RULE-020\"])",
+      "focus": ["[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]"],
+      "holdMs": 2200
     }
   ],
   "companionUrl": "https://phalanxduel.com/learn/rules/"

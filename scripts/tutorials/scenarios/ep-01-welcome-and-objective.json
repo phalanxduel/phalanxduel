@@ -3,9 +3,9 @@
   "id": "ep-01-welcome-and-objective",
   "season": 1,
   "episodeNumber": 1,
-  "title": "What Is Phalanx Duel? (60-Second Overview)",
+  "title": "Phalanx Duel in One Match Opening",
   "format": "9:16",
-  "targetDurationSec": 55,
+  "targetDurationSec": 25,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42001,
@@ -13,33 +13,53 @@
   "cardSkinId": "default",
   "playerName": "TutorialHost",
   "tags": ["Phalanx Duel", "Card Game", "Tactical Card Game", "Tutorial", "Shorts"],
-  "summary": "Learn the core objective of Phalanx Duel in under 60 seconds: build a 2x4 formation, break through enemy columns, and drop your opponent's Life Points to zero.",
+  "summary": "Deploy a card, finish a formation, attack a column, and read the result.",
   "cues": [
     {
-      "id": "lobby-welcome",
-      "label": "Welcome to the Lobby",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
-    },
-    {
-      "id": "quick-start",
-      "label": "Launch Quick Start Match",
-      "action": "quickStart",
-      "holdMs": 3000
+      "id": "first-deploy",
+      "label": "Put a card on the battlefield",
+      "actions": [
+        {
+          "action": "deployFirstCard"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] [data-row=\"0\"].occupied",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"hand\"]"],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "quickStart"
+        }
+      ]
     },
     {
       "id": "board-overview",
-      "label": "2x4 Battlefield & Life Points",
-      "action": "waitForSelector",
-      "selector": "#phx-phase-indicator",
-      "holdMs": 3500
+      "label": "Finish your formation",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] .attack-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
     },
     {
-      "id": "first-deploy",
-      "label": "Deploy Your First Unit",
-      "action": "deployFirstCard",
-      "holdMs": 3500
+      "id": "first-attack",
+      "label": "Attack across a column",
+      "actions": [
+        {
+          "action": "attack"
+        }
+      ],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]",
+      "focus": ["[data-testid=\"engagement-log\"]"],
+      "holdMs": 2200
     }
   ],
   "companionUrl": "https://phalanxduel.com/learn/getting-started/"

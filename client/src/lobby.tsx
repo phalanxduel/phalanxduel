@@ -34,10 +34,9 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { ResetPasswordPanel } from './components/ResetPasswordPanel';
 import { getToken, logout, openInDesktopApp, restoreSession } from './auth';
 import { MatchHistory } from './components/MatchHistory';
+import { CopyButton } from './components/CopyButton';
 import { WaitingApp } from './waiting';
 import { getQuickMatchOperativeId } from './ux-derivations';
-import { HowToPlayDialog } from './components/HowToPlayDialog';
-import { WelcomeDialog, useWelcomeDialog } from './components/WelcomeDialog';
 import { CascadeVisualizer } from './lobby/CascadeVisualizer';
 import { PublicProfileView } from './lobby/PublicProfileView';
 import { renderProfileName } from './lobby/ProfileLink';
@@ -122,16 +121,13 @@ function UserBar({ state, onFocusId }: { state: AppState; onFocusId: () => void 
     );
   }
 
-  const showGuestInfo = () => {
-    alert(
-      'GUEST_OPERATIVE: Engagement authorized without persistent ID. \n\nNOTE: Matches will not be tracked for ELO or Match History. Enter an OPERATIVE_ID below to initialize a persistent identity.',
-    );
-    onFocusId();
-  };
-
   return (
     <div class="status-card phx-header-status" style="border-left-color: var(--gold-dim)">
-      <button class="btn btn-secondary phx-header-btn" onClick={showGuestInfo}>
+      <button
+        class="btn btn-secondary phx-header-btn"
+        onClick={onFocusId}
+        title="Guest matches do not count toward player ratings"
+      >
         GUEST_OPERATIVE
       </button>
       <a
@@ -1621,9 +1617,7 @@ function RewatchScreen({
     url.searchParams.set('screen', 'rewatch');
     url.searchParams.set('matchId', matchId);
     url.searchParams.set('step', String(step));
-    void navigator.clipboard.writeText(url.toString()).then(() => {
-      alert('Replay link copied!');
-    });
+    return url.toString();
   };
 
   const handleFavoriteToggle = async () => {
@@ -1713,9 +1707,7 @@ function RewatchScreen({
             >
               {isFavorited ? '⭐ FAVORITED' : '☆ FAVORITE'}
             </button>
-            <button class="btn btn-secondary" onClick={copyStepLink}>
-              SHARE_STEP
-            </button>
+            <CopyButton label="Copy replay link" getValue={copyStepLink} />
             <button
               class="btn btn-secondary"
               onClick={() => {
@@ -1971,14 +1963,12 @@ const LobbyLayout = ({
   children,
   headerActions,
   themePhx,
-  onOpenHelp,
   state,
   nameRef,
 }: {
   children: preact.ComponentChildren;
   headerActions?: preact.ComponentChildren;
   themePhx: boolean;
-  onOpenHelp: () => void;
   state: AppState;
   nameRef: preact.RefObject<HTMLInputElement>;
 }) => (
@@ -1987,10 +1977,6 @@ const LobbyLayout = ({
     data-component="LobbyView"
     data-testid="lobby-layout"
   >
-    <div class="cinematic-overlay">
-      <div class="cinematic-pulse" />
-    </div>
-
     <header class="lobby-header">
       <div>
         <h1
@@ -2007,14 +1993,16 @@ const LobbyLayout = ({
       <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px">
         <div style="display: flex; gap: 8px; align-items: center">
           {headerActions}
-          <button
+          <a
             id="phx-lobby-help-btn"
             class="btn btn-secondary btn-tiny"
-            style="padding: 2px 8px; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 900"
-            onClick={onOpenHelp}
+            href="https://phalanxduel.com/guide"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Player guide"
           >
             ?
-          </button>
+          </a>
           <div class="meta-tag">SERVER AUTHORITATIVE | REPLAY VERIFIED</div>
         </div>
         <UserBar
@@ -2042,21 +2030,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
   const [resetToken, setResetToken] = useState(
     new URLSearchParams(window.location.search).get('token'),
   );
-  const [howToPlayOpen, setHowToPlayOpen] = useState(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('qaRunId')) return false;
-    // Keep first-visit onboarding to one modal. The welcome dialog links to
-    // the rules; players can reopen help from the footer after dismissing it.
-    if (localStorage.getItem('phx_welcome_v1_seen') === null) return false;
-    const stored = localStorage.getItem('phx:helpOpen');
-    return stored === null ? true : stored === 'true';
-  });
-  const setHowToPlayOpenPersist = (open: boolean) => {
-    setHowToPlayOpen(open);
-    localStorage.setItem('phx:helpOpen', String(open));
-  };
   const [listPublicly, setListPublicly] = useState(false);
-  const welcome = useWelcomeDialog();
   const {
     activeMatches,
     activeMatchesLoading,
@@ -2265,14 +2239,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     screenContent = <WaitingApp state={state} />;
   } else if (state.screen === 'ladder') {
     screenContent = (
-      <LobbyLayout
-        themePhx={state.themePhx}
-        onOpenHelp={() => {
-          setHowToPlayOpenPersist(true);
-        }}
-        state={state}
-        nameRef={nameRef}
-      >
+      <LobbyLayout themePhx={state.themePhx} state={state} nameRef={nameRef}>
         <div class="hud-panel" style="max-width: 800px; margin: 2rem auto; width: 100%;">
           <Leaderboard activeUserId={state.user?.id} />
           <button
@@ -2288,14 +2255,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     );
   } else if (state.screen === 'profile' && state.profileId) {
     screenContent = (
-      <LobbyLayout
-        themePhx={state.themePhx}
-        onOpenHelp={() => {
-          setHowToPlayOpenPersist(true);
-        }}
-        state={state}
-        nameRef={nameRef}
-      >
+      <LobbyLayout themePhx={state.themePhx} state={state} nameRef={nameRef}>
         <PublicProfileView
           profileId={state.profileId}
           onClose={() => {
@@ -2306,14 +2266,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     );
   } else if (state.screen === 'public_lobby') {
     screenContent = (
-      <LobbyLayout
-        themePhx={state.themePhx}
-        onOpenHelp={() => {
-          setHowToPlayOpenPersist(true);
-        }}
-        state={state}
-        nameRef={nameRef}
-      >
+      <LobbyLayout themePhx={state.themePhx} state={state} nameRef={nameRef}>
         <div style="padding: 2rem;">
           <PublicLobbyScreen
             matches={openMatches}
@@ -2338,14 +2291,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     );
   } else if (state.screen === 'spectator_lobby') {
     screenContent = (
-      <LobbyLayout
-        themePhx={state.themePhx}
-        onOpenHelp={() => {
-          setHowToPlayOpenPersist(true);
-        }}
-        state={state}
-        nameRef={nameRef}
-      >
+      <LobbyLayout themePhx={state.themePhx} state={state} nameRef={nameRef}>
         <div style="padding: 2rem;">
           <SpectatorLobbyScreen
             matches={spectatorLobby.matches}
@@ -2380,14 +2326,7 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
     );
   } else {
     screenContent = (
-      <LobbyLayout
-        themePhx={state.themePhx}
-        onOpenHelp={() => {
-          setHowToPlayOpenPersist(true);
-        }}
-        state={state}
-        nameRef={nameRef}
-      >
+      <LobbyLayout themePhx={state.themePhx} state={state} nameRef={nameRef}>
         {state.screen === 'settings' && (
           <SettingsPanel
             state={state}
@@ -3038,15 +2977,6 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           >
             LADDER
           </a>
-          <button
-            class="footer-link btn-text"
-            style="background: none; border: none; cursor: pointer; color: var(--gold);"
-            onClick={() => {
-              setHowToPlayOpenPersist(true);
-            }}
-          >
-            HOW TO PLAY
-          </button>
           <a
             href="https://github.com/phalanxduel/phalanxduel/blob/main/docs/gameplay/rules.md"
             class="footer-link"
@@ -3078,14 +3008,6 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           >
             {state.themePhx ? 'UI:VECTOR' : 'UI:CLASSIC'}
           </button>
-          <button
-            class="footer-link btn-text"
-            style="background: none; border: none; cursor: pointer;"
-            onClick={welcome.show}
-          >
-            ABOUT
-          </button>
-
           <div style="flex: 1" />
 
           <div class="phx-footer-meta">
@@ -3104,23 +3026,6 @@ function LobbyApp({ container, state }: { container: HTMLElement; state: AppStat
           </div>
           <div ref={debugRef} />
         </footer>
-
-        {howToPlayOpen && (
-          <HowToPlayDialog
-            onClose={() => {
-              setHowToPlayOpenPersist(false);
-            }}
-          />
-        )}
-
-        {welcome.open && (
-          <WelcomeDialog
-            onClose={welcome.dismiss}
-            onRegister={() => {
-              setScreen('auth');
-            }}
-          />
-        )}
 
         {resetToken && (
           <ResetPasswordPanel

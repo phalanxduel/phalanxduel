@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:open-auth -->
-Ready to track your Elo, match history, and unlocked cardbacks? Let us create your Phalanx Duel account.
+Authorize opens the account form. Switch to Register and choose the gamertag other players will see.
 
 <!-- cue:register-gamertag -->
-Open the sign-up panel, pick a unique gamertag, enter your email and password, and submit. Your account is immediately ready for ranked play.
+Submit the form. Your gamertag and rating now appear in the lobby header. This recording uses a disposable local account.
 
 <!-- cue:profile-security -->
-From your account menu you can update preferences, sign out safely, or trigger a password reset anytime. Next up: unlocking custom cardbacks!
+Open Settings from the signed-in header to manage your account and preferences.

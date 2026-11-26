@@ -94,6 +94,8 @@ async function main() {
     allowPositionals: true,
     options: {
       voice: { type: 'string', default: process.env.PHALANX_TUTORIAL_VOICE ?? 'Zoe (Premium)' },
+      'capture-dir': { type: 'string', default: 'artifacts/tutorials' },
+      'output-dir': { type: 'string', default: 'output/video/rerecorded' },
       help: { type: 'boolean', default: false },
     },
   });
@@ -104,7 +106,7 @@ async function main() {
     process.exit(episodeId ? 0 : 1);
   }
 
-  const artifactDir = resolve(repoRoot, 'artifacts/tutorials', episodeId);
+  const artifactDir = resolve(repoRoot, values['capture-dir'], episodeId);
   const footagePath = join(artifactDir, 'footage.json');
   const narrationPath = resolve(here, 'narrations', `${episodeId}.md`);
   if (!existsSync(footagePath)) {
@@ -117,7 +119,7 @@ async function main() {
   const footage = JSON.parse(await readFile(footagePath, 'utf8'));
   const { pronunciation, cues } = parseNarrationMd(await readFile(narrationPath, 'utf8'));
   const workDir = join(artifactDir, 'build');
-  const outDir = resolve(repoRoot, 'output/video');
+  const outDir = resolve(repoRoot, values['output-dir']);
   await rm(workDir, { recursive: true, force: true });
   await mkdir(workDir, { recursive: true });
   await mkdir(outDir, { recursive: true });
@@ -129,13 +131,15 @@ async function main() {
   const TAIL_SEC = 0.45;
 
   const segPaths = [];
+  const edit = [];
   const vttLines = ['WEBVTT', ''];
   let timeline = 0;
 
   for (let i = 0; i < footage.phases.length; i++) {
     const phase = footage.phases[i];
     const tag = String(i).padStart(2, '0');
-    const rawText = cues.get(phase.phase) ?? phase.label ?? phase.phase;
+    const rawText = cues.get(phase.phase);
+    if (!rawText) throw new Error(`No narration for recorded cue ${phase.phase}`);
     const spoken = applyPronunciation(rawText, pronunciation);
 
     const wavPath = join(workDir, `speech-${tag}.wav`);
@@ -148,13 +152,39 @@ async function main() {
     const padTail = Math.max(0, targetDur - clipDur + 0.1);
 
     const segPath = join(workDir, `seg-${tag}.mp4`);
-    const vf = [
-      `scale=${W}:${H}:force_original_aspect_ratio=decrease`,
-      `pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=#0b1020`,
-      `fps=${FPS}`,
-      `tpad=stop_mode=clone:stop_duration=${padTail.toFixed(2)}`,
-      'format=yuv420p',
-    ].join(',');
+    const base = `fps=${FPS},tpad=stop_mode=clone:stop_duration=${padTail.toFixed(2)}`;
+    const focus = phase.focus;
+    const crop = focus ? `crop=${focus.width}:${focus.height}:${focus.x}:${focus.y},` : '';
+    // Preserve the desktop composition behind a sharp, cue-specific foreground.
+    // Cap its height to leave space for captions and Shorts controls.
+    const fit = `scale=${W - 96}:${Math.round(H * 0.61)}:force_original_aspect_ratio=decrease`;
+    const place = 'overlay=(W-w)/2:(H-h)*0.42';
+    const focusAt = Math.max(0, ((phase.resultMs ?? phase.startMs) - phase.startMs) / 1000);
+    const useContext = Boolean(focus) && focusAt > 0.4;
+    const portrait = [
+      `[0:v]${base},split=${useContext ? '3[background][foreground][wide]' : '2[background][foreground]'}`,
+      `[background]scale=270:480:force_original_aspect_ratio=increase,crop=270:480,boxblur=15:2,eq=brightness=-0.22,scale=${W}:${H}[bg]`,
+      `[foreground]${crop}${fit}[fg]`,
+      ...(useContext
+        ? [
+            `[wide]${fit}[context]`,
+            `[bg][context]${place}:enable='lt(t,${focusAt.toFixed(3)})'[framed]`,
+            `[framed][fg]${place}:enable='gte(t,${focusAt.toFixed(3)})',setsar=1,format=yuv420p`,
+          ]
+        : [`[bg][fg]${place},setsar=1,format=yuv420p`]),
+    ];
+    const videoFilter =
+      footage.format === '9:16'
+        ? ['-filter_complex', portrait.join(';')]
+        : [
+            '-vf',
+            [
+              base,
+              `scale=${W}:${H}:force_original_aspect_ratio=decrease`,
+              `pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=#0b1020`,
+              'setsar=1,format=yuv420p',
+            ].join(','),
+          ];
     const af = `adelay=${Math.round(LEAD_SEC * 1000)}|${Math.round(LEAD_SEC * 1000)},apad=whole_dur=${targetDur.toFixed(3)}`;
 
     await exec('ffmpeg', [
@@ -167,8 +197,7 @@ async function main() {
       footage.file,
       '-i',
       wavPath,
-      '-vf',
-      vf,
+      ...videoFilter,
       '-af',
       af,
       '-t',
@@ -179,6 +208,16 @@ async function main() {
       'veryfast',
       '-crf',
       '20',
+      '-pix_fmt',
+      'yuv420p',
+      '-g',
+      String(FPS),
+      '-bf',
+      '0',
+      '-video_track_timescale',
+      '90000',
+      '-x264-params',
+      'repeat-headers=1',
       '-c:a',
       'aac',
       '-b:a',
@@ -197,6 +236,14 @@ async function main() {
       rawText,
       '',
     );
+    edit.push({
+      cue: phase.phase,
+      label: phase.label,
+      startMs: Math.round(timeline * 1000),
+      endMs: Math.round((timeline + targetDur) * 1000),
+      source: { startMs: phase.startMs, resultMs: phase.resultMs, endMs: phase.endMs },
+      focus: phase.focus,
+    });
     timeline += targetDur;
   }
 
@@ -222,24 +269,36 @@ async function main() {
 
   const finalMp4 = join(outDir, `${episodeId}.mp4`);
   const finalVtt = join(outDir, `${episodeId}.vtt`);
+  const finalTxt = join(outDir, `${episodeId}.txt`);
   await exec('ffmpeg', [
     '-y',
     '-i',
     rawConcat,
     '-c:v',
-    'copy',
+    'libx264',
+    '-preset',
+    'veryfast',
+    '-crf',
+    '20',
+    '-pix_fmt',
+    'yuv420p',
     '-af',
     'loudnorm=I=-16:TP=-1.5:LRA=11',
     '-c:a',
     'aac',
     '-b:a',
     '192k',
+    '-map_metadata',
+    '-1',
     '-movflags',
     '+faststart',
     finalMp4,
   ]);
   await writeFile(finalVtt, vttLines.join('\n'));
+  const transcriptLines = footage.phases.map((phase) => cues.get(phase.phase)).filter(Boolean);
+  await writeFile(finalTxt, transcriptLines.join('\n\n') + '\n');
 
+  await writeFile(join(outDir, `${episodeId}.edit.json`), JSON.stringify(edit, null, 2) + '\n');
   const finalDur = await probeDuration(finalMp4);
   console.log(
     `✅ Built ${episodeId}: ${finalMp4} (${W}x${H}, ${finalDur.toFixed(1)}s, ${footage.phases.length} captions -> ${finalVtt})`,

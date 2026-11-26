@@ -3,43 +3,86 @@
   "id": "ep-22-full-annotated-champion-duel",
   "season": 6,
   "episodeNumber": 22,
-  "title": "Full Annotated Masterclass: Beating the Champion MCTS Bot",
+  "title": "Play a Hard MCTS Duel from Opening to Result",
   "format": "16:9",
-  "targetDurationSec": 540,
+  "targetDurationSec": 34,
   "mode": "classic",
-  "startingLp": 12,
+  "startingLp": 6,
   "seed": 42022,
   "botTier": "champion",
   "cardSkinId": "obsidian-heraldry",
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/mastery/mastery/",
   "tags": ["Phalanx Duel", "Masterclass", "Champion Bot", "MCTS", "Annotated Match", "Tutorial"],
-  "summary": "Watch a complete start-to-finish annotated duel against the 1,000-iteration Champion MCTS bot, breaking down opening formation, mid-game pivots, endgame lethal math, and post-match hash verification.",
+  "summary": "Follow a real hard-bot duel from deployment to the final result.",
   "cues": [
     {
       "id": "match-intro",
-      "label": "Match Setup vs Champion (MCTS 1000)",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
+      "label": "Launch the hard MCTS opponent",
+      "actions": [
+        {
+          "action": "highlight",
+          "selector": "[data-testid=\"hand\"]"
+        }
+      ],
+      "expect": "[data-testid=\"hand\"]",
+      "focus": ["[data-testid=\"hand\"]"],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "quickStart",
+          "selector": "lobby-bot-btn-mcts-hard"
+        }
+      ]
     },
     {
       "id": "opening-formation",
-      "label": "Opening Formation & Tempo Plan",
-      "action": "quickStart",
-      "holdMs": 3500
+      "label": "Deploy the opening formation",
+      "actions": [
+        {
+          "action": "deployFirstCard"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] .attack-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
     },
     {
       "id": "midgame-pivot",
-      "label": "Mid-Game Cascade & Reinforcement Pivot",
-      "action": "deployFirstCard",
-      "holdMs": 4000
+      "label": "Resolve and inspect an attack",
+      "actions": [
+        {
+          "action": "attack"
+        },
+        {
+          "action": "click",
+          "selector": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"] button:text-is(\"ANALYST\")"
+        }
+      ],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"][data-mode=\"analyst\"]",
+      "focus": ["[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]"],
+      "holdMs": 2200
     },
     {
       "id": "endgame-verify",
-      "label": "Lethal Finish & Replay Hash Proof",
-      "action": "hold",
-      "holdMs": 3500
+      "label": "Review the completed match",
+      "actions": [
+        {
+          "action": "finishMatch",
+          "value": "show"
+        }
+      ],
+      "expect": "[data-testid=\"game-over-result\"]",
+      "focus": ["[data-testid=\"game-over-result\"]"],
+      "holdMs": 2200
     }
   ]
 }

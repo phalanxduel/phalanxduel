@@ -1,6 +1,6 @@
 ---
 episode_id: ep-22-full-annotated-champion-duel
-title: "Full Annotated Masterclass: Beating the Champion MCTS Bot"
+title: "Play a Hard MCTS Duel from Opening to Result"
 format: "16:9"
 companion_url: "https://phalanxduel.com/mastery/mastery/"
 privacy: private
@@ -11,13 +11,13 @@ pronunciation:
 ---
 
 <!-- cue:match-intro -->
-Welcome to the Season 6 finale — a full, annotated masterclass against the 1,000-iteration Champion MCTS bot.
+Start a hard MCTS training match. Watch the board and the engagement log to follow the same decisions you make in a normal duel.
 
 <!-- cue:opening-formation -->
-Watch how we anchor our defensive suits early while keeping flexible high-value attackers in reserve to punish Champion's first column commitment.
+Place an opening card, then complete the formation. The front rank takes the first hit, so compare each lane on both sides.
 
 <!-- cue:midgame-pivot -->
-In the mid-game, every attack is checked against the Combat Math Inspector — trading only when overflow damage converts directly into Life Points.
+The engagement log records the actual calculation. In Analyst, read the steps from the attacker’s power through the enemy’s defenses.
 
 <!-- cue:endgame-verify -->
-With Life Points hitting zero, we close with a full replay and hash-chain check. Thanks for watching the complete Phalanx Duel series — now jump into play.phalanxduel.com and build your formation!
+Here is the result of the completed duel. Review the turning point and match stats here, or download the transcript to study the sequence of actions.

@@ -3,42 +3,68 @@
   "id": "ep-04-suit-boundaries",
   "season": 1,
   "episodeNumber": 4,
-  "title": "The Four Suit Boundaries (Diamonds, Hearts, Clubs, Spades)",
+  "title": "Suit Boundaries in Combat",
   "format": "9:16",
-  "targetDurationSec": 60,
+  "targetDurationSec": 20,
   "mode": "classic",
-  "startingLp": 12,
-  "seed": 42004,
+  "startingLp": 35,
+  "seed": 42003,
   "botTier": "grunt",
   "cardSkinId": "dual-loop",
   "playerName": "TutorialHost",
   "tags": ["Phalanx Duel", "Suit Rules", "Tactical Card Game", "Tutorial", "Shorts"],
-  "summary": "Understand Phalanx Duel's boundary-based suit rules in 60 seconds: Diamonds, Hearts, Clubs, and Spades modify specific card-to-card and card-to-player transitions — not global buffs.",
+  "summary": "Use the combat log to read the suit rules that fired on a resolved attack.",
   "cues": [
     {
       "id": "suits-intro",
-      "label": "Suits Are Transition Boundaries",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2000
-    },
-    {
-      "id": "diamonds-hearts",
-      "label": "Diamonds & Hearts: Defensive Boundaries",
-      "action": "quickStart",
-      "holdMs": 3500
-    },
-    {
-      "id": "clubs-spades",
-      "label": "Clubs & Spades: Offensive Boundaries",
-      "action": "deployFirstCard",
-      "holdMs": 3500
+      "label": "Read suits on the board",
+      "actions": [
+        {
+          "action": "selectAttack",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target:is([data-preview-rules~=\"PD-RULE-023\"],[data-preview-rules~=\"PD-RULE-024\"],[data-preview-rules~=\"PD-RULE-026\"],[data-preview-rules~=\"PD-RULE-028\"])"
+        }
+      ],
+      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target:is([data-preview-rules~=\"PD-RULE-023\"],[data-preview-rules~=\"PD-RULE-024\"],[data-preview-rules~=\"PD-RULE-026\"],[data-preview-rules~=\"PD-RULE-028\"])",
+      "focus": [
+        "[data-testid=\"player-battlefield\"] .selected",
+        "[data-testid=\"opponent-battlefield\"] .valid-target:is([data-preview-rules~=\"PD-RULE-023\"],[data-preview-rules~=\"PD-RULE-024\"],[data-preview-rules~=\"PD-RULE-026\"],[data-preview-rules~=\"PD-RULE-028\"])"
+      ],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "quickStart",
+          "selector": "lobby-bot-btn-med"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ]
     },
     {
       "id": "math-provenance",
-      "label": "Verify Every Calculation in the Inspector",
-      "action": "hold",
-      "holdMs": 3000
+      "label": "Read the actual suit rules",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target:is([data-preview-rules~=\"PD-RULE-023\"],[data-preview-rules~=\"PD-RULE-024\"],[data-preview-rules~=\"PD-RULE-026\"],[data-preview-rules~=\"PD-RULE-028\"])"
+        },
+        {
+          "action": "click",
+          "selector": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"] button:text-is(\"ANALYST\")"
+        }
+      ],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"][data-mode=\"analyst\"]:has(:is([data-rule-id=\"PD-RULE-023\"],[data-rule-id=\"PD-RULE-024\"],[data-rule-id=\"PD-RULE-026\"],[data-rule-id=\"PD-RULE-028\"]))",
+      "focus": ["[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]"],
+      "holdMs": 2200
     }
   ],
   "companionUrl": "https://phalanxduel.com/suits-strategy/"

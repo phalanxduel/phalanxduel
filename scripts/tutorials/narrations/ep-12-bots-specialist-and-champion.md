@@ -1,6 +1,6 @@
 ---
 episode_id: ep-12-bots-specialist-and-champion
-title: "Mastering Specialist Bots (Veteran, Destroyer, Sentinel, Blitz & Champion)"
+title: "Choose an MCTS Bot Difficulty"
 format: "16:9"
 companion_url: "https://phalanxduel.com/learn/tactical-depth/"
 privacy: private
@@ -11,13 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:specialist-intro -->
-Once you can beat Soldier consistently, five specialized MCTS opponents test every dimension of your game.
-
-<!-- cue:veteran-destroyer -->
-Veteran runs 500 simulations with heavy attack bias, hunting your highest-value LP lanes. Destroyer prioritizes dismantling your board presence column by column.
-
-<!-- cue:sentinel-blitz -->
-Sentinel stacks defensive boundaries and preserves Life Points, while Blitz deploys fast and races for early lethal finishes.
+The browser offers Easy, Medium, and Hard MCTS settings. They use the same board and rules, with different search budgets.
 
 <!-- cue:champion-boss -->
-At the top sits Champion — 1,000 balanced MCTS simulations per decision. Beating Champion proves you are tournament ready.
+Choose Hard, complete your opening formation, then assess both front ranks. The rules are the same, even when the opponent’s decisions change.
+
+<!-- cue:combat-reply -->
+Inspect the result in the same engagement log you use against other opponents.

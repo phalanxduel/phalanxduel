@@ -3,36 +3,74 @@
   "id": "ep-14-profiles-history-and-achievements",
   "season": 4,
   "episodeNumber": 14,
-  "title": "Profiles, Match History & Rarity Achievements",
+  "title": "Find Your Match History and Achievements",
   "format": "9:16",
-  "targetDurationSec": 55,
+  "targetDurationSec": 15,
   "mode": "classic",
-  "startingLp": 12,
+  "startingLp": 2,
   "seed": 42014,
   "cardSkinId": "dual-loop",
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/competitive/",
   "tags": ["Phalanx Duel", "Profiles", "Match History", "Achievements", "Shorts"],
-  "summary": "Explore public player profiles, review past matches, track global achievement rarity percentages, favorite memorable duels, and follow rivals.",
+  "summary": "Open a player profile, find a completed match, and browse the achievement gallery.",
   "cues": [
     {
       "id": "profile-open",
-      "label": "Public Player Profile & Stats",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
-    },
-    {
-      "id": "match-history",
-      "label": "Match History & Favoriting Duels",
-      "action": "hold",
-      "holdMs": 3000
+      "label": "Open a profile after a match",
+      "actions": [
+        {
+          "action": "highlight",
+          "selector": "[data-testid=\"profile-rewatch-btn\"]"
+        }
+      ],
+      "expect": "h4:text-is(\"RECENT_ENGAGEMENTS\")",
+      "focus": [".engagement-section:has([data-testid=\"profile-rewatch-btn\"])"],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "registerDemo"
+        },
+        {
+          "action": "quickStart"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        },
+        {
+          "action": "finishMatch"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"return-lobby-btn\"]"
+        },
+        {
+          "action": "click",
+          "selector": ".phx-user-info"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "h4:text-is(\"RECENT_ENGAGEMENTS\")"
+        }
+      ]
     },
     {
       "id": "achievements-rarity",
-      "label": "Achievements & Global Rarity",
-      "action": "hold",
-      "holdMs": 3000
+      "label": "Open the achievement gallery",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "button:has-text(\"VIEW_ALL_ACHIEVEMENTS\")"
+        }
+      ],
+      "expect": "[data-component=\"AchievementBadge\"]",
+      "focus": ["[data-component=\"AchievementBadge\"]"],
+      "holdMs": 2200
     }
   ]
 }

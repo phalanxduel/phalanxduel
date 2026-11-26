@@ -49,20 +49,8 @@ async function main() {
   const browser = await chromium.launch({ headed: false });
   const context = await browser.newContext({
     viewport: { width: 1280, height: 800 },
+    colorScheme: 'dark',
     deviceScaleFactor: 2,
-  });
-
-  await context.addInitScript(() => {
-    try {
-      localStorage.setItem('phx_welcome_v1_seen', '1');
-      localStorage.setItem('phx_onboarding_deploy_seen', '1');
-      localStorage.setItem('phx_onboarding_combat_seen', '1');
-      localStorage.setItem('phx_onboarding_spectator_seen', '1');
-      localStorage.setItem('phx:onboarding:seen', 'true');
-      localStorage.setItem('phx:helpOpen', 'false');
-    } catch {
-      // ignore
-    }
   });
 
   try {

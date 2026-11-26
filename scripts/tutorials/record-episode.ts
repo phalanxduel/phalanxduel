@@ -1,208 +1,385 @@
-/**
- * scripts/tutorials/record-episode.ts
- *
- * Deterministic Playwright recorder for Phalanx Duel tutorial episodes (16:9 and 9:16).
- *
- * Usage:
- *   pnpm tutorial:record ep-01-welcome-and-objective [--base-url http://127.0.0.1:5173]
- */
-
-import { chromium, type Page } from '@playwright/test';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { chromium, expect as playwrightExpect, type Page } from '@playwright/test';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { FORMAT_PROFILES, TutorialEpisodeScenarioSchema, type TutorialCueStep } from './schema.js';
+import { randomBytes } from 'node:crypto';
+import { GameAutomator } from '../../bin/qa/game-automator.js';
+import { TutorialTerminal } from './tutorial-terminal.js';
+import {
+  FORMAT_PROFILES,
+  TutorialEpisodeScenarioSchema,
+  type TutorialAction,
+  type TutorialEpisodeScenario,
+} from './schema.js';
 
+const expect = playwrightExpect.configure({ timeout: 20_000 });
 const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = resolve(here, '../..');
+const arena = '[data-testid="game-layout"]';
+const testId = (id: string) => `[data-testid="${id}"]`;
+const hand = '[data-testid^="hand-card-"]';
+const passiveOverlay =
+  '.phx-modal-overlay, .cinematic-modal, .cinematic-overlay, .pz-splash-overlay, .nr-overlay, .help-overlay';
+const uiError = '.error-banner, .toast-error';
 
-interface RecordedCueSpan {
-  id: string;
-  label: string;
-  startMs: number;
-  endMs: number;
-  keyframe: string;
+function isAllowedCaptureHost(hostname: string): boolean {
+  return (
+    hostname === '127.0.0.1' ||
+    hostname === 'localhost' ||
+    hostname === 'lan.phalanxduel.com' ||
+    hostname.endsWith('.lan.phalanxduel.com') ||
+    hostname.endsWith('.phalanxduel.localhost')
+  );
 }
 
-async function dismissOverlays(page: Page): Promise<void> {
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const overlay = page.locator('.phx-modal-overlay').first();
-    if (!(await overlay.isVisible().catch(() => false))) return;
-    const closeBtn = overlay.locator('button').last();
-    if (await closeBtn.isVisible().catch(() => false)) {
-      await closeBtn.click().catch(() => {});
-    } else {
-      await page.keyboard.press('Escape').catch(() => {});
-    }
-    await overlay.waitFor({ state: 'hidden', timeout: 2_000 }).catch(() => {});
+async function open(page: Page, url: URL): Promise<void> {
+  await page.goto(url.toString(), { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#app > *').first()).toBeVisible();
+  const loadsAnotherScreen = ['action', 'match', 'matchId', 'watch', 'screen', 'profile'].some(
+    (key) => url.searchParams.has(key),
+  );
+  if (url.pathname === '/' && !loadsAnotherScreen) {
+    await expect(page.getByTestId('lobby-quick-match-btn')).toBeEnabled();
   }
 }
 
-async function runStep(page: Page, step: TutorialCueStep, baseUrl: string, playerName: string) {
+async function runAction(
+  page: Page,
+  bot: GameAutomator,
+  step: TutorialAction,
+  baseUrl: string,
+  spec: TutorialEpisodeScenario,
+  terminal: TutorialTerminal,
+): Promise<void> {
+  const target = page.locator(step.selector ?? 'body').first();
   switch (step.action) {
     case 'goto': {
-      const target = new URL(step.urlPath ?? '/', baseUrl).toString();
-      await page.goto(target, { waitUntil: 'networkidle' });
-      await dismissOverlays(page);
-      break;
-    }
-    case 'fill': {
-      if (step.selector && step.value !== undefined) {
-        await page.waitForSelector(step.selector, { timeout: 10_000 });
-        await page.fill(step.selector, step.value);
+      const url = new URL(step.urlPath ?? '/', baseUrl);
+      if (url.origin !== new URL(baseUrl).origin)
+        throw new Error('Capture URL must stay same-origin');
+      if (step.value === 'fresh') {
+        await page.evaluate(() => sessionStorage.removeItem('phalanx_session'));
       }
+      url.searchParams.set('seed', String(spec.seed));
+      await open(page, url);
       break;
     }
-    case 'click': {
-      if (step.selector) {
-        await page.waitForSelector(step.selector, { timeout: 10_000 });
-        await page.click(step.selector);
-      }
+    case 'fill':
+      await target.fill(step.value ?? '');
       break;
-    }
-    case 'waitForSelector': {
-      if (step.selector) {
-        await page.waitForSelector(step.selector, { timeout: 15_000 });
-      }
+    case 'select':
+      await target.selectOption(step.value ?? '');
       break;
-    }
-    case 'quickStart': {
-      await dismissOverlays(page);
-      const nameInput = page.locator('#phx-lobby-name-input');
-      if (await nameInput.isVisible().catch(() => false)) {
-        await nameInput.fill(playerName);
-      }
-      await page.click('#phx-lobby-quick-start-btn');
-      await page.waitForSelector('#phx-phase-indicator', { timeout: 15_000 });
-      await dismissOverlays(page);
+    case 'click':
+      await bot.clickTarget(target);
       break;
-    }
-    case 'deployFirstCard': {
-      await dismissOverlays(page);
-      const handCard = page.locator('[id^="phx-card-hand-"]').first();
-      await handCard.waitFor({ state: 'visible', timeout: 10_000 });
-      await handCard.click();
-      const targetCell = page.locator('[data-testid="player-cell-r0-c0"], .valid-target').first();
-      await targetCell.waitFor({ state: 'visible', timeout: 10_000 });
-      await targetCell.click();
-      break;
-    }
-    case 'highlight':
+    case 'waitForSelector':
     case 'screenshot':
+      await expect(target).toBeVisible();
+      break;
+    case 'highlight':
+      await target.scrollIntoViewIfNeeded();
+      await target.hover();
+      break;
+    case 'quickStart':
+      await bot.startMatch({
+        playerName: spec.playerName,
+        mode: step.value ?? spec.mode,
+        startingLp: spec.startingLp,
+        startTestId: step.selector ?? 'lobby-quick-match-btn',
+      });
+      break;
+    case 'deployFirstCard':
+      await bot.deployFirstCard();
+      break;
+    case 'selectAttack':
+      if (!step.selector) throw new Error('selectAttack requires a forecast selector');
+      await bot.selectAttackWithForecast(step.selector);
+      break;
+    case 'attack':
+      await bot.attackFirst(step.selector, step.value);
+      break;
+    case 'reinforce':
+      await bot.reinforceFirst();
+      break;
+    case 'joinOpponent': {
+      const code = await bot.getWaitingMatchId();
+      const browser = page.context().browser();
+      if (!browser) throw new Error('No browser for the second player');
+      const guest = await browser.newPage({ viewport: page.viewportSize() });
+      const guestBot = new GameAutomator(guest, { hoverDelayMs: 280 });
+      await open(guest, new URL('/', baseUrl));
+      await guestBot.enterGuestOperativeId('TutorialRival');
+      const invite = new URL('/', baseUrl);
+      invite.searchParams.set('action', 'join');
+      invite.searchParams.set('match', code);
+      await guest.goto(invite.toString(), { waitUntil: 'domcontentloaded' });
+      await expect(page.locator(arena)).toBeVisible();
+      if (step.value === 'ensurePlayerTurn') {
+        const localCard = page.locator(`${hand}.playable`).first();
+        const remoteCard = guest.locator(`${hand}.playable`).first();
+        const localStarts = await Promise.race([
+          localCard.waitFor({ state: 'visible' }).then(() => true),
+          remoteCard.waitFor({ state: 'visible' }).then(() => false),
+        ]);
+        if (!localStarts) await guestBot.deployFirstCard();
+      }
+      break;
+    }
+    case 'watchMatch': {
+      const matchId = await page.locator(arena).getAttribute('data-match-id');
+      if (!matchId) throw new Error('No live match to watch');
+      await open(page, new URL(`/?watch=${matchId}`, baseUrl));
+      await expect(page.locator(`${arena}[data-spectator="true"]`)).toBeVisible();
+      break;
+    }
+    case 'reconnect': {
+      const matchId = await page.locator(arena).getAttribute('data-match-id');
+      if (!matchId) throw new Error('No match to reconnect to');
+      await open(page, new URL(`/?match=${matchId}`, baseUrl));
+      await expect(page.locator(arena)).toHaveAttribute('data-match-id', matchId);
+      break;
+    }
+    case 'registerDemo': {
+      if (!isAllowedCaptureHost(new URL(baseUrl).hostname)) {
+        throw new Error('Demo accounts may only be created on loopback or local LAN hosts');
+      }
+      await bot.clickTarget(page.getByTestId('userbar-authorize-btn'));
+      await bot.clickTarget(page.getByTestId('auth-toggle-mode-btn'));
+      const suffix = randomBytes(4).toString('hex');
+      await page.getByTestId('auth-gamertag-input').fill(`Training${suffix}`);
+      await page.getByTestId('auth-email-input').fill(`training-${suffix}@example.invalid`);
+      await page
+        .getByTestId('auth-password-input')
+        .fill(`Training!${randomBytes(12).toString('hex')}`);
+      if (step.value !== 'form') {
+        await bot.clickTarget(page.getByTestId('auth-submit-btn'));
+        await expect(page.locator('.phx-user-info')).toBeVisible();
+      }
+      break;
+    }
+    case 'openReplay': {
+      const matchId = await page.locator(arena).getAttribute('data-match-id');
+      if (!matchId) throw new Error('No match ID for replay');
+      await bot.playUntil(testId('game-over'));
+      await bot.clickTarget(page.getByTestId('return-lobby-btn'));
+      await open(page, new URL(`/?screen=rewatch&matchId=${matchId}&step=0`, baseUrl));
+      await expect(page.getByTestId('rewatch-next-btn')).toBeEnabled();
+      break;
+    }
+    case 'terminal':
+      await terminal.run(page, step.value, baseUrl);
+      break;
+    case 'finishMatch':
+      await bot.playUntil(testId('game-over'));
+      break;
+    case 'reachPosition':
+      if (!step.selector) throw new Error('reachPosition requires a selector');
+      await bot.playUntil(step.selector);
+      break;
     case 'hold':
-    default:
       break;
   }
+}
 
-  if (step.holdMs > 0) {
-    await page.waitForTimeout(step.holdMs);
+async function shotBounds(page: Page, selectors: readonly string[] | undefined) {
+  if (!selectors) return undefined;
+  const boxes = [];
+  for (const selector of selectors) {
+    const target = page.locator(selector).first();
+    await expect(target).toBeVisible();
+    const box = await target.boundingBox();
+    if (!box) throw new Error(`Focus target disappeared: ${selector}`);
+    boxes.push(box);
   }
+  const viewport = page.viewportSize();
+  if (!viewport) throw new Error('Capture requires a fixed viewport');
+  const left = Math.max(0, Math.floor(Math.min(...boxes.map((b) => b.x)) - 30));
+  const top = Math.max(0, Math.floor(Math.min(...boxes.map((b) => b.y)) - 30));
+  const right = Math.min(
+    viewport.width,
+    Math.ceil(Math.max(...boxes.map((b) => b.x + b.width)) + 30),
+  );
+  const bottom = Math.min(
+    viewport.height,
+    Math.ceil(Math.max(...boxes.map((b) => b.y + b.height)) + 30),
+  );
+  if (right <= left || bottom <= top) throw new Error('Focus region is outside the viewport');
+  return { x: left, y: top, width: right - left, height: bottom - top };
 }
 
 async function main(): Promise<void> {
-  const argv = process.argv.slice(2).filter((a) => a !== '--');
   const { values, positionals } = parseArgs({
-    args: argv,
+    args: process.argv.slice(2).filter((arg) => arg !== '--'),
     allowPositionals: true,
     options: {
       'base-url': {
         type: 'string',
         default: process.env.PHALANX_BASE_URL ?? 'http://127.0.0.1:5173',
       },
+      'output-dir': { type: 'string', default: 'artifacts/tutorials' },
       help: { type: 'boolean', default: false },
     },
   });
-
-  const episodeId = positionals[0];
-  if (values.help || !episodeId) {
-    console.log('Usage: pnpm tutorial:record <episode-id> [--base-url http://127.0.0.1:5173]');
-    process.exit(episodeId ? 0 : 1);
+  const [episodeId] = positionals;
+  const usage = 'Usage: pnpm tutorial:record <episode-id> [--base-url URL] [--output-dir PATH]';
+  if (values.help) {
+    console.log(usage);
+    return;
   }
+  if (!episodeId || !/^ep-\d{2}-[a-z0-9-]+$/.test(episodeId)) throw new Error(usage);
 
-  const scenarioPath = resolve(here, 'scenarios', `${episodeId}.json`);
-  // eslint-disable-next-line security/detect-non-literal-fs-filename
-  const raw = JSON.parse(await readFile(scenarioPath, 'utf8')) as unknown;
-  const spec = TutorialEpisodeScenarioSchema.parse(raw);
+  const spec = TutorialEpisodeScenarioSchema.parse(
+    JSON.parse(await readFile(join(here, 'scenarios', `${episodeId}.json`), 'utf8')),
+  );
   const profile = FORMAT_PROFILES[spec.format];
-
-  const outDir = resolve(repoRoot, 'artifacts/tutorials', spec.id);
+  const outDir = resolve(here, '../..', values['output-dir'], spec.id);
   const keyframeDir = join(outDir, 'keyframes');
-  // eslint-disable-next-line security/detect-non-literal-fs-filename
   await mkdir(keyframeDir, { recursive: true });
 
-  console.log(
-    `[tutorial:record] Recording ${spec.id} (${spec.format}, ${profile.viewportWidth}x${profile.viewportHeight} -> ${profile.outputWidth}x${profile.outputHeight})`,
-  );
-
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({
-    viewport: { width: profile.viewportWidth, height: profile.viewportHeight },
-    recordVideo: {
-      dir: outDir,
-      size: { width: profile.viewportWidth, height: profile.viewportHeight },
-    },
-  });
-
-  const page = await context.newPage();
-  page.on('dialog', async (dialog) => {
-    await dialog.accept();
-  });
-
-  const startedAt = Date.now();
-  const recordedCues: RecordedCueSpan[] = [];
-
+  const browser = await chromium.launch();
+  const terminal = new TutorialTerminal();
   try {
-    for (const step of spec.cues) {
-      const startMs = Date.now() - startedAt;
-      await runStep(page, step, values['base-url'], spec.playerName);
-      const keyframeName = `${step.id}.png`;
-      await page.screenshot({ path: join(keyframeDir, keyframeName) });
-      const endMs = Date.now() - startedAt;
-      recordedCues.push({
-        id: step.id,
-        label: step.label,
-        startMs,
-        endMs,
-        keyframe: `keyframes/${keyframeName}`,
+    const viewport = { width: profile.viewportWidth, height: profile.viewportHeight };
+    const context = await browser.newContext({
+      viewport,
+      colorScheme: 'dark',
+      ignoreHTTPSErrors: true,
+      recordVideo: { dir: outDir, size: viewport },
+      permissions: ['clipboard-read', 'clipboard-write'],
+    });
+    // Abort external font/analytics requests so offline/LAN captures never stall on page.screenshot().
+    await context.route(
+      /^https?:\/\/(?:fonts\.googleapis\.com|fonts\.gstatic\.com|gc\.zgo\.at|stats\.phalanxduel\.com)\//,
+      (route) => route.abort(),
+    );
+    await context.addInitScript(() => {
+      document.addEventListener('pointerdown', (event) => {
+        const marker = document.createElement('span');
+        marker.style.cssText =
+          `position:fixed;left:${event.clientX}px;top:${event.clientY}px;` +
+          'width:28px;height:28px;border:2px solid #fff0a1;border-radius:50%;' +
+          'box-shadow:0 0 0 2px #102132;transform:translate(-50%,-50%);' +
+          'pointer-events:none;z-index:100000;';
+        document.body.append(marker);
+        setTimeout(() => marker.remove(), 420);
       });
+    });
+    const page = await context.newPage();
+    page.setDefaultTimeout(20_000);
+    const bot = new GameAutomator(page, { hoverDelayMs: 280 });
+    const video = page.video();
+    if (!video) throw new Error('Playwright video unavailable');
+    let unexpectedDialog = '';
+    page.on('dialog', (dialog) => {
+      unexpectedDialog = dialog.type();
+      void dialog.dismiss();
+    });
+    const startedAt = performance.now();
+    const phases = [];
+    for (const cue of spec.cues) {
+      console.log(`[tutorial:record] ${spec.id}/${cue.id}`);
+      const actions = cue.actions ?? [{ ...cue, action: cue.action ?? 'hold' }];
+      try {
+        for (const step of cue.setup ?? []) {
+          await runAction(page, bot, step, values['base-url'], spec, terminal);
+        }
+        let startMs = Math.round(performance.now() - startedAt);
+        for (const step of actions) {
+          await runAction(page, bot, step, values['base-url'], spec, terminal);
+          if (
+            step.action === 'reachPosition' ||
+            step.action === 'goto' ||
+            step.action === 'reconnect' ||
+            (step.action === 'terminal' && step.value === 'admin-login') ||
+            (step.action === 'finishMatch' && step.value !== 'show') ||
+            step.action === 'openReplay'
+          ) {
+            startMs = Math.round(performance.now() - startedAt);
+          }
+        }
+        if (!cue.expect || !cue.focus)
+          throw new Error('Specify the expected visible result and shot focus');
+        await expect(page.locator(cue.expect).first()).toBeVisible();
+        if (cue.focus?.length === 1) {
+          await page.locator(cue.focus[0]).first().scrollIntoViewIfNeeded();
+        }
+        if (unexpectedDialog) throw new Error(`Unexpected browser dialog: ${unexpectedDialog}`);
+        await expect(page.locator(passiveOverlay)).toHaveCount(0);
+        await expect(page.locator(uiError).first()).toBeHidden();
+        const telemetry = await page.evaluate(() => {
+          const board = document.querySelector('[data-testid="game-layout"]');
+          const ruleIds = [
+            ...new Set(
+              Array.from(
+                document.querySelectorAll('[data-testid="combat-math-log"] [data-rule-id]'),
+              )
+                .map((el) => el.getAttribute('data-rule-id'))
+                .filter((id): id is string => Boolean(id)),
+            ),
+          ];
+          return {
+            colorScheme: window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light',
+            bodyBg: getComputedStyle(document.body).backgroundColor,
+            matchId: board?.getAttribute('data-match-id') ?? null,
+            phase: board?.getAttribute('data-phase') ?? null,
+            damageMode: board?.getAttribute('data-damage-mode') ?? null,
+            actionCount: board?.getAttribute('data-action-count') ?? null,
+            ruleIds,
+          };
+        });
+        if (telemetry.colorScheme !== 'dark') {
+          throw new Error(`Expected dark colorScheme, got ${telemetry.colorScheme}`);
+        }
+        const focus = await shotBounds(page, cue.focus);
+        const resultMs = Math.round(performance.now() - startedAt);
+        const keyframe = `keyframes/${cue.id}.png`;
+        await page.screenshot({ path: join(outDir, keyframe) });
+        await page.waitForTimeout(cue.holdMs);
+        phases.push({
+          phase: cue.id,
+          label: cue.label,
+          startMs,
+          resultMs,
+          endMs: Math.round(performance.now() - startedAt),
+          keyframe,
+          focus,
+          telemetry,
+        });
+        // Keep an unedited handle so the next navigation cannot enter this shot's last frame.
+        await page.waitForTimeout(500);
+      } catch (error) {
+        await page.screenshot({ path: join(outDir, 'failure.png') }).catch(() => undefined);
+        throw new Error(`${spec.id}/${cue.id} failed`, { cause: error });
+      }
     }
-  } finally {
+
     await context.close();
+    const file = join(outDir, 'raw.webm');
+    await video.saveAs(file);
+    await video.delete();
+    await writeFile(
+      join(outDir, 'footage.json'),
+      JSON.stringify(
+        {
+          episodeId: spec.id,
+          format: spec.format,
+          file,
+          fps: profile.fps,
+          outputResolution: { width: profile.outputWidth, height: profile.outputHeight },
+          phases,
+        },
+        null,
+        2,
+      ) + '\n',
+    );
+    console.log(`[tutorial:record] Saved ${file} (${phases.length} cues)`);
+  } finally {
+    await terminal.close();
     await browser.close();
   }
-
-  const video = page.video();
-  const rawVideoPath = join(outDir, 'raw.webm');
-  if (video) {
-    const tmpPath = await video.path();
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    await rename(tmpPath, rawVideoPath);
-  }
-
-  const durationMs = Date.now() - startedAt;
-  const footageManifest = {
-    episodeId: spec.id,
-    format: spec.format,
-    renderFormat: spec.format === '9:16' ? 'short' : 'longform',
-    file: rawVideoPath,
-    durationMs,
-    fps: profile.fps,
-    outputResolution: { width: profile.outputWidth, height: profile.outputHeight },
-    phases: recordedCues.map((c) => ({
-      phase: c.id,
-      label: c.label,
-      startMs: c.startMs,
-      endMs: c.endMs,
-      keyframe: c.keyframe,
-    })),
-  };
-
-  // eslint-disable-next-line security/detect-non-literal-fs-filename
-  await writeFile(join(outDir, 'footage.json'), JSON.stringify(footageManifest, null, 2) + '\n');
-  console.log(
-    `[tutorial:record] Saved ${rawVideoPath} + footage.json (${recordedCues.length} cues)`,
-  );
 }
 
 await main();

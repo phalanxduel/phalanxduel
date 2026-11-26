@@ -40,5 +40,10 @@ export const DEV_PORTS = Object.freeze({
 
 export const MIGRATIONS_TABLE = 'schema_migrations';
 
-export const LADDER_CATEGORIES = Object.freeze(['pvp', 'sp-random', 'sp-heuristic'] as const);
+export const LADDER_CATEGORIES = Object.freeze([
+  'pvp',
+  'sp-random',
+  'sp-heuristic',
+  'sp-mcts',
+] as const);
 export type LadderCategory = (typeof LADDER_CATEGORIES)[number];

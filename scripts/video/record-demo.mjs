@@ -152,15 +152,6 @@ async function fromLive() {
     colorScheme: 'dark',
     recordVideo: { dir: BUILD, size: { width: W, height: H } },
   });
-  await context.addInitScript(() => {
-    for (const k of [
-      'phx_welcome_v1_seen',
-      'phx_onboarding_deploy_seen',
-      'phx_onboarding_combat_seen',
-    ])
-      localStorage.setItem(k, '1');
-    localStorage.setItem('phx:helpOpen', 'false');
-  });
   const page = await context.newPage();
   page.on('dialog', (d) => d.accept());
 

@@ -15,6 +15,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
   const [gamertag, setGamertag] = useState(getState().operativeId || '');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setNotice(null);
 
     const endpoint =
       view === 'login'
@@ -61,9 +63,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
       if (!res.ok) {
         setError(data.error ?? 'Something went wrong');
       } else if (view === 'forgot') {
-        alert(
-          'RECOVERY_BEACON_ACTIVE: If an account exists for this uplink, a reset link has been dispatched.',
-        );
+        setNotice('If a matching account exists, a password reset link has been sent.');
         setView('login');
       } else {
         setToken(data.token);
@@ -104,6 +104,7 @@ export function AuthPanel({ onClose }: AuthPanelProps) {
         onKeyDown={handleKeyDown}
       >
         <h3>{view === 'login' ? 'LOGIN' : view === 'register' ? 'REGISTER' : 'RECOVER_ACCESS'}</h3>
+        {notice && <p role="status">{notice}</p>}
         {error && (
           <p class="auth-error" role="alert">
             {error}

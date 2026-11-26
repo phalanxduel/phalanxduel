@@ -5,7 +5,7 @@
   "episodeNumber": 6,
   "title": "Sign Up, Gamertags & Account Management",
   "format": "9:16",
-  "targetDurationSec": 55,
+  "targetDurationSec": 22,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42006,
@@ -13,26 +13,56 @@
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/learn/getting-started/",
   "tags": ["Phalanx Duel", "Account", "Signup", "Tutorial", "Shorts"],
-  "summary": "Create your Phalanx Duel account in seconds, choose a valid operative gamertag, manage your profile, and keep your session synced across matches.",
+  "summary": "Create a Phalanx Duel account, choose an operative gamertag, confirm your signed-in lobby header, and open Settings.",
   "cues": [
     {
       "id": "open-auth",
-      "label": "Open Account & Sign Up Panel",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
+      "label": "Open the registration form",
+      "actions": [
+        {
+          "action": "highlight",
+          "selector": "[data-testid=\"auth-gamertag-input\"]"
+        }
+      ],
+      "expect": "[data-testid=\"auth-gamertag-input\"]",
+      "focus": [".auth-panel"],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "registerDemo",
+          "value": "form"
+        }
+      ]
     },
     {
       "id": "register-gamertag",
-      "label": "Choose Gamertag & Register",
-      "action": "hold",
-      "holdMs": 3000
+      "label": "Create the local demo account",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"auth-submit-btn\"]"
+        }
+      ],
+      "expect": ".phx-user-info",
+      "focus": [".phx-user-info"],
+      "holdMs": 2200
     },
     {
       "id": "profile-security",
-      "label": "Manage Profile & Password Reset",
-      "action": "hold",
-      "holdMs": 3000
+      "label": "Find account settings",
+      "actions": [
+        {
+          "action": "click",
+          "selector": "a[href=\"?screen=settings\"]"
+        }
+      ],
+      "expect": ".auth-title",
+      "focus": [".auth-header"],
+      "holdMs": 2200
     }
   ]
 }

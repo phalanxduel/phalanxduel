@@ -156,13 +156,6 @@ async function main(): Promise<void> {
     recordVideo: { dir: VIDEO_TMP, size: { width: 1280, height: 800 } },
   });
 
-  await context.addInitScript(() => {
-    localStorage.setItem('phx_welcome_v1_seen', '1');
-    localStorage.setItem('phx:helpOpen', 'false');
-    localStorage.setItem('phx_onboarding_deploy_seen', '1');
-    localStorage.setItem('phx_onboarding_combat_seen', '1');
-  });
-
   const page = await context.newPage();
   page.on('dialog', async (d) => d.accept());
 

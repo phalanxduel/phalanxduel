@@ -16,8 +16,6 @@ import {
 import { render, setConnection } from './renderer';
 import { NarrationProducer } from './narration-producer';
 import { globalNarrationBus } from './narration-bus';
-import { NarrationOverlay } from './narration-overlay';
-import { CinematicOverlay } from './cinematic-overlay';
 import { CommentaryEngine } from './commentary-engine';
 import { MusicEngine } from './music-engine';
 import { PizzazzEngine } from './pizzazz';
@@ -70,13 +68,9 @@ async function init() {
   });
 
   const producer = new NarrationProducer(bus);
-  const overlay = new NarrationOverlay(bus);
-  const cinematic = new CinematicOverlay(bus);
   const commentary = new CommentaryEngine(bus);
   const pizzazz = new PizzazzEngine();
 
-  overlay.start();
-  cinematic.start();
   commentary.start();
   pizzazz.start(bus);
   bus.subscribe((event) => {

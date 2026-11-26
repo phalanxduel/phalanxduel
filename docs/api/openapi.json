@@ -19548,6 +19548,205 @@
         }
       }
     },
+    "/api/defaults": {
+      "get": {
+        "summary": "Default match parameters and constraints",
+        "tags": ["config"],
+        "description": "Returns the authoritative default configuration for new matches, including grid dimensions, hand sizes, and system constraints.",
+        "responses": {
+          "200": {
+            "description": "Default match parameters and metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Default match parameters and metadata",
+                  "type": "object",
+                  "properties": {
+                    "specVersion": {
+                      "type": "string"
+                    },
+                    "rows": {
+                      "type": "integer"
+                    },
+                    "columns": {
+                      "type": "integer"
+                    },
+                    "maxHandSize": {
+                      "type": "integer"
+                    },
+                    "initialDraw": {
+                      "type": "integer"
+                    },
+                    "modeClassicAces": {
+                      "type": "boolean"
+                    },
+                    "modeClassicFaceCards": {
+                      "type": "boolean"
+                    },
+                    "modeDamagePersistence": {
+                      "type": "string"
+                    },
+                    "modeClassicDeployment": {
+                      "type": "boolean"
+                    },
+                    "modeQuickStart": {
+                      "type": "boolean"
+                    },
+                    "startingLifepoints": {
+                      "type": "integer"
+                    },
+                    "initiative": {
+                      "type": "object",
+                      "properties": {
+                        "deployFirst": {
+                          "type": "string"
+                        },
+                        "attackFirst": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "_meta": {
+                      "type": "object",
+                      "properties": {
+                        "configSource": {
+                          "type": "string"
+                        },
+                        "versions": {
+                          "type": "object",
+                          "properties": {
+                            "schemaVersion": {
+                              "type": "string"
+                            },
+                            "specVersion": {
+                              "type": "string"
+                            },
+                            "compatibility": {
+                              "type": "object",
+                              "properties": {
+                                "wireFormat": {
+                                  "type": "string"
+                                },
+                                "gameplay": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "constraints": {
+                          "type": "object",
+                          "properties": {
+                            "rows": {
+                              "type": "object",
+                              "properties": {
+                                "min": {
+                                  "type": "integer"
+                                },
+                                "max": {
+                                  "type": "integer"
+                                }
+                              }
+                            },
+                            "columns": {
+                              "type": "object",
+                              "properties": {
+                                "min": {
+                                  "type": "integer"
+                                },
+                                "max": {
+                                  "type": "integer"
+                                }
+                              }
+                            },
+                            "maxHandSize": {
+                              "type": "object",
+                              "properties": {
+                                "min": {
+                                  "type": "integer"
+                                },
+                                "note": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "initialDraw": {
+                              "type": "object",
+                              "properties": {
+                                "note": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "startingLifepoints": {
+                              "type": "object",
+                              "properties": {
+                                "min": {
+                                  "type": "integer"
+                                },
+                                "max": {
+                                  "type": "integer"
+                                }
+                              }
+                            },
+                            "totalSlots": {
+                              "type": "object",
+                              "properties": {
+                                "note": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "botStrategies": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "protocol": {
+                          "type": "object",
+                          "properties": {
+                            "heartbeatIntervalMs": {
+                              "type": "integer"
+                            },
+                            "heartbeatTimeoutMs": {
+                              "type": "integer"
+                            },
+                            "initialReconnectDelayMs": {
+                              "type": "integer"
+                            },
+                            "maxReconnectDelayMs": {
+                              "type": "integer"
+                            },
+                            "reconnectWindowMs": {
+                              "type": "integer"
+                            },
+                            "publicOpenMatchTtlMs": {
+                              "type": "integer"
+                            },
+                            "publicLobbyExpiringMs": {
+                              "type": "integer"
+                            },
+                            "minSpectatorDelayTurns": {
+                              "type": "integer"
+                            },
+                            "defaultSpectatorDelayTurns": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/stats": {
       "get": {
         "summary": "Global match statistics",
@@ -41615,205 +41814,6 @@
         "responses": {
           "200": {
             "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/api/defaults": {
-      "get": {
-        "summary": "Default match parameters and constraints",
-        "tags": ["config"],
-        "description": "Returns the authoritative default configuration for new matches, including grid dimensions, hand sizes, and system constraints.",
-        "responses": {
-          "200": {
-            "description": "Default match parameters and metadata",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "description": "Default match parameters and metadata",
-                  "type": "object",
-                  "properties": {
-                    "specVersion": {
-                      "type": "string"
-                    },
-                    "rows": {
-                      "type": "integer"
-                    },
-                    "columns": {
-                      "type": "integer"
-                    },
-                    "maxHandSize": {
-                      "type": "integer"
-                    },
-                    "initialDraw": {
-                      "type": "integer"
-                    },
-                    "modeClassicAces": {
-                      "type": "boolean"
-                    },
-                    "modeClassicFaceCards": {
-                      "type": "boolean"
-                    },
-                    "modeDamagePersistence": {
-                      "type": "string"
-                    },
-                    "modeClassicDeployment": {
-                      "type": "boolean"
-                    },
-                    "modeQuickStart": {
-                      "type": "boolean"
-                    },
-                    "startingLifepoints": {
-                      "type": "integer"
-                    },
-                    "initiative": {
-                      "type": "object",
-                      "properties": {
-                        "deployFirst": {
-                          "type": "string"
-                        },
-                        "attackFirst": {
-                          "type": "string"
-                        }
-                      }
-                    },
-                    "_meta": {
-                      "type": "object",
-                      "properties": {
-                        "configSource": {
-                          "type": "string"
-                        },
-                        "versions": {
-                          "type": "object",
-                          "properties": {
-                            "schemaVersion": {
-                              "type": "string"
-                            },
-                            "specVersion": {
-                              "type": "string"
-                            },
-                            "compatibility": {
-                              "type": "object",
-                              "properties": {
-                                "wireFormat": {
-                                  "type": "string"
-                                },
-                                "gameplay": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          }
-                        },
-                        "constraints": {
-                          "type": "object",
-                          "properties": {
-                            "rows": {
-                              "type": "object",
-                              "properties": {
-                                "min": {
-                                  "type": "integer"
-                                },
-                                "max": {
-                                  "type": "integer"
-                                }
-                              }
-                            },
-                            "columns": {
-                              "type": "object",
-                              "properties": {
-                                "min": {
-                                  "type": "integer"
-                                },
-                                "max": {
-                                  "type": "integer"
-                                }
-                              }
-                            },
-                            "maxHandSize": {
-                              "type": "object",
-                              "properties": {
-                                "min": {
-                                  "type": "integer"
-                                },
-                                "note": {
-                                  "type": "string"
-                                }
-                              }
-                            },
-                            "initialDraw": {
-                              "type": "object",
-                              "properties": {
-                                "note": {
-                                  "type": "string"
-                                }
-                              }
-                            },
-                            "startingLifepoints": {
-                              "type": "object",
-                              "properties": {
-                                "min": {
-                                  "type": "integer"
-                                },
-                                "max": {
-                                  "type": "integer"
-                                }
-                              }
-                            },
-                            "totalSlots": {
-                              "type": "object",
-                              "properties": {
-                                "note": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          }
-                        },
-                        "botStrategies": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        },
-                        "protocol": {
-                          "type": "object",
-                          "properties": {
-                            "heartbeatIntervalMs": {
-                              "type": "integer"
-                            },
-                            "heartbeatTimeoutMs": {
-                              "type": "integer"
-                            },
-                            "initialReconnectDelayMs": {
-                              "type": "integer"
-                            },
-                            "maxReconnectDelayMs": {
-                              "type": "integer"
-                            },
-                            "reconnectWindowMs": {
-                              "type": "integer"
-                            },
-                            "publicOpenMatchTtlMs": {
-                              "type": "integer"
-                            },
-                            "publicLobbyExpiringMs": {
-                              "type": "integer"
-                            },
-                            "minSpectatorDelayTurns": {
-                              "type": "integer"
-                            },
-                            "defaultSpectatorDelayTurns": {
-                              "type": "integer"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
           }
         }
       }

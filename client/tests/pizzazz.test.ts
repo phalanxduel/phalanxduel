@@ -53,7 +53,6 @@ describe('PizzazzEngine animation hook', () => {
   let bus: NarrationBus;
 
   beforeEach(() => {
-    document.querySelectorAll('.pz-splash-overlay').forEach((element) => element.remove());
     document.body.dataset.pzLastTrigger = '';
     document.body.dataset.pzTriggerSeq = '0';
     bus = new NarrationBus();
@@ -118,9 +117,9 @@ describe('PizzazzEngine animation hook', () => {
     });
 
     const triggers = engine.getTriggers();
-    expect(triggers.some((t) => t.type === 'gameOver')).toBe(true);
+    expect(triggers.some((t) => t.type === 'gameOver' && t.detail === 'victory')).toBe(true);
     expect(document.body.dataset.pzLastTrigger).toBe('gameOver');
-    expect(document.querySelector('.pz-splash-text')?.textContent).toBe('VICTORY');
+    expect(document.querySelector('.pz-splash-overlay')).toBeNull();
   });
 
   it('exposes itself on window.__pizzazz', () => {

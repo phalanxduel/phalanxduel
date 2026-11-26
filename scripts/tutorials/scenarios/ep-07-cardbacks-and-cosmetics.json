@@ -3,11 +3,11 @@
   "id": "ep-07-cardbacks-and-cosmetics",
   "season": 2,
   "episodeNumber": 7,
-  "title": "Cardbacks & Cosmetics: Neon Relay, Dual Loop & Obsidian Heraldry",
+  "title": "Unlock and Equip the Dual Loop Card Back",
   "format": "9:16",
-  "targetDurationSec": 50,
+  "targetDurationSec": 23,
   "mode": "classic",
-  "startingLp": 3,
+  "startingLp": 2,
   "seed": 42007,
   "botTier": "scout",
   "cardSkinId": "obsidian-heraldry",
@@ -22,26 +22,83 @@
     "Obsidian Heraldry",
     "Shorts"
   ],
-  "summary": "Preview and equip Phalanx Duel cardbacks: Neon Relay, Obsidian Heraldry, and unlock Dual Loop by completing your first match.",
+  "summary": "Find the card back in Settings, complete a match, and equip the unlocked skin.",
   "cues": [
     {
       "id": "open-settings",
-      "label": "Open Cardback & Cosmetics Settings",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
+      "label": "Open Card Signal Loadout",
+      "actions": [
+        {
+          "action": "highlight",
+          "selector": ".cosmetic-loadout-grid"
+        }
+      ],
+      "expect": ".cosmetic-loadout-grid[data-state=\"ready\"]",
+      "focus": [".cosmetic-loadout-grid"],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "registerDemo"
+        },
+        {
+          "action": "click",
+          "selector": "a[href=\"?screen=settings\"]"
+        }
+      ]
     },
     {
       "id": "preview-skins",
-      "label": "Neon Relay & Obsidian Heraldry",
-      "action": "quickStart",
-      "holdMs": 3000
+      "label": "Read the skin states",
+      "actions": [
+        {
+          "action": "highlight",
+          "selector": ".cosmetic-loadout-card[data-card-theme=\"dual-loop\"]"
+        }
+      ],
+      "expect": ".cosmetic-loadout-card[data-card-theme=\"dual-loop\"]",
+      "focus": [".cosmetic-loadout-card[data-card-theme=\"dual-loop\"]"],
+      "holdMs": 2200
     },
     {
-      "id": "unlock-dual-loop",
-      "label": "Unlock & Equip Dual Loop",
-      "action": "deployFirstCard",
-      "holdMs": 3000
+      "id": "equip-after-match",
+      "label": "Finish a match and equip Dual Loop",
+      "actions": [
+        {
+          "action": "click",
+          "selector": ".cosmetic-loadout-card[data-card-theme=\"dual-loop\"][data-state=\"owned\"] button"
+        }
+      ],
+      "expect": ".cosmetic-loadout-card[data-card-theme=\"dual-loop\"][data-state=\"equipped\"]",
+      "focus": [".cosmetic-loadout-card[data-card-theme=\"dual-loop\"]"],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "click",
+          "selector": ".auth-close"
+        },
+        {
+          "action": "quickStart"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        },
+        {
+          "action": "finishMatch"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"return-lobby-btn\"]"
+        },
+        {
+          "action": "click",
+          "selector": "a[href=\"?screen=settings\"]"
+        }
+      ]
     }
   ]
 }

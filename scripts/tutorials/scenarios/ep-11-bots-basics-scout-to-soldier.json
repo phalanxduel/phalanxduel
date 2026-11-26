@@ -3,9 +3,9 @@
   "id": "ep-11-bots-basics-scout-to-soldier",
   "season": 3,
   "episodeNumber": 11,
-  "title": "1vBot Training Ladder: Scout, Grunt & Soldier",
+  "title": "Find Your First Practice Bot",
   "format": "9:16",
-  "targetDurationSec": 58,
+  "targetDurationSec": 22,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42011,
@@ -13,27 +13,54 @@
   "cardSkinId": "default",
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/learn/foundations/",
-  "tags": ["Phalanx Duel", "Bots", "AI", "Scout", "Grunt", "Soldier", "Shorts"],
-  "summary": "Climb the first three rungs of the 1vBot training ladder: Scout (random), Grunt (legal heuristic), and Soldier (balanced MCTS-100).",
+  "tags": ["Phalanx Duel", "Bots", "AI", "Quick Start", "Bot Medium", "Heuristic Bot", "Shorts"],
+  "summary": "Find the solo match choices, launch a heuristic opponent, and resolve a practice attack.",
   "cues": [
     {
       "id": "bot-tiers-intro",
-      "label": "Meet the Training Bots",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
+      "label": "Find the solo match options",
+      "actions": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "highlight",
+          "selector": ".solo-section"
+        }
+      ],
+      "expect": ".solo-section",
+      "focus": [".solo-section"],
+      "holdMs": 2200
     },
     {
       "id": "scout-and-grunt",
-      "label": "Scout (Random) & Grunt (Heuristic)",
-      "action": "quickStart",
-      "holdMs": 3000
+      "label": "Start the medium bot",
+      "actions": [
+        {
+          "action": "quickStart",
+          "selector": "lobby-bot-btn-med"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] .attack-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200
     },
     {
       "id": "soldier-mcts",
-      "label": "Soldier (Balanced MCTS 100)",
-      "action": "deployFirstCard",
-      "holdMs": 3000
+      "label": "Make a practice attack",
+      "actions": [
+        {
+          "action": "attack"
+        }
+      ],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]",
+      "focus": ["[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]"],
+      "holdMs": 2200
     }
   ]
 }

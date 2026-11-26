@@ -114,7 +114,7 @@ export class PizzazzEngine {
 
     if (this.reducedMotion) return;
 
-    // Phase tracking (phase splash now handled by NarrationOverlay)
+    // Phase tracking
     if (postState.phase !== this.lastPhase) {
       this.lastPhase = postState.phase;
     }
@@ -134,27 +134,6 @@ export class PizzazzEngine {
       }
       this.lastLogCount = currentLogCount;
     }
-  }
-
-  // ── Splash (used for game over VICTORY/DEFEAT only) ──
-
-  private showSplash(text: string, variant?: string): void {
-    const overlay = this.makeEl('div', 'pz-splash-overlay');
-    const splash = this.makeEl('div', 'pz-splash-text');
-    if (variant) splash.classList.add(`pz-splash-${variant}`);
-    splash.textContent = text;
-    overlay.appendChild(splash);
-    document.body.appendChild(overlay);
-
-    const totalDuration =
-      PRESENTATION_TIMING.effects.terminalHold + PRESENTATION_TIMING.effects.terminalExit;
-    this.trackAnimation(totalDuration);
-    setTimeout(() => {
-      splash.classList.add('pz-exit');
-      setTimeout(() => {
-        overlay.remove();
-      }, PRESENTATION_TIMING.effects.terminalExit);
-    }, PRESENTATION_TIMING.effects.terminalHold);
   }
 
   // ── Combat Effects ───────────────────────────────
@@ -422,13 +401,11 @@ export class PizzazzEngine {
   private onTerminal(event: Extract<NarrationEvent, { type: 'terminal' }>): void {
     const state = getState();
     if (state.screen !== 'game' && state.screen !== 'gameOver') return;
-    this.recordTrigger('gameOver');
     const playerIndex = state.playerIndex;
     const isDraw = event.winnerIndex === null;
     const isWin = playerIndex !== null && event.winnerIndex === playerIndex;
-    const text = isDraw ? 'DRAW' : isWin ? 'VICTORY' : 'DEFEAT';
     const variant = isDraw ? 'draw' : isWin ? 'victory' : 'defeat';
-    this.showSplash(text, variant);
+    this.recordTrigger('gameOver', variant);
   }
 
   // ── Helpers ──────────────────────────────────────

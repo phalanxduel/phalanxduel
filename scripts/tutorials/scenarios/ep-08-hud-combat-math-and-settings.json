@@ -3,9 +3,9 @@
   "id": "ep-08-hud-combat-math-and-settings",
   "season": 2,
   "episodeNumber": 8,
-  "title": "Reading the HUD, Combat Math Inspector & Narration Settings",
+  "title": "Read the HUD and Inspect Combat Math",
   "format": "16:9",
-  "targetDurationSec": 210,
+  "targetDurationSec": 33,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42008,
@@ -14,26 +14,66 @@
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/tools/battle-calculator/",
   "tags": ["Phalanx Duel", "HUD", "Combat Math", "Narration", "Settings", "Tutorial"],
-  "summary": "Tour the Phalanx Duel desktop HUD: inspect engine-authored combat math provenance, configure the Narration Ticker, audio/music controls, and in-game Glossary.",
+  "summary": "Use the board and engagement log to inspect the arithmetic behind a real attack.",
   "cues": [
     {
       "id": "hud-overview",
-      "label": "Desktop HUD Layout",
-      "action": "goto",
-      "urlPath": "/",
-      "holdMs": 2500
+      "label": "Locate life points and the board",
+      "actions": [
+        {
+          "action": "highlight",
+          "selector": "[data-testid=\"player-stats\"]"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] .attack-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2200,
+      "setup": [
+        {
+          "action": "goto",
+          "urlPath": "/"
+        },
+        {
+          "action": "quickStart"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"quick-deploy-aggressive\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ]
     },
     {
       "id": "combat-inspector",
-      "label": "Inspect Combat Provenance",
-      "action": "quickStart",
-      "holdMs": 3500
+      "label": "Trace a real attack",
+      "actions": [
+        {
+          "action": "attack"
+        },
+        {
+          "action": "click",
+          "selector": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"] button:text-is(\"ANALYST\")"
+        }
+      ],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"][data-mode=\"analyst\"]",
+      "focus": ["[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]"],
+      "holdMs": 2200
     },
     {
       "id": "narration-and-audio",
-      "label": "Narration Ticker, Music & Accessibility",
-      "action": "deployFirstCard",
-      "holdMs": 3500
+      "label": "Find the narration controls",
+      "actions": [
+        {
+          "action": "click",
+          "selector": ".nr-ticker-container .section-label"
+        }
+      ],
+      "expect": ".nr-ticker-container",
+      "focus": [".nr-ticker-container"],
+      "holdMs": 2200
     }
   ]
 }

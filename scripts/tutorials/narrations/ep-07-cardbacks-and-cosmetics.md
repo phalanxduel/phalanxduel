@@ -1,6 +1,6 @@
 ---
 episode_id: ep-07-cardbacks-and-cosmetics
-title: "Cardbacks & Cosmetics: Neon Relay, Dual Loop & Obsidian Heraldry"
+title: "Unlock and Equip the Dual Loop Card Back"
 format: "9:16"
 companion_url: "https://phalanxduel.com/learn/first-match/"
 privacy: private
@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:open-settings -->
-Want to customize your deck on the battlefield? Phalanx Duel ships with three distinct cardback themes.
+Open Settings and scroll to Card Signal Loadout. Each preview shows the card back your opponent will see.
 
 <!-- cue:preview-skins -->
-Neon Relay brings electric cyan and magenta clarity, while Obsidian Heraldry gives your formation a charcoal, gold, and crimson finish.
+The card indicates whether the skin is equipped, available to equip, or locked. Read the unlock requirement directly beneath the preview.
 
-<!-- cue:unlock-dual-loop -->
-Complete just one match to unlock Dual Loop — cold industrial ink with interlocking paths — then equip it straight from Settings!
+<!-- cue:equip-after-match -->
+After completing your first match, return to Card Signal Loadout. Select Equip on Dual Loop and check that its status changes to Equipped.

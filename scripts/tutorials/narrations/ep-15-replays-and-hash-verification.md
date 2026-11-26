@@ -1,6 +1,6 @@
 ---
 episode_id: ep-15-replays-and-hash-verification
-title: "Deterministic Replays & Cryptographic Hash-Chain Verification"
+title: "Rewatch a Match and Share a Replay Step"
 format: "16:9"
 companion_url: "https://phalanxduel.com/learn/gameplay-assurance/"
 privacy: private
@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:replay-intro -->
-Phalanx Duel is built on a pure, deterministic TypeScript engine — meaning every match is 100 percent replayable and cryptographically verifiable.
+Rewatch reconstructs a completed match from its recorded actions. Start at the initial frame.
 
 <!-- cue:step-through -->
-Open any completed match to step turn-by-turn through deployments, attacks, suit modifiers, and event logs with full arithmetic provenance.
+Next advances one action at a time. The board uses the reconstructed state for that action. Use Previous or the scrubber to inspect a different moment.
 
-<!-- cue:hash-verify -->
-Every turn emits a canonical SHA-256 state hash linked into a verifiable chain. Anyone can run the match verify endpoint to prove zero tampering from turn zero to game over.
+<!-- cue:copy-replay -->
+Copy the replay link to share this exact step. Someone opening the link can navigate forward or back from the same position.
