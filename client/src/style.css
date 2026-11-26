@@ -4150,6 +4150,53 @@ select:focus {
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
 }
 
+@container (max-width: 120px) {
+  .phx-card-type,
+  .card-type {
+    display: none;
+  }
+}
+
+.phx-divider-center {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phx-inline-pass-btn {
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+}
+
+.phx-attack-forecast {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(18, 18, 18, 0.92);
+  border: 1px solid var(--gold-dim);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.phx-attack-forecast-tag {
+  color: var(--gold);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  font-size: 0.65rem;
+}
+
+.phx-attack-forecast-text {
+  font-weight: 600;
+}
+
 .phx-card-hp,
 .card-hp {
   grid-area: hp;

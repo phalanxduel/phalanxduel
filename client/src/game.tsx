@@ -882,6 +882,72 @@ function sendAction(state: GameScreenState, action: Action): void {
   getConnection()?.send({ type: 'action', matchId: state.matchId, action });
 }
 
+function formatAttackForecastSummary(
+  gs: GameState,
+  attackerCard: Card | undefined,
+  resolution: ReturnType<typeof simulateAttack>['resolution'],
+): string {
+  const attacker = attackerCard ? cardLabel(attackerCard) : 'Attacker';
+  const notes: string[] = [];
+  if (resolution.outcome.victoryTriggered) {
+    notes.push('LETHAL');
+  }
+  if (resolution.outcome.defenderFrontDestroyed) {
+    notes.push('Front KO');
+  } else if (resolution.modifiers.some((m) => m.kind === 'aceInvulnerable')) {
+    notes.push('Ace invulnerable');
+  } else if (resolution.baseAttack > 0) {
+    notes.push(
+      gs.params.modeDamagePersistence === 'classic'
+        ? 'Front survives · Classic resets'
+        : 'Front damaged',
+    );
+  }
+  if (resolution.outcome.defenderBackDestroyed) {
+    notes.push('Back KO');
+  }
+  for (const mod of resolution.modifiers) {
+    if (mod.kind === 'diamondDoubleDefense' || mod.kind === 'diamondDeathShield') {
+      notes.push('Diamond shield');
+    } else if (mod.kind === 'heartDeathShield') {
+      notes.push('Heart shield');
+    } else if (mod.kind === 'clubDoubleOverflow') {
+      notes.push('Club ×2 overflow');
+    } else if (mod.kind === 'spadeDoubleLp') {
+      notes.push('Spade ×2 LP');
+    }
+  }
+  const uniqueNotes = [...new Set(notes)];
+  uniqueNotes.push(`${resolution.outcome.breakthroughDamage} LP`);
+  return `${attacker} (${resolution.baseAttack} ATK) → ${uniqueNotes.join(' · ')}`;
+}
+
+function AttackForecastBanner({ gs, state }: { gs: GameState; state: GameScreenState }) {
+  if (!state.selectedAttacker || state.isSpectator) return null;
+  const { row, col } = state.selectedAttacker;
+  const action = state.validActions.find(
+    (a): a is Extract<Action, { type: 'attack' }> =>
+      a.type === 'attack' && a.attackingColumn === col,
+  );
+  if (!action) return null;
+
+  const myIdx = state.playerIndex ?? 0;
+  const attackerCard = gs.players[myIdx]?.battlefield[row * gs.params.columns + col]?.card;
+  const preview = simulateAttack(gs, action);
+  const summary = formatAttackForecastSummary(gs, attackerCard, preview.resolution);
+  return (
+    <div
+      class="phx-attack-forecast"
+      data-testid="attack-forecast-banner"
+      data-verdict={preview.verdict}
+      aria-live="polite"
+    >
+      <span class="phx-attack-forecast-tag">FORECAST</span>
+      <span class="phx-attack-forecast-text">{summary}</span>
+    </div>
+  );
+}
+
 function CombatFeedbackBanner({ gs }: { gs: GameState }) {
   const [combatFeedback, setCombatFeedback] = useState<{
     headline: string;
@@ -1154,6 +1220,7 @@ export function GameApp({ state }: { state: AppState }) {
         aria-live="polite"
         aria-atomic="true"
       >
+        <AttackForecastBanner gs={gs} state={state} />
         <CombatFeedbackBanner gs={gs} />
       </div>
 
@@ -1166,18 +1233,51 @@ export function GameApp({ state }: { state: AppState }) {
 
         <div class="phx-divider">
           <PhxStatsHorizontal gs={gs} playerIdx={oppIdx} label="HOSTILE" isOpponent={true} />
-          <div
-            id="phx-phase-indicator"
-            class="phx-phase-indicator"
-            data-component="ActionPromptView"
-            data-testid="phase-indicator"
-            data-phase={gs.phase}
-            data-turn={gs.turnNumber}
-            data-action-count={gs.transactionLog?.length ?? 0}
-            data-damage-mode={gs.params.modeDamagePersistence}
-            data-phase-tone={phaseTone}
-          >
-            {getPhaseLabel(gs)}
+          <div class="phx-divider-center">
+            <div
+              id="phx-phase-indicator"
+              class="phx-phase-indicator"
+              data-component="ActionPromptView"
+              data-testid="phase-indicator"
+              data-phase={gs.phase}
+              data-turn={gs.turnNumber}
+              data-action-count={gs.transactionLog?.length ?? 0}
+              data-damage-mode={gs.params.modeDamagePersistence}
+              data-phase-tone={phaseTone}
+            >
+              {getPhaseLabel(gs)}
+            </div>
+            {!state.isSpectator &&
+              state.validActions.some((a) => a.type === 'pass') &&
+              (!isReinforcementPhase(gs) ||
+                !state.validActions.some((a) => a.type === 'reinforce')) && (
+                <button
+                  type="button"
+                  class="btn btn-secondary phx-inline-pass-btn"
+                  data-testid={
+                    isReinforcementPhase(gs) ? 'inline-skip-reinforce-btn' : 'inline-pass-btn'
+                  }
+                  onClick={() => {
+                    const isReinforce = isReinforcementPhase(gs);
+                    const nextPassEndsMatch =
+                      !isReinforce &&
+                      ((gs.passState?.consecutivePasses[myIdx] ?? 0) + 1 >=
+                        (gs.params.modePassRules?.maxConsecutivePasses ?? 3) ||
+                        (gs.passState?.totalPasses[myIdx] ?? 0) + 1 >=
+                          (gs.params.modePassRules?.maxTotalPassesPerPlayer ?? 5));
+                    if (nextPassEndsMatch && !confirm('Confirm PASS? This pass ends the match.')) {
+                      return;
+                    }
+                    sendAction(state, {
+                      type: 'pass',
+                      playerIndex: myIdx,
+                      timestamp: new Date().toISOString(),
+                    });
+                  }}
+                >
+                  {isReinforcementPhase(gs) ? 'SKIP' : 'PASS'}
+                </button>
+              )}
           </div>
           <PhxStatsHorizontal gs={gs} playerIdx={myIdx} label="OPERATIVE" isOpponent={false} />
         </div>

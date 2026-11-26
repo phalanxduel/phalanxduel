@@ -574,5 +574,7 @@ describe('NarrationProducer', () => {
       turnNumber: 1,
       victoryType: 'lpDepletion',
     });
+    const totalDelayMs = entries.reduce((sum, entry) => sum + entry.delayMs, 0);
+    expect(totalDelayMs).toBeLessThan(1_500);
   });
 });

@@ -102,12 +102,17 @@ export class NarrationBus {
     }, entry.delayMs);
   }
 
-  destroy(): void {
+  /** Drop queued entries from earlier turns without removing subscribers. */
+  flush(): void {
     if (this.drainTimer) {
       clearTimeout(this.drainTimer);
       this.drainTimer = null;
     }
     this.queue = [];
+  }
+
+  destroy(): void {
+    this.flush();
     this.subscribers = [];
   }
 

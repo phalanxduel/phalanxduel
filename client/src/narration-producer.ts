@@ -96,6 +96,8 @@ export class NarrationProducer {
 
     // Presentation order is causal: resolve the transaction first, then
     // announce its resulting phase or terminal verdict.
+    const isTerminalTransition =
+      phaseChanged && isGameOver(postState) && Boolean(postState.outcome);
     if (phaseChanged) {
       if (isGameOver(postState) && postState.outcome) {
         entries.push({
@@ -117,6 +119,14 @@ export class NarrationProducer {
     }
 
     if (entries.length > 0) {
+      if (isTerminalTransition) {
+        // Flush stale earlier-turn cues and compress terminal delays so Game Over
+        // lands crisply (~1s) while preserving causal event order.
+        this.bus.flush();
+        for (const entry of entries) {
+          entry.delayMs = entry.event.type === 'calculation' ? 60 : Math.min(entry.delayMs, 220);
+        }
+      }
       this.bus.enqueue(entries);
     }
   }

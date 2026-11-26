@@ -1,16 +1,16 @@
 # Graph Report - game  (2026-11-25)
 
 ## Corpus Check
-- 2048 files · ~1,160,552 words
+- 2048 files · ~1,160,959 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 12902 nodes · 16010 edges · 1836 communities (960 shown, 229 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 258 edges (avg confidence: 0.82)
+- 12905 nodes · 16018 edges · 1837 communities (962 shown, 228 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 259 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `cbc50e60`
+- Built from commit: `e744efce`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -18,30 +18,30 @@
 - scripts
 - src/schema.ts
 - metrics.ts
-- emitOtlpLog
+- traceDbQuery
 - match-repo.ts
-- createInitialState
+- applyAction
 - types.ts
 - match.ts
 - verify-combat-reference.ts
-- traceDbQuery
+- routes/auth.ts
 - state-machine.ts
-- narration-producer.ts
+- PizzazzEngine
 - server/index.ts
 - network-monitor.ts
-- CommentaryEngine
+- src/auth.ts
 - connection.ts
-- turns.ts
+- engine/src/index.ts
 - shared/src/index.ts
-- routes/ladder.ts
+- replay-verify.ts
 - app.ts
-- registerWebSocketRoute
+- matchmaking.ts
 - overrides
 - Technical & Rule Terms
 - rules.md
 - properties
 - renderer.ts
-- engine/src/index.ts
+- engine/src/bot.ts
 - observer-knowledge.ts
 - properties
 - Renderer Decomposition Implementation Plan
@@ -53,7 +53,7 @@
 - required
 - agent-audit.ts
 - deriveEventsFromEntry
-- dod/README.md
+- Phalanx Duel Test Constitution
 - adr/README.md
 - dependencies
 - api-playthrough.ts
@@ -91,14 +91,14 @@
 - createAndJoinMatch
 - simulate-headless.ts
 - capture-gameplay-gif.ts
-- combat-explanation.ts
+- narration-producer.ts
 - PULL_REQUEST_TEMPLATE.md
 - compilerOptions
 - wsClient
 - dependencies
 - autonomous-bot/src/bot.ts
 - Configurable Grid, AI Bot, and Advanced Match Creation — Design
-- PizzazzEngine
+- qa/run-evidence.ts
 - 2026-03-11 Type De-duplication Plan
 - shared/package.json
 - AI Agent Instructions
@@ -122,7 +122,7 @@
 - dev-dashboard.ts
 - Deployment B Execution Plan — Match Parameters (TDD + Deployable Units)
 - benchmark-protocols.ts
-- applyAction
+- abTests.ts
 - game-over.tsx
 - demo-llama.ts
 - properties
@@ -135,7 +135,7 @@
 - Final Remediation Report
 - stryker.config.json
 - record-episode.ts
-- CI/CD Manager Skill
+- Production Support Contract
 - enum
 - quality-hotspots.ts
 - consecutivePasses
@@ -153,7 +153,7 @@
 - phx-demo-ctl
 - pvl-diagrams.ts
 - Changelog
-- liveness.test.ts
+- CI/CD Manager Skill
 - compilerOptions
 - Swarm Testing Strategies
 - Playthrough Scenarios
@@ -167,7 +167,7 @@
 - 3. Comprehensive Layer-by-Layer Inventory
 - phalanx-duel-30-minute-slides.md
 - GameProjection
-- verify-event-log.ts
+- Feature Flags & Admin
 - ignoreBinaries
 - GameTopMonitor
 - required
@@ -179,7 +179,7 @@
 - Connect by Tool
 - Local Development Guide
 - Security Knowledge Base and Reference Index
-- internal.ts
+- Core Criteria
 - typedoc.json
 - reinforcement
 - required
@@ -203,7 +203,7 @@
 - phalanx-local
 - demo-cockpit-server.mjs
 - sync-secrets.ts
-- MatchActor
+- LocalMatchManager
 - properties
 - properties
 - task-45.1 - Engine-Event-Derivation.md
@@ -267,7 +267,7 @@
 - Skill: Database Environment Isolation
 - Production Readiness Priorities and Version Bump Plan
 - Phalanx Duel — Test Council Audit
-- Phalanx Duel Test Constitution
+- ws.test.ts
 - MCP Server
 - Gameplay Assurance Charter
 - Architectural Boundaries: Engine vs. Server
@@ -287,7 +287,7 @@
 - TASK-53: Add Graceful Shutdown Handler
 - instrument-cli.ts
 - Part 2 — For Investors, Sponsors & Venue Partners
-- Contributing to Phalanx Duel
+- AGENTS.md
 - DEC-2G-001 - Client UI/UX audit and remediation plan
 - Findings
 - Sequential Execution Plan
@@ -314,8 +314,8 @@
 - P1-001: Renderer Decomposition Design
 - task-343.12 - Prevent-combat-feedback-banner-from-shifting-the-game-board.md
 - Description
-- Backlog Best Practices
-- engine.ts
+- MatchHistory.tsx
+- Backlog Task Manager
 - Demo Gate Lessons
 - agents/README.md
 - Skill: Analyze a Match
@@ -390,8 +390,8 @@
 - DEC-2B-005 - Agentic gameplay immediate path: MCP client + bot opponent + llama analysis
 - @phalanxduel/shared
 - 3. Match Parameters (Authoritative Schema)
-- Production Support Contract
-- qa/run-evidence.ts
+- 21. Card Visibility and Fog of War
+- Context Hunter
 - OpenTelemetry and Collector Topology
 - gameplay.ts
 - preact
@@ -400,7 +400,7 @@
 - match-event-log.schema.json
 - ws-smoke.js
 - deploy-fly.sh
-- QaRun
+- TutorialTerminal
 - player
 - src/run-evidence.ts
 - autonomous-bot/tsconfig.json
@@ -465,7 +465,7 @@
 - ignoreDependencies
 - required
 - verify-coverage.ts
-- damageMode
+- Medium
 - generate-infra-diagram.ts
 - shared/tsconfig.json
 - Phalanx Agentic Gameplay
@@ -554,7 +554,7 @@
 - Pavel — PVL specialist agent
 - Visual publication audit
 - Trademark Policy
-- ws.test.ts
+- Adoption Phases
 - project
 - supportedArchitectures
 - reliable-channel.ts
@@ -570,7 +570,7 @@
 - enum
 - modePassRules
 - generate-schemas.ts
-- stage-episode.ts
+- DEC-2A-004 - Backlog-integrated documentation governance
 - Disk Hygiene & Asset Management
 - Phalanx DB Safe Ops
 - Phalanx Gameplay Change
@@ -681,7 +681,7 @@
 - Backlog Technical Project Manager
 - Phalanx Duel local tooling
 - Card Cosmetics
-- Production Deployment Checklist
+- Rejected Alternatives
 - KNIP_REPORT.md
 - simulation.test.ts
 - Phalanx Duel demo observability packet
@@ -966,11 +966,11 @@
 - run-otel-collector.sh
 - phx-install-localhost
 - phx-observability-check
-- hand
+- First Implementation Slice
 - swiftui-proof.sh
 - vite-env.d.ts
 - Local Tooling Reference
-- Delivery Pipeline
+- Proposed CI Integration
 - Phalanx Local RUM
 - Client Build Variables
 - Deployment Examples
@@ -1121,10 +1121,10 @@
 - @opentelemetry/exporter-trace-otlp-http
 - @opentelemetry/instrumentation-xml-http-request
 - @opentelemetry/resources
-- Phalanx Duel System Features
+- deckSeed
 - @opentelemetry/sdk-trace-web
-- Phalanx Duel Infrastructure & Deployment Topology
-- AI Collaboration Policy
+- Testing Impact
+- Future Directions (out of scope)
 - commander
 - dependency-cruiser
 - docker-entrypoint-automation.sh
@@ -1200,8 +1200,9 @@
 - github.com/phalanxduel/phalanxduel/clients/go/duel-cli
 - Record Phalanx Duel tutorials
 - typedoc
-- migrations.ts
+- server/src/instrument.ts
 - trajectory.test.ts
+- Scope
 - generate-openapi-file.ts
 - tools/analysis.ts
 
@@ -1232,7 +1233,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (1836 total, 229 thin omitted)
+## Communities (1837 total, 228 thin omitted)
 
 ### Community 0 - "scripts"
 Cohesion: 0.01
@@ -1240,47 +1241,47 @@ Nodes (175): scripts, admin:reset-dev, admin:reset-password, admin:seed-dev, adm
 
 ### Community 1 - "src/schema.ts"
 Cohesion: 0.03
-Nodes (68): AchievementListSchema, AchievementSchema, AckMessageSchema, ActionTransportFieldsSchema, BotConfigSchema, CalculationInputSchema, CalculationInputSourceSchema, CalculationOperatorSchema (+60 more)
+Nodes (69): AchievementListSchema, AchievementSchema, AckMessageSchema, ActionTransportFieldsSchema, BattlefieldCardSchema, BotConfigSchema, CalculationInputSchema, CalculationOperatorSchema (+61 more)
 
 ### Community 2 - "metrics.ts"
 Cohesion: 0.04
-Nodes (54): actionResultCounter, actionResults, actionsDurationHistogram, actionsDurationMs, actionsTotal, actionsTotalCounter, featureCounter, featureEvents (+46 more)
+Nodes (63): LedgerAction, SystemInitAction, ActionError, BotMatchOptions, actionResultCounter, actionResults, actionsDurationHistogram, actionsDurationMs (+55 more)
 
-### Community 3 - "emitOtlpLog"
-Cohesion: 0.07
-Nodes (19): [matchId, flag], verifyMatchState(), buildUserActiveMatchSummary(), mapRowToCompletedHistoryEntry(), PostgresEventBus, emitOtlpLog(), originalConsole, otelDisabled (+11 more)
+### Community 3 - "traceDbQuery"
+Cohesion: 0.08
+Nodes (17): [matchId, flag], verifyMatchState(), buildRecoveredMatch(), MatchRepository, traceDbQuery(), PostgresEventBus, emitOtlpLog(), MatchStateVerificationResult (+9 more)
 
 ### Community 4 - "match-repo.ts"
-Cohesion: 0.05
-Nodes (70): AuthToolResponse, parseAuthToolResponse(), registerDataTools(), ProcessMatchAchievementsOptions, MatchAnalysisMetadata, awardDualLoopForCompletedMatch(), DEFAULT_CARD_SKIN_ID, DUAL_LOOP_CARD_SKIN_ID (+62 more)
+Cohesion: 0.03
+Nodes (81): AuthToolResponse, parseAuthToolResponse(), registerDataTools(), main(), AchievementService, MatchAnalysisMetadata, db, buildFallbackConfig() (+73 more)
 
-### Community 5 - "createInitialState"
-Cohesion: 0.07
-Nodes (29): argv, main(), runMatch(), { values }, createDeck(), RANKS, shuffleDeck(), SUITS (+21 more)
+### Community 5 - "applyAction"
+Cohesion: 0.04
+Nodes (44): argv, main(), runMatch(), { values }, computeBotAction(), replayGameAtOrBeforeTurn(), checkVictory(), createInitialState() (+36 more)
 
 ### Community 6 - "types.ts"
 Cohesion: 0.03
-Nodes (63): BattlefieldCardSchema, EventTypeSchema, PhaseHopTraceSchema, ResolutionOutcomeSchema, Achievement, AchievementList, ActionDSL, BotConfig (+55 more)
+Nodes (63): CalculationInputSourceSchema, DamageModeSchema, GameViewModelMessageSchema, MatchEventLogSchema, Achievement, AchievementList, ActionDSL, BotConfig (+55 more)
 
 ### Community 7 - "match.ts"
-Cohesion: 0.04
-Nodes (37): @phalanxduel/engine, processMatchAchievements(), MatchAnalysisService, AppendActionEntry, ILedgerStore, InMemoryLedgerStore, MemoryEntry, PostgresLedgerStore (+29 more)
+Cohesion: 0.06
+Nodes (27): @phalanxduel/engine, AppendActionEntry, ILedgerStore, InMemoryLedgerStore, MemoryEntry, PostgresLedgerStore, EventCallback, IEventBus (+19 more)
 
 ### Community 8 - "verify-combat-reference.ts"
 Cohesion: 0.06
 Nodes (61): COMBAT_PROOF_DOMAIN_VERSION, RANKS, referenceBattlefieldStates(), referenceCards(), referenceLpDomain(), referenceModeDomain(), SUITS, applyFrontToBackBoundary() (+53 more)
 
-### Community 9 - "traceDbQuery"
-Cohesion: 0.04
-Nodes (37): __dirname, main(), AchievementService, BLOCKLIST_PATH, ContentFilterService, __dirname, checkPendingMigrations(), traceDbQuery() (+29 more)
+### Community 9 - "routes/auth.ts"
+Cohesion: 0.05
+Nodes (31): __dirname, main(), BLOCKLIST_PATH, ContentFilterService, __dirname, traceDbTransaction(), UserRepository, isDemoEmailVerificationBypassed() (+23 more)
 
 ### Community 10 - "state-machine.ts"
 Cohesion: 0.12
-Nodes (12): ActionType, assertTransition(), findTransition(), hasTransition(), STATE_MACHINE, transitionsFrom(), transitionsTo(), stepPhase() (+4 more)
+Nodes (12): ActionType, assertTransition(), canHandleAction(), findTransition(), hasTransition(), STATE_MACHINE, transitionsFrom(), transitionsTo() (+4 more)
 
-### Community 11 - "narration-producer.ts"
+### Community 11 - "PizzazzEngine"
 Cohesion: 0.06
-Nodes (28): cardLabel(), suitColor(), Window, EngagementLog(), EngagementLogProps, COLUMN_LABELS, formatEvent(), getEventCardType() (+20 more)
+Nodes (14): CommentaryEngine, Window, CardType, globalNarrationBus, NarrationBus, NarrationEvent, Subscriber, PizzazzEngine (+6 more)
 
 ### Community 12 - "server/index.ts"
 Cohesion: 0.06
@@ -1290,29 +1291,33 @@ Nodes (49): gamertagValidation, normalized, sql, checkPendingMigrations(), check
 Cohesion: 0.06
 Nodes (54): DOCS_DIR, generateLibraryHtml(), OUTPUT_DIR, parseApiRoutes(), parseSchemaMarkdown(), readSafe(), ROOT_DIR, TableDefinition (+46 more)
 
+### Community 14 - "src/auth.ts"
+Cohesion: 0.12
+Nodes (19): getConnection(), clearToken(), getToken(), logout(), restoreSession(), setToken(), AuthPanel(), AuthPanelProps (+11 more)
+
 ### Community 15 - "connection.ts"
 Cohesion: 0.06
 Nodes (47): actionLatency, clientEvents, featureEvents, meter, recordClientActionLatency(), recordWebVital(), trackClientEvent(), trackFeatureEvent() (+39 more)
 
-### Community 16 - "turns.ts"
-Cohesion: 0.14
-Nodes (24): getBaseAttackDamage(), isValidTarget(), resetColumnHp(), resolveAttack(), chooseQuickDeployAction(), chooseRandom(), compareCards(), DeployTarget (+16 more)
+### Community 16 - "engine/src/index.ts"
+Cohesion: 0.07
+Nodes (58): BotConfig, OmniscientResearchBotDecision, getBaseAttackDamage(), isValidTarget(), resetColumnHp(), resolveAttack(), createDeck(), RANKS (+50 more)
 
 ### Community 17 - "shared/src/index.ts"
-Cohesion: 0.06
-Nodes (49): argv, scenario, seed, { values }, arg(), main(), usage(), argv (+41 more)
+Cohesion: 0.08
+Nodes (39): argv, scenario, seed, { values }, arg(), main(), usage(), GameScenarioSchema (+31 more)
 
-### Community 18 - "routes/ladder.ts"
+### Community 18 - "replay-verify.ts"
 Cohesion: 0.09
-Nodes (17): main(), getServerConfig(), loadServerConfig(), ServerConfig, ServerConfigSchema, LadderService, { matchmakingEloBand: ELO_BAND, matchmakingMaxWaitMs: MAX_WAIT_MS }, QueueEntry (+9 more)
+Nodes (23): argv, main(), playGame(), { values }, verifyFromArtifacts(), verifyGame(), VerifyResult, verifyStandalone() (+15 more)
 
 ### Community 19 - "app.ts"
 Cohesion: 0.04
-Nodes (63): main(), buildApp(), BuildAppOptions, buildLoggerConfig(), __dirname, FastifyLoggerConfig, LOCAL_DEV_CONNECT_SRCS, client (+55 more)
+Nodes (34): main(), buildApp(), BuildAppOptions, buildLoggerConfig(), __dirname, FastifyLoggerConfig, LOCAL_DEV_CONNECT_SRCS, client (+26 more)
 
-### Community 20 - "registerWebSocketRoute"
-Cohesion: 0.10
-Nodes (9): MatchmakingQueueService, clientIp(), isTransportOnlyServerMessage(), registerWebSocketRoute(), cleanupReceipts(), preprocessMessage(), replayReceipt(), sendAck() (+1 more)
+### Community 20 - "matchmaking.ts"
+Cohesion: 0.06
+Nodes (45): UserActiveMatchSummary, AuthenticatedUserClaims, defaultUserRepo, resolveActiveUser(), RouteAspectOptions, RouteContext, ServerDb, withRouteAspect() (+37 more)
 
 ### Community 21 - "overrides"
 Cohesion: 0.04
@@ -1323,40 +1328,40 @@ Cohesion: 0.04
 Nodes (48): Action, Attack Phase, Battlefield, Boundary, Canonicalize, Card ID, Carryover, Centralized LGTM Stack (+40 more)
 
 ### Community 23 - "rules.md"
-Cohesion: 0.04
-Nodes (47): 10. Classic Aces, 11. Classic Face Cards, 12. Damage Persistence, 13. Cleanup, 14. Reinforcement, 15. Draw Phase, 16.1.1 Exact Threefold Repetition, 16.1.2 No-Progress Limit (+39 more)
+Cohesion: 0.05
+Nodes (39): 10. Classic Aces, 11. Classic Face Cards, 12. Damage Persistence, 13. Cleanup, 14. Reinforcement, 15. Draw Phase, 16.1.1 Exact Threefold Repetition, 16.1.2 No-Progress Limit (+31 more)
 
 ### Community 24 - "properties"
 Cohesion: 0.05
 Nodes (48): description, maximum, minimum, type, additionalProperties, description, required, type (+40 more)
 
 ### Community 25 - "renderer.ts"
-Cohesion: 0.09
-Nodes (35): applySuitAura(), AURA_CLASSES, suitSymbol(), renderError(), renderGame(), renderLobby(), unmountLobby(), clearContainer() (+27 more)
+Cohesion: 0.10
+Nodes (30): applySuitAura(), AURA_CLASSES, renderGame(), renderLobby(), unmountLobby(), clearContainer(), formatDate(), MatchSummary (+22 more)
 
-### Community 26 - "engine/src/index.ts"
-Cohesion: 0.12
-Nodes (30): BotConfig, computeBotActionFromKnownState(), computeHeuristicAction(), computeOmniscientResearchBotDecision(), computeRandomAction(), evaluateAttackColumn(), OmniscientResearchBotDecision, OmniscientResearchBotRequest (+22 more)
+### Community 26 - "engine/src/bot.ts"
+Cohesion: 0.11
+Nodes (30): computeBotActionFromKnownState(), computeHeuristicAction(), computeOmniscientResearchBotDecision(), computeRandomAction(), evaluateAttackColumn(), OmniscientResearchBotRequest, pickRandom(), scoreAttack() (+22 more)
 
 ### Community 27 - "observer-knowledge.ts"
-Cohesion: 0.19
-Nodes (20): calculationStepVisible(), canSeePrivateZone(), hasInternalAccess(), ObserverContext, observerPlayerIndex(), projectActionForObserver(), projectCalculationProvenance(), projectEventsForObserver() (+12 more)
+Cohesion: 0.21
+Nodes (19): calculationStepVisible(), canSeePrivateZone(), hasInternalAccess(), ObserverContext, observerPlayerIndex(), projectActionForObserver(), projectCalculationProvenance(), projectEventsForObserver() (+11 more)
 
 ### Community 28 - "properties"
 Cohesion: 0.04
-Nodes (51): description, oneOf, description, maximum, minimum, type, oneOf, description (+43 more)
+Nodes (46): description, oneOf, oneOf, description, maximum, minimum, type, description (+38 more)
 
 ### Community 29 - "Renderer Decomposition Implementation Plan"
 Cohesion: 0.04
 Nodes (44): Renderer Decomposition Implementation Plan, Step 1: Add jsdom to client devDependencies and test script, Step 1: Verify renderer.ts is ~200 LOC, Step 1: Write the characterization test, Step 1: Write the characterization test, Step 1: Write the characterization test, Step 1: Write the characterization test, Step 1: Write the characterization test (+36 more)
 
 ### Community 30 - "simulate-ui.ts"
-Cohesion: 0.05
-Nodes (75): BotIdentity, addSetupSpectator(), apiUrl(), assertTerminalPresentation(), attachLogger(), AuthAccount, AuthSession, AuthUser (+67 more)
+Cohesion: 0.04
+Nodes (81): BotIdentity, BotPersona, addSetupSpectator(), apiUrl(), assertTerminalPresentation(), attachLogger(), AuthAccount, AuthSession (+73 more)
 
 ### Community 31 - "ladder-simulation.ts"
-Cohesion: 0.08
-Nodes (46): appendHistory(), buildHistoryRows(), getGitSha(), HistoryRow, LadderSeasonCliReport, main(), renderHistoryMarkdown(), renderMarkdown() (+38 more)
+Cohesion: 0.09
+Nodes (41): appendHistory(), buildHistoryRows(), getGitSha(), HistoryRow, LadderSeasonCliReport, main(), renderHistoryMarkdown(), renderMarkdown() (+33 more)
 
 ### Community 32 - "Combat Narration Bus Implementation Plan"
 Cohesion: 0.05
@@ -1371,40 +1376,40 @@ Cohesion: 0.05
 Nodes (36): argv, BUILD, cardHtml(), { cues, front }, duration(), exec, FOOTAGE, footageClip() (+28 more)
 
 ### Community 35 - "required"
-Cohesion: 0.05
-Nodes (49): count, face, from, signature, suit, to, trigger, value (+41 more)
+Cohesion: 0.06
+Nodes (44): count, face, from, signature, suit, to, trigger, value (+36 more)
 
 ### Community 36 - "agent-audit.ts"
 Cohesion: 0.09
 Nodes (41): ACTIVE_TASK_STATUSES, activeCommandContractFindings(), activeFiles(), agentSkillAlignmentFindings(), backlogFindings(), canonicalDocReferenceFindings(), CONTAINER_BLOCKING_SERVICES, __dirname (+33 more)
 
 ### Community 37 - "deriveEventsFromEntry"
-Cohesion: 0.05
-Nodes (34): AttackPreview, AttackPreviewVerdict, resolveVerdict(), simulateAttack(), assertNever(), deriveEventsFromEntry(), replayGame(), battlefieldCard() (+26 more)
+Cohesion: 0.07
+Nodes (26): AttackPreview, AttackPreviewVerdict, resolveVerdict(), simulateAttack(), assertNever(), deriveEventsFromEntry(), validateAction(), battlefieldCard() (+18 more)
 
-### Community 38 - "dod/README.md"
-Cohesion: 0.04
-Nodes (38): Active Flags, Admin Authentication, Experiment Assignment (lobby_framework), Feature Flags & Admin, Lobby Framework Decision Logic, Rollout Progression, Server Experiment Config (`PHALANX_AB_TESTS_JSON`), Telemetry Events (lobby_framework) (+30 more)
+### Community 38 - "Phalanx Duel Test Constitution"
+Cohesion: 0.05
+Nodes (35): Canonical Ownership, Guidance, Known Duplication Hotspots, Type Ownership, API & Schmeas, Change Surfaces, Client & UI, Rules Engine (+27 more)
 
 ### Community 39 - "adr/README.md"
-Cohesion: 0.04
-Nodes (25): DEC-2A-001: Authority model is explicit, DEC-2A-002 - Runtime behavior change updates RULES.md, DEC-2A-003 - Drift guardrails CI-enforced, DEC-2B-001 - XState adoption engine-first, DEC-2B-002 - Deterministic replay hash compatibility, DEC-2C-001 - Verification is policy-based, DEC-2C-002 - Machine binding in signatures is optional, DEC-2C-003 - Official outputs verifiable offline (+17 more)
+Cohesion: 0.05
+Nodes (21): DEC-2A-001: Authority model is explicit, DEC-2A-002 - Runtime behavior change updates RULES.md, DEC-2A-003 - Drift guardrails CI-enforced, DEC-2B-001 - XState adoption engine-first, DEC-2B-002 - Deterministic replay hash compatibility, DEC-2C-001 - Verification is policy-based, DEC-2C-002 - Machine binding in signatures is optional, DEC-2C-003 - Official outputs verifiable offline (+13 more)
 
 ### Community 40 - "dependencies"
 Cohesion: 0.05
 Nodes (39): @anthropic-ai/sdk, dependencies, @anthropic-ai/sdk, drizzle-orm, @modelcontextprotocol/sdk, openai, @phalanxduel/engine, @phalanxduel/shared (+31 more)
 
 ### Community 41 - "api-playthrough.ts"
-Cohesion: 0.11
+Cohesion: 0.12
 Nodes (25): argConfig, bindTrajectoryAction(), BotStrategy, cardReferenceSuffix(), CliOptions, connectWs(), DamageMode, drainMessages() (+17 more)
 
 ### Community 42 - "game.tsx"
-Cohesion: 0.06
-Nodes (34): HealthBadge(), HealthBadgeProps, SettingsPanel(), SettingsPanelProps, HUD_PHASE_LABELS, PHASE_DISPLAY, CARD_SKINS, CardSkinDefinition (+26 more)
+Cohesion: 0.09
+Nodes (28): HealthBadge(), HealthBadgeProps, HUD_PHASE_LABELS, PHASE_DISPLAY, AttackForecastBanner(), BattlefieldCell(), describePlayByPlay(), formatAttackForecastSummary() (+20 more)
 
 ### Community 43 - "src/routes/matches.ts"
-Cohesion: 0.08
-Nodes (37): getMatchCosmetics(), CompletedMatchHistoryEntry, actionsFromEntries(), authorizeLogAccess(), CompactEvent, CompletedReplaySource, escapeHtml(), getRequesterIdentity() (+29 more)
+Cohesion: 0.07
+Nodes (49): awardDualLoopForCompletedMatch(), DEFAULT_CARD_SKIN_ID, DUAL_LOOP_CARD_SKIN_ID, DUAL_LOOP_PRODUCT_ID, DUAL_LOOP_PRODUCT_SKU, equipCardSkin(), getEquippedCardSkin(), getMatchCosmetics() (+41 more)
 
 ### Community 44 - "properties"
 Cohesion: 0.05
@@ -1428,7 +1433,7 @@ Nodes (33): artifacts, { client, server, asyncapiGaps }, countWsTypes(), coverag
 
 ### Community 49 - "match-types.ts"
 Cohesion: 0.08
-Nodes (13): MatchConnectionTracker, BotMatchOptions, MatchStatus, MatchVisibility, PublicMatchStatus, SocketInfo, SpectatorConnection, buildDelayedSpectatorFrame() (+5 more)
+Nodes (14): MatchConnectionTracker, CreateMatchOptions, LobbyMatchSummary, MatchStatus, MatchVisibility, PublicMatchStatus, SocketInfo, SpectatorConnection (+6 more)
 
 ### Community 50 - "30-minute Software Craftsmanship presentation"
 Cohesion: 0.05
@@ -1459,12 +1464,12 @@ Cohesion: 0.10
 Nodes (19): Artifact contract, `bin/qa/ladder-season.ts`, `bin/qa/simulate-headless.ts`, `bin/qa/simulate-ui.ts`, `bin/qa/swiftui-proof.sh`, Canonical trajectories, Key Tournament Options, Operational Notes (+11 more)
 
 ### Community 57 - "properties"
-Cohesion: 0.07
-Nodes (29): description, maximum, minimum, type, description, format, pattern, type (+21 more)
+Cohesion: 0.06
+Nodes (34): description, maximum, minimum, type, description, format, pattern, type (+26 more)
 
 ### Community 58 - "required"
-Cohesion: 0.08
-Nodes (27): additionalProperties, description, items, properties, required, type, anyOf, columns (+19 more)
+Cohesion: 0.06
+Nodes (34): additionalProperties, description, items, properties, required, type, additionalProperties, description (+26 more)
 
 ### Community 59 - "properties"
 Cohesion: 0.06
@@ -1476,11 +1481,11 @@ Nodes (34): type, properties, ok, unrecoverable_error, type, type, battlefield, 
 
 ### Community 61 - "schema.test.ts"
 Cohesion: 0.08
-Nodes (22): ACHIEVEMENT_METADATA, AchievementMetadata, AchievementTypeSchema, ActionDSLSchema, BattlefieldSchema, CardSchema, CardSkinIdSchema, ClientMessageSchema (+14 more)
+Nodes (24): ACHIEVEMENT_METADATA, AchievementMetadata, AchievementTypeSchema, ActionDSLSchema, ActionSchema, BattlefieldSchema, CardSchema, CardSkinIdSchema (+16 more)
 
 ### Community 62 - "gameOptions"
-Cohesion: 0.09
-Nodes (22): default, description, type, additionalProperties, description, properties, required, type (+14 more)
+Cohesion: 0.06
+Nodes (33): default, description, type, default, description, enum, type, additionalProperties (+25 more)
 
 ### Community 63 - "properties"
 Cohesion: 0.06
@@ -1491,8 +1496,8 @@ Cohesion: 0.06
 Nodes (33): description, maximum, minimum, type, description, maximum, minimum, type (+25 more)
 
 ### Community 65 - "docs/README.md"
-Cohesion: 0.12
-Nodes (6): BACKLOG WORKFLOW INSTRUCTIONS, CRITICAL GUIDANCE, Phalanx Duel shell completions, Face-to-Face Quickstart, Definition of Done, GitHub Copilot Instructions
+Cohesion: 0.13
+Nodes (10): Phalanx Duel shell completions, Face-to-Face Quickstart, Delivery surfaces, Phalanx Duel System Features, Tactical play, Trust and replay surfaces, Overview, Phalanx Duel Infrastructure & Deployment Topology (+2 more)
 
 ### Community 66 - "combat-resolution.ts"
 Cohesion: 0.09
@@ -1511,8 +1516,8 @@ Cohesion: 0.06
 Nodes (30): 1. Check app status, 1. Go to: https://github.com/your-org/phalanxduel/actions, 1. Verify fly.staging.toml is valid, 2. Find "Deploy to Staging" workflow, 2. Test deployment locally (dry-run), 2. View logs, 3. Check secrets, 3. Test health endpoint (+22 more)
 
 ### Community 70 - "GameAutomator"
-Cohesion: 0.08
-Nodes (9): expect, GameAutomator, authenticatePlayer(), clickGameElement(), configureMatchOptions(), ensureGuestOperativeId(), maybeClickForfeit(), randomInt() (+1 more)
+Cohesion: 0.09
+Nodes (10): expect, GameAutomator, authenticatePlayer(), clickGameElement(), configureMatchOptions(), ensureGuestOperativeId(), maybeClickForfeit(), randomInt() (+2 more)
 
 ### Community 71 - "Phalanx Duel — Operations Runbook"
 Cohesion: 0.06
@@ -1523,8 +1528,8 @@ Cohesion: 0.07
 Nodes (31): hybrid, strict, additionalProperties, properties, required, type, description, type (+23 more)
 
 ### Community 73 - "createAndJoinMatch"
-Cohesion: 0.16
-Nodes (15): capturePageSnapshot(), createAndJoinMatch(), describeSnapshot(), formatSession(), joinSpectator(), logGame(), logoutPlayer(), logSnapshotIfChanged() (+7 more)
+Cohesion: 0.21
+Nodes (10): capturePageSnapshot(), createAndJoinMatch(), describeSnapshot(), formatSession(), logSnapshotIfChanged(), randomToken(), readCurrentMatchId(), readServerCorrelation() (+2 more)
 
 ### Community 74 - "simulate-headless.ts"
 Cohesion: 0.11
@@ -1534,9 +1539,9 @@ Nodes (31): GameScenario, loadScenario(), BrowserOutcomeDetails, checkPortReacha
 Cohesion: 0.25
 Nodes (10): argv, clickCommandBtn(), exec, main(), MAX_TURNS, openCommandDrawer(), OUT_DIR, playTurn() (+2 more)
 
-### Community 76 - "combat-explanation.ts"
+### Community 76 - "narration-producer.ts"
 Cohesion: 0.11
-Nodes (23): buildCombatExplanation(), CombatEquationLine, CombatExplanation, CombatExplanationMode, explanationLinesForMode(), formatStep(), humanize(), isTacticalModifier() (+15 more)
+Nodes (23): cardLabel(), buildCombatExplanation(), CombatEquationLine, CombatExplanation, CombatExplanationMode, explanationLinesForMode(), formatStep(), humanize() (+15 more)
 
 ### Community 77 - "PULL_REQUEST_TEMPLATE.md"
 Cohesion: 0.07
@@ -1561,6 +1566,10 @@ Nodes (27): BotRecommendation, BotUser, createSessionMatch(), createTransport(),
 ### Community 82 - "Configurable Grid, AI Bot, and Advanced Match Creation — Design"
 Cohesion: 0.07
 Nodes (27): Architecture, BotConfig, Client: Advanced Match Creation, Client changes, Configurable Grid, AI Bot, and Advanced Match Creation — Design, Constraints, Decisions, Engine changes (+19 more)
+
+### Community 83 - "qa/run-evidence.ts"
+Cohesion: 0.21
+Nodes (10): canonicalizeLegacyRun(), iso(), LegacyEvent, LegacyManifest, writeCanonicalRunEvidence(), events, evidence, manifest (+2 more)
 
 ### Community 84 - "2026-03-11 Type De-duplication Plan"
 Cohesion: 0.07
@@ -1611,24 +1620,24 @@ Cohesion: 0.08
 Nodes (25): `achievements` (exported as `achievements`), `admin_audit_log` (exported as `adminAuditLog`), `cosmetic_products` (exported as `cosmeticProducts`), Database Schema Catalog & ERD, `elo_snapshots` (exported as `eloSnapshots`), Entity-Relationship Diagram, `identity_audit_log` (exported as `identityAuditLog`), `match_actions` (exported as `matchActions`) (+17 more)
 
 ### Community 96 - "lobby.tsx"
-Cohesion: 0.04
-Nodes (80): getConnection(), clearToken(), getToken(), logout(), openInDesktopApp(), restoreSession(), setToken(), AchievementDetailView() (+72 more)
+Cohesion: 0.05
+Nodes (58): openInDesktopApp(), AchievementDetailView(), AllAchievementsView(), EMOJIS, categories, Leaderboard(), LeaderboardData, LeaderboardEntry (+50 more)
 
 ### Community 97 - "gen-sdk.ts"
 Cohesion: 0.11
 Nodes (25): ASYNCAPI_CLIENT_MESSAGE_NAMES, ASYNCAPI_SERVER_MESSAGE_NAMES, ASYNCAPI_SPEC, AsyncApiMessageModel, __dirname, DUEL_CLI_DIR, DUEL_CLI_SDK_DIR, extractAsyncApiMessageSchemas() (+17 more)
 
 ### Community 98 - "detectors.ts"
-Cohesion: 0.13
-Nodes (16): AchievementDetector, DetectorContext, DetectorResult, ALL_DETECTORS, boardCards(), COMPLETION_DETECTORS, deadMansHandDetector(), deuceCoupDetector() (+8 more)
+Cohesion: 0.12
+Nodes (18): AchievementDetector, DetectorContext, DetectorResult, ALL_DETECTORS, boardCards(), COMPLETION_DETECTORS, deadMansHandDetector(), deuceCoupDetector() (+10 more)
 
 ### Community 99 - "Neon Serverless Postgres"
 Cohesion: 0.08
 Nodes (24): Autoscaling, Branching, Connection Methods & Drivers, Connection Pooling, Developer Tools, Fetching Docs as Markdown, Finding the Right Page, Getting Started (+16 more)
 
 ### Community 100 - "cards.ts"
-Cohesion: 0.14
-Nodes (18): FACE_NUMBERS, FACE_TYPES, GREEK_NUMERALS, greekRankLabel(), hpDisplay(), isFace(), isWeapon(), SUIT_COLORS (+10 more)
+Cohesion: 0.10
+Nodes (30): FACE_NUMBERS, FACE_TYPES, GREEK_NUMERALS, greekRankLabel(), hpDisplay(), isFace(), isWeapon(), SUIT_COLORS (+22 more)
 
 ### Community 101 - "3. DEFECT REPORTS"
 Cohesion: 0.08
@@ -1651,16 +1660,16 @@ Cohesion: 0.08
 Nodes (23): Commit, Commit, Commit, Commit, Current State (as of 2026-03-05), Deployment B Execution Plan — Match Parameters (TDD + Deployable Units), Global Release Gate, Goal (+15 more)
 
 ### Community 106 - "benchmark-protocols.ts"
-Cohesion: 0.12
-Nodes (24): ActionTiming, argv, BATCH, bootstrapEngine(), connectWs(), GameResult, HeapSnapshot, JSON_OUTPUT (+16 more)
+Cohesion: 0.15
+Nodes (22): ActionTiming, argv, BATCH, bootstrapEngine(), connectWs(), GameResult, HeapSnapshot, JSON_OUTPUT (+14 more)
 
-### Community 107 - "applyAction"
-Cohesion: 0.06
-Nodes (30): computeBotAction(), applyAction(), applyDeploy(), continueQuickDeployment(), toQuickDeployPlacement(), applyWithHash(), freshState(), PLAYERS (+22 more)
+### Community 107 - "abTests.ts"
+Cohesion: 0.29
+Nodes (9): AbTest, AbTestsSnapshot, AbTestVariant, getAbTestsSnapshotFromEnv(), parseRawTest(), parseVariantMap(), parseVariantsArray(), RawAbTest (+1 more)
 
 ### Community 108 - "game-over.tsx"
 Cohesion: 0.10
-Nodes (16): CopyButton(), CopyButtonProps, downloadTranscript(), GameOverApp(), GameOverScreenState, getLifepoints(), LpSummary(), renderGameOver() (+8 more)
+Nodes (17): CopyButton(), CopyButtonProps, downloadTranscript(), GameOverApp(), GameOverScreenState, getLifepoints(), LpSummary(), renderGameOver() (+9 more)
 
 ### Community 109 - "demo-llama.ts"
 Cohesion: 0.40
@@ -1703,12 +1712,12 @@ Cohesion: 0.09
 Nodes (22): concurrency, ignoreStatic, incremental, incrementalFile, clear-text, progress, src/**/*.ts, @stryker-mutator/vitest-runner (+14 more)
 
 ### Community 119 - "record-episode.ts"
-Cohesion: 0.10
-Nodes (26): expect, here, isAllowedCaptureHost(), main(), open(), runAction(), shotBounds(), testId() (+18 more)
+Cohesion: 0.09
+Nodes (29): expect, here, isAllowedCaptureHost(), main(), open(), shotBounds(), testId(), FORMAT_PROFILES (+21 more)
 
-### Community 120 - "CI/CD Manager Skill"
-Cohesion: 0.22
-Nodes (9): 1. The "Commit & Push" Loop, 2. Monitoring a Run, 3. Deploying to Staging/Production, CI/CD Manager Skill, Common Workflows, Core Responsibilities, Helper CLI Patterns, Operating Rules (+1 more)
+### Community 120 - "Production Support Contract"
+Cohesion: 0.06
+Nodes (27): Canonical References, Pre-Deployment, Production Deployment Checklist, Production Promotion, Rollback Triggers, Canonical admin architecture, Classification, Current Remediation Boundary (+19 more)
 
 ### Community 121 - "enum"
 Cohesion: 0.09
@@ -1727,8 +1736,8 @@ Cohesion: 0.10
 Nodes (22): maxConsecutivePasses, maxTotalPassesPerPlayer, description, maximum, minimum, type, description, maximum (+14 more)
 
 ### Community 125 - "liveness"
-Cohesion: 0.14
-Nodes (14): noProgressTurns, positionOccurrences, progressMarker, additionalProperties, description, properties, required, type (+6 more)
+Cohesion: 0.09
+Nodes (22): noProgressTurns, positionOccurrences, progressMarker, totalBattlefieldHp, totalDiscardedCards, totalDrawpileCards, totalLifepoints, additionalProperties (+14 more)
 
 ### Community 126 - "consecutivePasses"
 Cohesion: 0.09
@@ -1778,9 +1787,9 @@ Nodes (19): Catalog, DiagramStatus, flowDiagram(), GraphEdge, GraphModel, identi
 Cohesion: 0.10
 Nodes (19): [0.5.0-rev.5] - 2026-04-13, [1.0.0] - 2026-04-15, [1.1.0] - 2026-04-28, [1.2.0] - 2026-05-06, [1.3.0] - 2026-05-08, [1.5.0] - 2026-09-07, Added, Added (+11 more)
 
-### Community 138 - "liveness.test.ts"
-Cohesion: 0.29
-Nodes (11): cardToken(), completedTurnNumber(), evaluateLiveness(), hasIrreversibleProgress(), LIVENESS_POLICY, LivenessEvaluation, progressMarker(), semanticPositionSignature() (+3 more)
+### Community 138 - "CI/CD Manager Skill"
+Cohesion: 0.22
+Nodes (9): 1. The "Commit & Push" Loop, 2. Monitoring a Run, 3. Deploying to Staging/Production, CI/CD Manager Skill, Common Workflows, Core Responsibilities, Helper CLI Patterns, Operating Rules (+1 more)
 
 ### Community 139 - "compilerOptions"
 Cohesion: 0.10
@@ -1830,13 +1839,9 @@ Nodes (19): 1. Executive Summary & PVL Longitudinal Framework, 2. Outside-In Con
 Cohesion: 0.11
 Nodes (18): A small game as a laboratory for boundaries, feedback, and trust, Determinism is a contract, not a slogan, Form the line. Find the breach. Explain the result., Make the rules legible, Observability is not availability, One attack is a causal story, Phalanx Duel, Put authority in one transition boundary (+10 more)
 
-### Community 151 - "GameProjection"
-Cohesion: 0.12
-Nodes (3): createProjection(), GameProjection, GameConfig
-
-### Community 152 - "verify-event-log.ts"
-Cohesion: 0.29
-Nodes (6): CoverageResult, failures, fixtures, results, verifyEventLogCoverage(), PhalanxEventSchema
+### Community 152 - "Feature Flags & Admin"
+Cohesion: 0.22
+Nodes (9): Active Flags, Admin Authentication, Experiment Assignment (lobby_framework), Feature Flags & Admin, Lobby Framework Decision Logic, Rollout Progression, Server Experiment Config (`PHALANX_AB_TESTS_JSON`), Telemetry Events (lobby_framework) (+1 more)
 
 ### Community 153 - "ignoreBinaries"
 Cohesion: 0.09
@@ -1882,9 +1887,9 @@ Nodes (18): 1. Host-Native Development (Primary), 2. Containerized Verification 
 Cohesion: 0.11
 Nodes (17): 1.1 Core References, 1.2 Implemented Controls, 1. WebSocket Security (Transport & Protocol), 2.1 Core References, 2.2 Implemented Controls, 2. Server-Authoritative Game Security, 3.1 Core References, 3.2 Implemented Controls (+9 more)
 
-### Community 164 - "internal.ts"
-Cohesion: 0.12
-Nodes (18): AbTest, AbTestsSnapshot, AbTestVariant, getAbTestsSnapshotFromEnv(), parseRawTest(), parseVariantMap(), parseVariantsArray(), RawAbTest (+10 more)
+### Community 164 - "Core Criteria"
+Cohesion: 0.22
+Nodes (8): 1. Specification Alignment, 2. Verification, 3. Trust & Safety, 4. Code Quality, 5. Observability, 6. Accessibility & UX, 7. AI-Assisted Work, Core Criteria
 
 ### Community 165 - "typedoc.json"
 Cohesion: 0.11
@@ -1911,8 +1916,8 @@ Cohesion: 0.12
 Nodes (16): Acceptance Criteria, Create server/src/routes/health.ts, Definition of Done, Dependencies, Description, Implementation, Implementation Notes, Related Tasks (+8 more)
 
 ### Community 171 - "qa/telemetry.ts"
-Cohesion: 0.14
-Nodes (13): actionCountHistogram, AttrValue, logger, meter, patternCounter, QaRunMeta, QaRunResult, reconnectCounter (+5 more)
+Cohesion: 0.10
+Nodes (17): MatchSetup, actionCountHistogram, AttrValue, compactAttrs(), emitLog(), logger, meter, patternCounter (+9 more)
 
 ### Community 172 - "path"
 Cohesion: 0.18
@@ -1974,9 +1979,9 @@ Nodes (15): allowedServices, __dirname, __filename, json(), MIME_TYPES, port, pr
 Cohesion: 0.15
 Nodes (13): cleanJsonOutput(), Config, EnvironmentSchema, FlySecret, getFlySecrets(), interpolate(), loadMergedMetadata(), parseEnvWithMetadata() (+5 more)
 
-### Community 188 - "MatchActor"
+### Community 188 - "LocalMatchManager"
 Cohesion: 0.07
-Nodes (18): LedgerAction, MatchActor, SystemInitAction, ActionError, buildPanoramicFailureRecord(), buildPanoramicTurnRecords(), emitPanoramicRecords(), enabledPath() (+10 more)
+Nodes (6): MatchAnalysisService, MatchActor, buildMatchEventLog(), LocalMatchManager, MatchError, MatchInstance
 
 ### Community 189 - "properties"
 Cohesion: 0.12
@@ -2135,8 +2140,8 @@ Cohesion: 0.22
 Nodes (8): argConfig, connectWsClient(), opts, pickRandom(), runVerification(), ServerMsg, VerifyResult, WsClient
 
 ### Community 228 - "properties"
-Cohesion: 0.08
-Nodes (25): totalBattlefieldHp, totalDiscardedCards, totalDrawpileCards, totalLifepoints, additionalProperties, properties, required, type (+17 more)
+Cohesion: 0.12
+Nodes (17): properties, totalBattlefieldHp, totalDiscardedCards, totalDrawpileCards, totalLifepoints, maximum, minimum, type (+9 more)
 
 ### Community 229 - "dependencies"
 Cohesion: 0.15
@@ -2230,9 +2235,9 @@ Nodes (11): Coordinated release artifact set, External-client decision boundary,
 Cohesion: 0.17
 Nodes (11): Constitution, Executive Verdict, Known-Knows, Known-Unknowns, Most Dangerous False Greens, Phalanx Duel — Test Council Audit, Prioritized Backlog Focus, Repository Test Surface (+3 more)
 
-### Community 252 - "Phalanx Duel Test Constitution"
-Cohesion: 0.14
-Nodes (14): CI Quality Gates, Core Principles, Fairness Protection Principles, Fixture And Scenario Standards, Forbidden Patterns, Negative-Path Standards, Phalanx Duel Test Constitution, Replay Verification Standards (+6 more)
+### Community 252 - "ws.test.ts"
+Cohesion: 0.28
+Nodes (5): cloneMatch(), listenWsApp(), makeRepoDouble(), sendAndWait(), withReliableMsgId()
 
 ### Community 253 - "MCP Server"
 Cohesion: 0.17
@@ -2310,17 +2315,17 @@ Nodes (7): argv, { values }, originalConsole, otlpEndpoint, otlpEndpointRaw, res
 Cohesion: 0.18
 Nodes (11): 1. Column Cascade & Suit Boundary Map, 2. Player Skill Ladder & Mode Journey, 3. Player-Friendly 5-Step Turn Loop, 4. "One Deterministic Engine → Many Surfaces" Platform Moat, 5. Provable Fair-Play & Esports Integrity Chain, 6. Acquisition, Retention & Monetization Flywheel, 7. Engineering Assurance Pyramid (Technical Due Diligence), 8. Automated Content & Marketing Engine (+3 more)
 
-### Community 272 - "Contributing to Phalanx Duel"
-Cohesion: 0.25
-Nodes (8): 🤖 AI Collaboration, Contributing to Phalanx Duel, 🤝 Contribution Workflow, ✅ Definition of Done (DoD), 📄 Documentation, 🛠️ Getting Started, 🛡️ Security, 📐 Standards & Principles
+### Community 272 - "AGENTS.md"
+Cohesion: 0.07
+Nodes (24): BACKLOG WORKFLOW INSTRUCTIONS, CRITICAL GUIDANCE, 🤖 AI Collaboration, Contributing to Phalanx Duel, 🤝 Contribution Workflow, ✅ Definition of Done (DoD), 📄 Documentation, 🛠️ Getting Started (+16 more)
 
 ### Community 273 - "DEC-2G-001 - Client UI/UX audit and remediation plan"
-Cohesion: 0.07
-Nodes (26): Anti-Regression Checklist, Blanket pass confirmation, Consequences, Constraint Classification Summary, Context, DEC-2G-001 - Client UI/UX audit and remediation plan, Decision, Defer all findings to TASK-173 polish workstream (+18 more)
+Cohesion: 0.18
+Nodes (10): Anti-Regression Checklist, Consequences, Constraint Classification Summary, Context, DEC-2G-001 - Client UI/UX audit and remediation plan, Decision, Phase Audit Summary, Rationale (+2 more)
 
 ### Community 274 - "Findings"
-Cohesion: 0.12
-Nodes (17): Blocked, Critical, F-01 — No Pass/Skip button during ReinforcementPhase, F-02 — Pass counts and forfeit risk invisible, F-03 — Raw phase names in info bar, F-04 — Target chain carryover values not shown, F-05 — Heart shield and diamond death shield suppressed in narration, F-06 — x2 multiplier badge is misleading (+9 more)
+Cohesion: 0.18
+Nodes (11): Blocked, Critical, F-01 — No Pass/Skip button during ReinforcementPhase, F-02 — Pass counts and forfeit risk invisible, F-04 — Target chain carryover values not shown, F-05 — Heart shield and diamond death shield suppressed in narration, F-07 — No pre-attack damage preview, F-08 — Front-row attack pulse excludes hearts and diamonds (+3 more)
 
 ### Community 275 - "Sequential Execution Plan"
 Cohesion: 0.18
@@ -2335,8 +2340,8 @@ Cohesion: 0.18
 Nodes (10): All current flags (ladder-season.ts), All current flags (ladder-view.ts), Current state, Form inputs (maps to current CLI flags), Implementation path, Ladder Simulation Visualization, Richer end-state: local web UI, User flow (+2 more)
 
 ### Community 278 - "Quality Gap Adoption Plan"
-Cohesion: 0.07
-Nodes (27): Acceptance criteria, Adoption Phases, Backlog Tasks, Current Baseline, Definition of done, Executive Summary, Existing scripts to modify, Files to add or change (+19 more)
+Cohesion: 0.18
+Nodes (11): Backlog Tasks, Current Baseline, Executive Summary, Existing scripts to modify, Gap Matrix, New scripts to add to root `package.json`, Proposed Package Additions, Proposed Script Additions and Changes (+3 more)
 
 ### Community 279 - "Ranking and Ladder Validation"
 Cohesion: 0.18
@@ -2418,13 +2423,13 @@ Nodes (9): Acceptance Criteria, Definition of Done, Description, Final Summary, 
 Cohesion: 0.20
 Nodes (9): 1. Contrast (29 failed + 10 near-pass = 39/63 issues, the majority), 2. Missing accessibility actions (20/63) — functionally the most serious, 3. Insufficient element descriptions (13/63), 4. Parent/child mismatch (1/63), Acceptance Criteria, Definition of Done, Description, Findings by category (+1 more)
 
-### Community 299 - "Backlog Best Practices"
-Cohesion: 0.12
-Nodes (14): 1. The Leverage-First Mindset, 2. Backlog as the System of Record, 3. DAG-Based Sequencing, 4. Execution Waves, 5. Architectural Convergence, 6. Commit Protocol, Backlog Best Practices, Admin Operations (+6 more)
+### Community 299 - "MatchHistory.tsx"
+Cohesion: 0.27
+Nodes (8): MatchDetails(), Props, formatDate(), formatDuration(), MatchEntry, MatchHistory(), MatchHistoryPage, Props
 
-### Community 300 - "engine.ts"
-Cohesion: 0.14
-Nodes (14): registerResources(), repoRoot, skillsDir, profile, server, BOT_TIERS, GameStateSchema, playerBreakdown() (+6 more)
+### Community 300 - "Backlog Task Manager"
+Cohesion: 0.22
+Nodes (7): Backlog Task Manager, CLI Patterns, Core Responsibilities, Execution Updates, Operating Rules, Task Quality Bar, Backlog Task Manager
 
 ### Community 301 - "Demo Gate Lessons"
 Cohesion: 0.20
@@ -2480,7 +2485,7 @@ Nodes (8): Autonomous Phalanx Duel Bot, Environment Variables, Features, Getting
 
 ### Community 315 - "client/src/state.ts"
 Cohesion: 0.06
-Nodes (54): setConnection(), initDebugMode(), PhxInfoBar(), init(), fetchCardsManifest(), generateTacticalCallsign(), PREFIXES, SUFFIXES (+46 more)
+Nodes (65): initDebugMode(), renderError(), getLobbyOperativeId(), LobbyApp(), resolveLobbyCreateOperativeId(), useLobbyMatchActions(), validateOperativeId(), init() (+57 more)
 
 ### Community 318 - "devDependencies"
 Cohesion: 0.22
@@ -2706,21 +2711,21 @@ Nodes (8): Agent account bootstrap, Consequences, Context, DEC-2B-005 - Agentic 
 Cohesion: 0.22
 Nodes (9): 3.1.1 Strict Mode, 3.1.2 Hybrid Mode, 3.1.3 Manual Mode, 3.1 Classic Schema Binding Rules, 3.2 Invalid Configuration Conditions, 3.3 Global System Constraints, 3.4 Canonical vs Compatibility Inputs, 3.5 Rules-Version Compatibility (+1 more)
 
-### Community 375 - "Production Support Contract"
-Cohesion: 0.22
-Nodes (9): Canonical admin architecture, Classification, Current Remediation Boundary, Health Semantics, Production Support Contract, Release Contract, Supported System Matrix, Temporary OTel containment (2026-07-14) (+1 more)
+### Community 375 - "21. Card Visibility and Fog of War"
+Cohesion: 0.25
+Nodes (8): 21.1 Hands and Draw Piles, 21.2 Battlefield, 21.3 Graveyard (Discard Pile), 21.4 Observer Noninterference, 21.5 Spectator and Replay Lifecycle, 21.6 Competitive and Research Bots, 21.7 Observer-Safe Calculation Evidence, 21. Card Visibility and Fog of War
 
-### Community 376 - "qa/run-evidence.ts"
-Cohesion: 0.21
-Nodes (10): canonicalizeLegacyRun(), iso(), LegacyEvent, LegacyManifest, writeCanonicalRunEvidence(), events, evidence, manifest (+2 more)
+### Community 376 - "Context Hunter"
+Cohesion: 0.22
+Nodes (7): Complexity Gate, Context Hunter, Discovery Output, Discovery Workflow, Implementation Guardrails, Probe For Silent Knowledge, Verification
 
 ### Community 377 - "OpenTelemetry and Collector Topology"
 Cohesion: 0.22
 Nodes (9): Derived Topology Resource Attributes, OpenTelemetry and Collector Topology, OTEL_CONSOLE_LOGS_ENABLED, OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_PROTOCOL, OTEL_SDK_DISABLED, OTEL_SERVICE_NAME, OTEL_SERVICE_VERSION (+1 more)
 
 ### Community 378 - "gameplay.ts"
-Cohesion: 0.10
-Nodes (29): McpConfig, McpConfigSchema, authenticateWs(), connectWs(), createMatch(), findByType(), hasMatchCreateResponse(), hasType() (+21 more)
+Cohesion: 0.11
+Nodes (28): McpConfig, McpConfigSchema, authenticateWs(), connectWs(), createMatch(), findByType(), hasMatchCreateResponse(), hasType() (+20 more)
 
 ### Community 380 - "package.json"
 Cohesion: 0.22
@@ -2742,9 +2747,9 @@ Nodes (7): k6, options, connectDuration, connectErrors, errorRate, messageErrors
 Cohesion: 0.39
 Nodes (7): probe_database(), reject_local_database_target(), require_release_env(), run_post_deploy_healthcheck(), run_pre_deploy_migrate(), run_release_verification(), deploy-fly.sh script
 
-### Community 385 - "QaRun"
-Cohesion: 0.29
-Nodes (4): MatchSetup, compactAttrs(), emitLog(), QaRun
+### Community 385 - "TutorialTerminal"
+Cohesion: 0.33
+Nodes (5): cliDir, isAllowedCaptureHost(), resolveAdminUrl(), showTerminal(), TutorialTerminal
 
 ### Community 386 - "player"
 Cohesion: 0.22
@@ -3002,9 +3007,9 @@ Nodes (8): actionIndex, eventTypes, stateHash, required, id, name, phase, turnNu
 Cohesion: 0.25
 Nodes (4): aggregate, CoverageSummary, Metric, PACKAGES
 
-### Community 450 - "damageMode"
-Cohesion: 0.20
-Nodes (11): default, description, enum, type, classic, cumulative, description, enum (+3 more)
+### Community 450 - "Medium"
+Cohesion: 0.33
+Nodes (6): F-03 — Raw phase names in info bar, F-06 — x2 multiplier badge is misleading, F-10 — Pass button has no confirmation, F-13 — Diamond narration text says "halved" instead of "shield", F-14 — Back-row cards selectable as attackers, Medium
 
 ### Community 451 - "generate-infra-diagram.ts"
 Cohesion: 0.36
@@ -3358,9 +3363,9 @@ Nodes (6): Current inventory, Publication rules, Recommended recording sequence,
 Cohesion: 0.29
 Nodes (6): Canonical Policy, Contact, Open Source and Trademarks, Permitted Use, Restrictions, Trademark Policy
 
-### Community 539 - "ws.test.ts"
-Cohesion: 0.28
-Nodes (5): cloneMatch(), listenWsApp(), makeRepoDouble(), sendAndWait(), withReliableMsgId()
+### Community 539 - "Adoption Phases"
+Cohesion: 0.33
+Nodes (6): Adoption Phases, Phase 0 — Confirm Inventory, Phase 1 — Advisory Gates (no behavior changes), Phase 2 — Hard Gates for Low-Noise Rules, Phase 3 — Domain Correctness Expansion, Phase 4 — Runtime / Performance / DB Validation
 
 ### Community 540 - "project"
 Cohesion: 0.50
@@ -3422,9 +3427,9 @@ Nodes (7): maxConsecutivePasses, maxTotalPassesPerPlayer, additionalProperties, 
 Cohesion: 0.29
 Nodes (6): main(), PUBLIC_SCHEMAS, SCHEMAS_DIR, SCRIPT_DIR, SHARED_ROOT, TYPES_PATH
 
-### Community 555 - "stage-episode.ts"
-Cohesion: 0.33
-Nodes (9): atomicWrite(), extractTranscript(), formatChapterTimestamp(), here, main(), repoRoot, sha256File(), sha256Text() (+1 more)
+### Community 555 - "DEC-2A-004 - Backlog-integrated documentation governance"
+Cohesion: 0.40
+Nodes (4): Consequences, Context, DEC-2A-004 - Backlog-integrated documentation governance, Decision
 
 ### Community 556 - "Disk Hygiene & Asset Management"
 Cohesion: 0.33
@@ -3847,16 +3852,16 @@ Cohesion: 0.33
 Nodes (5): Core Goal, Production Path Review Guideline, Required Review Framing, Required Use, Usage Notes
 
 ### Community 662 - "bot-swarm.ts"
-Cohesion: 0.28
-Nodes (10): BotPersona, botPersonaForIndex(), buildBotIdentity(), buildPersistentTournamentIdentity(), buildTournamentIdentity(), deriveWaveSizes(), parseWaveSizes(), WavePlanOptions (+2 more)
+Cohesion: 0.32
+Nodes (9): botPersonaForIndex(), buildBotIdentity(), buildPersistentTournamentIdentity(), buildTournamentIdentity(), deriveWaveSizes(), parseWaveSizes(), WavePlanOptions, zeroPad() (+1 more)
 
 ### Community 663 - "Robots & Sitemap Route Decisions"
 Cohesion: 0.33
 Nodes (5): Indexable, Non-indexable, Notes, Query-param URLs to block, Robots & Sitemap Route Decisions
 
 ### Community 664 - "Backlog Technical Project Manager"
-Cohesion: 0.07
-Nodes (22): Backlog Task Manager, CLI Patterns, Core Responsibilities, Execution Updates, Operating Rules, Task Quality Bar, Activation Rule, Approval Gate (+14 more)
+Cohesion: 0.20
+Nodes (8): Activation Rule, Approval Gate, Backlog Technical Project Manager, Common Failure Modes, Coordination Workflow, Finalization Gate, TPM Role, Backlog Technical Project Manager
 
 ### Community 665 - "Phalanx Duel local tooling"
 Cohesion: 0.33
@@ -3866,9 +3871,9 @@ Nodes (6): Control plane and container verification, Host-native demo workflow, 
 Cohesion: 0.33
 Nodes (5): Accessibility and fallback, Card Cosmetics, Dual Loop design contract, Ownership and visibility, Registry
 
-### Community 668 - "Production Deployment Checklist"
-Cohesion: 0.33
-Nodes (5): Canonical References, Pre-Deployment, Production Deployment Checklist, Production Promotion, Rollback Triggers
+### Community 668 - "Rejected Alternatives"
+Cohesion: 0.40
+Nodes (5): Blanket pass confirmation, Defer all findings to TASK-173 polish workstream, Full accessibility overhaul as a single task, Implement pre-attack preview (F-07) immediately, Rejected Alternatives
 
 ### Community 670 - "simulation.test.ts"
 Cohesion: 0.33
@@ -4986,9 +4991,9 @@ Nodes (3): phx-install-localhost script, info(), warn()
 Cohesion: 0.83
 Nodes (3): phx-observability-check script, check(), check_options()
 
-### Community 957 - "hand"
-Cohesion: 0.29
-Nodes (7): additionalProperties, description, properties, required, type, maxHandSize, hand
+### Community 957 - "First Implementation Slice"
+Cohesion: 0.40
+Nodes (5): Acceptance criteria, Definition of done, Files to add or change, First Implementation Slice, Scripts to run to validate the slice
 
 ### Community 959 - "vite-env.d.ts"
 Cohesion: 0.50
@@ -4998,9 +5003,9 @@ Nodes (3): ImportMeta, ImportMetaEnv, Window
 Cohesion: 0.33
 Nodes (6): Command map, Database and container boundary, Demo cockpit, Local Tooling Reference, Man pages, Runtime naming
 
-### Community 961 - "Delivery Pipeline"
-Cohesion: 0.33
-Nodes (6): Delivery Pipeline, Explicit verification and release, Local gates, Optional automation, Production promotion, Routine pushes and pull requests
+### Community 961 - "Proposed CI Integration"
+Cohesion: 0.40
+Nodes (5): Proposed CI Integration, `verify:ci`, `verify:full` (~60s), `verify:quick` (~10s), `verify:release`
 
 ### Community 962 - "Phalanx Local RUM"
 Cohesion: 0.50
@@ -5046,53 +5051,57 @@ Nodes (3): description, oneOf, $schema
 Cohesion: 0.29
 Nodes (6): Acceptance Criteria, Definition of Done, Description, Final Summary, Implementation Notes, Implementation Plan
 
-### Community 1113 - "Phalanx Duel System Features"
-Cohesion: 0.50
-Nodes (4): Delivery surfaces, Phalanx Duel System Features, Tactical play, Trust and replay surfaces
-
-### Community 1115 - "Phalanx Duel Infrastructure & Deployment Topology"
-Cohesion: 0.50
-Nodes (4): Overview, Phalanx Duel Infrastructure & Deployment Topology, Subsystems & Ports Reference, Topology Diagram
-
-### Community 1116 - "AI Collaboration Policy"
+### Community 1113 - "deckSeed"
 Cohesion: 0.40
-Nodes (5): Accountability, Agent Operating Rules, AI Collaboration Policy, Instruction Hygiene, Review And Verification
+Nodes (5): description, maximum, minimum, type, deckSeed
+
+### Community 1115 - "Testing Impact"
+Cohesion: 0.50
+Nodes (4): Engine tests (engine/tests/), QA automation (bin/qa/), Testing Impact, Unit / integration tests (client/tests/)
+
+### Community 1116 - "Future Directions (out of scope)"
+Cohesion: 0.50
+Nodes (4): Future Directions (out of scope), Novice vs experienced player modes, Phase/event source-of-truth contract, Spectator UX
 
 ### Community 1800 - "Record Phalanx Duel tutorials"
 Cohesion: 0.33
 Nodes (5): Capture and edit, Distribution, Outputs and Shorts review, Record Phalanx Duel tutorials, What went wrong in the first batch
 
-### Community 1827 - "migrations.ts"
-Cohesion: 0.18
-Nodes (12): main(), runMigrations(), checksum(), __dirname, loadMigrationFiles(), MigrationFile, MIGRATIONS_DIR, splitStatements() (+4 more)
+### Community 1827 - "server/src/instrument.ts"
+Cohesion: 0.06
+Nodes (32): getServerConfig(), loadServerConfig(), ServerConfig, ServerConfigSchema, checkPendingMigrations(), main(), runMigrations(), checksum() (+24 more)
+
+### Community 1832 - "Scope"
+Cohesion: 0.67
+Nodes (3): In scope, Non-goals, Scope
 
 ### Community 1834 - "generate-openapi-file.ts"
 Cohesion: 0.50
 Nodes (3): __dirname, main(), OUTPUT_PATH
 
 ### Community 1838 - "tools/analysis.ts"
-Cohesion: 0.10
-Nodes (33): LocalEngine, client, db, activityStats(), embeddingStats(), envTag(), execFileAsync, registerAdminTools() (+25 more)
+Cohesion: 0.07
+Nodes (42): LocalEngine, client, db, registerResources(), repoRoot, skillsDir, profile, server (+34 more)
 
 ## Knowledge Gaps
 - **7159 isolated node(s):** `get-run-link.sh script`, `LogEntry`, `node`, `DATABASE_URL`, `ANTHROPIC_API_KEY` (+7154 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 8306 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **229 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 8305 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **228 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+- **Why does `MatchConnectionTracker` connect `match-types.ts` to `LocalMatchManager`, `match.ts`?**
+  _High betweenness centrality (0.005) - this node is a cross-community bridge._
 - **Why does `GameAutomator` connect `GameAutomator` to `createAndJoinMatch`, `record-episode.ts`, `game-automator.ts`, `simulate-ui.ts`?**
   _High betweenness centrality (0.004) - this node is a cross-community bridge._
-- **Why does `computeStateHash()` connect `shared/src/index.ts` to `internal.ts`, `createInitialState`, `api-playthrough.ts`, `benchmark-protocols.ts`, `applyAction`, `src/routes/matches.ts`, `match-types.ts`, `app.ts`?**
-  _High betweenness centrality (0.002) - this node is a cross-community bridge._
-- **Why does `db` connect `match-repo.ts` to `emitOtlpLog`, `internal.ts`, `match.ts`, `traceDbQuery`, `routes/ladder.ts`, `app.ts`?**
-  _High betweenness centrality (0.002) - this node is a cross-community bridge._
+- **Why does `createConnection()` connect `connection.ts` to `client/src/state.ts`?**
+  _High betweenness centrality (0.003) - this node is a cross-community bridge._
 - **What connects `get-run-link.sh script`, `LogEntry`, `node` to the rest of the system?**
   _7159 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `scripts` be split into smaller, more focused modules?**
   _Cohesion score 0.011428571428571429 - nodes in this community are weakly interconnected._
 - **Should `src/schema.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.028985507246376812 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.02857142857142857 - nodes in this community are weakly interconnected._
 - **Should `metrics.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.04038630377524144 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.03614457831325301 - nodes in this community are weakly interconnected._
