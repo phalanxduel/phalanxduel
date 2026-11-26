@@ -80,7 +80,7 @@ export type TutorialAction = z.infer<typeof TutorialActionSchema>;
 export const TutorialEpisodeScenarioSchema = z.object({
   version: z.literal(1),
   id: z.string().regex(/^ep-\d{2}-[a-z0-9-]+$/),
-  season: z.number().int().min(1).max(6),
+  season: z.number().int().min(1).max(8),
   episodeNumber: z.number().int().min(1),
   title: z.string().min(1),
   format: TutorialFormatSchema,
@@ -103,7 +103,7 @@ export type TutorialEpisodeScenario = z.infer<typeof TutorialEpisodeScenarioSche
 
 export const TutorialManifestEntrySchema = z.object({
   id: z.string().regex(/^ep-\d{2}-[a-z0-9-]+$/),
-  season: z.number().int().min(1).max(6),
+  season: z.number().int().min(1).max(8),
   episodeNumber: z.number().int().min(1),
   title: z.string().min(1),
   format: TutorialFormatSchema,

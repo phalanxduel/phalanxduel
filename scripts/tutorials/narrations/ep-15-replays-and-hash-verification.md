@@ -1,6 +1,6 @@
 ---
 episode_id: ep-15-replays-and-hash-verification
-title: "Rewatch a Match and Share a Replay Step"
+title: "How to Rewatch Matches, Scrub Turns & Share Replay Links"
 format: "16:9"
 companion_url: "https://phalanxduel.com/learn/gameplay-assurance/"
 privacy: private
@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:replay-intro -->
-Rewatch reconstructs a completed match from its recorded actions. Start at the initial frame.
+Every completed duel can be rewatched from Match History, any player profile, or Spectator History. Rewatch deterministically reconstructs the entire match from its append-only action ledger and verifies each turn's hash chain.
 
 <!-- cue:step-through -->
-Next advances one action at a time. The board uses the reconstructed state for that action. Use Previous or the scrubber to inspect a different moment.
+Step forward or back one action at a time with Next and Prev, hit Play with adjustable playback speed, or drag the timeline scrubber to jump straight to any pivotal combat exchange.
 
 <!-- cue:copy-replay -->
-Copy the replay link to share this exact step. Someone opening the link can navigate forward or back from the same position.
+Click Copy Replay Link to grab a deep link pinned to this exact step — anyone opening it lands on the same turn with full controls to inspect, favorite, or rate the match.

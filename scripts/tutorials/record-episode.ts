@@ -34,11 +34,15 @@ function isAllowedCaptureHost(hostname: string): boolean {
 
 async function open(page: Page, url: URL): Promise<void> {
   await page.goto(url.toString(), { waitUntil: 'domcontentloaded' });
+  if (url.pathname !== '/') {
+    await expect(page.locator('body')).toBeVisible();
+    return;
+  }
   await expect(page.locator('#app > *').first()).toBeVisible();
   const loadsAnotherScreen = ['action', 'match', 'matchId', 'watch', 'screen', 'profile'].some(
     (key) => url.searchParams.has(key),
   );
-  if (url.pathname === '/' && !loadsAnotherScreen) {
+  if (!loadsAnotherScreen) {
     await expect(page.getByTestId('lobby-quick-match-btn')).toBeEnabled();
   }
 }
@@ -60,7 +64,9 @@ async function runAction(
       if (step.value === 'fresh') {
         await page.evaluate(() => sessionStorage.removeItem('phalanx_session'));
       }
-      url.searchParams.set('seed', String(spec.seed));
+      if (url.pathname === '/') {
+        url.searchParams.set('seed', String(spec.seed));
+      }
       await open(page, url);
       break;
     }

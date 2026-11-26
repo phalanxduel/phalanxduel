@@ -3,21 +3,21 @@
   "id": "ep-13-rankings-elo-and-seasons",
   "season": 4,
   "episodeNumber": 13,
-  "title": "Browse the Global Elo Ladder",
+  "title": "Global Ladder: Elo, Glicko-2, Rating Deviation & Seasons",
   "format": "16:9",
-  "targetDurationSec": 17,
+  "targetDurationSec": 30,
   "mode": "classic",
   "startingLp": 12,
   "seed": 42013,
   "cardSkinId": "default",
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/competitive/",
-  "tags": ["Phalanx Duel", "Rankings", "Elo", "Leaderboard", "Seasons", "Tutorial"],
-  "summary": "Open the Global Ladder and switch between PvP, Easy AI, and Medium AI ratings.",
+  "tags": ["Phalanx Duel", "Rankings", "Elo", "Glicko-2", "Leaderboard", "Seasons", "Tutorial"],
+  "summary": "Explore the Global Ladder, understand how Elo, Glicko-2 Rating Deviation (RD), confidence tiers, and rolling 90-day seasons work, and compare PvP, Easy, Medium, and Expert MCTS ladders.",
   "cues": [
     {
       "id": "leaderboard-open",
-      "label": "Open the global ladder",
+      "label": "Open the global ladder & seasonal header",
       "actions": [
         {
           "action": "goto",
@@ -34,11 +34,11 @@
       ],
       "expect": ".leaderboard",
       "focus": [".leaderboard"],
-      "holdMs": 2200
+      "holdMs": 2600
     },
     {
       "id": "categories-elo",
-      "label": "Switch to an AI category",
+      "label": "Inspect isolated AI ladder & Glicko-2 RD",
       "actions": [
         {
           "action": "click",
@@ -51,11 +51,11 @@
       ],
       "expect": "[data-testid=\"leaderboard-tab-sp-random\"].active",
       "focus": [".leaderboard"],
-      "holdMs": 2200
+      "holdMs": 2600
     },
     {
       "id": "expert-category",
-      "label": "View the medium AI category",
+      "label": "Switch to Medium & Expert MCTS ladders",
       "actions": [
         {
           "action": "click",
@@ -64,11 +64,19 @@
         {
           "action": "waitForSelector",
           "selector": ".leaderboard-body:has(table), .leaderboard-empty:text-is(\"NO_RANKED_DATA_FOUND\")"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"leaderboard-tab-sp-mcts\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": ".leaderboard-body:has(table), .leaderboard-empty:text-is(\"NO_RANKED_DATA_FOUND\")"
         }
       ],
-      "expect": "[data-testid=\"leaderboard-tab-sp-heuristic\"].active",
+      "expect": "[data-testid=\"leaderboard-tab-sp-mcts\"].active",
       "focus": [".leaderboard"],
-      "holdMs": 2200
+      "holdMs": 2600
     }
   ]
 }

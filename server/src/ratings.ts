@@ -5,7 +5,7 @@ import { traceDbQuery } from './db/observability.js';
 import { ELO_CONSTANTS } from './elo.js';
 import { achievementService } from './achievements/service.js';
 
-export type RatingMode = 'pvp' | 'sp-random' | 'sp-heuristic';
+export type RatingMode = 'pvp' | 'sp-random' | 'sp-heuristic' | 'sp-mcts';
 
 export type PublicConfidenceLabel = 'Provisional' | 'Calibrating' | 'Established' | 'Inactive';
 

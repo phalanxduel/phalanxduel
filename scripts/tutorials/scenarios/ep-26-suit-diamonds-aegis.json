@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "id": "ep-26-suit-diamonds-aegis",
+  "season": 7,
+  "episodeNumber": 26,
+  "title": "The Suits: Diamonds — The Front-Rank Shield",
+  "format": "9:16",
+  "targetDurationSec": 24,
+  "mode": "classic",
+  "startingLp": 20,
+  "seed": 42026,
+  "botTier": "grunt",
+  "cardSkinId": "dual-loop",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/mastery/mastery/",
+  "tags": ["Phalanx Duel", "Diamonds", "Suit Rules", "Defense", "Tutorial", "Shorts"],
+  "summary": "Meet Diamonds: the Card-Boundary Shield that absorbs carryover before an attacking Club can double it.",
+  "cues": [
+    {
+      "id": "diamonds-role",
+      "label": "Deploy Diamonds on the front rank",
+      "setup": [
+        { "action": "goto", "urlPath": "/" },
+        { "action": "quickStart", "selector": "lobby-bot-btn-med" },
+        { "action": "click", "selector": "[data-testid=\"quick-deploy-aggressive\"]" },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ],
+      "actions": [
+        {
+          "action": "selectAttack",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target"
+        }
+      ],
+      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2400
+    },
+    {
+      "id": "diamonds-shield",
+      "label": "Resolve Shield-before-Weapon combat math",
+      "actions": [
+        { "action": "click", "selector": "[data-testid=\"opponent-battlefield\"] .valid-target" }
+      ],
+      "expect": "[data-testid=\"combat-math-log\"]",
+      "focus": ["[data-testid=\"combat-math-log\"]"],
+      "holdMs": 2600
+    }
+  ]
+}

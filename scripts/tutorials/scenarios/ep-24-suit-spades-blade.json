@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "id": "ep-24-suit-spades-blade",
+  "season": 7,
+  "episodeNumber": 24,
+  "title": "The Suits: Spades — The Player-Boundary Finisher",
+  "format": "9:16",
+  "targetDurationSec": 24,
+  "mode": "classic",
+  "startingLp": 20,
+  "seed": 42024,
+  "botTier": "grunt",
+  "cardSkinId": "dual-loop",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/mastery/mastery/",
+  "tags": ["Phalanx Duel", "Spades", "Suit Rules", "Strategy", "Tutorial", "Shorts"],
+  "summary": "Meet Spades: the Player-Boundary Weapon that doubles overflow damage the moment your attack reaches the opponent's life points.",
+  "cues": [
+    {
+      "id": "spades-role",
+      "label": "Spot Spades in formation",
+      "setup": [
+        { "action": "goto", "urlPath": "/" },
+        { "action": "quickStart", "selector": "lobby-bot-btn-med" },
+        { "action": "click", "selector": "[data-testid=\"quick-deploy-aggressive\"]" },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ],
+      "actions": [
+        {
+          "action": "selectAttack",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target"
+        }
+      ],
+      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target",
+      "focus": [
+        "[data-testid=\"player-battlefield\"] .selected",
+        "[data-testid=\"opponent-battlefield\"] .valid-target"
+      ],
+      "holdMs": 2400
+    },
+    {
+      "id": "spades-strike",
+      "label": "Resolve breakthrough damage",
+      "actions": [
+        { "action": "click", "selector": "[data-testid=\"opponent-battlefield\"] .valid-target" }
+      ],
+      "expect": "[data-testid=\"combat-math-log\"]",
+      "focus": ["[data-testid=\"combat-math-log\"]"],
+      "holdMs": 2600
+    }
+  ]
+}

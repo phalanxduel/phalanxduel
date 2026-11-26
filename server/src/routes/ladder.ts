@@ -59,10 +59,10 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         tags: ['ladder'],
         summary: 'Get leaderboard by category',
         description:
-          'Returns the top rankings for a specific category (pvp, sp-random, sp-heuristic). Supports pagination.',
+          'Returns the top rankings for a specific category (pvp, sp-random, sp-heuristic, sp-mcts). Supports pagination.',
         params: toJsonSchema(
           z.object({
-            category: z.enum(['pvp', 'sp-random', 'sp-heuristic']),
+            category: z.enum(LADDER_CATEGORIES),
           }),
         ),
         querystring: toJsonSchema(
@@ -140,7 +140,7 @@ export function registerLadderRoutes(fastify: FastifyInstance) {
         description: "Returns a specific player's ranking and performance in a category.",
         params: toJsonSchema(
           z.object({
-            category: z.enum(['pvp', 'sp-random', 'sp-heuristic']),
+            category: z.enum(LADDER_CATEGORIES),
             userId: z.uuid(),
           }),
         ),

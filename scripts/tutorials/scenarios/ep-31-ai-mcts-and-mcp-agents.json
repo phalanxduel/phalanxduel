@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "id": "ep-31-ai-mcts-and-mcp-agents",
+  "season": 8,
+  "episodeNumber": 31,
+  "title": "AI Opponents: Adversarial MCTS & MCP Agentic Gameplay",
+  "format": "16:9",
+  "targetDurationSec": 32,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42031,
+  "botTier": "champion",
+  "cardSkinId": "dual-loop",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/build-with-phalanx/",
+  "tags": ["Phalanx Duel", "MCTS", "AI", "MCP", "Bots", "Tutorial"],
+  "summary": "Learn how Phalanx Duel's adversarial MCTS bot searches turns and how external AI agents can play and analyze matches via the MCP server.",
+  "cues": [
+    {
+      "id": "mcts-bots",
+      "label": "Adversarial MCTS & MCP tool surface",
+      "setup": [{ "action": "goto", "urlPath": "/" }],
+      "actions": [{ "action": "terminal", "value": "mcp-tools" }],
+      "expect": "#phx-tutorial-terminal",
+      "focus": ["#phx-tutorial-terminal"],
+      "holdMs": 2800
+    },
+    {
+      "id": "mcp-surface",
+      "label": "Launch a match against Expert MCTS",
+      "actions": [
+        { "action": "goto", "urlPath": "/" },
+        { "action": "quickStart", "selector": "lobby-bot-btn-mcts-hard" }
+      ],
+      "expect": "[data-testid=\"game-layout\"]",
+      "focus": ["[data-testid=\"game-layout\"]"],
+      "holdMs": 2600
+    },
+    {
+      "id": "live-ai-match",
+      "label": "Deploy and face the MCTS reply",
+      "actions": [
+        { "action": "click", "selector": "[data-testid=\"quick-deploy-aggressive\"]" },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] .attack-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2600
+    }
+  ]
+}

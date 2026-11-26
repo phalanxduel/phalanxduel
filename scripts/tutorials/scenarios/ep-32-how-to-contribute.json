@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "id": "ep-32-how-to-contribute",
+  "season": 8,
+  "episodeNumber": 32,
+  "title": "How to Contribute: Clone to Local Demo in 5 Minutes",
+  "format": "16:9",
+  "targetDurationSec": 32,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42032,
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/contribute/",
+  "tags": ["Phalanx Duel", "Open Source", "Contributing", "Developer Guide", "Tutorial"],
+  "summary": "Go from git clone to a running local Phalanx Duel stack with bin/phx-demo-ctl up, DB isolation guards, Playability Gate, and pnpm check.",
+  "cues": [
+    {
+      "id": "clone-to-demo",
+      "label": "Fastest clone-to-demo workflow",
+      "setup": [{ "action": "goto", "urlPath": "/" }],
+      "actions": [{ "action": "terminal", "value": "contribute-quickstart" }],
+      "expect": "#phx-tutorial-terminal",
+      "focus": ["#phx-tutorial-terminal"],
+      "holdMs": 2800
+    },
+    {
+      "id": "guardrails",
+      "label": "Verify local server health",
+      "actions": [{ "action": "terminal", "value": "health" }],
+      "expect": "#phx-tutorial-terminal",
+      "focus": ["#phx-tutorial-terminal"],
+      "holdMs": 2600
+    },
+    {
+      "id": "ship-pr",
+      "label": "Interactive local arena ready to hack",
+      "actions": [{ "action": "goto", "urlPath": "/" }],
+      "expect": "[data-testid=\"lobby-bot-btn-easy\"]",
+      "focus": ["[data-testid=\"lobby-bot-btn-easy\"]"],
+      "holdMs": 2400
+    }
+  ]
+}

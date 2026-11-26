@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "id": "ep-30-scientific-assurance-and-telemetry",
+  "season": 8,
+  "episodeNumber": 30,
+  "title": "Scientific Gameplay Assurance, Truth Gate & OpenTelemetry",
+  "format": "16:9",
+  "targetDurationSec": 32,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42030,
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/learn/gameplay-assurance/",
+  "tags": ["Phalanx Duel", "Testing", "OpenTelemetry", "QA", "Verification", "Tutorial"],
+  "summary": "See how Phalanx Duel enforces correctness with a 2.35M-case reference combat proof, Truth Gate QA, Playability Gate, and OpenTelemetry tracing.",
+  "cues": [
+    {
+      "id": "truth-gate",
+      "label": "Scientific assurance & Truth Gate layers",
+      "setup": [{ "action": "goto", "urlPath": "/" }],
+      "actions": [{ "action": "terminal", "value": "assurance-proof" }],
+      "expect": "#phx-tutorial-terminal",
+      "focus": ["#phx-tutorial-terminal"],
+      "holdMs": 2800
+    },
+    {
+      "id": "otel-pipeline",
+      "label": "Live health & observability telemetry",
+      "actions": [{ "action": "terminal", "value": "health" }],
+      "expect": "#phx-tutorial-terminal",
+      "focus": ["#phx-tutorial-terminal"],
+      "holdMs": 2600
+    },
+    {
+      "id": "playability-gate",
+      "label": "Live verified match execution",
+      "actions": [
+        { "action": "goto", "urlPath": "/" },
+        { "action": "quickStart", "selector": "lobby-bot-btn-med" }
+      ],
+      "expect": "[data-testid=\"game-layout\"]",
+      "focus": ["[data-testid=\"game-layout\"]"],
+      "holdMs": 2400
+    }
+  ]
+}

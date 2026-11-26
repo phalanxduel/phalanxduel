@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "id": "ep-28-tabletop-and-combat-lab",
+  "season": 8,
+  "episodeNumber": 28,
+  "title": "Play Face-to-Face with a Physical Deck & Combat Lab",
+  "format": "9:16",
+  "targetDurationSec": 22,
+  "mode": "classic",
+  "startingLp": 20,
+  "seed": 42028,
+  "botTier": "grunt",
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/tools/battle-calculator/",
+  "tags": ["Phalanx Duel", "Tabletop", "Card Game", "Combat Lab", "Tutorial", "Shorts"],
+  "summary": "Play Phalanx Duel face-to-face with a standard 52-card deck and verify suit boundary math with the online Combat Lab.",
+  "cues": [
+    {
+      "id": "tabletop-setup",
+      "label": "Standard 52-card phalanx formation",
+      "setup": [
+        { "action": "goto", "urlPath": "/" },
+        { "action": "quickStart", "selector": "lobby-bot-btn-med" },
+        { "action": "click", "selector": "[data-testid=\"quick-deploy-aggressive\"]" },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ],
+      "actions": [{ "action": "hold" }],
+      "expect": "[data-testid=\"player-battlefield\"] .attack-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2400
+    },
+    {
+      "id": "combat-lab",
+      "label": "Verify Shield -> Weapon -> Clamp math",
+      "actions": [
+        {
+          "action": "selectAttack",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target"
+        },
+        { "action": "click", "selector": "[data-testid=\"opponent-battlefield\"] .valid-target" }
+      ],
+      "expect": "[data-testid=\"combat-math-log\"]",
+      "focus": ["[data-testid=\"combat-math-log\"]"],
+      "holdMs": 2600
+    }
+  ]
+}

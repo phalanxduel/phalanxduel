@@ -1726,7 +1726,7 @@ function RewatchScreen({
           </div>
         )}
 
-        <div style="display: grid; grid-template-columns: 1fr 300px; gap: 1rem;">
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 1rem;">
           <div style="display: flex; flex-direction: column; gap: 1rem;">
             <div class="status-card" style="display: flex; flex-direction: column; gap: 12px;">
               <div style="display: flex; justify-content: space-between; gap: 12px; align-items: center;">

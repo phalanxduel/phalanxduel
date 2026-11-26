@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "id": "ep-23-game-theory-zero-rng",
+  "season": 7,
+  "episodeNumber": 23,
+  "title": "Game Theory of Phalanx Duel: Zero-RNG Geometry & Tempo",
+  "format": "16:9",
+  "targetDurationSec": 34,
+  "mode": "classic",
+  "startingLp": 20,
+  "seed": 42023,
+  "botTier": "soldier",
+  "cardSkinId": "dual-loop",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/about/philosophy/",
+  "tags": ["Phalanx Duel", "Game Theory", "Game Design", "Zero RNG", "Strategy", "Tutorial"],
+  "summary": "Explore the game theory behind Phalanx Duel: deterministic 2x4 column geometry, tempo commitment, and integer combat resolution with zero RNG.",
+  "cues": [
+    {
+      "id": "zero-rng-board",
+      "label": "Inspect the 2x4 deterministic phalanx",
+      "setup": [
+        { "action": "goto", "urlPath": "/" },
+        { "action": "quickStart", "selector": "lobby-bot-btn-med" }
+      ],
+      "actions": [{ "action": "hold" }],
+      "expect": "[data-testid=\"game-layout\"]",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2600
+    },
+    {
+      "id": "column-commitment",
+      "label": "Commit formations across four columns",
+      "actions": [
+        { "action": "click", "selector": "[data-testid=\"quick-deploy-aggressive\"]" },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ],
+      "expect": "[data-testid=\"player-battlefield\"] .attack-playable",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2600
+    },
+    {
+      "id": "deterministic-witness",
+      "label": "Forecast and resolve an integer strike",
+      "actions": [
+        {
+          "action": "selectAttack",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target"
+        },
+        { "action": "click", "selector": "[data-testid=\"opponent-battlefield\"] .valid-target" }
+      ],
+      "expect": "[data-testid=\"combat-math-log\"]",
+      "focus": ["[data-testid=\"combat-math-log\"]"],
+      "holdMs": 2800
+    }
+  ]
+}

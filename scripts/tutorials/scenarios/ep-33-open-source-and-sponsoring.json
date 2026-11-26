@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "ep-33-open-source-and-sponsoring",
+  "season": 8,
+  "episodeNumber": 33,
+  "title": "Open Source Philosophy & How to Support Phalanx Duel",
+  "format": "9:16",
+  "targetDurationSec": 24,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42033,
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/support/",
+  "tags": ["Phalanx Duel", "Open Source", "AGPL", "Sponsor", "Community", "Shorts"],
+  "summary": "Learn about Phalanx Duel's AGPL-3.0 open-source philosophy, transparent infrastructure, and how to support the project via GitHub Sponsors, Patreon, or Buy Me a Coffee.",
+  "cues": [
+    {
+      "id": "open-source",
+      "label": "Open-source stack & transparent infrastructure",
+      "setup": [{ "action": "goto", "urlPath": "/" }],
+      "actions": [{ "action": "terminal", "value": "sponsor-info" }],
+      "expect": "#phx-tutorial-terminal",
+      "focus": ["#phx-tutorial-terminal"],
+      "holdMs": 2800
+    },
+    {
+      "id": "sponsor-links",
+      "label": "Play free anytime at play.phalanxduel.com",
+      "actions": [{ "action": "goto", "urlPath": "/" }],
+      "expect": "[data-testid=\"lobby-bot-btn-easy\"]",
+      "focus": ["[data-testid=\"lobby-bot-btn-easy\"]"],
+      "holdMs": 2400
+    }
+  ]
+}

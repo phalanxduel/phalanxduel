@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "id": "ep-27-suit-hearts-ward",
+  "season": 7,
+  "episodeNumber": 27,
+  "title": "The Suits: Hearts — The Life-Point Ward",
+  "format": "9:16",
+  "targetDurationSec": 24,
+  "mode": "classic",
+  "startingLp": 20,
+  "seed": 42027,
+  "botTier": "grunt",
+  "cardSkinId": "dual-loop",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/mastery/mastery/",
+  "tags": ["Phalanx Duel", "Hearts", "Suit Rules", "Defense", "Tutorial", "Shorts"],
+  "summary": "Meet Hearts: the Player-Boundary Shield that anchors your back rank and blunts Spade breakthroughs before they hit your life points.",
+  "cues": [
+    {
+      "id": "hearts-role",
+      "label": "Anchor the back rank with Hearts",
+      "setup": [
+        { "action": "goto", "urlPath": "/" },
+        { "action": "quickStart", "selector": "lobby-bot-btn-med" },
+        { "action": "click", "selector": "[data-testid=\"quick-deploy-aggressive\"]" },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ],
+      "actions": [
+        {
+          "action": "selectAttack",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target"
+        }
+      ],
+      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target",
+      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "holdMs": 2400
+    },
+    {
+      "id": "hearts-ward",
+      "label": "Check Card-to-Player boundary math",
+      "actions": [
+        { "action": "click", "selector": "[data-testid=\"opponent-battlefield\"] .valid-target" }
+      ],
+      "expect": "[data-testid=\"combat-math-log\"]",
+      "focus": ["[data-testid=\"combat-math-log\"]"],
+      "holdMs": 2600
+    }
+  ]
+}

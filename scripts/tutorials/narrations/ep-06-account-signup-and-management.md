@@ -11,10 +11,10 @@ pronunciation:
 ---
 
 <!-- cue:open-auth -->
-Authorize opens the account form. Switch to Register and choose the gamertag other players will see.
+Authorize opens the account panel. Switch to Register to claim your operative gamertag, email, and password. Your gamertag gets a unique numeric suffix so your identity stays consistent across matches and ladders.
 
 <!-- cue:register-gamertag -->
-Submit the form. Your gamertag and rating now appear in the lobby header. This recording uses a disposable local account.
+Submit the form to sign in immediately. Your gamertag and live Elo rating appear in the lobby header, and every completed match now counts toward your profile history, achievements, and ranked ladders.
 
 <!-- cue:profile-security -->
-Open Settings from the signed-in header to manage your account and preferences.
+Open Settings from the signed-in header to manage your account. From here you can update your gamertag, favorite suit, tagline, notification preferences, card skins, and password security at any time.

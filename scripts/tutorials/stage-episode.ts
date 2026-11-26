@@ -366,9 +366,9 @@ async function main(): Promise<void> {
       '',
       '## Playlist Notes for Media Pipeline',
       '',
-      '- All 22 episodes are recorded in dark mode (`color-scheme: dark`), EBU R128 loudness-normalized (`-16 LUFS`), and verified with matching `.mp4`, `.vtt` captions, `.txt` transcripts, `.png` thumbnails, `.yml` YouTube sidecars, and `.metadata.json` files.',
-      '- Seasons 1–6 follow the canonical learning progression: Core Foundations (S1), Accounts/Cosmetics/HUD (S2), Modes & Bots (S3), Ladder/Profiles/Replays/Spectator (S4), Local LAN Tournament Play & Hosting on `lan.phalanxduel.com` (S5), and Advanced Tactics & Full Match (S6).',
-      '- Upload in episode order (`ep-01` through `ep-22`) into playlist `PLHenvAZhJjHo`.',
+      `- All ${playlistEntries.length} episodes are recorded in dark mode (\`color-scheme: dark\`), EBU R128 loudness-normalized (\`-16 LUFS\`), and verified with matching \`.mp4\`, \`.vtt\` captions, \`.txt\` transcripts, \`.png\` thumbnails, \`.yml\` YouTube sidecars, and \`.metadata.json\` files.`,
+      '- Seasons 1–8 follow the canonical learning progression: Core Foundations (S1), Accounts/Cosmetics/HUD (S2), Modes & Bots (S3), Ladder/Profiles/Replays/Spectator (S4), Local LAN Tournament Play & Hosting on `lan.phalanxduel.com` (S5), Advanced Tactics & Full Match (S6), Game Theory & The Four Suits (S7), and Tabletop, Architecture, Assurance, Contributing & Sponsoring (S8).',
+      `- Upload in episode order (\`ep-01\` through \`ep-${String(playlistEntries.length).padStart(2, '0')}\`) into playlist \`${manifest.playlistId}\`.`,
       '',
       '## Episode Catalog (Titles, Descriptions & Transcripts)',
       '',
@@ -463,6 +463,20 @@ async function main(): Promise<void> {
           name: 'Season 6 — Advanced Strategy & Full Match',
           description:
             'Read column architecture, leverage tactical passes, and follow a complete Hard MCTS duel.',
+        },
+        {
+          number: 7,
+          slug: 'season-7',
+          name: 'Season 7 — Game Theory & The Four Suits',
+          description:
+            'Understand zero-RNG deterministic design and master each suit boundary: Spades, Clubs, Diamonds, and Hearts.',
+        },
+        {
+          number: 8,
+          slug: 'season-8',
+          name: 'Season 8 — Tabletop, Architecture, Contributing & Sponsoring',
+          description:
+            'Play with physical cards, explore the C4 architecture, Truth Gate assurance, MCP AI agents, contributing, and open-source sponsorship.',
         },
       ];
       const ymlLines = [

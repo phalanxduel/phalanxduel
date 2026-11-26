@@ -30,7 +30,11 @@ const defaultBaseURL = "http://localhost:3001"
 const clientVersion = "0.1.3"
 const compatibleSchemaMajor = 1
 
-var autoMode = flag.Bool("auto", false, "Automatically pick a random action")
+var (
+	autoMode = flag.Bool("auto", false, "Automatically pick a random action")
+	nameFlag = flag.String("name", "", "Player display name (skips interactive prompt)")
+	joinFlag = flag.String("join", "", "Match UUID or invite URL to join directly")
+)
 
 var uuidPattern = regexp.MustCompile(`[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}`)
 
@@ -258,6 +262,7 @@ func chooseMode(reader *bufio.Reader) modeChoice {
 		{Label: "Join a duel from a code or link", Join: true},
 		{Label: "Start a game against Bot (Random)", Opponent: "bot-random"},
 		{Label: "Start a game against Bot (Heuristic)", Opponent: "bot-heuristic"},
+		{Label: "Start a game against Bot (MCTS / Expert)", Opponent: "bot-mcts"},
 	}
 
 	fmt.Println("\nSelect a play mode:")
@@ -645,8 +650,18 @@ func main() {
 		)
 	}
 
-	playerName := readLine(reader, "\nPlayer name: ")
-	mode := chooseMode(reader)
+	playerName := strings.TrimSpace(*nameFlag)
+	if playerName == "" {
+		playerName = readLine(reader, "\nPlayer name: ")
+	}
+
+	var mode modeChoice
+	joinRef := strings.TrimSpace(*joinFlag)
+	if joinRef != "" {
+		mode = modeChoice{Label: "Join a duel from a code or link", Join: true}
+	} else {
+		mode = chooseMode(reader)
+	}
 
 	fmt.Printf("\n🔌 Connecting to %s...\n", wsURL)
 	clientSocket := newWSClient(wsURL, origin)
@@ -655,7 +670,10 @@ func main() {
 
 	switch {
 	case mode.Join:
-		matchReference := readLine(reader, "Enter a match code or invite link: ")
+		matchReference := joinRef
+		if matchReference == "" {
+			matchReference = readLine(reader, "Enter a match code or invite link: ")
+		}
 		matchID := parseMatchReference(matchReference)
 		if err := clientSocket.SendJoinMatch(matchID, playerName); err != nil {
 			log.Fatalf("❌ Failed to queue joinMatch: %v", err)

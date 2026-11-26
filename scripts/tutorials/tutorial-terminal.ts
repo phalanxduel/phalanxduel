@@ -161,6 +161,114 @@ export class TutorialTerminal {
         await page.locator(`#${terminalId}`).evaluate((element) => element.remove());
         break;
       }
+      case 'arch-overview': {
+        const defaultsUrl = new URL('/api/defaults', url).toString();
+        const response = await page.request.get(defaultsUrl, { ignoreHTTPSErrors: true });
+        if (!response.ok()) throw new Error(`Defaults probe failed: ${response.status()}`);
+        const data = (await response.json()) as {
+          meta?: { versions?: { schemaVersion?: string; specVersion?: string } };
+        };
+        const wire = data.meta?.versions?.schemaVersion ?? '1.x';
+        const rules = data.meta?.versions?.specVersion ?? '3.0';
+        await showTerminal(
+          page,
+          [
+            `$ curl -s ${defaultsUrl} | jq .meta.versions`,
+            `{ "schemaVersion": "${wire}", "specVersion": "${rules}" }`,
+            '',
+            'PHALANX DUEL — MONOREPO ARCHITECTURE',
+            '  shared/   Zod contracts, SHA-256 hashes, OpenAPI / AsyncAPI',
+            '  engine/   Pure zero-I/O deterministic rules engine (SSoT)',
+            '  server/   Authoritative Fastify + WS actor & append-only ledger',
+            '  client/   Preact/Vite browser arena & broadcast spectator UI',
+            '  clients/  Go duel-cli (Homebrew / go install) + generated SDKs',
+            '  mcp/      Model Context Protocol agentic gameplay server',
+            '',
+            'Live C4 Map: https://phalanxduel.com/library/architecture/',
+          ].join('\n'),
+        );
+        break;
+      }
+      case 'assurance-proof': {
+        await showTerminal(
+          page,
+          [
+            '$ pnpm verify:quick && pnpm qa:playthrough:verify',
+            '',
+            'SCIENTIFIC GAMEPLAY ASSURANCE & TRUTH GATE',
+            '  [PASS] Combat Reference Proof : 2,355,388 finite cases verified',
+            '  [PASS] Replay Hash Chain      : Per-turn SHA-256 deterministic witness',
+            '  [PASS] DB Isolation Guards    : 24/24 structural assertions passed',
+            '  [PASS] Playability Gate       : Headless + headed E2E match verified',
+            '',
+            'OBSERVABILITY PIPELINE (OTel Native)',
+            '  App (Client/Server/Admin) -> otel-collector (:4318)',
+            '    -> Jaeger (distributed traces) + OpenObserve (longitudinal RUM)',
+          ].join('\n'),
+        );
+        break;
+      }
+      case 'mcp-tools': {
+        await showTerminal(
+          page,
+          [
+            '$ phalanx-mcp --list-tools',
+            '',
+            'ADVERSARIAL MCTS ENGINE',
+            '  • Perspective-flipping UCB1 on opponent turns',
+            '  • 40-ply tactical rollouts with cached untried actions',
+            '  • Benchmark: 66.0% win rate vs Heuristic | 90% Champion vs Soldier',
+            '',
+            'MCP AGENTIC GAMEPLAY SURFACE',
+            '  match_create         Create PvP or bot match',
+            '  engine_valid_actions Enumerate legal moves for current phase',
+            '  action_submit        Submit authoritative move & receive redacted view',
+            '  engine_evaluate      Evaluate board state & tactical advantage',
+            '  match_analyze        Full post-match turning-point report',
+          ].join('\n'),
+        );
+        break;
+      }
+      case 'contribute-quickstart': {
+        await showTerminal(
+          page,
+          [
+            '# Fastest Clone-to-Demo Path (Node 24 + pnpm + Postgres)',
+            '$ git clone https://github.com/phalanxduel/game.git && cd game',
+            '$ pnpm install && pnpm qa:setup',
+            '$ bin/phx-demo-ctl up',
+            '',
+            '# Guardrails Before Every PR',
+            '$ pnpm verify:db:isolation    # 24 DB safety checks',
+            '$ pnpm qa:playthrough:verify  # Playability Gate',
+            '$ pnpm check                  # Build -> Lint -> Typecheck -> Test',
+            '',
+            'Guide: https://phalanxduel.com/contribute/',
+          ].join('\n'),
+        );
+        break;
+      }
+      case 'sponsor-info': {
+        await showTerminal(
+          page,
+          [
+            'PHALANX DUEL — OPEN SOURCE & TRANSPARENT INFRASTRUCTURE',
+            '',
+            '  License : AGPL-3.0-or-later (100% public commit history)',
+            '  Cost    : Free to play — no pay-to-win, no dark patterns',
+            '',
+            '  Real Monthly Line Items:',
+            '    Fly.io (hosting) · Neon (Postgres) · DNSimple (DNS)',
+            '    Migadu (email)   · Stripe (cosmetics) · GoatCounter (analytics)',
+            '',
+            '  Support the Project:',
+            '    • GitHub Sponsors : github.com/sponsors/just3ws',
+            '    • Patreon         : patreon.com/c/just3ws',
+            '    • Buy Me a Coffee : buymeacoffee.com/just3ws',
+          ].join('\n'),
+        );
+        break;
+      }
       default:
         throw new Error(`Unknown terminal operation: ${operation}`);
     }

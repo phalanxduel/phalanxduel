@@ -1,20 +1,21 @@
 ---
 episode_id: ep-19-terminal-client-duel-cli
-title: "Play a Browser Duel from the Go CLI"
+title: "Cross-Platform Play: Browser Duel from the Go CLI"
 format: "16:9"
 companion_url: "https://phalanxduel.com/build-with-phalanx/"
 privacy: private
 pronunciation:
   Phalanx: FAY-lanks
+  CLI: C L I
   LP: life points
   MCTS: M C T S
 ---
 
 <!-- cue:cli-intro -->
-Run the Go duel client and enter a name. Its menu lets you create a duel, join from an invite, or play a bot.
+Install the Go client with Homebrew or go install, then launch duel-cli. You can create a match, challenge Random, Heuristic, or MCTS bots, or jump straight into a table with dash name and dash join flags.
 
 <!-- cue:cli-join -->
-Choose Join and enter the match code created by the browser player. The terminal displays the live turn, along with both players and their board state.
+Enter the invite code created by the browser player. The Go client speaks the exact same authoritative WebSocket protocol, rendering live turn state, suit glyphs, and both battlefields in your terminal.
 
 <!-- cue:cross-client -->
-Pick a numbered deployment action in the terminal. The browser player sees the opponent’s card appear in the same match.
+Pick a numbered deployment action in the terminal. The server validates the move and streams it straight to the browser player in real time — true cross-platform play across Web, Go CLI, and native clients.

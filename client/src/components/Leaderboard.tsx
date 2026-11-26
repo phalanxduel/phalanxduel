@@ -11,6 +11,8 @@ interface LeaderboardEntry {
 }
 
 interface LeaderboardData {
+  activeSeason?: number | null;
+  windowDays?: number;
   rankings: LeaderboardEntry[];
 }
 
@@ -47,8 +49,20 @@ export function Leaderboard({ activeUserId }: { activeUserId?: string }) {
 
   return (
     <div class="leaderboard" data-component="LeaderboardView">
-      <h2 class="section-label" style="display: flex; align-items: center; gap: 8px;">
+      <h2
+        class="section-label"
+        style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;"
+      >
         ELO_LEADERBOARD <span class="phx-beta-tag">BETA</span>
+        {data?.activeSeason ? (
+          <span style="font-size: 0.65rem; color: var(--gold); margin-left: auto;">
+            SEASON {data.activeSeason} · {data.windowDays ?? 90}D ROLLING · GLICKO-2 TRACKED
+          </span>
+        ) : (
+          <span style="font-size: 0.65rem; color: var(--text-dim); margin-left: auto;">
+            {data?.windowDays ?? 90}D ROLLING · ELO &amp; GLICKO-2
+          </span>
+        )}
       </h2>
       <div class="leaderboard-tabs">
         {categories.map((cat) => (

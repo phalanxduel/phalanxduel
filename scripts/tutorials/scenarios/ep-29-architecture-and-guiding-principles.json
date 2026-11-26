@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "id": "ep-29-architecture-and-guiding-principles",
+  "season": 8,
+  "episodeNumber": 29,
+  "title": "System Architecture & Guiding Principles",
+  "format": "16:9",
+  "targetDurationSec": 34,
+  "mode": "classic",
+  "startingLp": 12,
+  "seed": 42029,
+  "cardSkinId": "default",
+  "playerName": "TutorialHost",
+  "companionUrl": "https://phalanxduel.com/library/architecture/",
+  "tags": ["Phalanx Duel", "Architecture", "C4", "TypeScript", "Distributed Systems", "Tutorial"],
+  "summary": "Tour Phalanx Duel's server-authoritative architecture: pure zero-I/O TypeScript engine, append-only ledger, hash chains, and interactive Groma C4 map.",
+  "cues": [
+    {
+      "id": "arch-engine",
+      "label": "Pure deterministic engine & API defaults",
+      "setup": [{ "action": "goto", "urlPath": "/" }],
+      "actions": [{ "action": "terminal", "value": "arch-overview" }],
+      "expect": "#phx-tutorial-terminal",
+      "focus": ["#phx-tutorial-terminal"],
+      "holdMs": 2800
+    },
+    {
+      "id": "arch-ledger",
+      "label": "Server-authoritative arena & ledger",
+      "actions": [
+        { "action": "goto", "urlPath": "/" },
+        { "action": "quickStart", "selector": "lobby-bot-btn-med" },
+        { "action": "click", "selector": "[data-testid=\"quick-deploy-aggressive\"]" },
+        {
+          "action": "waitForSelector",
+          "selector": "[data-testid=\"player-battlefield\"] .attack-playable"
+        }
+      ],
+      "expect": "[data-testid=\"game-layout\"]",
+      "focus": ["[data-testid=\"game-layout\"]"],
+      "holdMs": 2600
+    },
+    {
+      "id": "arch-library",
+      "label": "Explore the live Architecture Library SPA",
+      "actions": [{ "action": "goto", "urlPath": "/docs/library" }],
+      "expect": "header",
+      "focus": ["body"],
+      "holdMs": 2800
+    }
+  ]
+}
