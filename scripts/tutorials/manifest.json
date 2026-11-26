@@ -278,7 +278,7 @@
       "format": "16:9",
       "formatRationale": "Full-board formation commitment and deterministic Combat Math witness need widescreen.",
       "targetDurationSec": 34,
-      "status": "scripted",
+      "status": "recorded",
       "scenarioPath": "scripts/tutorials/scenarios/ep-23-game-theory-zero-rng.json",
       "narrationPath": "scripts/tutorials/narrations/ep-23-game-theory-zero-rng.md"
     },
@@ -290,7 +290,7 @@
       "format": "9:16",
       "formatRationale": "Focused single-suit spotlight ideal for punchy vertical Shorts.",
       "targetDurationSec": 24,
-      "status": "scripted",
+      "status": "recorded",
       "scenarioPath": "scripts/tutorials/scenarios/ep-24-suit-spades-blade.json",
       "narrationPath": "scripts/tutorials/narrations/ep-24-suit-spades-blade.md"
     },
@@ -302,7 +302,7 @@
       "format": "9:16",
       "formatRationale": "Focused single-suit spotlight ideal for punchy vertical Shorts.",
       "targetDurationSec": 24,
-      "status": "scripted",
+      "status": "recorded",
       "scenarioPath": "scripts/tutorials/scenarios/ep-25-suit-clubs-cleave.json",
       "narrationPath": "scripts/tutorials/narrations/ep-25-suit-clubs-cleave.md"
     },
@@ -314,7 +314,7 @@
       "format": "9:16",
       "formatRationale": "Focused single-suit spotlight ideal for punchy vertical Shorts.",
       "targetDurationSec": 24,
-      "status": "scripted",
+      "status": "recorded",
       "scenarioPath": "scripts/tutorials/scenarios/ep-26-suit-diamonds-aegis.json",
       "narrationPath": "scripts/tutorials/narrations/ep-26-suit-diamonds-aegis.md"
     },
@@ -326,7 +326,7 @@
       "format": "9:16",
       "formatRationale": "Focused single-suit spotlight ideal for punchy vertical Shorts.",
       "targetDurationSec": 24,
-      "status": "scripted",
+      "status": "recorded",
       "scenarioPath": "scripts/tutorials/scenarios/ep-27-suit-hearts-ward.json",
       "narrationPath": "scripts/tutorials/narrations/ep-27-suit-hearts-ward.md"
     },
@@ -338,7 +338,7 @@
       "format": "9:16",
       "formatRationale": "Quick tabletop bridge driving physical card players to the Combat Lab.",
       "targetDurationSec": 22,
-      "status": "scripted",
+      "status": "recorded",
       "scenarioPath": "scripts/tutorials/scenarios/ep-28-tabletop-and-combat-lab.json",
       "narrationPath": "scripts/tutorials/narrations/ep-28-tabletop-and-combat-lab.md"
     },
@@ -350,7 +350,7 @@
       "format": "16:9",
       "formatRationale": "Architecture diagrams, OpenAPI docs, and the interactive Library SPA require widescreen.",
       "targetDurationSec": 34,
-      "status": "scripted",
+      "status": "recorded",
       "scenarioPath": "scripts/tutorials/scenarios/ep-29-architecture-and-guiding-principles.json",
       "narrationPath": "scripts/tutorials/narrations/ep-29-architecture-and-guiding-principles.md"
     },
@@ -362,7 +362,7 @@
       "format": "16:9",
       "formatRationale": "Terminal proof summaries, health telemetry, and live E2E verification need widescreen.",
       "targetDurationSec": 32,
-      "status": "scripted",
+      "status": "recorded",
       "scenarioPath": "scripts/tutorials/scenarios/ep-30-scientific-assurance-and-telemetry.json",
       "narrationPath": "scripts/tutorials/narrations/ep-30-scientific-assurance-and-telemetry.md"
     },
@@ -374,7 +374,7 @@
       "format": "16:9",
       "formatRationale": "MCP tool catalog and live Champion MCTS match evaluation require widescreen.",
       "targetDurationSec": 32,
-      "status": "scripted",
+      "status": "recorded",
       "scenarioPath": "scripts/tutorials/scenarios/ep-31-ai-mcts-and-mcp-agents.json",
       "narrationPath": "scripts/tutorials/narrations/ep-31-ai-mcts-and-mcp-agents.md"
     },
@@ -386,7 +386,7 @@
       "format": "16:9",
       "formatRationale": "Developer CLI workflow, guardrails, and live local stack require widescreen.",
       "targetDurationSec": 32,
-      "status": "scripted",
+      "status": "recorded",
       "scenarioPath": "scripts/tutorials/scenarios/ep-32-how-to-contribute.json",
       "narrationPath": "scripts/tutorials/narrations/ep-32-how-to-contribute.md"
     },
@@ -398,7 +398,7 @@
       "format": "9:16",
       "formatRationale": "Punchy community and open-source transparency Short.",
       "targetDurationSec": 24,
-      "status": "scripted",
+      "status": "recorded",
       "scenarioPath": "scripts/tutorials/scenarios/ep-33-open-source-and-sponsoring.json",
       "narrationPath": "scripts/tutorials/narrations/ep-33-open-source-and-sponsoring.md"
     }

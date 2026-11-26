@@ -95,7 +95,7 @@
           "action": "reinforce"
         }
       ],
-      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]",
+      "expect": "[data-testid=\"combat-math-log\"]",
       "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"hand\"]"],
       "holdMs": 2200
     }

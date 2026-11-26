@@ -88,7 +88,7 @@ The **[Documentation Wiki](docs/README.md)** is the central entry point for all 
 - **[Infrastructure & Deployment Topology (SVG)](docs/system/infrastructure-topology.svg)** — Complete hybrid host-native and cloud deployment topology
 - **[Module Dependency Graph (SVG)](docs/system/dependency-graph.svg)** — Workspace package boundaries and architectural trust isolation
 - **[Documentation Library SPA](docs/library/index.html)** — Self-contained visual library for players, engineers, partners, and investors (live at [`phalanxduel.com/library`](https://phalanxduel.com/library/) or via `bin/phx-docs-library`)
-- **[Video Tutorials & Masterclass Series (22 Episodes)](https://phalanxduel.com/learn/tutorials/)** — 10 quick-start Shorts and 12 deep-dive guides with full searchable transcripts
+- **[Video Tutorials & Masterclass Series (33 Episodes)](https://phalanxduel.com/learn/tutorials/)** — 16 quick-start Shorts and 17 deep-dive guides across 8 seasons with full searchable transcripts
 - **[Player, Partner & Investor Diagrams](docs/system/AUDIENCE_DIAGRAMS.md)** — Canonical Mermaid source for match lifecycle, combat cascade, competitive loop, platform ecosystem, anti-cheat moat, and scaling economics
 
 ### Key Entry Points
