@@ -90,7 +90,7 @@ function computeBotActionFromKnownState(
   if (strategy === 'mcts') {
     return runMCTS(gs, playerIndex, {
       iterations: mctsIterations,
-      explorationParam: 2.0,
+      explorationParam: Math.SQRT2,
       seed: config.seed,
       weights,
     });

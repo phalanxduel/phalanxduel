@@ -10,9 +10,70 @@ import { isGameOver } from '@phalanxduel/shared';
 import type { HeuristicWeights } from './bot-tiers.js';
 
 function getMCTSValidActions(state: GameState): Action[] {
-  return getValidActions(state, state.activePlayerIndex).filter(
+  const all = getValidActions(state, state.activePlayerIndex).filter(
     (action) => action.type !== 'quickDeploy',
   );
+  const nonForfeit = all.filter((action) => action.type !== 'forfeit');
+  return nonForfeit.length > 0 ? nonForfeit : all;
+}
+
+function pickRolloutAction(state: GameState, actions: Action[], rng: () => number): Action {
+  const nonPass = actions.filter((a) => a.type !== 'pass');
+  const pool = nonPass.length > 0 ? nonPass : actions;
+  if (pool.length === 1 || rng() < 0.25) {
+    return pool[Math.floor(rng() * pool.length)]!;
+  }
+
+  const active = state.players[state.activePlayerIndex];
+  const opp = state.players[state.activePlayerIndex === 0 ? 1 : 0];
+  if (!active || !opp) return pool[Math.floor(rng() * pool.length)]!;
+  const cols = state.params?.columns ?? 4;
+
+  if (state.phase === 'AttackPhase') {
+    let best = pool[0]!;
+    let bestScore = -Infinity;
+    for (const a of pool) {
+      if (a.type !== 'attack') continue;
+      const atk = active.battlefield[a.attackingColumn];
+      const defFront = opp.battlefield[a.defendingColumn];
+      const defBack = opp.battlefield[cols + a.defendingColumn];
+      const atkVal = atk?.card.value ?? 0;
+      let score = atkVal;
+      if (!defFront) {
+        score += 20 + atkVal; // Direct LP breakthrough
+      } else if (atkVal >= defFront.currentHp) {
+        score += 12 + (atkVal - defFront.currentHp); // Clean KO + carryover
+        if (!defBack) score += 8;
+      } else {
+        score -= defFront.currentHp - atkVal; // Chip / losing exchange
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        best = a;
+      }
+    }
+    return best;
+  }
+
+  if (state.phase === 'DeploymentPhase' || state.phase === 'ReinforcementPhase') {
+    let best = pool[0]!;
+    let bestScore = -Infinity;
+    for (const a of pool) {
+      if (a.type !== 'deploy' && a.type !== 'reinforce') continue;
+      const card = active.hand.find((c) => c.id === a.cardId);
+      const val = card?.value ?? 0;
+      const col = a.type === 'deploy' ? a.column : (state.reinforcement?.column ?? 0);
+      const isFront = !active.battlefield[col];
+      const score = isFront ? val * 2 : 14 - val;
+      if (score > bestScore) {
+        bestScore = score;
+        best = a;
+      }
+    }
+    return best;
+  }
+
+  return pool[Math.floor(rng() * pool.length)]!;
 }
 
 export interface MCTSConfig {
@@ -41,6 +102,7 @@ export class MCTSNode {
   public parent: MCTSNode | null = null;
   public state: GameState;
   public playerIndex: number;
+  public untriedActions: Action[] | null = null;
 
   constructor(state: GameState, playerIndex: number, parent: MCTSNode | null = null) {
     this.state = state;
@@ -48,18 +110,25 @@ export class MCTSNode {
     this.parent = parent;
   }
 
-  public isFullyExpanded(): boolean {
-    const validActions = getMCTSValidActions(this.state);
-    return this.children.size === validActions.length;
+  public getUntriedActions(): Action[] {
+    if (this.untriedActions === null) {
+      this.untriedActions = isGameOver(this.state) ? [] : getMCTSValidActions(this.state);
+    }
+    return this.untriedActions;
   }
 
-  public getUCB1(explorationParam: number): number {
+  public isFullyExpanded(): boolean {
+    return this.getUntriedActions().length === 0;
+  }
+
+  public getUCB1(explorationParam: number, minimize = false): number {
     if (this.visits === 0) return Infinity;
     const parentVisits = this.parent ? this.parent.visits : this.visits;
     const winRate = this.wins / this.visits;
     const avgValue = this.totalValue / this.visits;
     // Combine win rate with heuristic value for better tie-breaking
-    const exploitation = winRate * 0.7 + avgValue * 0.3;
+    const rawExploitation = winRate * 0.7 + avgValue * 0.3;
+    const exploitation = minimize ? 1 - rawExploitation : rawExploitation;
     return exploitation + explorationParam * Math.sqrt(Math.log(parentVisits) / this.visits);
   }
 }
@@ -145,13 +214,14 @@ export function runMCTS(
   for (let i = 0; i < config.iterations; i++) {
     let node = root;
 
-    // 1. Selection
+    // 1. Selection (adversarial: opponent minimizes playerIndex's exploitation)
     while (node.isFullyExpanded() && node.children.size > 0) {
       let bestChild: MCTSNode | null = null;
       let maxUCB = -Infinity;
+      const isOpponentTurn = node.state.activePlayerIndex !== playerIndex;
 
       for (const { node: child } of node.children.values()) {
-        const ucb = child.getUCB1(config.explorationParam);
+        const ucb = child.getUCB1(config.explorationParam, isOpponentTurn);
         if (ucb > maxUCB) {
           maxUCB = ucb;
           bestChild = child;
@@ -162,40 +232,43 @@ export function runMCTS(
     }
 
     // 2. Expansion
-    if (!isGameOver(node.state)) {
-      const validActions = getMCTSValidActions(node.state);
-      const untriedActions = validActions.filter((a) => !node.children.has(JSON.stringify(a)));
-
-      if (untriedActions.length > 0) {
-        const action = untriedActions[Math.floor(rng() * untriedActions.length)]!;
-        const nextState = applyAction(node.state, action);
-        const childNode = new MCTSNode(nextState, playerIndex, node);
-        node.children.set(JSON.stringify(action), { action, node: childNode });
-        node = childNode;
-      }
+    const untried = node.getUntriedActions();
+    if (untried.length > 0) {
+      const idx = Math.floor(rng() * untried.length);
+      const action = untried.splice(idx, 1)[0]!;
+      const nextState = applyAction(node.state, action);
+      const childNode = new MCTSNode(nextState, playerIndex, node);
+      node.children.set(JSON.stringify(action), { action, node: childNode });
+      node = childNode;
     }
 
-    // 3. Simulation
+    // 3. Simulation (tactical rollout deep enough to cross Deployment into Combat)
     let simulationState = node.state;
     let depth = 0;
-    const maxDepth = 100; // Prevent infinite loops
+    const maxDepth = 40;
     while (!isGameOver(simulationState) && depth < maxDepth) {
       const actions = getMCTSValidActions(simulationState);
       if (actions.length === 0) break;
-      const randomAction = actions[Math.floor(rng() * actions.length)]!;
-      simulationState = applyAction(simulationState, randomAction);
+      const rolloutAction = pickRolloutAction(simulationState, actions, rng);
+      simulationState = applyAction(simulationState, rolloutAction);
       depth++;
     }
 
     // 4. Backpropagation
     const victory = checkVictory(simulationState);
-    const won = victory ? victory.winnerIndex === playerIndex : false;
     const hValue = evaluateState(simulationState, playerIndex, config.weights);
+    const outcomeCredit = victory
+      ? victory.winnerIndex === playerIndex
+        ? 1
+        : victory.winnerIndex === null
+          ? 0.5
+          : 0
+      : hValue;
 
     let backpropNode: MCTSNode | null = node;
     while (backpropNode) {
       backpropNode.visits++;
-      if (won) backpropNode.wins++;
+      backpropNode.wins += outcomeCredit;
       backpropNode.totalValue += hValue;
       backpropNode = backpropNode.parent;
     }
