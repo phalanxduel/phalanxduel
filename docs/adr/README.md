@@ -33,3 +33,6 @@ This directory contains the historical record of significant architectural and p
 - [ADR-027: WebSocket-first degraded connectivity fallback](./ADR-027-websocket-first-degraded-connectivity-fallback.md)
 - [ADR-028: Client UI-UX audit and remediation plan](./ADR-028-client-ui-ux-audit-and-remediation-plan.md)
 - [ADR-029: MCP agentic gameplay via action_submit](./ADR-029-mcp-agentic-gameplay-action-submit.md)
+- [ADR-030: Agentic gameplay immediate path](./ADR-030-agentic-gameplay-immediate-path.md)
+- [ADR-031: Agentic gameplay safety and bot tiers](./ADR-031-agentic-gameplay-safety-and-bot-tiers.md)
+- [ADR-032: Retain ESLint and Prettier over Biome](./ADR-032-retain-eslint-and-prettier-over-biome.md)
