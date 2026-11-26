@@ -140,3 +140,6 @@ graphify-out/*
 
 # Rendered tutorial media (staged externally to Google Drive / YouTube)
 output/video/
+
+# Video build scratch
+scripts/video/build/

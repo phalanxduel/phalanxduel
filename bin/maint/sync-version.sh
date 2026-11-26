@@ -10,6 +10,8 @@ PACKAGE_VERSION_FILES=(
   "server/package.json"
   "client/package.json"
   "admin/package.json"
+  "mcp/package.json"
+  "agents/autonomous-bot/package.json"
 )
 
 usage() {
