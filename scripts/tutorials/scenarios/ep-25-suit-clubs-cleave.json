@@ -7,18 +7,19 @@
   "format": "9:16",
   "targetDurationSec": 24,
   "mode": "classic",
-  "startingLp": 20,
-  "seed": 42025,
+  "startingLp": 40,
+  "seed": 42016,
   "botTier": "grunt",
   "cardSkinId": "dual-loop",
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/mastery/mastery/",
   "tags": ["Phalanx Duel", "Clubs", "Suit Rules", "Strategy", "Tutorial", "Shorts"],
   "summary": "Meet Clubs: the Card-Boundary Weapon that doubles carryover after destroying the front rank to cleave straight through the back rank.",
+  "requiredRuleIds": ["PD-RULE-026"],
   "cues": [
     {
       "id": "clubs-role",
-      "label": "Line up a front-to-back column cleave",
+      "label": "Line up a Club column cleave (PD-RULE-026)",
       "setup": [
         { "action": "goto", "urlPath": "/" },
         { "action": "quickStart", "selector": "lobby-bot-btn-med" },
@@ -31,24 +32,32 @@
       "actions": [
         {
           "action": "selectAttack",
-          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target"
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-026\"]",
+          "value": "searchTurns"
         }
       ],
-      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target",
+      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-026\"]",
       "focus": [
         "[data-testid=\"player-battlefield\"] .selected",
-        "[data-testid=\"opponent-battlefield\"] .valid-target"
+        "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-026\"]"
       ],
       "holdMs": 2400
     },
     {
       "id": "clubs-cleave",
-      "label": "Inspect the Card-to-Card carryover",
+      "label": "Inspect doubled Club Card-to-Card carryover",
       "actions": [
-        { "action": "click", "selector": "[data-testid=\"opponent-battlefield\"] .valid-target" }
+        {
+          "action": "click",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-026\"]"
+        },
+        {
+          "action": "click",
+          "selector": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"] button:text-is(\"ANALYST\")"
+        }
       ],
-      "expect": "[data-testid=\"combat-math-log\"]",
-      "focus": ["[data-testid=\"combat-math-log\"]"],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"][data-mode=\"analyst\"]:has([data-rule-id=\"PD-RULE-026\"])",
+      "focus": ["[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]"],
       "holdMs": 2600
     }
   ]

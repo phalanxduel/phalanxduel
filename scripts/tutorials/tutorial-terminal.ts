@@ -190,15 +190,27 @@ export class TutorialTerminal {
         break;
       }
       case 'assurance-proof': {
+        const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
+        const { stdout } = await promisify(execFile)(
+          'bash',
+          ['scripts/ci/verify-db-isolation.sh'],
+          {
+            cwd: repoRoot,
+          },
+        );
+        const summaryLines = stripVTControlCharacters(stdout)
+          .trim()
+          .split('\n')
+          .filter((l) => l.includes('Results:') || l.includes('DB isolation guards verified'));
         await showTerminal(
           page,
           [
-            '$ pnpm verify:quick && pnpm qa:playthrough:verify',
+            '$ bash scripts/ci/verify-db-isolation.sh',
+            ...summaryLines,
             '',
             'SCIENTIFIC GAMEPLAY ASSURANCE & TRUTH GATE',
             '  [PASS] Combat Reference Proof : 2,355,388 finite cases verified',
             '  [PASS] Replay Hash Chain      : Per-turn SHA-256 deterministic witness',
-            '  [PASS] DB Isolation Guards    : 24/24 structural assertions passed',
             '  [PASS] Playability Gate       : Headless + headed E2E match verified',
             '',
             'OBSERVABILITY PIPELINE (OTel Native)',

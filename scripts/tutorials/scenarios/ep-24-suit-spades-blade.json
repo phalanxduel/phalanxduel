@@ -7,7 +7,7 @@
   "format": "9:16",
   "targetDurationSec": 24,
   "mode": "classic",
-  "startingLp": 20,
+  "startingLp": 40,
   "seed": 42024,
   "botTier": "grunt",
   "cardSkinId": "dual-loop",
@@ -15,10 +15,11 @@
   "companionUrl": "https://phalanxduel.com/mastery/mastery/",
   "tags": ["Phalanx Duel", "Spades", "Suit Rules", "Strategy", "Tutorial", "Shorts"],
   "summary": "Meet Spades: the Player-Boundary Weapon that doubles overflow damage the moment your attack reaches the opponent's life points.",
+  "requiredRuleIds": ["PD-RULE-028"],
   "cues": [
     {
       "id": "spades-role",
-      "label": "Spot Spades in formation",
+      "label": "Line up a Spade breakthrough (PD-RULE-028)",
       "setup": [
         { "action": "goto", "urlPath": "/" },
         { "action": "quickStart", "selector": "lobby-bot-btn-med" },
@@ -31,24 +32,32 @@
       "actions": [
         {
           "action": "selectAttack",
-          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target"
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-028\"]",
+          "value": "searchTurns"
         }
       ],
-      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target",
+      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-028\"]",
       "focus": [
         "[data-testid=\"player-battlefield\"] .selected",
-        "[data-testid=\"opponent-battlefield\"] .valid-target"
+        "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-028\"]"
       ],
       "holdMs": 2400
     },
     {
       "id": "spades-strike",
-      "label": "Resolve breakthrough damage",
+      "label": "Inspect doubled Spade LP damage in Analyst mode",
       "actions": [
-        { "action": "click", "selector": "[data-testid=\"opponent-battlefield\"] .valid-target" }
+        {
+          "action": "click",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-028\"]"
+        },
+        {
+          "action": "click",
+          "selector": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"] button:text-is(\"ANALYST\")"
+        }
       ],
-      "expect": "[data-testid=\"combat-math-log\"]",
-      "focus": ["[data-testid=\"combat-math-log\"]"],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"][data-mode=\"analyst\"]:has([data-rule-id=\"PD-RULE-028\"])",
+      "focus": ["[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]"],
       "holdMs": 2600
     }
   ]

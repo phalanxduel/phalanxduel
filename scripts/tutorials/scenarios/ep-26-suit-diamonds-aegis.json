@@ -7,7 +7,7 @@
   "format": "9:16",
   "targetDurationSec": 24,
   "mode": "classic",
-  "startingLp": 20,
+  "startingLp": 40,
   "seed": 42026,
   "botTier": "grunt",
   "cardSkinId": "dual-loop",
@@ -15,10 +15,11 @@
   "companionUrl": "https://phalanxduel.com/mastery/mastery/",
   "tags": ["Phalanx Duel", "Diamonds", "Suit Rules", "Defense", "Tutorial", "Shorts"],
   "summary": "Meet Diamonds: the Card-Boundary Shield that absorbs carryover before an attacking Club can double it.",
+  "requiredRuleIds": ["PD-RULE-023"],
   "cues": [
     {
       "id": "diamonds-role",
-      "label": "Deploy Diamonds on the front rank",
+      "label": "Line up a strike into a Diamond shield (PD-RULE-023)",
       "setup": [
         { "action": "goto", "urlPath": "/" },
         { "action": "quickStart", "selector": "lobby-bot-btn-med" },
@@ -31,21 +32,32 @@
       "actions": [
         {
           "action": "selectAttack",
-          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target"
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-023\"]",
+          "value": "searchTurns"
         }
       ],
-      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target",
-      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-023\"]",
+      "focus": [
+        "[data-testid=\"player-battlefield\"] .selected",
+        "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-023\"]"
+      ],
       "holdMs": 2400
     },
     {
       "id": "diamonds-shield",
-      "label": "Resolve Shield-before-Weapon combat math",
+      "label": "Inspect Diamond Card-to-Card shield math",
       "actions": [
-        { "action": "click", "selector": "[data-testid=\"opponent-battlefield\"] .valid-target" }
+        {
+          "action": "click",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-023\"]"
+        },
+        {
+          "action": "click",
+          "selector": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"] button:text-is(\"ANALYST\")"
+        }
       ],
-      "expect": "[data-testid=\"combat-math-log\"]",
-      "focus": ["[data-testid=\"combat-math-log\"]"],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"][data-mode=\"analyst\"]:has([data-rule-id=\"PD-RULE-023\"])",
+      "focus": ["[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]"],
       "holdMs": 2600
     }
   ]

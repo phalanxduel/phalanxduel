@@ -98,10 +98,50 @@ async function runAction(
     case 'deployFirstCard':
       await bot.deployFirstCard();
       break;
-    case 'selectAttack':
+    case 'selectAttack': {
       if (!step.selector) throw new Error('selectAttack requires a forecast selector');
+      if (step.value === 'searchTurns') {
+        let matched = false;
+        const attack = page.locator('[data-testid="player-battlefield"] .attack-playable').first();
+        const reinforce = page.locator('[data-testid^="hand-card-"].reinforce-playable').first();
+        const skip = page.getByTestId('inline-skip-reinforce-btn');
+        const pass = page.getByTestId('inline-pass-btn');
+        const end = page.getByTestId('game-over');
+        for (let attempt = 0; attempt < 35; attempt++) {
+          await expect(attack.or(reinforce).or(skip).or(pass).or(end).first()).toBeVisible({
+            timeout: 15_000,
+          });
+          if (await end.isVisible()) break;
+          if (await reinforce.isVisible()) {
+            await bot.reinforceFirst();
+            continue;
+          }
+          if (await skip.isVisible()) {
+            await bot.clickTarget(skip);
+            continue;
+          }
+          if (await attack.isVisible()) {
+            try {
+              await bot.selectAttackWithForecast(step.selector);
+              matched = true;
+              break;
+            } catch {
+              await bot.attackFirst();
+              continue;
+            }
+          }
+          if (await pass.isVisible()) {
+            await bot.clickTarget(pass);
+          }
+        }
+        if (!matched) {
+          throw new Error(`No legal attack matching ${step.selector} found within 35 turns`);
+        }
+        break;
+      }
       await bot.selectAttackWithForecast(step.selector);
       break;
+    }
     case 'attack':
       await bot.attackFirst(step.selector, step.value);
       break;
@@ -359,6 +399,16 @@ async function main(): Promise<void> {
       } catch (error) {
         await page.screenshot({ path: join(outDir, 'failure.png') }).catch(() => undefined);
         throw new Error(`${spec.id}/${cue.id} failed`, { cause: error });
+      }
+    }
+
+    if (spec.requiredRuleIds?.length) {
+      const seen = new Set(phases.flatMap((p) => p.telemetry?.ruleIds ?? []));
+      const missing = spec.requiredRuleIds.filter((r) => !seen.has(r));
+      if (missing.length > 0) {
+        throw new Error(
+          `${spec.id} did not trigger required rule(s): ${missing.join(', ')} (seen: ${[...seen].join(', ') || 'none'})`,
+        );
       }
     }
 

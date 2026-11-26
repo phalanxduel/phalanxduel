@@ -7,18 +7,19 @@
   "format": "9:16",
   "targetDurationSec": 24,
   "mode": "classic",
-  "startingLp": 20,
-  "seed": 42027,
+  "startingLp": 40,
+  "seed": 42025,
   "botTier": "grunt",
   "cardSkinId": "dual-loop",
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/mastery/mastery/",
   "tags": ["Phalanx Duel", "Hearts", "Suit Rules", "Defense", "Tutorial", "Shorts"],
   "summary": "Meet Hearts: the Player-Boundary Shield that anchors your back rank and blunts Spade breakthroughs before they hit your life points.",
+  "requiredRuleIds": ["PD-RULE-024"],
   "cues": [
     {
       "id": "hearts-role",
-      "label": "Anchor the back rank with Hearts",
+      "label": "Line up a breakthrough against a Heart ward (PD-RULE-024)",
       "setup": [
         { "action": "goto", "urlPath": "/" },
         { "action": "quickStart", "selector": "lobby-bot-btn-med" },
@@ -31,21 +32,32 @@
       "actions": [
         {
           "action": "selectAttack",
-          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target"
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-024\"]",
+          "value": "searchTurns"
         }
       ],
-      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target",
-      "focus": ["[data-testid=\"player-battlefield\"]", "[data-testid=\"opponent-battlefield\"]"],
+      "expect": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-024\"]",
+      "focus": [
+        "[data-testid=\"player-battlefield\"] .selected",
+        "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-024\"]"
+      ],
       "holdMs": 2400
     },
     {
       "id": "hearts-ward",
-      "label": "Check Card-to-Player boundary math",
+      "label": "Inspect Heart Card-to-Player ward math",
       "actions": [
-        { "action": "click", "selector": "[data-testid=\"opponent-battlefield\"] .valid-target" }
+        {
+          "action": "click",
+          "selector": "[data-testid=\"opponent-battlefield\"] .valid-target[data-preview-rules~=\"PD-RULE-024\"]"
+        },
+        {
+          "action": "click",
+          "selector": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"] button:text-is(\"ANALYST\")"
+        }
       ],
-      "expect": "[data-testid=\"combat-math-log\"]",
-      "focus": ["[data-testid=\"combat-math-log\"]"],
+      "expect": "[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"][data-mode=\"analyst\"]:has([data-rule-id=\"PD-RULE-024\"])",
+      "focus": ["[data-attack-owner=\"player\"] [data-testid=\"combat-math-log\"]"],
       "holdMs": 2600
     }
   ]

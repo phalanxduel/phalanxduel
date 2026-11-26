@@ -13,7 +13,7 @@ pronunciation:
 ---
 
 <!-- cue:leaderboard-open -->
-Open Global Ladder from the lobby. Phalanx Duel tracks both classic Elo and Glicko-2 ratings over a rolling 90-day seasonal window, with separate rankings for PvP and each AI tier.
+Open Global Ladder from the lobby. Phalanx Duel tracks both classic Elo and Glicko-2 ratings over a rolling seasonal window, with separate rankings for PvP and each AI tier.
 
 <!-- cue:categories-elo -->
 Select vs AI Easy to view its isolated ladder. Alongside your Elo score, the server tracks Glicko-2 Rating Deviation — or RD — which starts wide while you are Provisional and narrows toward Established as you play more matches.

@@ -96,6 +96,7 @@ export const TutorialEpisodeScenarioSchema = z.object({
   companionUrl: z.string().url().optional(),
   tags: z.array(z.string().min(1)).min(1),
   summary: z.string().min(10),
+  requiredRuleIds: z.array(z.string().min(1)).optional(),
   cues: z.array(TutorialCueStepSchema).min(1),
 });
 
