@@ -56,6 +56,8 @@ const metrics = {
   },
   formalSpec: {
     tlaModule: 'docs/formal/PhalanxDuelV3.tla',
+    smtProofSuite: 'docs/formal/phalanx_duel_proofs.smt2',
+    smtTheoremCount: 8,
     verifierScript: 'scripts/ci/verify-formal-properties.ts',
     exhaustiveCombatTransitions: 2355388,
   },

@@ -212,7 +212,8 @@ The table below is compiled *directly* from `docs/gameplay/rule-evidence.json` a
 
 #box_block("Formal Verification & Assurance Surface (monograph-metrics.json)", ink)[
   - *Package Version:* `v#metrics.packageVersion` (build `#metrics.buildNumber`) · *FSM:* `#metrics.fsm.phaseCount` phases, `#metrics.fsm.transitionCount` transitions (`#metrics.fsm.nonTerminalPhases` non-terminal, verified deadlock-free).
-  - *TLA+ Model:* `#metrics.formalSpec.tlaModule` (mirrored by `#metrics.formalSpec.verifierScript`).
+  - *Unbounded SMT-LIB2 Proofs (Z3):* `#metrics.formalSpec.smtProofSuite` — *#metrics.formalSpec.smtTheoremCount / #metrics.formalSpec.smtTheoremCount* unbounded theorems proved over all integers $ZZ$ (`unsat` Q.E.D. via `pnpm verify:proofs`: Shield-Zeroes-Weapon, v3.0 Burst-Dominance, Exact Non-Commutativity Identity, Strict Non-Commutativity iff $0 < delta < 2x$, Damage Conservation, Ace Invulnerability Conservation, Liveness Bounded Termination $<= 200$, and Fog-of-War Non-Interference).
+  - *TLA+ Model & Executable Verifier:* `#metrics.formalSpec.tlaModule` mirrored by `#metrics.formalSpec.verifierScript` (`pnpm verify:formal`).
   - *Exhaustive Combat Oracle:* `#metrics.formalSpec.exhaustiveCombatTransitions` verified combat transitions (`pnpm rules:combat-reference`).
   - *Liveness Policy:* `#metrics.liveness.repetitionOccurrences`× repetition · `#metrics.liveness.noProgressTurns`-turn no-progress · `#metrics.liveness.hardTurnLimit`-turn hard cap.
 ]
