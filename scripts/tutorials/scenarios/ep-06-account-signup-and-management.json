@@ -13,7 +13,7 @@
   "playerName": "TutorialHost",
   "companionUrl": "https://phalanxduel.com/learn/getting-started/",
   "tags": ["Phalanx Duel", "Account", "Signup", "Tutorial", "Shorts"],
-  "summary": "Create a Phalanx Duel account, choose an operative gamertag, confirm your signed-in lobby header, and open Settings.",
+  "summary": "Create a Phalanx Duel account, choose a gamertag, confirm your signed-in lobby header, and open Settings.",
   "cues": [
     {
       "id": "open-auth",
