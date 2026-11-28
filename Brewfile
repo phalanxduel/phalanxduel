@@ -145,5 +145,9 @@ brew "typst"
 # Used by 'pnpm docs:slides' to export 'docs/talks/phalanx-duel-30-minute-slides.md'.
 brew "marp-cli"
 
+# Z3: SMT theorem prover for unbounded mathematical proofs over Z (SMT-LIB2).
+# Used by 'pnpm verify:proofs' to prove 'docs/formal/phalanx_duel_proofs.smt2'.
+brew "z3"
+
 
 
