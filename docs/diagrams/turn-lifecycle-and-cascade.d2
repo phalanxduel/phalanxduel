@@ -1,0 +1,110 @@
+direction: right
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 0
+  }
+}
+
+classes: {
+  phase: {
+    style: {
+      fill: "#f5f2eb"
+      stroke: "#172033"
+      stroke-width: 2
+      font-color: "#172033"
+      border-radius: 6
+    }
+  }
+  terminal: {
+    style: {
+      fill: "#172033"
+      stroke: "#d97706"
+      stroke-width: 2
+      font-color: "#fffdf8"
+      border-radius: 6
+    }
+  }
+  shield: {
+    shape: diamond
+    style: {
+      fill: "#fff1f2"
+      stroke: "#c7374f"
+      stroke-width: 2
+      font-color: "#9f1239"
+    }
+  }
+  weapon: {
+    style: {
+      fill: "#eff6ff"
+      stroke: "#2775a6"
+      stroke-width: 2
+      font-color: "#1e3a5f"
+      border-radius: 6
+    }
+  }
+}
+
+fsm: "Deterministic Turn Lifecycle (engine/src/state-machine.ts)" {
+  style: {
+    fill: "#fffdf8"
+    stroke: "#0f766e"
+    stroke-width: 2
+    border-radius: 8
+  }
+
+  StartTurn: "StartTurn\n(Match Init / Turn Gate)" { class: phase }
+  DeploymentPhase: "DeploymentPhase\n(Alternating 2x4 Grid)" { class: phase }
+  AttackPhase: "AttackPhase\n(Attack · Pass · Liveness Gate)" { class: phase }
+  AttackResolution: "AttackResolution\n(Column Cascade)" { class: weapon }
+  CleanupPhase: "CleanupPhase\n(Discard · Column Advance)" { class: phase }
+  ReinforcementPhase: "ReinforcementPhase\n(Defender Reinforce / Pass)" { class: phase }
+  DrawPhase: "DrawPhase\n(Refill Hand <= cols)" { class: phase }
+  EndTurn: "EndTurn\n(Swap Active Player)" { class: phase }
+  gameOver: "gameOver\n(0 LP · Pass Limit · Draw · Forfeit)" { class: terminal }
+
+  StartTurn -> DeploymentPhase: "system:init"
+  StartTurn -> AttackPhase: "system:advance"
+  DeploymentPhase -> DeploymentPhase: "deploy / quickDeploy"
+  DeploymentPhase -> AttackPhase: "deploy:complete"
+  AttackPhase -> AttackResolution: "attack | pass"
+  AttackPhase -> gameOver: "system:draw (liveness)"
+  AttackResolution -> CleanupPhase: "system:advance"
+  AttackResolution -> gameOver: "attack:victory (0 LP)"
+  CleanupPhase -> ReinforcementPhase: "system:advance"
+  ReinforcementPhase -> ReinforcementPhase: "reinforce"
+  ReinforcementPhase -> DrawPhase: "reinforce:complete | pass"
+  DrawPhase -> EndTurn: "system:advance"
+  EndTurn -> StartTurn: "next turn"
+  EndTurn -> gameOver: "victory / forfeit"
+}
+
+cascade: "Column Cascade & Suit Boundary Algebra (v3.0 Shield-Before-Weapon)" {
+  style: {
+    fill: "#fffdf8"
+    stroke: "#2775a6"
+    stroke-width: 2
+    border-radius: 8
+  }
+
+  attacker: "Front-Rank Attacker\n(♣ Clubs · ♠ Spades)" { class: weapon }
+  front: "Opposing Front Card\n(Eligibility: Ace / Face)" { class: phase }
+  card_boundary: "Card Boundary\n♦ Shield (-v) then ♣ (x2)" { class: shield }
+  back: "Opposing Back Card\n(Reserve Rank)" { class: phase }
+  player_boundary: "Player Boundary\n♥ Shield (-v) then ♠ (x2)" { class: shield }
+  lp: "Opponent Life Points\n(0 LP => Victory)" { class: terminal }
+
+  attacker -> front: "incoming d0"
+  front -> card_boundary: "destroyed: carryover c1 > 0"
+  card_boundary -> back: "c1' = 2^I(♣) * max(0, c1 - δ♦)"
+  back -> player_boundary: "destroyed: carryover c2 > 0"
+  player_boundary -> lp: "ΔLP = 2^I(♠) * max(0, c2 - δ♥)"
+}
+
+fsm.AttackResolution -> cascade.attacker: "resolves via combat-math.ts" {
+  style: {
+    stroke: "#d97706"
+    stroke-dash: 4
+  }
+}

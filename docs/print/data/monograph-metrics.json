@@ -1,0 +1,27 @@
+{
+  "packageVersion": "1.6.0",
+  "buildNumber": 3,
+  "rulesVersion": "3.0",
+  "fsm": {
+    "phaseCount": 9,
+    "transitionCount": 33,
+    "nonTerminalPhases": 8
+  },
+  "liveness": {
+    "repetitionOccurrences": 3,
+    "noProgressTurns": 50,
+    "hardTurnLimit": 200
+  },
+  "ruleEvidence": {
+    "total": 71,
+    "aligned": 63,
+    "partial": 7,
+    "unverified": 1
+  },
+  "formalSpec": {
+    "tlaModule": "docs/formal/PhalanxDuelV3.tla",
+    "verifierScript": "scripts/ci/verify-formal-properties.ts",
+    "exhaustiveCombatTransitions": 2355388
+  },
+  "datalakePresent": true
+}

@@ -1,0 +1,87 @@
+direction: right
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 0
+  }
+}
+
+classes: {
+  gate: {
+    style: {
+      fill: "#f0fdf4"
+      stroke: "#0f766e"
+      stroke-width: 2
+      border-radius: 6
+    }
+  }
+  otel: {
+    style: {
+      fill: "#eff6ff"
+      stroke: "#2775a6"
+      stroke-width: 2
+      border-radius: 6
+    }
+  }
+  backend: {
+    style: {
+      fill: "#172033"
+      stroke: "#d97706"
+      stroke-width: 2
+      font-color: "#fffdf8"
+      border-radius: 6
+    }
+  }
+}
+
+truth_gate: "Truth Gate Assurance Stack" {
+  style: {
+    fill: "#fffdf8"
+    stroke: "#0f766e"
+    stroke-width: 2
+    border-radius: 8
+  }
+
+  oracle: "Exhaustive Combat Oracle\n2,355,388 Verified Transitions\n71 Rules in rule-evidence.json" { class: gate }
+  fuzz: "Property & Mutation Testing\nfast-check + Stryker" { class: gate }
+  e2e: "Playability & Replay Gate\nPlaywright E2E + qa:replay:verify" { class: gate }
+  perf: "Performance & Liveness Gate\n0.225ms p99 · <=200-turn Termination" { class: gate }
+
+  oracle -> fuzz -> e2e -> perf
+}
+
+telemetry: "OpenTelemetry Observability Pipeline" {
+  style: {
+    fill: "#fffdf8"
+    stroke: "#2775a6"
+    stroke-width: 2
+    border-radius: 8
+  }
+
+  emitters: "Instrumented Surfaces" {
+    browser: "Browser Client\n(RUM Root Spans)" { class: otel }
+    api: "Fastify Server\n(Match & WS Spans)" { class: otel }
+    mcp_srv: "MCP Server\n(Agent Tool Spans)" { class: otel }
+  }
+
+  collector: "otel-collector\n(:4317 gRPC / :4318 HTTP)" { class: otel }
+
+  backends: "Telemetry Backends" {
+    o2: "OpenObserve (o2)\nLogs · Metrics · RUM" { class: backend }
+    jaeger: "Jaeger\nDistributed Match Traces" { class: backend }
+  }
+
+  emitters.browser -> collector: "OTLP HTTP"
+  emitters.api -> collector: "OTLP gRPC"
+  emitters.mcp_srv -> collector: "OTLP gRPC"
+  collector -> backends.o2
+  collector -> backends.jaeger
+}
+
+truth_gate.e2e -> telemetry.collector: "QA Run ID Correlation" {
+  style: {
+    stroke: "#d97706"
+    stroke-dash: 4
+  }
+}

@@ -127,4 +127,23 @@ brew "gource"
 # Used by 'bin/phx-gource' to pipe raw PPM video streams from Gource into H.264/MP4 files.
 brew "ffmpeg"
 
+# --- Docs-as-Code Visualization & Publishing ---
+
+# D2: Declarative diagramming language for build-time SVGs (rules FSM, ledger, OTel).
+# Used by 'pnpm docs:diagrams'.
+brew "d2"
+
+# Graphviz: DOT graph layout engine (CLI complement to @viz-js/viz WASM).
+# Used for inspecting 'docs/diagrams/*.dot' and replay/Truth Gate DAGs.
+brew "graphviz"
+
+# Typst: Fast modern typesetting engine for single-source print PDFs and formal math specs.
+# Used by 'pnpm docs:pdf' to compile 'docs/print/*.typ'.
+brew "typst"
+
+# Marp CLI: Markdown presentation ecosystem for version-controlled SCMC slide decks.
+# Used by 'pnpm docs:slides' to export 'docs/talks/phalanx-duel-30-minute-slides.md'.
+brew "marp-cli"
+
+
 

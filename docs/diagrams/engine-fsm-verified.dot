@@ -1,0 +1,35 @@
+digraph PhalanxDuelFSM {
+  rankdir=LR;
+  bgcolor="#fffdf8";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#f5f2eb", color="#172033", fontcolor="#172033"];
+  edge [fontname="Helvetica", fontsize=9, color="#566071", fontcolor="#172033"];
+  "StartTurn";
+  "DeploymentPhase";
+  "AttackPhase";
+  "AttackResolution" [fillcolor="#eff6ff", color="#2775a6"];
+  "CleanupPhase";
+  "ReinforcementPhase";
+  "DrawPhase";
+  "EndTurn";
+  "gameOver" [shape=doubleoctagon, fillcolor="#172033", color="#d97706", fontcolor="#fffdf8"];
+  "StartTurn" -> "DeploymentPhase" [label="system:init"];
+  "StartTurn" -> "AttackPhase" [label="system:init | system:advance"];
+  "StartTurn" -> "gameOver" [label="system:victory | forfeit"];
+  "DeploymentPhase" -> "DeploymentPhase" [label="system:init | deploy | quickDeploy | deploy:auto"];
+  "AttackPhase" -> "AttackPhase" [label="system:init"];
+  "ReinforcementPhase" -> "ReinforcementPhase" [label="system:init | reinforce"];
+  "DeploymentPhase" -> "AttackPhase" [label="deploy:complete | quickDeploy:complete | deploy:auto:complete"];
+  "DeploymentPhase" -> "gameOver" [label="forfeit", style=dashed, color="#c7374f", fontcolor="#c7374f"];
+  "AttackPhase" -> "AttackResolution" [label="attack | pass"];
+  "AttackPhase" -> "gameOver" [label="forfeit | system:draw"];
+  "AttackResolution" -> "CleanupPhase" [label="system:advance"];
+  "AttackResolution" -> "gameOver" [label="attack:victory | forfeit"];
+  "CleanupPhase" -> "ReinforcementPhase" [label="system:advance"];
+  "CleanupPhase" -> "gameOver" [label="forfeit", style=dashed, color="#c7374f", fontcolor="#c7374f"];
+  "ReinforcementPhase" -> "DrawPhase" [label="system:advance | reinforce:complete | pass"];
+  "ReinforcementPhase" -> "gameOver" [label="forfeit", style=dashed, color="#c7374f", fontcolor="#c7374f"];
+  "DrawPhase" -> "EndTurn" [label="system:advance"];
+  "DrawPhase" -> "gameOver" [label="forfeit", style=dashed, color="#c7374f", fontcolor="#c7374f"];
+  "EndTurn" -> "StartTurn" [label="system:advance"];
+  "EndTurn" -> "gameOver" [label="forfeit", style=dashed, color="#c7374f", fontcolor="#c7374f"];
+}

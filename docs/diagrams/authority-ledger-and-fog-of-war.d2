@@ -1,0 +1,87 @@
+direction: right
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 0
+  }
+}
+
+classes: {
+  client: {
+    style: {
+      fill: "#f5f2eb"
+      stroke: "#172033"
+      stroke-width: 2
+      border-radius: 6
+    }
+  }
+  authority: {
+    style: {
+      fill: "#eff6ff"
+      stroke: "#2775a6"
+      stroke-width: 2
+      border-radius: 6
+    }
+  }
+  crypto: {
+    style: {
+      fill: "#fffbeb"
+      stroke: "#d97706"
+      stroke-width: 2
+      border-radius: 6
+    }
+  }
+  redaction: {
+    style: {
+      fill: "#fff1f2"
+      stroke: "#c7374f"
+      stroke-width: 2
+      border-radius: 6
+    }
+  }
+}
+
+clients: "Multi-Surface Clients" {
+  style.fill: "#fffdf8"
+  web: "Web Client\n(React/Preact · WS)" { class: client }
+  cli: "Go duel-cli\n(WS ACK Replay)" { class: client }
+  mcp: "MCP Agentic Surface\n(.mcp.json · action_submit)" { class: client }
+}
+
+server: "Authoritative Server Boundary (server/)" {
+  style: {
+    fill: "#f8fafc"
+    stroke: "#0f766e"
+    stroke-width: 2
+    border-radius: 8
+  }
+
+  actor: "MatchActor\n(Identity & Turn Lock)" { class: authority }
+  engine: "Pure Deterministic Engine\nδ(s_t, a_t) -> (s_{t+1}, events)" { class: authority }
+  fog: "Fog-of-War Projection π_o(s)\nRedacts opponent hand & drawpile" { class: redaction }
+  delay: "Spectator Delay Window\nreplayGameAtOrBeforeTurn()" { class: redaction }
+  ledger: "Event & Action Ledger\n(PostgreSQL + Canonical SHA-256)" { class: crypto }
+
+  actor -> engine: "validated Action"
+  engine -> ledger: "stateHash_t = H(canonical(s_t))"
+  engine -> fog: "full authoritative state"
+  fog -> delay: "spectator view"
+}
+
+verify: "Offline & Public Verification" {
+  style.fill: "#fffdf8"
+  endpoint: "GET /api/matches/:id/verify\nReplays δ* from seed + actions" { class: crypto }
+  proof: "Cryptographic Parity Proof\nH(replayed) == H(ledger)" { class: crypto }
+
+  endpoint -> proof: "0-trust audit"
+}
+
+clients.web -> server.actor: "WS / REST"
+clients.cli -> server.actor: "WS + Rejoin"
+clients.mcp -> server.actor: "POST /api/matches/:id/action"
+
+server.fog -> clients.web: "Player TurnViewModel"
+server.fog -> clients.cli: "Redacted Frame"
+server.delay -> clients.web: "Delayed Spectator View"
+server.ledger -> verify.endpoint: "seed + Action[]"
